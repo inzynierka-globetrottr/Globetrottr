@@ -1,2 +1,2 @@
-# MapaPodr-y
+# Globetrottr
 Inżynierka
