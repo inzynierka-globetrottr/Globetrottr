@@ -50,14 +50,12 @@ class AuthIntegrationTest {
 
     @Test
     void fullAuthFlowTest() throws Exception {
-        // given
         RegisterRequest registerRequest = RegisterRequest.builder()
                 .username("testuser")
                 .email("test@globetrottr.com")
-                .password("StrongPass123")
+                .password("StrongPass123!")
                 .build();
 
-        // when & then
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
@@ -66,7 +64,7 @@ class AuthIntegrationTest {
 
         AuthRequest loginRequest = AuthRequest.builder()
                 .login("testuser")
-                .password("StrongPass123")
+                .password("StrongPass123!")
                 .build();
 
         MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
@@ -86,11 +84,10 @@ class AuthIntegrationTest {
 
     @Test
     void shouldNotRegisterUserWithExistingEmail() throws Exception {
-        // given
         RegisterRequest first = RegisterRequest.builder()
                 .username("user1")
                 .email("same@email.com")
-                .password("pass1")
+                .password("Pass123!@#")
                 .build();
 
         userRepository.save(sniezynki.agh.globetrottr.user.User.builder()
@@ -102,10 +99,9 @@ class AuthIntegrationTest {
         RegisterRequest duplicate = RegisterRequest.builder()
                 .username("user2")
                 .email("same@email.com")
-                .password("pass2")
+                .password("Pass123!@#")
                 .build();
 
-        // when & then
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(duplicate)))
@@ -114,13 +110,11 @@ class AuthIntegrationTest {
 
     @Test
     void shouldNotLoginWithNonExistentUser() throws Exception {
-        // given
         AuthRequest loginRequest = AuthRequest.builder()
                 .login("ghost_user")
-                .password("password")
+                .password("StrongPass123!")
                 .build();
 
-        // when & then
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
@@ -129,11 +123,10 @@ class AuthIntegrationTest {
 
     @Test
     void shouldNotLoginWithWrongPassword() throws Exception {
-        // given
         RegisterRequest reg = RegisterRequest.builder()
                 .username("tester")
                 .email("tester@test.com")
-                .password("correct_pass")
+                .password("CorrectPass123!")
                 .build();
 
         mockMvc.perform(post("/api/auth/register")
@@ -142,10 +135,9 @@ class AuthIntegrationTest {
 
         AuthRequest badLogin = AuthRequest.builder()
                 .login("tester")
-                .password("wrong_pass")
+                .password("WrongPass123!")
                 .build();
 
-        // when & then
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(badLogin)))
@@ -154,8 +146,77 @@ class AuthIntegrationTest {
 
     @Test
     void shouldRejectRequestWithoutToken() throws Exception {
-        // when & then
         mockMvc.perform(get("/api/test/protected"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldRejectRegistrationWithWeakPasswordNoSpecialChar() throws Exception {
+        RegisterRequest invalidRequest = RegisterRequest.builder()
+                .username("tester1")
+                .email("test1@globetrottr.com")
+                .password("WeakPass123")
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectRegistrationWithWeakPasswordNoDigit() throws Exception {
+        RegisterRequest invalidRequest = RegisterRequest.builder()
+                .username("tester2")
+                .email("test2@globetrottr.com")
+                .password("WeakPass!!")
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectRegistrationWithWeakPasswordNoUppercase() throws Exception {
+        RegisterRequest invalidRequest = RegisterRequest.builder()
+                .username("tester3")
+                .email("test3@globetrottr.com")
+                .password("weakpass123!")
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectRegistrationWithInvalidEmail() throws Exception {
+        RegisterRequest invalidRequest = RegisterRequest.builder()
+                .username("tester4")
+                .email("invalid-email")
+                .password("StrongPass123!")
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectRegistrationWithEmptyUsername() throws Exception {
+        RegisterRequest invalidRequest = RegisterRequest.builder()
+                .username("")
+                .email("test5@globetrottr.com")
+                .password("StrongPass123!")
+                .build();
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
     }
 }

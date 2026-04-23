@@ -28,35 +28,35 @@ public class DataSeeder implements CommandLineRunner {
             User johnBiznes = User.builder()
                     .username("johnbiznes")
                     .email("john.biznes@globetrottr.com")
-                    .passwordHash(passwordEncoder.encode("JohnBiznesAdmin"))
+                    .passwordHash(passwordEncoder.encode("Johnbiznes1!"))
                     .role(UserRole.ADMIN)
                     .build();
 
             User secondAdmin = User.builder()
                     .username("adminuch")
                     .email("adminuch@globetrottr.com")
-                    .passwordHash(passwordEncoder.encode("zigibaza"))
+                    .passwordHash(passwordEncoder.encode("Zigibaza1!"))
                     .role(UserRole.ADMIN)
                     .build();
 
             User user1 = User.builder()
                     .username("jantester")
                     .email("jan@tester.com")
-                    .passwordHash(passwordEncoder.encode("test"))
+                    .passwordHash(passwordEncoder.encode("Test1!"))
                     .role(UserRole.USER)
                     .build();
 
             User user2 = User.builder()
                     .username("marekgarek")
                     .email("marek@garek.com")
-                    .passwordHash(passwordEncoder.encode("dziekan123"))
+                    .passwordHash(passwordEncoder.encode("Dziekan1!"))
                     .role(UserRole.USER)
                     .build();
 
             User user3 = User.builder()
                     .username("tortillla")
                     .email("tortilla@z.kurczakiem")
-                    .passwordHash(passwordEncoder.encode("zKurczakiem"))
+                    .passwordHash(passwordEncoder.encode("Zkurczakiem1!"))
                     .role(UserRole.USER)
                     .build();
 

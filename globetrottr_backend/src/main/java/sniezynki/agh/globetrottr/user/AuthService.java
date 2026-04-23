@@ -1,5 +1,6 @@
 package sniezynki.agh.globetrottr.user;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,16 +21,19 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(RegisterRequest request) {
-        if(userRepository.findByEmail(request.email()).isPresent()) {
+        var normalizedUsername = request.username().toLowerCase().trim();
+        var normalizedEmail = request.email().toLowerCase().trim();
+
+        if(userRepository.findByEmail(normalizedEmail).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
-        if(userRepository.findByUsername(request.username()).isPresent()) {
+        if(userRepository.findByUsername(normalizedUsername).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
 
         var user = User.builder()
-                .username(request.username())
-                .email(request.email())
+                .username(normalizedUsername)
+                .email(normalizedEmail)
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .role(UserRole.USER)
                 .build();
@@ -43,14 +47,16 @@ public class AuthService {
     }
 
     public AuthResponse authenticate(AuthRequest request) {
+        var normalizedLogin = request.login().toLowerCase().trim();
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.login(),
+                        normalizedLogin,
                         request.password()
                 )
         );
 
-        var user = userRepository.findByUsernameOrEmail(request.login(), request.login())
+        var user = userRepository.findByUsernameOrEmail(normalizedLogin, normalizedLogin)
                 .orElseThrow();
 
         var jwtToken = jwtService.generateToken(user);
