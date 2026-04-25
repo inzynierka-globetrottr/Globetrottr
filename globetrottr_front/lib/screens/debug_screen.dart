@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../service/location_service.dart';
+import '../service/sync_service.dart';
 import '../model/pending_point.dart';
 
 class DebugScreen extends StatefulWidget {
@@ -82,6 +83,26 @@ class _DebugScreenState extends State<DebugScreen> {
                   },
                   child: Text(
                     'Clear DB',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                  ),
+                  onPressed: () async {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Sending data to backend..."),
+                      ),
+                    );
+
+                    await SyncService().syncPendingPoints();
+
+                    await _refreshDb();
+                  },
+                  child: const Text(
+                    'Send (Sync)',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
