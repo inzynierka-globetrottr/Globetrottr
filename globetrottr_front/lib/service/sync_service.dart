@@ -6,7 +6,7 @@ import '../database/database_helper.dart';
 class SyncService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
 
-  Future<void> syncPendingPoints() async {
+  Future<void> syncPendingPoints(String token) async {
     if (_backendUrl.isEmpty) return;
 
     final points = await DatabaseHelper().getPendingPoints();
@@ -21,7 +21,10 @@ class SyncService {
 
       final response = await http.post(
         Uri.parse('$_backendUrl/api/map/sync'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: requestBody,
       );
 
