@@ -3,6 +3,9 @@ import '../database/database_helper.dart';
 import '../service/location_service.dart';
 import '../service/sync_service.dart';
 import '../model/pending_point.dart';
+import '../service/auth_service.dart';
+import '../model/auth/login_request.dart';
+import '../model/auth/register_request.dart';
 
 class DebugScreen extends StatefulWidget {
   @override
@@ -13,6 +16,11 @@ class _DebugScreenState extends State<DebugScreen> {
   final LocationService _locationService = LocationService();
   List<PendingPoint> _points = [];
   bool _isTracking = false;
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  String? _jwtToken;
 
   @override
   void initState() {
@@ -30,94 +38,192 @@ class _DebugScreenState extends State<DebugScreen> {
   @override
   void dispose() {
     _locationService.stopTracking();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Test GPS & SQLite')),
+      appBar: AppBar(title: const Text('Test GPS, SQLite & Auth')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Wrap(
-              spacing: 10,
-              children: [
-                ElevatedButton(
-                  onPressed: _isTracking
-                      ? null
-                      : () async {
-                          try {
-                            await _locationService.startTracking();
-                            setState(() => _isTracking = true);
+          Expanded(
+            flex: 6,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _usernameController,
+                    decoration: const InputDecoration(labelText: 'Username'),
+                  ),
+                  TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email (tylko rejestracja)',
+                    ),
+                  ),
+                  TextField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _jwtToken != null
+                        ? "Status: Zalogowany"
+                        : "Status: Brak tokena",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                        ),
+                        onPressed: () async {
+                          final request = RegisterRequest(
+                            username: _usernameController.text,
+                            email: _emailController.text,
+                            password: _passwordController.text,
+                          );
+                          final success = await AuthService().register(request);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                success ? "Zarejestrowano" : "Błąd rejestracji",
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Rejestracja',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                        ),
+                        onPressed: () async {
+                          final request = LoginRequest(
+                            login: _usernameController.text,
+                            password: _passwordController.text,
+                          );
+                          final token = await AuthService().login(request);
+                          if (token != null) {
+                            setState(() {
+                              _jwtToken = token;
+                            });
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Tracking started!")),
+                              const SnackBar(content: Text("Zalogowano")),
                             );
-                          } catch (e) {
+                          } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Error: $e")),
+                              const SnackBar(content: Text("Błąd logowania")),
                             );
                           }
                         },
-                  child: Text('Start GPS'),
-                ),
-                ElevatedButton(
-                  onPressed: !_isTracking
-                      ? null
-                      : () {
-                          _locationService.stopTracking();
-                          setState(() => _isTracking = false);
-                        },
-                  child: Text('Stop GPS'),
-                ),
-                ElevatedButton(
-                  onPressed: _refreshDb,
-                  child: Text('Refresh Database'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () async {
-                    await DatabaseHelper().clearPendingPoints();
-                    _refreshDb();
-                  },
-                  child: Text(
-                    'Clear DB',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                  ),
-                  onPressed: () async {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Sending data to backend..."),
+                        child: const Text(
+                          'Logowanie',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
-                    );
+                      ElevatedButton(
+                        onPressed: _isTracking
+                            ? null
+                            : () async {
+                                try {
+                                  await _locationService.startTracking();
+                                  setState(() => _isTracking = true);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Tracking started!"),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Error: $e")),
+                                  );
+                                }
+                              },
+                        child: const Text('Start GPS'),
+                      ),
+                      ElevatedButton(
+                        onPressed: !_isTracking
+                            ? null
+                            : () {
+                                _locationService.stopTracking();
+                                setState(() => _isTracking = false);
+                              },
+                        child: const Text('Stop GPS'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _refreshDb,
+                        child: const Text('Refresh DB'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: () async {
+                          await DatabaseHelper().clearPendingPoints();
+                          _refreshDb();
+                        },
+                        child: const Text(
+                          'Clear DB',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                        ),
+                        onPressed: () async {
+                          if (_jwtToken == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Błąd: Zaloguj się najpierw!"),
+                              ),
+                            );
+                            return;
+                          }
 
-                    await SyncService().syncPendingPoints();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Sending data to backend..."),
+                            ),
+                          );
 
-                    await _refreshDb();
-                  },
-                  child: const Text(
-                    'Send (Sync)',
-                    style: TextStyle(color: Colors.white),
+                          await SyncService().syncPendingPoints(_jwtToken!);
+                          await _refreshDb();
+                        },
+                        child: const Text(
+                          'Send (Sync)',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          Divider(),
+          const Divider(),
           Expanded(
+            flex: 4,
             child: _points.isEmpty
-                ? Center(child: Text("Database is empty."))
+                ? const Center(child: Text("Database is empty."))
                 : ListView.builder(
                     itemCount: _points.length,
                     itemBuilder: (context, index) {
                       final p = _points[index];
-                      // Formatujemy timestamp na ludzki czas
                       final time = DateTime.fromMillisecondsSinceEpoch(
                         p.timestamp,
                       );
