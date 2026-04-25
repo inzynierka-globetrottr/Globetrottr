@@ -13,7 +13,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Profile("dev")
+@Profile("!prod")
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
