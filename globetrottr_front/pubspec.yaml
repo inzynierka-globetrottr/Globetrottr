@@ -27,6 +27,7 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   permission_handler: ^12.0.1
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -34,14 +35,14 @@ dev_dependencies:
   sqflite: ^2.4.2+1
   path: ^1.8.3
   geolocator: ^14.0.2
+  http: ^1.6.0
 
   flutter_lints: ^6.0.0
 
 flutter:
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
+  assets:
+    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:
