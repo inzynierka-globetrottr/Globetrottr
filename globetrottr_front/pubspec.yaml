@@ -28,14 +28,18 @@ dependencies:
   cupertino_icons: ^1.0.8
   permission_handler: ^12.0.1
   flutter_dotenv: ^6.0.1
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  latlong2: ^0.9.1
+  flutter_map: ^6.1.0
   sqflite: ^2.4.2+1
   path: ^1.8.3
   geolocator: ^14.0.2
   http: ^1.6.0
+  wkt_parser: ^2.0.0
+  geobase: ^1.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
 
   flutter_lints: ^6.0.0
 
