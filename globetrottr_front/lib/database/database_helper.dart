@@ -27,6 +27,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE pending_points (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sessionId TEXT NOT NULL,
         latitude REAL NOT NULL,
         longitude REAL NOT NULL,
         timestamp INTEGER NOT NULL
