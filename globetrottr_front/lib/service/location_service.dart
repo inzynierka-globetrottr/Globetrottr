@@ -7,8 +7,15 @@ import '../model/pending_point.dart';
 
 class LocationService {
   StreamSubscription<Position>? _positionStream;
+  static final LocationService _instance = LocationService._internal();
+  factory LocationService() => _instance;
+  LocationService._internal();
+
+  String? _sessionId;
 
   Future<void> startTracking() async {
+    if (_sessionId != null) return;
+
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
     }
@@ -19,13 +26,16 @@ class LocationService {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied)
+      if (permission == LocationPermission.denied) {
         throw Exception('No permission to access location.');
+      }
     }
 
     if (permission == LocationPermission.whileInUse) {
       permission = await Geolocator.requestPermission();
     }
+    
+    _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
 
     late LocationSettings locationSettings;
 
@@ -64,6 +74,7 @@ class LocationService {
         Geolocator.getPositionStream(locationSettings: locationSettings).listen(
           (Position position) async {
             final point = PendingPoint(
+              sessionId: _sessionId!,
               latitude: position.latitude,
               longitude: position.longitude,
               timestamp: DateTime.now().millisecondsSinceEpoch,
@@ -80,5 +91,6 @@ class LocationService {
   void stopTracking() {
     _positionStream?.cancel();
     _positionStream = null;
+    _sessionId = null;
   }
 }

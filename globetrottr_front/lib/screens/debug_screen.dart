@@ -8,6 +8,8 @@ import '../model/auth/login_request.dart';
 import '../model/auth/register_request.dart';
 
 class DebugScreen extends StatefulWidget {
+  const DebugScreen({super.key});
+
   @override
   _DebugScreenState createState() => _DebugScreenState();
 }
