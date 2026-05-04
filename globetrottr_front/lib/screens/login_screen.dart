@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../service/auth_service.dart';
 import '../model/auth/login_request.dart';
 import '../model/auth/register_request.dart';
@@ -12,6 +13,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  final _storage = const FlutterSecureStorage();
 
   // Controllers
   final TextEditingController _usernameController = TextEditingController();
@@ -42,6 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
         final token = await AuthService().login(request);
 
         if (token != null) {
+          await _storage.write(key: 'jwt_token', value: token);
+
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Welcome back!")),

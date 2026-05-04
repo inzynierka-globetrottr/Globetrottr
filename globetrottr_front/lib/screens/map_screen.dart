@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:geolocator/geolocator.dart'; // Add this package
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../service/location_service.dart';
 import '../service/sync_service.dart';
 import '../database/database_helper.dart';
@@ -19,6 +20,7 @@ class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
 
   bool _isTracking = false;
+  bool _mapReady = false;
   List<PendingPoint> _points = [];
 
   // Track the user's current position separately from SQLite points
@@ -34,7 +36,15 @@ class _MapScreenState extends State<MapScreen> {
     _fetchAndCenterLocation(); // Fetch GPS on load
   }
 
+  final _storage = const FlutterSecureStorage();
+
   Future<void> _loadInitialData() async {
+    final token = await _storage.read(key: 'jwt_token');
+
+    setState(() {
+      _jwtToken = token;
+    });
+
     await _refreshDb();
   }
 
@@ -107,9 +117,16 @@ class _MapScreenState extends State<MapScreen> {
           // 1. THE MAP LAYER
           FlutterMap(
             mapController: _mapController,
-            options: const MapOptions(
+            options: MapOptions(
               initialCenter: LatLng(50.07, 19.91), // Fallback center
               initialZoom: 13.0,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+              ),
+              onMapReady: () {
+                setState(() => _mapReady = true);
+              },
+              onPositionChanged: (pos, hasGesture) => setState(() {}),
             ),
             children: [
               TileLayer(
@@ -126,7 +143,17 @@ class _MapScreenState extends State<MapScreen> {
                 )).toList(),
               ),
               // Marker Layer for Current Position (Distinct Blue Dot)
-              if (_currentPosition != null)
+
+
+          if (_currentPosition != null)
+            IgnorePointer( // Allows map interaction through the fog
+              child: CustomPaint(
+                size: Size.infinite,
+                painter: FogPainter(_currentPosition, _mapController.camera),
+              ),
+            ),
+
+          if (_currentPosition != null)
                 MarkerLayer(
                   markers: [
                     Marker(
@@ -257,5 +284,48 @@ class _MapScreenState extends State<MapScreen> {
         child: const Icon(Icons.my_location, color: Colors.blueAccent),
       ),
     );
+  }
+}
+
+// TODO: move to a new file
+
+class FogPainter extends CustomPainter {
+  final LatLng? playerPosition;
+  final MapCamera camera; // Use MapCamera instead of MapController
+  final double holeRadiusMeters;
+
+  FogPainter(this.playerPosition, this.camera, {this.holeRadiusMeters = 500.0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (playerPosition == null) return;
+
+    canvas.saveLayer(Offset.zero & size, Paint());
+
+    final fogPaint = Paint()..color = Colors.black.withOpacity(0.95);
+    canvas.drawRect(Offset.zero & size, fogPaint);
+
+    final clearPaint = Paint()
+      ..blendMode = BlendMode.dstOut
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
+
+    final offset = camera.getOffsetFromOrigin(playerPosition!);
+
+    const Distance distanceCalc = Distance();
+    final LatLng edgeLatLng = distanceCalc.offset(playerPosition!, holeRadiusMeters, 0);
+
+    final edgeOffset = camera.getOffsetFromOrigin(edgeLatLng);
+
+    final double pixelRadius = (offset - edgeOffset).distance;
+
+    canvas.drawCircle(offset, pixelRadius, clearPaint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant FogPainter oldDelegate) {
+    return oldDelegate.playerPosition != playerPosition ||
+           oldDelegate.camera != camera;
   }
 }
