@@ -1,2 +1,2 @@
 # Globetrottr
-Inżynierka
+Inżynierka project
