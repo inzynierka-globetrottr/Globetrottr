@@ -1,5 +1,6 @@
 package sniezynki.agh.globetrottr;
 
+import org.hamcrest.Matchers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -217,6 +218,39 @@ class AuthIntegrationTest {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRefreshTokenSuccessfully() throws Exception {
+        RegisterRequest registerRequest = RegisterRequest.builder()
+                .username("refresher")
+                .email("refresh@test.com")
+                .password("StrongPass123!")
+                .build();
+
+        MvcResult registerResult = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = registerResult.getResponse().getContentAsString();
+        AuthResponse authResponse = objectMapper.readValue(responseBody, AuthResponse.class);
+        String oldToken = authResponse.token();
+
+        Thread.sleep(1000);
+
+        mockMvc.perform(get("/api/auth/refresh")
+                        .header("Authorization", "Bearer " + oldToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists())
+                .andExpect(jsonPath("$.token").value(Matchers.not(oldToken)));
+    }
+
+    @Test
+    void shouldRejectRefreshWithoutToken() throws Exception {
+        mockMvc.perform(get("/api/auth/refresh"))
                 .andExpect(status().isBadRequest());
     }
 }
