@@ -36,6 +36,7 @@ dev_dependencies:
   path: ^1.8.3
   geolocator: ^14.0.2
   http: ^1.6.0
+  flutter_secure_storage: ^9.0.0
 
   flutter_lints: ^6.0.0
 
