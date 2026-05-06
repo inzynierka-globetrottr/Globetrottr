@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sniezynki.agh.globetrottr.user.dto.AuthRequest;
 import sniezynki.agh.globetrottr.user.dto.AuthResponse;
+import sniezynki.agh.globetrottr.user.dto.GoogleAuthRequest;
 import sniezynki.agh.globetrottr.user.dto.RegisterRequest;
 
 @RestController
@@ -23,5 +24,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleAuth(@Valid @RequestBody GoogleAuthRequest request) {
+        return ResponseEntity.ok(authService.authenticateWithGoogle(request));
     }
 }
