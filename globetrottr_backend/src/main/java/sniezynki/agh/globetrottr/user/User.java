@@ -33,7 +33,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "total_points")
@@ -41,6 +41,10 @@ public class User implements UserDetails {
 
     @Column(name = "created_at")
     private Timestamp createdAt;
+
+    @Builder.Default
+    @Column(name = "is_email_verified")
+    private boolean isEmailVerified = false;
 
     @Builder.Default
     @Column(name = "is_enabled")
@@ -54,6 +58,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role = UserRole.USER;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider authProvider = AuthProvider.LOCAL;
 
     @PrePersist
     protected void onCreate() {
