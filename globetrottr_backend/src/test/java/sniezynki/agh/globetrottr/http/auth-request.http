@@ -1,0 +1,49 @@
+@host = http://localhost:8080
+@testEmail = yourmail@gmail.com
+
+### 1. REGISTRATION
+# Expected Result: HTTP 200 OK
+# Response should contain an empty JWT token: {"token": ""}
+# Action: After this runs successfully, check your mail inbox for the 6-digit code.
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "BackendTester",
+  "email": "{{testEmail}}",
+  "password": "StrongPassword123!"
+}
+
+### 2. LOGIN ATTEMPT (Testing unverified user block)
+# Expected Result: HTTP 500/403 Forbidden
+# Response should contain the error message stating the email is not verified.
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "{{testEmail}}",
+  "password": "StrongPassword123!"
+}
+
+### 3. EMAIL VERIFICATION
+# ACTION REQUIRED: Replace "000000" with the actual 6-digit code!
+# Expected Result: HTTP 200 OK
+# Response should contain a valid, long JWT token: {"token": "eyJhbGciOiJIUzI1NiIsIn..."}
+POST {{host}}/api/auth/verify
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "code": "000000"
+}
+
+### 4. LOGIN ATTEMPT
+# Expected Result: HTTP 200 OK
+# Response should contain a valid, long JWT token: {"token": "eyJhbGciOiJIUzI1NiIsIn..."}
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "{{testEmail}}",
+  "password": "StrongPassword123!"
+}
