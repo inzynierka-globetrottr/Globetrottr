@@ -4,12 +4,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sniezynki.agh.globetrottr.security.JwtService;
 import sniezynki.agh.globetrottr.user.dto.AuthRequest;
 import sniezynki.agh.globetrottr.user.dto.AuthResponse;
 import sniezynki.agh.globetrottr.user.dto.RegisterRequest;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +66,25 @@ public class AuthService {
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    public AuthResponse refreshToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid token");
+        }
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid username"));
+
+        if (jwtService.isTokenValid(token, user)) {
+            var newToken = jwtService.generateToken(user);
+            return AuthResponse.builder()
+                    .token(newToken)
+                    .build();
+        }
+        throw new RuntimeException("Invalid token");
     }
 }

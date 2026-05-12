@@ -1,5 +1,6 @@
 package sniezynki.agh.globetrottr.user;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,5 +24,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    @GetMapping("refresh")
+    public ResponseEntity<AuthResponse> refreshToken(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
+        return ResponseEntity.ok(authService.refreshToken(authHeader));
     }
 }
