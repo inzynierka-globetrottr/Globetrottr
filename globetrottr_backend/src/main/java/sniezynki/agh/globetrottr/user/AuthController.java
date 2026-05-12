@@ -4,10 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sniezynki.agh.globetrottr.user.dto.AuthRequest;
-import sniezynki.agh.globetrottr.user.dto.AuthResponse;
-import sniezynki.agh.globetrottr.user.dto.GoogleAuthRequest;
-import sniezynki.agh.globetrottr.user.dto.RegisterRequest;
+import sniezynki.agh.globetrottr.user.dto.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -29,5 +26,10 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> googleAuth(@Valid @RequestBody GoogleAuthRequest request) {
         return ResponseEntity.ok(authService.authenticateWithGoogle(request));
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<AuthResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        return ResponseEntity.ok(authService.verifyEmail(request));
     }
 }
