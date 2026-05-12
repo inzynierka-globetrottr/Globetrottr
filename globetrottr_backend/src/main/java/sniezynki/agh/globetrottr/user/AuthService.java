@@ -12,6 +12,8 @@ import sniezynki.agh.globetrottr.user.dto.AuthRequest;
 import sniezynki.agh.globetrottr.user.dto.AuthResponse;
 import sniezynki.agh.globetrottr.user.dto.RegisterRequest;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -74,7 +76,7 @@ public class AuthService {
         String token = authHeader.substring(7);
         String username = jwtService.extractUsername(token);
 
-        var  user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid username"));
 
         if (jwtService.isTokenValid(token, user)) {
