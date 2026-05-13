@@ -123,10 +123,12 @@ class _DebugScreenState extends State<DebugScreen> {
                             setState(() {
                               _jwtToken = token;
                             });
+                            //TODO: check if using if (mounted) is a good practice
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Zalogowano")),
                             );
                           } else {
+                            //TODO: check if using if (mounted) is a good practice
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Błąd logowania")),
                             );
@@ -135,6 +137,33 @@ class _DebugScreenState extends State<DebugScreen> {
                         child: const Text(
                           'Logowanie',
                           style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final token = await AuthService().signInWithGoogle();
+                          if (token != null) {
+                            setState(() {
+                              _jwtToken = token;
+                            });
+                            //TODO: check if using if (mounted) is a good practice
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Zalogowano przez Google"),
+                              ),
+                            );
+                          } else {
+                            //TODO: check if using if (mounted) is a good practice
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Błąd logowania przez Google"),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text(
+                          'Login with Google',
+                          style: TextStyle(color: Colors.blue),
                         ),
                       ),
                       ElevatedButton(
