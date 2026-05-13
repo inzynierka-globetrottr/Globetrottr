@@ -302,12 +302,12 @@ class FogPainter extends CustomPainter {
 
     canvas.saveLayer(Offset.zero & size, Paint());
 
-    final fogPaint = Paint()..color = Colors.black.withOpacity(0.95);
+    final fogPaint = Paint()..color = Colors.black.withOpacity(0.85);
     canvas.drawRect(Offset.zero & size, fogPaint);
 
     final clearPaint = Paint()
       ..blendMode = BlendMode.dstOut
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
 
     final offset = camera.getOffsetFromOrigin(playerPosition!);
 
