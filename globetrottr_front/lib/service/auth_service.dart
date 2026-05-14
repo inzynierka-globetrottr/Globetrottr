@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../model/auth/login_request.dart';
 import '../model/auth/register_request.dart';
 
+//TODO: exception handler
 class AuthService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
   final _storage = const FlutterSecureStorage();
@@ -16,6 +18,40 @@ class AuthService {
 
   Future<void> deleteToken() async {
     return await _storage.delete(key: _tokenKey);
+  }
+
+  Future<String?> signInWithGoogle() async {
+    if (_backendUrl.isEmpty) return null;
+
+    try {
+      final String? clientId = dotenv.env['GOOGLE_CLIENT_ID'];
+
+      final GoogleSignIn googleSignIn = GoogleSignIn(serverClientId: clientId);
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) return null;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) return null;
+
+      final response = await http.post(
+        Uri.parse('$_backendUrl/api/auth/google'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'token': idToken}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data['token'];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<String?> login(LoginRequest request) async {

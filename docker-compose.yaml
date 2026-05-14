@@ -3,6 +3,7 @@ services:
     image: postgis/postgis:16-3.4
     container_name: globetrottr-db
     environment:
+      TZ: Europe/Warsaw
       POSTGRES_DB: globetrottr
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -24,10 +25,17 @@ services:
     ports:
       - "8080:8080"
     environment:
+      TZ: Europe/Warsaw
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/globetrottr
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_PROFILES_ACTIVE: docker
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_FROM: ${MAIL_FROM}
     depends_on:
       postgres:
         condition: service_healthy
