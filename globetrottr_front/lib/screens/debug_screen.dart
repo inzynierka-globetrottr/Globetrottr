@@ -190,31 +190,27 @@ class _DebugScreenState extends State<DebugScreen> {
                             setState(() {
                               _jwtToken = token;
                             });
-                            //TODO: check if using if (mounted) is a good practice
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Zalogowano przez Google"),
-                              ),
-                            );
+                            if (mounted) {
+                              //TODO: check if using if (mounted) is a good practice
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Zalogowano przez Google")),
+                              );
+                            }
                           } else {
-                            //TODO: check if using if (mounted) is a good practice
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Błąd logowania przez Google"),
-                              ),
-                            );
+                            if (mounted) {
+                              //TODO: check if using if (mounted) is a good practice
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Błąd logowania przez Google")),
+                              );
+                            }
                           }
                         },
-                        child: const Text(
-                          'Login with Google',
-                          style: TextStyle(color: Colors.blue),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red
-                        ),
+                        child: const Text('Login with Google', style: TextStyle(color: Colors.blue)),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                         onPressed: _logout,
-                        child: const Text('Logout',
-                        style: TextStyle(color: Colors.white),
-                        ),
+                        child: const Text('Logout', style: TextStyle(color: Colors.white)),
                       ),
                       ElevatedButton(
                         onPressed: _isTracking
