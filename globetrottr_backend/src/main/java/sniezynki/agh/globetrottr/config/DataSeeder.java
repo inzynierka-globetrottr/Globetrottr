@@ -28,6 +28,7 @@ public class DataSeeder implements CommandLineRunner {
             User johnBiznes = User.builder()
                     .username("johnbiznes")
                     .email("john.biznes@globetrottr.com")
+                    .isEmailVerified(true)
                     .passwordHash(passwordEncoder.encode("Johnbiznes1!"))
                     .role(UserRole.ADMIN)
                     .build();
@@ -35,6 +36,7 @@ public class DataSeeder implements CommandLineRunner {
             User secondAdmin = User.builder()
                     .username("adminuch")
                     .email("adminuch@globetrottr.com")
+                    .isEmailVerified(true)
                     .passwordHash(passwordEncoder.encode("Zigibaza1!"))
                     .role(UserRole.ADMIN)
                     .build();
@@ -42,6 +44,7 @@ public class DataSeeder implements CommandLineRunner {
             User user1 = User.builder()
                     .username("jantester")
                     .email("jan@tester.com")
+                    .isEmailVerified(true)
                     .passwordHash(passwordEncoder.encode("Test1!"))
                     .role(UserRole.USER)
                     .build();
@@ -49,6 +52,7 @@ public class DataSeeder implements CommandLineRunner {
             User user2 = User.builder()
                     .username("marekgarek")
                     .email("marek@garek.com")
+                    .isEmailVerified(true)
                     .passwordHash(passwordEncoder.encode("Dziekan1!"))
                     .role(UserRole.USER)
                     .build();
@@ -56,6 +60,7 @@ public class DataSeeder implements CommandLineRunner {
             User user3 = User.builder()
                     .username("tortillla")
                     .email("tortilla@z.kurczakiem")
+                    .isEmailVerified(true)
                     .passwordHash(passwordEncoder.encode("Zkurczakiem1!"))
                     .role(UserRole.USER)
                     .build();

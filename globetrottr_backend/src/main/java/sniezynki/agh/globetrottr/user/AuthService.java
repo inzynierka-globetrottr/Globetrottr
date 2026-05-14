@@ -4,7 +4,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,13 +11,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sniezynki.agh.globetrottr.email.EmailService;
 import sniezynki.agh.globetrottr.security.JwtService;
-import sniezynki.agh.globetrottr.user.dto.AuthRequest;
-import sniezynki.agh.globetrottr.user.dto.AuthResponse;
-import sniezynki.agh.globetrottr.user.dto.GoogleAuthRequest;
-import sniezynki.agh.globetrottr.user.dto.RegisterRequest;
+import sniezynki.agh.globetrottr.user.dto.*;
 
+import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -29,6 +28,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final VerificationCodeRepository verificationCodeRepository;
+    private final EmailService emailService;
 
     @Value("${google.client.id}")
     private String googleClientId;
@@ -52,11 +53,18 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
-        var jwtToken = jwtService.generateToken(user);
 
-        return AuthResponse.builder()
-                .token(jwtToken)
+        String code = String.format("%06d", new Random().nextInt(1000000));
+        VerificationCode verificationCode = VerificationCode.builder()
+                .code(code)
+                .user(user)
+                .expiryDate(new Timestamp(System.currentTimeMillis() + 1000 * 60 * 15))
                 .build();
+        verificationCodeRepository.save(verificationCode);
+        emailService.sendVerificationEmail(user.getEmail(), code);
+
+
+        return AuthResponse.builder().token("").build();
     }
 
     public AuthResponse authenticate(AuthRequest request) {
@@ -71,6 +79,10 @@ public class AuthService {
 
         var user = userRepository.findByUsernameOrEmail(normalizedLogin, normalizedLogin)
                 .orElseThrow();
+
+        if (!user.isEmailVerified()) {
+            throw new BadCredentialsException("Email not verified");
+        }
 
         var jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
@@ -122,5 +134,51 @@ public class AuthService {
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    public AuthResponse verifyEmail(VerifyEmailRequest request) {
+        VerificationCode verificationCode = verificationCodeRepository
+                .findByCodeAndUserEmail(request.code(), request.email())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid mail or verification code"));
+
+        if (verificationCode.getExpiryDate().getTime() < System.currentTimeMillis()) {
+            throw new IllegalArgumentException("Verification code expired");
+        }
+
+        User user = verificationCode.getUser();
+        user.setEmailVerified(true);
+        userRepository.save(user);
+        verificationCodeRepository.delete(verificationCode);
+
+        String jwtToken = jwtService.generateToken(user);
+
+        return AuthResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+    public void resendVerificationCode(ResendCodeRequest request) {
+        var normalizedEmail = request.email().toLowerCase().trim();
+
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.isEmailVerified()) {
+            throw new BadCredentialsException("Email already verified");
+        }
+
+        verificationCodeRepository.findByUserEmail(normalizedEmail)
+                .ifPresent(verificationCodeRepository::delete);
+
+        String newCode = String.format("%06d", new Random().nextInt(1000000));
+
+        VerificationCode verificationCode = VerificationCode.builder()
+                .code(newCode)
+                .user(user)
+                .expiryDate(new Timestamp(System.currentTimeMillis() + 1000 * 60 * 15))
+                .build();
+
+        verificationCodeRepository.save(verificationCode);
+        emailService.sendVerificationEmail(user.getEmail(), newCode);
     }
 }
