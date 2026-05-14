@@ -156,4 +156,29 @@ public class AuthService {
                 .token(jwtToken)
                 .build();
     }
+
+    public void resendVerificationCode(ResendCodeRequest request) {
+        var normalizedEmail = request.email().toLowerCase().trim();
+
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.isEmailVerified()) {
+            throw new BadCredentialsException("Email already verified");
+        }
+
+        verificationCodeRepository.findByUserEmail(normalizedEmail)
+                .ifPresent(verificationCodeRepository::delete);
+
+        String newCode = String.format("%06d", new Random().nextInt(1000000));
+
+        VerificationCode verificationCode = VerificationCode.builder()
+                .code(newCode)
+                .user(user)
+                .expiryDate(new Timestamp(System.currentTimeMillis() + 1000 * 60 * 15))
+                .build();
+
+        verificationCodeRepository.save(verificationCode);
+        emailService.sendVerificationEmail(user.getEmail(), newCode);
+    }
 }
