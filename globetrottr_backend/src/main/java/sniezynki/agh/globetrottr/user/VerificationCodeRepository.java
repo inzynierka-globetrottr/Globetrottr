@@ -8,4 +8,6 @@ import java.util.Optional;
 @Repository
 public interface VerificationCodeRepository extends JpaRepository<VerificationCode, Long> {
     Optional<VerificationCode> findByCodeAndUserEmail(String code, String email);
+
+    Optional<VerificationCode> findByUserEmail(String email);
 }
