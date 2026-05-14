@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../model/auth/login_request.dart';
 import '../model/auth/register_request.dart';
 
+//TODO: exception handler
 class AuthService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
 
@@ -14,7 +15,7 @@ class AuthService {
     try {
       final String? clientId = dotenv.env['GOOGLE_CLIENT_ID'];
 
-      final GoogleSignIn googleSignIn = GoogleSignIn(clientId: clientId);
+      final GoogleSignIn googleSignIn = GoogleSignIn(serverClientId: clientId);
 
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return null;
