@@ -28,6 +28,43 @@ class _DebugScreenState extends State<DebugScreen> {
   void initState() {
     super.initState();
     _refreshDb();
+    _checkSavedToken();
+  }
+
+  Future<void> _checkSavedToken() async {
+    final newToken = await AuthService().refreshToken();
+    if (newToken != null) {
+      setState(() {
+        _jwtToken = newToken;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Restored session!")),
+        );
+      }
+    }
+  }
+
+  Future<void> _logout() async {
+    _locationService.stopTracking();
+    setState(() => _isTracking = false);
+
+    await DatabaseHelper().clearPendingPoints();
+    await _refreshDb();
+
+    await AuthService().deleteToken();
+
+    setState(() {
+      _jwtToken = null;
+      _usernameController.clear();
+      _passwordController.clear();
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Successfully logout!")),
+      );
+    }
   }
 
   Future<void> _refreshDb() async {
@@ -65,7 +102,7 @@ class _DebugScreenState extends State<DebugScreen> {
                   TextField(
                     controller: _emailController,
                     decoration: const InputDecoration(
-                      labelText: 'Email (tylko rejestracja)',
+                      labelText: 'Email (only for registration)',
                     ),
                   ),
                   TextField(
@@ -76,8 +113,8 @@ class _DebugScreenState extends State<DebugScreen> {
                   const SizedBox(height: 10),
                   Text(
                     _jwtToken != null
-                        ? "Status: Zalogowany"
-                        : "Status: Brak tokena",
+                        ? "Status: Logged in"
+                        : "Status: No token",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
@@ -95,17 +132,24 @@ class _DebugScreenState extends State<DebugScreen> {
                             email: _emailController.text,
                             password: _passwordController.text,
                           );
-                          final success = await AuthService().register(request);
+                          final token = await AuthService().register(request);
+                          if (token != null) {
+                            setState(() {
+                              _jwtToken = token;
+                            });
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                success ? "Zarejestrowano" : "Błąd rejestracji",
-                              ),
+                              const SnackBar(
+                                content: Text("Registered and Logged in!"),
                             ),
                           );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Error during registration")),
+                            );
+                          }
                         },
                         child: const Text(
-                          'Rejestracja',
+                          'Registration',
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
@@ -125,17 +169,17 @@ class _DebugScreenState extends State<DebugScreen> {
                             });
                             //TODO: check if using if (mounted) is a good practice
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Zalogowano")),
+                              const SnackBar(content: Text("Logged in")),
                             );
                           } else {
                             //TODO: check if using if (mounted) is a good practice
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Błąd logowania")),
+                              const SnackBar(content: Text("Error during logging in")),
                             );
                           }
                         },
                         child: const Text(
-                          'Logowanie',
+                          'Log in',
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
@@ -164,6 +208,12 @@ class _DebugScreenState extends State<DebugScreen> {
                         child: const Text(
                           'Login with Google',
                           style: TextStyle(color: Colors.blue),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red
+                        ),
+                        onPressed: _logout,
+                        child: const Text('Logout',
+                        style: TextStyle(color: Colors.white),
                         ),
                       ),
                       ElevatedButton(
@@ -220,7 +270,7 @@ class _DebugScreenState extends State<DebugScreen> {
                           if (_jwtToken == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Błąd: Zaloguj się najpierw!"),
+                                content: Text("Error: Log in first!"),
                               ),
                             );
                             return;
@@ -252,23 +302,23 @@ class _DebugScreenState extends State<DebugScreen> {
             child: _points.isEmpty
                 ? const Center(child: Text("Database is empty."))
                 : ListView.builder(
-                    itemCount: _points.length,
-                    itemBuilder: (context, index) {
-                      final p = _points[index];
-                      final time = DateTime.fromMillisecondsSinceEpoch(
-                        p.timestamp,
-                      );
-                      return ListTile(
-                        leading: CircleAvatar(child: Text('${p.id}')),
-                        title: Text(
-                          'Lat: ${p.latitude.toStringAsFixed(5)}, Lng: ${p.longitude.toStringAsFixed(5)}',
-                        ),
-                        subtitle: Text(
-                          '${time.hour}:${time.minute}:${time.second}',
-                        ),
-                      );
-                    },
+              itemCount: _points.length,
+              itemBuilder: (context, index) {
+                final p = _points[index];
+                final time = DateTime.fromMillisecondsSinceEpoch(
+                  p.timestamp,
+                );
+                return ListTile(
+                  leading: CircleAvatar(child: Text('${p.id}')),
+                  title: Text(
+                    'Lat: ${p.latitude.toStringAsFixed(5)}, Lng: ${p.longitude.toStringAsFixed(5)}',
                   ),
+                  subtitle: Text(
+                    '${time.hour}:${time.minute}:${time.second}',
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

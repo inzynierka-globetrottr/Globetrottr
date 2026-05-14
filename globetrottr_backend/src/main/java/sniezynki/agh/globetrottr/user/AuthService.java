@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sniezynki.agh.globetrottr.email.EmailService;
@@ -19,6 +20,8 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Random;
 import java.util.UUID;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -180,5 +183,23 @@ public class AuthService {
 
         verificationCodeRepository.save(verificationCode);
         emailService.sendVerificationEmail(user.getEmail(), newCode);
+    public AuthResponse refreshToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid token");
+        }
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid username"));
+
+        if (jwtService.isTokenValid(token, user)) {
+            var newToken = jwtService.generateToken(user);
+            return AuthResponse.builder()
+                    .token(newToken)
+                    .build();
+        }
+        throw new RuntimeException("Invalid token");
     }
 }
