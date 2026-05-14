@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sniezynki.agh.globetrottr.user.dto.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -31,5 +33,11 @@ public class AuthController {
     @PostMapping("/verify")
     public ResponseEntity<AuthResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
         return ResponseEntity.ok(authService.verifyEmail(request));
+    }
+
+    @PostMapping("/resend-code")
+    public ResponseEntity<Map<String, String>> resendCode(@Valid @RequestBody ResendCodeRequest email) {
+        authService.resendVerificationCode(email);
+        return ResponseEntity.ok(Map.of("message" , "Code sent to email from request"));
     }
 }
