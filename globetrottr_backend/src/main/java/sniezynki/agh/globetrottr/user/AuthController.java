@@ -39,8 +39,9 @@ public class AuthController {
     @PostMapping("/resend-code")
     public ResponseEntity<Map<String, String>> resendCode(@Valid @RequestBody ResendCodeRequest email) {
         authService.resendVerificationCode(email);
-        return ResponseEntity.ok(Map.of("message" , "Code sent to email from request"));
-    @GetMapping("refresh")
+        return ResponseEntity.ok(Map.of("message", "Code sent to email from request"));
+    }
+    @GetMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return ResponseEntity.ok(authService.refreshToken(authHeader));
     }

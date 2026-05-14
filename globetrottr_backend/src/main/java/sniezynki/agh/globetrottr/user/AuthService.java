@@ -183,7 +183,8 @@ public class AuthService {
 
         verificationCodeRepository.save(verificationCode);
         emailService.sendVerificationEmail(user.getEmail(), newCode);
-    public AuthResponse refreshToken(String authHeader) {
+    }
+    public AuthResponse refreshToken (String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Invalid token");
         }
