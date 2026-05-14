@@ -47,3 +47,13 @@ Content-Type: application/json
   "login": "{{testEmail}}",
   "password": "StrongPassword123!"
 }
+
+### 5. RESEND CODE ATTEMP
+# Expected Restult: HTTP 200 OK
+# Response should contain a message: {"message" : "Code sent to mail from request"}
+POST {{host}}/api/auth/resend-code
+Content-Type: application/json
+
+{
+  "email" : "{{testEmail}}"
+}
