@@ -8,6 +8,9 @@ import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
 
 import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -17,8 +20,7 @@ public class FriendshipService {
     private final UserRepository userRepository;
 
     public List<FriendshipResponse> getUserFriends(String username) {
-        return friendshipRepository.findAllUserFriendships(username).stream()
-                .filter(friendship -> friendship.getStatus() == InviteStatus.ACCEPTED)
+        return friendshipRepository.findAllAcceptedFriendships(username).stream()
                 .map(friendship -> {
                     String friendUsername = getOtherUsername(friendship, username);
                     return new FriendshipResponse(friendUsername, friendship.getStatus(), false);
@@ -27,17 +29,13 @@ public class FriendshipService {
     }
 
     public List<FriendshipResponse> getUserFriendRequests(String username) {
-        return friendshipRepository.findAllUserFriendships(username).stream()
-                .filter(friendship -> friendship.getStatus() == InviteStatus.PENDING)
-                .filter(friendship -> friendship.getReceiver().getUsername().equals(username))
+        return friendshipRepository.findAllIncomingPendingRequests(username).stream()
                 .map(friendship -> new FriendshipResponse(friendship.getSender().getUsername(), friendship.getStatus(), true))
                 .toList();
     }
 
-    public List<FriendshipResponse> getSentFriendRequests(String currentUsername) {
-        return friendshipRepository.findAllUserFriendships(currentUsername).stream()
-                .filter(friendship -> friendship.getStatus() == InviteStatus.PENDING)
-                .filter(friendship -> friendship.getSender().getUsername().equals(currentUsername))
+    public List<FriendshipResponse> getSentFriendRequests(String username) {
+        return friendshipRepository.findAllOutgoingPendingRequests(username).stream()
                 .map(friendship -> new FriendshipResponse(friendship.getReceiver().getUsername(), friendship.getStatus(), false))
                 .toList();
     }
@@ -111,7 +109,6 @@ public class FriendshipService {
         friendshipRepository.findFriendshipBetween(currentUsername, targetUsername)
                 .ifPresent(friendship -> {
                     if (friendship.getStatus() == InviteStatus.BLOCKED) {
-                        // EDGE CASE: If the blocked user tries to delete the relationship, ignore it to prevent leaking block status
                         if (!friendship.getSender().getUsername().equals(currentUsername)) {
                             return; 
                         }
@@ -166,21 +163,41 @@ public class FriendshipService {
             return List.of();
         }
 
-        return userRepository.findByUsernameContainingIgnoreCase(query).stream()
+        List<User> matchingUsers = userRepository.findByUsernameContainingIgnoreCase(query).stream()
                 .filter(user -> !user.getUsername().equals(currentUsername))
+                .toList();
+
+        if (matchingUsers.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> targetUsernames = matchingUsers.stream()
+                .map(User::getUsername)
+                .toList();
+
+        List<Friendship> relevantFriendships = friendshipRepository
+                .findFriendshipsBetweenCurrentAndTargets(currentUsername, targetUsernames);
+
+        Map<String, Friendship> friendshipMap = relevantFriendships.stream()
+                .collect(toMap(
+                        friendship -> getOtherUsername(friendship, currentUsername),
+                        friendship -> friendship
+                ));
+
+        return matchingUsers.stream()
                 .map(user -> {
                     InviteStatus status = null;
                     boolean isIncoming = false;
 
-                    var friendshipOpt = friendshipRepository.findFriendshipBetween(currentUsername, user.getUsername());
-                    if (friendshipOpt.isPresent()) {
-                        Friendship friendship = friendshipOpt.get();
-                        
-                        if (friendship.getStatus() != InviteStatus.BLOCKED || friendship.getSender().getUsername().equals(currentUsername)) {
-                            status = friendship.getStatus();
-                            isIncoming = friendship.getReceiver().getUsername().equals(currentUsername)
-                                    && status == InviteStatus.PENDING;
+                    Friendship friendship = friendshipMap.get(user.getUsername());
+                    if (friendship != null) {
+                        if (friendship.getStatus() == InviteStatus.BLOCKED) {
+                            return new FriendshipResponse(user.getUsername(), InviteStatus.BLOCKED, false);
                         }
+
+                        status = friendship.getStatus();
+                        isIncoming = friendship.getReceiver().getUsername().equals(currentUsername)
+                                && status == InviteStatus.PENDING;
                     }
 
                     return new FriendshipResponse(user.getUsername(), status, isIncoming);

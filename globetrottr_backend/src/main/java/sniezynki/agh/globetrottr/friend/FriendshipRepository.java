@@ -20,10 +20,33 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
     @Query("""
             SELECT f FROM Friendship f
-            WHERE f.sender.username = :username
-               OR f.receiver.username = :username
+            WHERE f.status = 'ACCEPTED'
+              AND (f.sender.username = :username OR f.receiver.username = :username)
             """)
-    List<Friendship> findAllUserFriendships(@Param("username") String username);
+    List<Friendship> findAllAcceptedFriendships(@Param("username") String username);
+
+    @Query("""
+            SELECT f FROM Friendship f
+            WHERE f.status = 'PENDING'
+              AND f.receiver.username = :username
+            """)
+    List<Friendship> findAllIncomingPendingRequests(@Param("username") String username);
+
+    @Query("""
+            SELECT f FROM Friendship f
+            WHERE f.status = 'PENDING'
+              AND f.sender.username = :username
+            """)
+    List<Friendship> findAllOutgoingPendingRequests(@Param("username") String username);
+
+    @Query("""
+            SELECT f FROM Friendship f
+            WHERE (f.sender.username = :currentUsername AND f.receiver.username IN :targetUsernames)
+               OR (f.sender.username IN :targetUsernames AND f.receiver.username = :currentUsername)
+            """)
+    List<Friendship> findFriendshipsBetweenCurrentAndTargets(
+            @Param("currentUsername") String currentUsername,
+            @Param("targetUsernames") List<String> targetUsernames);
 
     Optional<Friendship> findBySenderUsernameAndReceiverUsername(String sender, String receiver);
 }
