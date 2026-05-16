@@ -1,8 +1,8 @@
 package sniezynki.agh.globetrottr.friend.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public record FriendshipRequest(
-        @NotNull String username
+        @NotBlank String username
 ) {
 }
