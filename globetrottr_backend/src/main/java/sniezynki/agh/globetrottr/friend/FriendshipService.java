@@ -110,7 +110,7 @@ public class FriendshipService {
                 .ifPresent(friendship -> {
                     if (friendship.getStatus() == InviteStatus.BLOCKED) {
                         if (!friendship.getSender().getUsername().equals(currentUsername)) {
-                            return; 
+                            return;
                         }
                         throw new RuntimeException("You cannot delete a blocked relationship, you must unblock first");
                     }
@@ -192,7 +192,11 @@ public class FriendshipService {
                     Friendship friendship = friendshipMap.get(user.getUsername());
                     if (friendship != null) {
                         if (friendship.getStatus() == InviteStatus.BLOCKED) {
-                            return new FriendshipResponse(user.getUsername(), InviteStatus.BLOCKED, false);
+                            if (friendship.getSender().getUsername().equals(currentUsername)) {
+                                return new FriendshipResponse(user.getUsername(), InviteStatus.BLOCKED, false);
+                            } else {
+                                return new FriendshipResponse(user.getUsername(), null, false);
+                            }
                         }
 
                         status = friendship.getStatus();
