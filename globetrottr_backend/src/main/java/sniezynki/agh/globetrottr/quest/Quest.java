@@ -21,7 +21,7 @@ public class Quest {
     private QuestType type;
 
     @Column(columnDefinition = "geometry(Geometry, 4326)")
-    private Geometry targetGeometry;
+    private Geometry questGeometry;
 
     private Integer rewardPoints;
 }

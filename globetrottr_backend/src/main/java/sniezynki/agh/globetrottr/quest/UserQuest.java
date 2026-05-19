@@ -24,7 +24,7 @@ public class UserQuest {
     @JoinColumn(name = "quest_id")
     private Quest quest;
 
-    private boolean completed = false;
+    private boolean isCompleted = false;
 
     private LocalDateTime completedAt;
 }

@@ -11,6 +11,7 @@ import sniezynki.agh.globetrottr.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,11 +21,9 @@ public class QuestService {
     private final UserRepository userRepository;
     private final UserFogRepository userFogRepository;
 
-    public List<QuestResponseDto> getAllQuestsForUser(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow();
-
-        UserFog userFog = userFogRepository.findByUser_UserId(user.getUserId()).orElse(null);
-        List<UserQuest> userQuests = userQuestRepository.findByUser_Username(username);
+    public List<QuestResponseDto> getAllQuestsForUser(UUID userId) {
+        UserFog userFog = userFogRepository.findByUser_UserId(userId).orElse(null);
+        List<UserQuest> userQuests = userQuestRepository.findByUser_UserId(userId);
 
         return userQuests.stream().map(uq -> {
             double progress = uq.isCompleted() ? 1.0 : calculateProgress(userFog, uq.getQuest());
@@ -41,12 +40,12 @@ public class QuestService {
     }
 
     public double calculateProgress(UserFog userFog, Quest quest) {
-        if (userFog == null || userFog.getFogArea() == null || quest.getTargetGeometry() == null) {
+        if (userFog == null || userFog.getFogArea() == null || quest.getQuestGeometry() == null) {
             return 0.0;
         }
 
         Geometry fogArea = userFog.getFogArea();
-        Geometry target = quest.getTargetGeometry();
+        Geometry target = quest.getQuestGeometry();
 
         return switch (quest.getType()) {
             case VISIT_POINTS -> calculateVisitPointsProgress(fogArea, target);
@@ -60,8 +59,8 @@ public class QuestService {
 
         int visitedPoints = 0;
 
-        // Tolerancja ok. 5 metrów wyrażona w stopniach (dla SRID 4326)
-        double toleranceInDegrees = 0.000045;
+        // Tolerence of aprox. 5 meters in degrees (for SRID 4326)
+        final double toleranceInDegrees = 0.000045;
 
         for (int i = 0; i < totalPoints; i++) {
             Geometry questPoint = targetPoints.getGeometryN(i);
@@ -88,7 +87,7 @@ public class QuestService {
     @Transactional
     public void checkAndCompleteQuests(User user, UserFog userFog) {
         List<UserQuest> activeQuests = userQuestRepository.findByUser_UserIdAndCompletedFalse(user.getUserId());
-
+        double progressTolerance = 0.98;
         if (activeQuests.isEmpty()) {
             return;
         }
@@ -100,10 +99,13 @@ public class QuestService {
 
             double progress = calculateProgress(userFog, quest);
 
-            // Zabezpieczenie geolokalizacyjne: 0.98 zamiast 1.0 (czyli 98%)
-            // GPS lub operacje zmiennoprzecinkowe w PostGIS mogą obciąć mikro ułamki.
-            // Lepiej zaliczyć quest, gdy gracz ma 98-99% pokrycia.
-            if (progress >= 0.98) {
+            /*
+            * Geolocation tolerance: 0.98 instead of 1.0 (i.e., 98%)
+            * GPS or floating-point operations in PostGIS might truncate tiny fractions.
+            * It's better to mark the quest as completed when the player has 98-99% coverage.
+            * */
+
+            if (progress >= progressTolerance) {
 
                 userQuest.setCompleted(true);
                 userQuest.setCompletedAt(LocalDateTime.now());

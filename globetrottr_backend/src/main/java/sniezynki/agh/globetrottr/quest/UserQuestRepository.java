@@ -9,5 +9,5 @@ import java.util.UUID;
 public interface UserQuestRepository extends JpaRepository<UserQuest, Long> {
 
     List<UserQuest> findByUser_UserIdAndCompletedFalse(UUID userId);
-    List<UserQuest> findByUser_Username(String username);
+    List<UserQuest> findByUser_UserId(UUID userId);
 }
