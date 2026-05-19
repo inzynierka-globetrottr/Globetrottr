@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'pending_point_dao.dart';
+import 'map_storage.dart';
 import 'pending_point.dart';
 
 class LocationService {
@@ -80,7 +80,7 @@ class LocationService {
               timestamp: DateTime.now().millisecondsSinceEpoch,
             );
 
-            await DatabaseHelper().insertPendingPoint(point);
+            await MapStorage().insertPendingPoint(point);
             print(
               "Location saved locally: ${point.latitude}, ${point.longitude}",
             );

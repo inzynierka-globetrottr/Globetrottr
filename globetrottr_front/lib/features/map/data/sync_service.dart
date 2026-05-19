@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'pending_point_dao.dart';
+import 'map_storage.dart';
 
 class SyncService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
@@ -9,7 +9,7 @@ class SyncService {
   Future<void> syncPendingPoints(String token) async {
     if (_backendUrl.isEmpty) return;
 
-    final points = await DatabaseHelper().getPendingPoints();
+    final points = await MapStorage().getPendingPoints();
 
     if (points.isEmpty) return;
 
@@ -29,7 +29,7 @@ class SyncService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        await DatabaseHelper().clearPendingPoints();
+        await MapStorage().clearPendingPoints();
       }
     } catch (e) {
       print('Sync Error: $e');
