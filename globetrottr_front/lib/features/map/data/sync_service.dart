@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../database/database_helper.dart';
+import 'pending_point_dao.dart';
 
 class SyncService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';

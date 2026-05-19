@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
-import '../service/location_service.dart';
-import '../service/sync_service.dart';
-import '../model/pending_point.dart';
-import '../service/auth_service.dart';
-import '../model/auth/login_request.dart';
-import '../model/auth/register_request.dart';
+import '../features/map/data/pending_point_dao.dart';
+import '../features/map/data/location_service.dart';
+import '../features/map/data/sync_service.dart';
+import '../features/map/data/pending_point.dart';
+import '../features/auth/data/auth_service.dart';
+import '../features/auth/data/login_request.dart';
+import '../features/auth/data/register_request.dart';
 
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});

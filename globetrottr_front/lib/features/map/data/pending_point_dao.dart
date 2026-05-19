@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../model/pending_point.dart';
+import 'pending_point.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._init();

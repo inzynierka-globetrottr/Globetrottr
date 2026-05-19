@@ -45,3 +45,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# My (kubikolo) project scraping scripts to use as context for AI models, to assist in debugging
+scrape_project.py
+project_bundle_context.txt
