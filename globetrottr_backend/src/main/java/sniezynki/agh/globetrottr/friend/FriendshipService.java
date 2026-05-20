@@ -59,28 +59,29 @@ public class FriendshipService {
             throw new IllegalArgumentException("You cannot invite yourself");
         }
 
+        User sender = userRepository.findByUsername(senderUsername)
+                .orElseThrow(() -> new IllegalArgumentException("Sender not found"));
+        User receiver = userRepository.findByUsername(targetUsername)
+                .orElseThrow(() -> new IllegalArgumentException("Receiver not found"));
+
         var existingFriendship = friendshipRepository.findFriendshipBetween(senderUsername, targetUsername);
 
         if (existingFriendship.isPresent()) {
             InviteStatus status = existingFriendship.get().getStatus();
 
             if (status == InviteStatus.ACCEPTED) {
-                throw new RuntimeException("You are already friends");
+                throw new RuntimeException("Friendship already exists");
             } else if (status == InviteStatus.PENDING) {
-                throw new RuntimeException("Invitation is already pending");
+                throw new RuntimeException("Friendship invitation already exists and is pending");
             } else if (status == InviteStatus.BLOCKED) {
                 if (existingFriendship.get().getSender().getUsername().equals(senderUsername)) {
-                    throw new RuntimeException("You must unblock this user before sending an invitation");
+                    throw new IllegalArgumentException("You must unblock this user before sending an invitation");
                 } else {
-                    throw new RuntimeException("Cannot send invitation to this user");
+                    throw new IllegalArgumentException("Cannot send invitation to this user");
                 }
             }
         }
 
-        User sender = userRepository.findByUsername(senderUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Sender not found"));
-        User receiver = userRepository.findByUsername(targetUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Receiver not found"));
 
         Friendship friendship = Friendship.builder()
                 .sender(sender)
@@ -97,7 +98,7 @@ public class FriendshipService {
                 .orElseThrow(() -> new IllegalArgumentException("Invite not found"));
 
         if (friendship.getStatus() != InviteStatus.PENDING) {
-            throw new IllegalStateException("Cannot accept an invite that is not pending");
+            throw new IllegalArgumentException("Cannot accept an invite that is not pending");
         }
 
         friendship.setStatus(InviteStatus.ACCEPTED);
@@ -112,7 +113,7 @@ public class FriendshipService {
                         if (!friendship.getSender().getUsername().equals(currentUsername)) {
                             return;
                         }
-                        throw new RuntimeException("You cannot delete a blocked relationship, you must unblock first");
+                        throw new IllegalArgumentException("You cannot delete a blocked relationship, you must unblock first");
                     }
                     friendshipRepository.delete(friendship);
                 });
@@ -133,7 +134,7 @@ public class FriendshipService {
                         existingFriendship -> {
                             if (existingFriendship.getStatus() == InviteStatus.BLOCKED
                                     && existingFriendship.getReceiver().getUsername().equals(currentUsername)) {
-                                throw new RuntimeException("Cannot block this user");
+                                throw new IllegalArgumentException("Cannot block this user");
                             }
                             existingFriendship.setStatus(InviteStatus.BLOCKED);
                             existingFriendship.setSender(blocker);
@@ -160,7 +161,7 @@ public class FriendshipService {
 
     public List<FriendshipResponse> searchUsers(String currentUsername, String query) {
         if (query == null || query.trim().length() < 3) {
-            return List.of();
+            throw new IllegalArgumentException("Search query must be at least 3 characters long");
         }
 
         List<User> matchingUsers = userRepository.findByUsernameContainingIgnoreCase(query).stream()

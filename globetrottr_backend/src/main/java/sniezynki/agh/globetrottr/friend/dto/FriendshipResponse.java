@@ -5,6 +5,6 @@ import sniezynki.agh.globetrottr.friend.InviteStatus;
 public record FriendshipResponse(
         String username,
         InviteStatus  status,
-        Boolean isIncomingRequest
+        boolean isIncomingRequest
         ) {
 }

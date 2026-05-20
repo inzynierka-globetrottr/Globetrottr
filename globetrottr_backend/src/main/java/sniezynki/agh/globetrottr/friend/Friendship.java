@@ -32,6 +32,7 @@ public class Friendship {
     private User receiver;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private InviteStatus status;
 
     @Column(name = "created_at")
