@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sniezynki.agh.globetrottr.friend.FriendshipRepository;
 import sniezynki.agh.globetrottr.friend.InviteStatus;
 import sniezynki.agh.globetrottr.location.UserFogRepository;
+import sniezynki.agh.globetrottr.user.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +15,7 @@ public class FogService {
 
     private final UserFogRepository userFogRepository;
     private final FriendshipRepository friendshipRepository;
+    private final UserRepository userRepository;
 
     public String getUserFogGeoJson(String username) {
         return userFogRepository.findFogGeoJsonByUsername(username)
@@ -21,6 +23,10 @@ public class FogService {
     }
 
     public String getFriendFogGeoJson(String currentUsername, String friendUsername) {
+
+        userRepository.findByUsername(friendUsername)
+                .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
+
         boolean areFriends = friendshipRepository.findFriendshipBetween(currentUsername, friendUsername)
                 .filter(friendship -> friendship.getStatus() == InviteStatus.ACCEPTED)
                 .isPresent();
