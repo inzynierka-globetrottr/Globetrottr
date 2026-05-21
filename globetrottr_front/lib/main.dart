@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'backend_debug/debug_screen.dart';
+import 'debug/debug_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 
