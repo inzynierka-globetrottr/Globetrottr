@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.hibernate.orm:hibernate-spatial'
     implementation 'com.google.api-client:google-api-client:2.9.0'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
