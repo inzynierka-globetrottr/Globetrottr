@@ -20,6 +20,8 @@ class AppTheme {
 class AppTextStyles {
   AppTextStyles._();
 
+  // * these text styles are AI generated, but are intended to be used as mocks for now, change after designing more screens
+
   /// App logo title text
   static const TextStyle appLogo = TextStyle(
     fontSize: 28,
