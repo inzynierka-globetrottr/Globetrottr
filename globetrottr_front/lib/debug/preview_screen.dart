@@ -16,7 +16,7 @@ class PreviewScreen extends StatelessWidget {
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
       darkTheme: const NeumorphicThemeData(
-        baseColor: AppColors.background
+        baseColor: baseCanvasColor
       ),
       child: Scaffold(
         backgroundColor: baseCanvasColor,

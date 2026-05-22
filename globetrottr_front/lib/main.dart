@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/debug/preview_screen.dart';
 import 'debug/debug_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Globetrottr',
       theme: AppTheme.dark,
-      home: DebugScreen(),
+      home: PreviewScreen(),
     );
   }
 }
