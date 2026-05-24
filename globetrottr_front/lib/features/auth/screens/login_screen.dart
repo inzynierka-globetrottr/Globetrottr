@@ -45,7 +45,6 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
       }
     });
 
-    // TODO: refactor, this file is too big
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
       darkTheme: const NeumorphicThemeData(
