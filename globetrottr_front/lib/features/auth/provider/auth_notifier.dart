@@ -24,10 +24,8 @@ class AuthNotifier extends Notifier<AuthState> {
     required String username,
     required String password,
     String? email,
-    required VoidCallback onSuccess,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
-
+    state = state.copyWith(isLoading: true, errorMessage: null, isAuthenticated: false);
     String? token;
 
     if (state.mode == AuthMode.login) {
@@ -35,17 +33,21 @@ class AuthNotifier extends Notifier<AuthState> {
         LoginRequest(login: username, password: password),
       );
     } else {
+      if (email == null) {
+        state = state.copyWith(isLoading: false, errorMessage: 'Email is required');
+        return;
+      }
       token = await _authService.register(
-        RegisterRequest(username: username, email: email!, password: password),
+        RegisterRequest(username: username, email: email, password: password),
       );
     }
 
     if (token != null) {
-      state = state.copyWith(isLoading: false);
-      onSuccess();
+      state = state.copyWith(isLoading: false, isAuthenticated: true);
     } else {
       state = state.copyWith(
         isLoading: false,
+        isAuthenticated: false,
         errorMessage: state.mode == AuthMode.login
             ? 'Sign in didn\'t work'
             : 'Sign up didn\'t work',
@@ -53,15 +55,16 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> signInWithGoogle({required VoidCallback onSuccess}) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+  Future<void> signInWithGoogle() async {
+    state = state.copyWith(isLoading: true, errorMessage: null, isAuthenticated: false);
     final token = await _authService.signInWithGoogle();
     if (token != null) {
-      onSuccess();
+      state = state.copyWith(isLoading: false, isAuthenticated: true);
     } else {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Sign in with google didn\'t work',
+        isAuthenticated: false,
+        errorMessage: 'Sign in with Google didn\'t work',
       );
     }
   }

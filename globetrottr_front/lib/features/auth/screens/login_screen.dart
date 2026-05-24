@@ -7,6 +7,7 @@ import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
+import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -35,6 +36,12 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
 
     final state = ref.watch(authProvider);
     final notifier = ref.read(authProvider.notifier);
+
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
+        // TODO: route to map screen
+      }
+    });
 
     // TODO: refactor, this file is too big
     return NeumorphicTheme(
@@ -107,9 +114,6 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
                         username: _usernameController.text,
                         password: _passwordController.text,
                         email: _emailController.text,
-                        onSuccess: () {
-                          // TODO: route to map screen
-                        }
                       );
                     },
                   ),
@@ -147,9 +151,7 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
                     onPressed: () {
                       if (state.isLoading) return;
 
-                      notifier.signInWithGoogle(onSuccess: () {
-                        // TODO: route to map scren
-                      });
+                      notifier.signInWithGoogle();
                     },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
