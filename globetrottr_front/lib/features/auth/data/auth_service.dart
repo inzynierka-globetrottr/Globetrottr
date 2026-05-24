@@ -7,7 +7,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'login_request.dart';
 import 'register_request.dart';
 
-//TODO: exception handler
 class AuthService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
   final _storage = const FlutterSecureStorage();
@@ -58,7 +57,7 @@ class AuthService {
   }
 
   Future<String> login(LoginRequest request) async {
-    if (_backendUrl.isEmpty) throw AuthException('Backend URL is not configured.');;
+    if (_backendUrl.isEmpty) throw AuthException('Backend URL is not configured.');
 
     final response = await http.post(
       Uri.parse('$_backendUrl/api/auth/login'),
