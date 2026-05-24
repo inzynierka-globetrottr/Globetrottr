@@ -1,16 +1,20 @@
 import 'dart:ui';
 
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthService _authService;
+class AuthNotifier extends Notifier<AuthState> {
+  late final AuthService _authService;
 
-  AuthNotifier(this._authService) : super(const AuthState());
+  @override
+  AuthState build() {
+    _authService = AuthService();
+    return const AuthState();
+  }
 
   void setMode(AuthMode mode) {
     state = state.copyWith(mode: mode, errorMessage: null);
