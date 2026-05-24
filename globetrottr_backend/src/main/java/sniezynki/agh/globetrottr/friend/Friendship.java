@@ -9,7 +9,10 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "friends", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"sender_id", "receiver_id"})
+        @UniqueConstraint(
+                name = "uc_friends_sender_receiver",
+                columnNames = {"sender_id", "receiver_id"}
+        )
 })
 
 @Getter @Setter

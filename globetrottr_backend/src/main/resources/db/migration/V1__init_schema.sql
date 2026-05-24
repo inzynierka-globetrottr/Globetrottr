@@ -62,7 +62,7 @@ CREATE TABLE verification_codes
 );
 
 ALTER TABLE friends
-    ADD CONSTRAINT uc_3c1bc648b863bda3f8daeef97 UNIQUE (sender_id, receiver_id);
+    ADD CONSTRAINT uc_friends_sender_receiver UNIQUE (sender_id, receiver_id);
 
 ALTER TABLE user_fog
     ADD CONSTRAINT uc_user_fog_user UNIQUE (user_id);
