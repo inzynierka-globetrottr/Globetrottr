@@ -8,6 +8,7 @@ import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
 
 class LoginForm extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
   final AuthState state;
   final TextEditingController usernameController;
   final TextEditingController emailController;
@@ -16,6 +17,7 @@ class LoginForm extends StatelessWidget {
 
   const LoginForm({
     super.key,
+    required this.formKey,
     required this.state,
     required this.usernameController,
     required this.emailController,
@@ -25,43 +27,66 @@ class LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      spacing: 18,
-      children: [
-        NeuTextField(
-          controller: usernameController,
-          placeholder: 'Username',
-          keyboardType: TextInputType.emailAddress,
-        ),
-
-        if (state.mode == AuthMode.register)
+    return Form(
+      key: formKey,
+      child: Column(
+        spacing: 18,
+        children: [
           NeuTextField(
-            controller: emailController,
-            placeholder: 'Email',
+            controller: usernameController,
+            placeholder: 'Username',
             keyboardType: TextInputType.emailAddress,
+            validator: (value) {
+                if (value == null || value.trim().length < 3) {
+                  return 'Must be at least 3 characters';
+                }
+                return null;
+              },
           ),
 
-        NeuTextField(
-          controller: passwordController,
-          placeholder: 'Password',
-          obscureText: true,
-        ),
+          if (state.mode == AuthMode.register)
+            NeuTextField(
+              controller: emailController,
+              placeholder: 'Email',
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+                  if (value == null || !emailRegex.hasMatch(value.trim())) {
+                    return 'Enter a valid email address';
+                  }
+                  return null;
+                },
+            ),
 
-        if (state.errorMessage != null)
-          Text(
-            state.errorMessage!,
-            style: AppTextStyles.descriptiveStatusAction.copyWith(color: Colors.redAccent),
-            textAlign: TextAlign.center,
+          NeuTextField(
+            controller: passwordController,
+            placeholder: 'Password',
+            obscureText: true,
+            validator: (value) {
+              if (value == null || value.length < 6) {
+                // TODO: add more constraints
+                return 'Must be at least 6 characters';
+              }
+              return null;
+            }
           ),
 
-        NeuPrimaryButton(
-          label: state.isLoading
-              ? 'Loading...'
-              : (state.mode == AuthMode.login ? 'Sign in' : 'Sign up'),
-          onPressed: state.isLoading ? null : onSubmit,
-        ),
+          if (state.errorMessage != null)
+            Text(
+              state.errorMessage!,
+              style: AppTextStyles.descriptiveStatusAction.copyWith(color: Colors.redAccent),
+              textAlign: TextAlign.center,
+            ),
 
-      ],
+          NeuPrimaryButton(
+            label: state.isLoading
+                ? 'Loading...'
+                : (state.mode == AuthMode.login ? 'Sign in' : 'Sign up'),
+            onPressed: state.isLoading ? null : onSubmit,
+          ),
+
+        ],
+      )
     );
   }
 }

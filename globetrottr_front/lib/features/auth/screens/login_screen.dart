@@ -2,7 +2,6 @@ import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
@@ -23,6 +22,8 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -79,17 +80,20 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
                   ),
 
                   LoginForm(
+                    formKey: _formKey,
                     state: state,
                     usernameController: _usernameController,
                     emailController: _emailController,
                     passwordController: _passwordController,
                     onSubmit: () {
-                      notifier.submit(
-                        username: _usernameController.text,
-                        password: _passwordController.text,
-                        email: state.mode == AuthMode.register ? _emailController.text : null,
-                      );
-                    },
+                      if (_formKey.currentState!.validate()) {
+                        notifier.submit(
+                          username: _usernameController.text,
+                          password: _passwordController.text,
+                          email: state.mode == AuthMode.register ? _emailController.text : null,
+                        );
+                      }
+                    }
                   ),
 
                   FormDivider(),
