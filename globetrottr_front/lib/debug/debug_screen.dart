@@ -1,3 +1,5 @@
+// * MIGHT NOT WORK WITH auth_service CHANGES
+
 import 'package:flutter/material.dart';
 import '../features/map/data/map_storage.dart';
 import '../features/map/data/location_service.dart';
