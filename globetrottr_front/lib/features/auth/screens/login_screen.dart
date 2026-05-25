@@ -2,10 +2,10 @@ import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
+import 'package:globetrottr_front/features/auth/screens/widgets/auth_mode_switcher.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/form_divider.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/google_login_section.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/login_form.dart';
@@ -70,13 +70,9 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
                     )
                   ),
 
-                  NeuSegmentedControl<AuthMode>(
-                    selected: state.mode,
-                    onChanged: (value) {notifier.setMode(value);},
-                    segments: const [
-                      NeuSegment(label: 'Sign in', value: AuthMode.login),
-                      NeuSegment(label: 'Sign up', value: AuthMode.register),
-                    ],
+                  AuthModeSwitcher(
+                    currentMode: state.mode,
+                    onModeChanged: (value) => notifier.setMode(value),
                   ),
 
                   LoginForm(
