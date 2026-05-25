@@ -134,8 +134,16 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  flutter_neumorphic_plus:
+    dependency: "direct main"
+    description:
+      name: flutter_neumorphic_plus
+      sha256: "39fb64ebaf60efec654c7bd3dd8fc56a3265e1b15e925f1d321f1f30ad090fbc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.5.0"
   flutter_secure_storage:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flutter_secure_storage
       sha256: "9cad52d75ebc511adfae3d447d5d13da15a55a92c9410e50f67335b6d21d16ea"
@@ -201,7 +209,7 @@ packages:
     source: hosted
     version: "0.1.1"
   geolocator:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: geolocator
       sha256: "79939537046c9025be47ec645f35c8090ecadb6fe98eba146a0d25e8c1357516"
@@ -329,7 +337,7 @@ packages:
     source: hosted
     version: "1.0.3"
   http:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: http
       sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
@@ -473,7 +481,7 @@ packages:
     source: hosted
     version: "3.2.1"
   path:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: path
       sha256: "75cca69d1490965be98c73ceaea117e8a04dd21217b37b292c9ddbec0d955bc5"
@@ -630,7 +638,7 @@ packages:
     source: hosted
     version: "1.10.2"
   sqflite:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: sqflite
       sha256: "564cfed0746fe53140c23b70b308e045c3b31f17778f2f326ccb7d804ea0250a"

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'backend_debug/debug_screen.dart';
+import 'package:globetrottr_front/debug/preview_screen.dart';
+import 'debug/debug_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,11 +16,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: DebugScreen(),
+      title: 'Globetrottr',
+      theme: AppTheme.dark,
+      home: PreviewScreen(),
     );
   }
 }
