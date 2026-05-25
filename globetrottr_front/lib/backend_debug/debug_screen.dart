@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
-import '../service/location_service.dart';
-import '../service/sync_service.dart';
-import '../model/pending_point.dart';
-import '../service/auth_service.dart';
-import '../model/auth/login_request.dart';
-import '../model/auth/register_request.dart';
+import '../features/map/data/map_storage.dart';
+import '../features/map/data/location_service.dart';
+import '../features/map/data/sync_service.dart';
+import '../features/map/data/pending_point.dart';
+import '../features/auth/data/auth_service.dart';
+import '../features/auth/data/login_request.dart';
+import '../features/auth/data/register_request.dart';
 
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});
 
   @override
-  _DebugScreenState createState() => _DebugScreenState();
+  State<DebugScreen> createState() => _DebugScreenState();
 }
 
 class _DebugScreenState extends State<DebugScreen> {
@@ -33,15 +33,15 @@ class _DebugScreenState extends State<DebugScreen> {
 
   Future<void> _checkSavedToken() async {
     final newToken = await AuthService().refreshToken();
+    if (!mounted) return;
+
     if (newToken != null) {
       setState(() {
         _jwtToken = newToken;
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Restored session!")),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Restored session!")),
+      );
     }
   }
 
@@ -49,10 +49,11 @@ class _DebugScreenState extends State<DebugScreen> {
     _locationService.stopTracking();
     setState(() => _isTracking = false);
 
-    await DatabaseHelper().clearPendingPoints();
+    await MapStorage().clearPendingPoints();
     await _refreshDb();
-
     await AuthService().deleteToken();
+
+    if (!mounted) return;
 
     setState(() {
       _jwtToken = null;
@@ -60,15 +61,14 @@ class _DebugScreenState extends State<DebugScreen> {
       _passwordController.clear();
     });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Successfully logout!")),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Successfully logout!")),
+    );
   }
 
   Future<void> _refreshDb() async {
-    final points = await DatabaseHelper().getPendingPoints();
+    final points = await MapStorage().getPendingPoints();
+    if (!mounted) return;
     setState(() {
       _points = points;
     });
@@ -112,9 +112,7 @@ class _DebugScreenState extends State<DebugScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    _jwtToken != null
-                        ? "Status: Logged in"
-                        : "Status: No token",
+                    _jwtToken != null ? "Status: Logged in" : "Status: No token",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
@@ -133,18 +131,23 @@ class _DebugScreenState extends State<DebugScreen> {
                             password: _passwordController.text,
                           );
                           final token = await AuthService().register(request);
+
+                          if (!context.mounted) return;
+
                           if (token != null) {
                             setState(() {
                               _jwtToken = token;
                             });
-                          ScaffoldMessenger.of(context).showSnackBar(
+                            ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text("Registered and Logged in!"),
-                            ),
-                          );
+                              ),
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Error during registration")),
+                              const SnackBar(
+                                content: Text("Error during registration"),
+                              ),
                             );
                           }
                         },
@@ -163,18 +166,21 @@ class _DebugScreenState extends State<DebugScreen> {
                             password: _passwordController.text,
                           );
                           final token = await AuthService().login(request);
+
+                          if (!context.mounted) return;
+
                           if (token != null) {
                             setState(() {
                               _jwtToken = token;
                             });
-                            //TODO: check if using if (mounted) is a good practice
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Logged in")),
                             );
                           } else {
-                            //TODO: check if using if (mounted) is a good practice
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Error during logging in")),
+                              const SnackBar(
+                                content: Text("Error during logging in"),
+                              ),
                             );
                           }
                         },
@@ -186,31 +192,40 @@ class _DebugScreenState extends State<DebugScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           final token = await AuthService().signInWithGoogle();
+
+                          if (!context.mounted) return;
+
                           if (token != null) {
                             setState(() {
                               _jwtToken = token;
                             });
-                            if (mounted) {
-                              //TODO: check if using if (mounted) is a good practice
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Zalogowano przez Google")),
-                              );
-                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Zalogowano przez Google"),
+                              ),
+                            );
                           } else {
-                            if (mounted) {
-                              //TODO: check if using if (mounted) is a good practice
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Błąd logowania przez Google")),
-                              );
-                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Błąd logowania przez Google"),
+                              ),
+                            );
                           }
                         },
-                        child: const Text('Login with Google', style: TextStyle(color: Colors.blue)),
+                        child: const Text(
+                          'Login with Google',
+                          style: TextStyle(color: Colors.blue),
+                        ),
                       ),
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
                         onPressed: _logout,
-                        child: const Text('Logout', style: TextStyle(color: Colors.white)),
+                        child: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                       ElevatedButton(
                         onPressed: _isTracking
@@ -218,6 +233,7 @@ class _DebugScreenState extends State<DebugScreen> {
                             : () async {
                                 try {
                                   await _locationService.startTracking();
+                                  if (!context.mounted) return;
                                   setState(() => _isTracking = true);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -225,6 +241,7 @@ class _DebugScreenState extends State<DebugScreen> {
                                     ),
                                   );
                                 } catch (e) {
+                                  if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text("Error: $e")),
                                   );
@@ -250,7 +267,8 @@ class _DebugScreenState extends State<DebugScreen> {
                           backgroundColor: Colors.red,
                         ),
                         onPressed: () async {
-                          await DatabaseHelper().clearPendingPoints();
+                          await MapStorage().clearPendingPoints();
+                          if (!context.mounted) return;
                           _refreshDb();
                         },
                         child: const Text(
@@ -279,6 +297,7 @@ class _DebugScreenState extends State<DebugScreen> {
                           );
 
                           await SyncService().syncPendingPoints(_jwtToken!);
+                          if (!context.mounted) return;
                           await _refreshDb();
                         },
                         child: const Text(
@@ -298,23 +317,23 @@ class _DebugScreenState extends State<DebugScreen> {
             child: _points.isEmpty
                 ? const Center(child: Text("Database is empty."))
                 : ListView.builder(
-              itemCount: _points.length,
-              itemBuilder: (context, index) {
-                final p = _points[index];
-                final time = DateTime.fromMillisecondsSinceEpoch(
-                  p.timestamp,
-                );
-                return ListTile(
-                  leading: CircleAvatar(child: Text('${p.id}')),
-                  title: Text(
-                    'Lat: ${p.latitude.toStringAsFixed(5)}, Lng: ${p.longitude.toStringAsFixed(5)}',
+                    itemCount: _points.length,
+                    itemBuilder: (context, index) {
+                      final p = _points[index];
+                      final time = DateTime.fromMillisecondsSinceEpoch(
+                        p.timestamp,
+                      );
+                      return ListTile(
+                        leading: CircleAvatar(child: Text('${p.id}')),
+                        title: Text(
+                          'Lat: ${p.latitude.toStringAsFixed(5)}, Lng: ${p.longitude.toStringAsFixed(5)}',
+                        ),
+                        subtitle: Text(
+                          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}',
+                        ),
+                      );
+                    },
                   ),
-                  subtitle: Text(
-                    '${time.hour}:${time.minute}:${time.second}',
-                  ),
-                );
-              },
-            ),
           ),
         ],
       ),

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../database/database_helper.dart';
-import '../model/pending_point.dart';
+import 'map_storage.dart';
+import 'pending_point.dart';
 
 class LocationService {
   StreamSubscription<Position>? _positionStream;
@@ -34,7 +34,7 @@ class LocationService {
     if (permission == LocationPermission.whileInUse) {
       permission = await Geolocator.requestPermission();
     }
-    
+
     _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
 
     late LocationSettings locationSettings;
@@ -80,7 +80,7 @@ class LocationService {
               timestamp: DateTime.now().millisecondsSinceEpoch,
             );
 
-            await DatabaseHelper().insertPendingPoint(point);
+            await MapStorage().insertPendingPoint(point);
             print(
               "Location saved locally: ${point.latitude}, ${point.longitude}",
             );

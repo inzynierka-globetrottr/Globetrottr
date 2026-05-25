@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../model/auth/login_request.dart';
-import '../model/auth/register_request.dart';
+import 'login_request.dart';
+import 'register_request.dart';
 
 //TODO: exception handler
 class AuthService {

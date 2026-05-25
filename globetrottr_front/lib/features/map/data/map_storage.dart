@@ -1,14 +1,14 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../model/pending_point.dart';
+import 'pending_point.dart';
 
-class DatabaseHelper {
-  static final DatabaseHelper _instance = DatabaseHelper._init();
+class MapStorage {
+  static final MapStorage _instance = MapStorage._init();
   static Database? _database;
 
-  factory DatabaseHelper() => _instance;
+  factory MapStorage() => _instance;
 
-  DatabaseHelper._init();
+  MapStorage._init();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
