@@ -7,6 +7,7 @@ import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 
@@ -97,6 +98,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               top: 110.0,
               right: 16.0,
               child: RecenterButton(mapController: _mapController),
+            ),
+
+            Positioned(
+              top: 170.0,
+              right: 16.0,
+              child: const RecordingToggleButton(),
             ),
           ]
         )
