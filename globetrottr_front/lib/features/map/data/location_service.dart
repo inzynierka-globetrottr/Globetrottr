@@ -105,6 +105,7 @@ class LocationService {
   void stopTracking() {
     _positionStream?.cancel();
     _positionStream = null;
+    _positionStreamCache = null;
     _sessionId = null;
     _isRecording = false;
   }
