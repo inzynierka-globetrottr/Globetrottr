@@ -1,3 +1,5 @@
+// * MIGHT NOT WORK WITH auth_service CHANGES
+
 import 'package:flutter/material.dart';
 import '../features/map/data/map_storage.dart';
 import '../features/map/data/location_service.dart';
@@ -32,15 +34,23 @@ class _DebugScreenState extends State<DebugScreen> {
   }
 
   Future<void> _checkSavedToken() async {
-    final newToken = await AuthService().refreshToken();
-    if (!mounted) return;
+    try {
+      final newToken = await AuthService().refreshToken();
+      if (!mounted) return;
 
-    if (newToken != null) {
-      setState(() {
-        _jwtToken = newToken;
-      });
+      if (newToken != null) {
+        setState(() {
+          _jwtToken = newToken;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Restored session!")),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Restored session!")),
+        SnackBar(content: Text("Session restore failed: ${e.toString()}")),
       );
     }
   }
@@ -125,16 +135,16 @@ class _DebugScreenState extends State<DebugScreen> {
                           backgroundColor: Colors.green,
                         ),
                         onPressed: () async {
-                          final request = RegisterRequest(
-                            username: _usernameController.text,
-                            email: _emailController.text,
-                            password: _passwordController.text,
-                          );
-                          final token = await AuthService().register(request);
+                          try {
+                            final request = RegisterRequest(
+                              username: _usernameController.text,
+                              email: _emailController.text,
+                              password: _passwordController.text,
+                            );
+                            final token = await AuthService().register(request);
 
-                          if (!context.mounted) return;
+                            if (!context.mounted) return;
 
-                          if (token != null) {
                             setState(() {
                               _jwtToken = token;
                             });
@@ -143,10 +153,11 @@ class _DebugScreenState extends State<DebugScreen> {
                                 content: Text("Registered and Logged in!"),
                               ),
                             );
-                          } else {
+                          } catch (e) {
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Error during registration"),
+                              SnackBar(
+                                content: Text("Registration failed: ${e.toString()}"),
                               ),
                             );
                           }
@@ -161,25 +172,26 @@ class _DebugScreenState extends State<DebugScreen> {
                           backgroundColor: Colors.orange,
                         ),
                         onPressed: () async {
-                          final request = LoginRequest(
-                            login: _usernameController.text,
-                            password: _passwordController.text,
-                          );
-                          final token = await AuthService().login(request);
+                          try {
+                            final request = LoginRequest(
+                              login: _usernameController.text,
+                              password: _passwordController.text,
+                            );
+                            final token = await AuthService().login(request);
 
-                          if (!context.mounted) return;
+                            if (!context.mounted) return;
 
-                          if (token != null) {
                             setState(() {
                               _jwtToken = token;
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Logged in")),
                             );
-                          } else {
+                          } catch (e) {
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Error during logging in"),
+                              SnackBar(
+                                content: Text("Login failed: ${e.toString()}"),
                               ),
                             );
                           }
@@ -191,23 +203,32 @@ class _DebugScreenState extends State<DebugScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () async {
-                          final token = await AuthService().signInWithGoogle();
+                          try {
+                            final token = await AuthService().signInWithGoogle();
 
-                          if (!context.mounted) return;
+                            if (!context.mounted) return;
 
-                          if (token != null) {
-                            setState(() {
-                              _jwtToken = token;
-                            });
+                            if (token != null) {
+                              setState(() {
+                                _jwtToken = token;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Zalogowano przez Google"),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Anulowano logowanie przez Google"),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Zalogowano przez Google"),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Błąd logowania przez Google"),
+                              SnackBar(
+                                content: Text("Błąd logowania przez Google: ${e.toString()}"),
                               ),
                             );
                           }

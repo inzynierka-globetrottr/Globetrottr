@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/debug/preview_screen.dart';
+import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
 import 'debug/debug_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
@@ -7,7 +9,11 @@ import 'core/theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  runApp(const MyApp());
+  runApp(
+    ProviderScope(
+      child: MyApp()
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -18,7 +24,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Globetrottr',
       theme: AppTheme.dark,
-      home: PreviewScreen(),
+      home: LoginScreen(),
     );
   }
 }

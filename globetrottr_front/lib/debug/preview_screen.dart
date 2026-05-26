@@ -4,10 +4,18 @@ import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_raised_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 
-class PreviewScreen extends StatelessWidget {
+class PreviewScreen extends StatefulWidget {
   const PreviewScreen({super.key});
+
+  @override
+  State<PreviewScreen> createState() => _PreviewScreenState();
+}
+
+class _PreviewScreenState extends State<PreviewScreen> {
+  String _selectedTab = 'login';
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +24,9 @@ class PreviewScreen extends StatelessWidget {
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
       darkTheme: const NeumorphicThemeData(
-        baseColor: baseCanvasColor
+        baseColor: baseCanvasColor,
+        shadowLightColor: AppColors.neuLight,
+        shadowDarkColor: AppColors.neuShadow
       ),
       child: Scaffold(
         backgroundColor: baseCanvasColor,
@@ -65,6 +75,22 @@ class PreviewScreen extends StatelessWidget {
                     label: 'Zaloguj się',
                     onPressed: () {},
                   ),
+
+                  const SizedBox(height: 32),
+
+                  NeuSegmentedControl<String>(
+                    selected: _selectedTab,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedTab = value;
+                      });
+                    },
+                    segments: const [
+                      NeuSegment(label: 'Logowanie', value: 'login'),
+                      NeuSegment(label: 'Rejestracja', value: 'register'),
+                    ],
+                  ),
+
                 ],
               ),
             ),

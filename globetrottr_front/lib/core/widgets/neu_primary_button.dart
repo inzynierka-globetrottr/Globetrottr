@@ -17,7 +17,7 @@ class NeuPrimaryButton extends StatelessWidget {
     this.child,
     this.onPressed,
     this.width = double.infinity,
-    this.height = 50,
+    this.height = 48,
     this.labelStyle,
   });
 
