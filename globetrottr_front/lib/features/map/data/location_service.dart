@@ -5,16 +5,32 @@ import 'package:permission_handler/permission_handler.dart';
 import 'map_storage.dart';
 import 'pending_point.dart';
 
+// TODO: potentially refactor this, as well as map storage to not be singletons, and instead make use of riverpod providers
 class LocationService {
   StreamSubscription<Position>? _positionStream;
+  late LocationSettings _locationSettings;
+  bool _isRecording = false;
+
   static final LocationService _instance = LocationService._internal();
   factory LocationService() => _instance;
   LocationService._internal();
 
   String? _sessionId;
 
+  Stream<Position>? _positionStreamCache;
+  Stream<Position> get positionStream => _positionStreamCache ??= Geolocator.getPositionStream(
+    locationSettings: _locationSettings,
+  );
+
+  void setRecording(bool value) {
+    _isRecording = value;
+    if (value && _sessionId == null) {
+      _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+    }
+  }
+
   Future<void> startTracking() async {
-    if (_sessionId != null) return;
+    if (_positionStream != null) return;
 
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
@@ -35,18 +51,14 @@ class LocationService {
       permission = await Geolocator.requestPermission();
     }
 
-    _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
-
-    late LocationSettings locationSettings;
-
     if (defaultTargetPlatform == TargetPlatform.android) {
-      locationSettings = AndroidSettings(
+      _locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 5,
         forceLocationManager: true,
         foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: "Odkrywasz mapę w tle...",
-          notificationTitle: "Globetrottr trasa",
+          notificationText: "Recording your route in the background...",
+          notificationTitle: "Globetrottr",
           enableWakeLock: true,
           notificationIcon: AndroidResource(
             name: "ic_notification",
@@ -56,7 +68,7 @@ class LocationService {
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
-      locationSettings = AppleSettings(
+      _locationSettings = AppleSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 5,
         activityType: ActivityType.fitness,
@@ -64,26 +76,28 @@ class LocationService {
         showBackgroundLocationIndicator: true,
       );
     } else {
-      locationSettings = const LocationSettings(
+      _locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 5,
       );
     }
 
     _positionStream =
-        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+        Geolocator.getPositionStream(locationSettings: _locationSettings).listen(
           (Position position) async {
-            final point = PendingPoint(
-              sessionId: _sessionId!,
-              latitude: position.latitude,
-              longitude: position.longitude,
-              timestamp: DateTime.now().millisecondsSinceEpoch,
-            );
+            if (_isRecording) {
+              final point = PendingPoint(
+                sessionId: _sessionId!,
+                latitude: position.latitude,
+                longitude: position.longitude,
+                timestamp: DateTime.now().millisecondsSinceEpoch,
+              );
 
-            await MapStorage().insertPendingPoint(point);
-            print(
-              "Location saved locally: ${point.latitude}, ${point.longitude}",
-            );
+              await MapStorage().insertPendingPoint(point);
+              print(
+                "Location saved locally: ${point.latitude}, ${point.longitude}",
+              );
+            }
           },
         );
   }
@@ -92,5 +106,6 @@ class LocationService {
     _positionStream?.cancel();
     _positionStream = null;
     _sessionId = null;
+    _isRecording = false;
   }
 }
