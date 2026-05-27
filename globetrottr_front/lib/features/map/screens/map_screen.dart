@@ -10,7 +10,8 @@ import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dar
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/config/theme/app_colors.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -84,7 +85,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 // here for debug purposes, I am not sure if it will stay like this
                 FogLayer(
                   playerPosition: isRecording ? position : null,
-                  visionRadiusInMeters: MapScreen.visionRadiusInMeters,
+                  visionRadiusInMeters: MapConfig.defaultVisionRadius,
                 ),
                 if (position != null)
                   // think about moving this to a separate widget too, but im not sure
