@@ -15,6 +15,8 @@ import 'package:globetrottr_front/core/theme/app_colors.dart';
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
 
+  static const double visionRadiusInMeters = 30.0;
+
   @override
   ConsumerState<MapScreen> createState() => _MapScreenState();
 }
@@ -44,7 +46,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       }
     });
 
-    final position = ref.watch(locationProvider).currentPosition;
+    final locationState = ref.watch(locationProvider);
+
+    final position = locationState.currentPosition;
+    final isRecording = locationState.isRecording;
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
@@ -75,7 +80,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   userAgentPackageName: 'com.globetrottr.app',
                 ),
 
-                FogLayer(playerPosition: position, visionRadiusInMeters: 150.0),
+                // displays fog and punches a hole in it around the player position, if recording is active
+                // here for debug purposes, I am not sure if it will stay like this
+                FogLayer(
+                  playerPosition: isRecording ? position : null,
+                  visionRadiusInMeters: MapScreen.visionRadiusInMeters,
+                ),
                 if (position != null)
                   // think about moving this to a separate widget too, but im not sure
                   // Marcel here, yes, I think you should move this to a separate widget, just like the buttons
