@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/fog_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
@@ -19,7 +20,6 @@ class MapScreen extends ConsumerStatefulWidget {
 }
 
 class _MapScreenState extends ConsumerState<MapScreen> {
-
   final MapController _mapController = MapController();
 
   @override
@@ -38,7 +38,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     ref.listen<TrackingState>(locationProvider, (previous, next) {
       if (previous?.currentPosition == null && next.currentPosition != null) {
         _mapController.move(next.currentPosition!, 16.0);
@@ -49,9 +48,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(
-        baseColor: AppColors.background
-      ),
+      darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(
@@ -59,19 +56,25 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             FlutterMap(
               mapController: _mapController,
               options: const MapOptions(
-                initialCenter: LatLng(50.0614, 19.9383), // * for now hardcoded to Kraków
+                initialCenter: LatLng(
+                  50.0614,
+                  19.9383,
+                ), // * for now hardcoded to Kraków
                 initialZoom: 14.0,
                 interactionOptions: InteractionOptions(
                   enableMultiFingerGestureRace: true,
                   rotationThreshold: 10.0,
-                )
+                ),
               ),
               children: [
                 TileLayer(
-                  urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                  urlTemplate:
+                      //TODO: change styling, temporarily changed for better fog visibility
+                      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                   subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.globetrottr.app',
                 ),
+                const FogLayer(),
                 if (position != null)
                   // think about moving this to a separate widget too, but im not sure
                   MarkerLayer(
@@ -105,9 +108,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               right: 16.0,
               child: const RecordingToggleButton(),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 }
