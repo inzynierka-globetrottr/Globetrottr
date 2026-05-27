@@ -1,5 +1,3 @@
-// * MIGHT NOT WORK WITH auth_service CHANGES
-
 import 'package:flutter/material.dart';
 import '../features/map/data/map_storage.dart';
 import '../features/map/data/location_service.dart';
@@ -254,6 +252,7 @@ class _DebugScreenState extends State<DebugScreen> {
                             : () async {
                                 try {
                                   await _locationService.startTracking();
+                                  _locationService.setRecording(true);
                                   if (!context.mounted) return;
                                   setState(() => _isTracking = true);
                                   ScaffoldMessenger.of(context).showSnackBar(
