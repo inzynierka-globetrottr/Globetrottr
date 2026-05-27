@@ -74,9 +74,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.globetrottr.app',
                 ),
-                const FogLayer(),
+
+                FogLayer(playerPosition: position, visionRadiusInMeters: 150.0),
                 if (position != null)
                   // think about moving this to a separate widget too, but im not sure
+                  // Marcel here, yes, I think you should move this to a separate widget, just like the buttons
                   MarkerLayer(
                     markers: [
                       Marker(
