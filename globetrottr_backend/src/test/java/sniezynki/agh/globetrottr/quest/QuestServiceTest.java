@@ -173,7 +173,7 @@ class QuestServiceTest {
         Quest quest = createQuest(1L, "Route", QuestType.FOLLOW_ROUTE, 50, questGeometry);
         UserQuest userQuest = createUserQuest(quest, false);
 
-        when(userQuestRepository.findByUser_UserIdAndCompletedFalse(userId)).thenReturn(List.of(userQuest));
+        when(userQuestRepository.findByUser_UserIdAndIsCompletedFalse(userId)).thenReturn(List.of(userQuest));
 
         questService.checkAndCompleteQuests(user, userFog);
 
@@ -194,7 +194,7 @@ class QuestServiceTest {
         Quest quest = createQuest(1L, "Route", QuestType.FOLLOW_ROUTE, 50, questGeometry);
         UserQuest userQuest = createUserQuest(quest, false);
 
-        when(userQuestRepository.findByUser_UserIdAndCompletedFalse(userId)).thenReturn(List.of(userQuest));
+        when(userQuestRepository.findByUser_UserIdAndIsCompletedFalse(userId)).thenReturn(List.of(userQuest));
 
         questService.checkAndCompleteQuests(user, userFog);
 

@@ -8,6 +8,6 @@ import java.util.UUID;
 @Repository
 public interface UserQuestRepository extends JpaRepository<UserQuest, Long> {
 
-    List<UserQuest> findByUser_UserIdAndCompletedFalse(UUID userId);
+    List<UserQuest> findByUser_UserIdAndIsCompletedFalse(UUID userId);
     List<UserQuest> findByUser_UserId(UUID userId);
 }
