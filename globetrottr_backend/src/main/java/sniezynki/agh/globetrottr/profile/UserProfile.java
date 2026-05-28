@@ -11,7 +11,7 @@ import sniezynki.agh.globetrottr.user.User;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDetails {
+public class UserProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
