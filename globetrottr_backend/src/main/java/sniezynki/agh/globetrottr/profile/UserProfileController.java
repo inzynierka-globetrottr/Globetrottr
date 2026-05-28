@@ -16,31 +16,31 @@ import java.util.Map;
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor
 public class UserProfileController {
-    private final UserProfileService userDetailsService;
+    private final UserProfileService userProfileService;
 
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getMyProfile() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(userDetailsService.getMyProfile(username));
+        return ResponseEntity.ok(userProfileService.getMyProfile(username));
     }
 
     @GetMapping("/{friendUsername}")
     public ResponseEntity<UserProfileResponse> getFriendProfile(@PathVariable String friendUsername) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(userDetailsService.getFriendProfile(username,friendUsername));
+        return ResponseEntity.ok(userProfileService.getFriendProfile(username,friendUsername));
     }
 
     @PatchMapping("/bio")
     public ResponseEntity<Void> updateBio(@Valid @RequestBody UpdateBioRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        userDetailsService.updateBio(username, request.bio());
+        userProfileService.updateBio(username, request.bio());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        String avatarUrl = userDetailsService.uploadAvatar(username, file);
+        String avatarUrl = userProfileService.uploadAvatar(username, file);
 
         return ResponseEntity.ok(Map.of("avatarUrl", avatarUrl));
     }

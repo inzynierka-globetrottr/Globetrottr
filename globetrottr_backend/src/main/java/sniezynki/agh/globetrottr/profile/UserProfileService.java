@@ -18,7 +18,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class UserProfileService {
 
-    private final UserProfileRepository userDetailsRepository;
+    private final UserProfileRepository userProfileRepository;
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
     private final Cloudinary cloudinary;
@@ -46,15 +46,20 @@ public class UserProfileService {
 
     @Transactional
     public void updateBio(String username, String newBio) {
-        UserProfile details = getOrCreateUserDetails(username);
-        details.setBio(newBio);
-        userDetailsRepository.save(details);
+        UserProfile userProfile = getOrCreateUserProfile(username);
+        userProfile.setBio(newBio);
+        userProfileRepository.save(userProfile);
     }
 
     @Transactional
     public String uploadAvatar(String username, MultipartFile file) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed");
         }
 
         try {
@@ -65,9 +70,9 @@ public class UserProfileService {
 
             String secureUrl = uploadResult.get("secure_url").toString();
 
-            UserProfile details = getOrCreateUserDetails(username);
-            details.setAvatarUrl(secureUrl);
-            userDetailsRepository.save(details);
+            UserProfile userProfile = getOrCreateUserProfile(username);
+            userProfile.setAvatarUrl(secureUrl);
+            userProfileRepository.save(userProfile);
 
             return secureUrl;
 
@@ -82,25 +87,25 @@ public class UserProfileService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        UserProfile details = userDetailsRepository.findByUser_Username(username)
+        UserProfile userProfile = userProfileRepository.findByUser_Username(username)
                 .orElse(new UserProfile());
 
         return UserProfileResponse.builder()
                 .username(user.getUsername())
-                .avatarUrl(details.getAvatarUrl())
-                .bio(details.getBio())
+                .avatarUrl(userProfile.getAvatarUrl())
+                .bio(userProfile.getBio())
                 .totalPoints(user.getTotalPoints() != null ? user.getTotalPoints() : 0)
                 .build();
     }
 
-    private UserProfile getOrCreateUserDetails(String username) {
-        return userDetailsRepository.findByUser_Username(username)
+    private UserProfile getOrCreateUserProfile(String username) {
+        return userProfileRepository.findByUser_Username(username)
                 .orElseGet(() -> {
                     User user = userRepository.findByUsername(username)
                             .orElseThrow(() -> new IllegalArgumentException("User not found"));
-                    UserProfile newDetails = new UserProfile();
-                    newDetails.setUser(user);
-                    return newDetails;
+                    UserProfile userProfile = new UserProfile();
+                    userProfile.setUser(user);
+                    return userProfile;
                 });
     }
 }
