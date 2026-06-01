@@ -11,14 +11,14 @@ import sniezynki.agh.globetrottr.user.User;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDetails {
+public class UserProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false, unique = true)
     private User user;
 
     @Column(name = "avatar_url", length = 500)
