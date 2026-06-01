@@ -54,6 +54,7 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       MAIL_FROM: ${MAIL_FROM}
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
     depends_on:
       postgres:
         condition: service_healthy
