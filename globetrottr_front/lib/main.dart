@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/debug/preview_screen.dart';
-import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
-import 'package:globetrottr_front/features/map/screens/map_screen.dart';
-import 'debug/debug_screen.dart';
+import 'package:globetrottr_front/core/router/app_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 
@@ -17,15 +14,17 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouter);
+
+    return MaterialApp.router(
       title: 'Globetrottr',
       theme: AppTheme.dark,
-      home: MapScreen(),
+      routerConfig: router,
     );
   }
 }
