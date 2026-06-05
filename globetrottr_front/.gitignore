@@ -50,6 +50,7 @@ android/.gradle/
 android/local.properties
 android/gradle.properties
 android/NOTICE
+android/java_pid50380.hprof
 
 linux/flutter/generated_plugin*
 linux/flutter/generated_plugins.cmake
