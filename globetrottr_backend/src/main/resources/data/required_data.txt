@@ -1,0 +1,6 @@
+Provide 2 files:
+    countries.geojson -> Download https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/50m/cultural/ne_50m_admin_0_countries.zip ~5MB
+    poland_cities.geojson -> Download https://www.gis-support.pl/downloads/2022/gminy.zip ~150MB
+
+
+Then extract the files and paste all the content to https://mapshaper.org/ then export as geojson and save as the required file name.
