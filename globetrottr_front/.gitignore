@@ -48,7 +48,6 @@ app.*.map.json
 android/build/
 android/.gradle/
 android/local.properties
-android/gradle.properties
 android/NOTICE
 android/java_pid50380.hprof
 
