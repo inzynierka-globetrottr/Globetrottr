@@ -20,11 +20,20 @@ final authStateProvider = FutureProvider<bool>((ref) async {
   }
 });
 
+class AuthNotifierListenable extends ChangeNotifier {
+  AuthNotifierListenable(this._ref) {
+    _ref.listen(authProvider, (_, __) => notifyListeners());
+  }
+  final Ref _ref;
+}
+
 final appRouter = Provider<GoRouter>((ref) {
   ref.watch(authStateProvider);
+  final listenable = AuthNotifierListenable(ref);
 
   return GoRouter(
     initialLocation: '/login',
+    refreshListenable: listenable,
     redirect: (context, state) async {
       final authAsync = ref.read(authStateProvider);
 

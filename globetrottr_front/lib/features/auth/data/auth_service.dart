@@ -119,4 +119,9 @@ class AuthService {
       throw AppException('Server temporarily unavailable.', response.statusCode);
     }
   }
+
+  Future<void> logout() async {
+    final storage = const FlutterSecureStorage();
+    await storage.delete(key: 'jwt_token');
+  }
 }

@@ -75,4 +75,9 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(isLoading: false, errorMessage: 'Network error. Please try again.');
     }
   }
+
+  Future<void> logout() async {
+    await _authService.logout();
+    state = const AuthState();
+  }
 }
