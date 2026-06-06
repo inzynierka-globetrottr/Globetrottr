@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/features/auth/data/auth_exception.dart';
+import 'package:globetrottr_front/core/exceptions/auth_exception.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
@@ -43,7 +43,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
       state = state.copyWith(isLoading: false, isAuthenticated: true);
 
-    } on AuthException catch (e) {
+    } on AppException catch (e) {
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,
@@ -69,7 +69,7 @@ class AuthNotifier extends Notifier<AuthState> {
       } else {
         state = state.copyWith(isLoading: false);
       }
-    } on AuthException catch (e) {
+    } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: 'Network error. Please try again.');
