@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:globetrottr_front/core/exceptions/auth_exception.dart';
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
