@@ -38,7 +38,7 @@ class NeuBottomNavbar extends StatelessWidget {
               _NavbarButton(
                 icon: Icons.people_rounded,
                 isActive: activeItem == NavbarItem.friends,
-                onTap: () => context.go('/debug/friends')//{}//context.go('/friends'), // TODO: change to real path when done
+                onTap: () => context.go('/friends'), // TODO: change to real path when done
               ),
               _NavbarButton(
                 icon: Icons.person_rounded,

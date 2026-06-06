@@ -86,4 +86,26 @@ class FriendsNotifier extends Notifier<FriendsState> {
       throw AppException('Network error. Please check your connection.');
     }
   }
+
+  Future<void> deleteRelationship(String username) async {
+    try {
+      await _service.deleteRelationship(username);
+
+      state = state.copyWith(
+        friends: state.friends
+            .where((r) => r.username != username)
+            .toList(),
+        receivedInvites: state.receivedInvites
+            .where((r) => r.username != username)
+            .toList(),
+        sentInvites: state.sentInvites
+            .where((r) => r.username != username)
+            .toList(),
+      );
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw AppException('Network error. Please check your connection.');
+    }
+  }
 }
