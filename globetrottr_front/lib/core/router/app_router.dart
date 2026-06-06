@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/debug/friend_debug_screen.dart';
 import 'package:globetrottr_front/debug/preview_screen.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
@@ -56,6 +57,11 @@ final appRouter = Provider<GoRouter>((ref) {
         GoRoute(
           path: '/debug/preview',
           builder: (context, state) => const PreviewScreen(),
+        ),
+      if (kDebugMode)
+        GoRoute(
+          path: '/debug/friends',
+          builder: (context, state) => const FriendDebugScreen(),
         ),
     ],
   );
