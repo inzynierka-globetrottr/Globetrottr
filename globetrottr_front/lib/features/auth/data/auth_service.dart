@@ -97,7 +97,7 @@ class AuthService {
   Future<String?> refreshToken() async {
     final currentToken = await getToken();
 
-    if (currentToken == null || _backendUrl.isEmpty ) return null;
+    if (currentToken == null || _backendUrl.isEmpty) return null;
 
     final response = await http.get(
       Uri.parse('$_backendUrl/api/auth/refresh'),

@@ -17,6 +17,8 @@ final authStateProvider = FutureProvider<bool>((ref) async {
 });
 
 final appRouter = Provider<GoRouter>((ref) {
+  ref.watch(authStateProvider);
+
   return GoRouter(
     initialLocation: '/login',
     redirect: (context, state) async {
