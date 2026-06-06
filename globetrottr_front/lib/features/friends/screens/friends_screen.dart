@@ -3,33 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
-import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
-import 'package:globetrottr_front/features/friends/data/invite_status.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_card.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/invite_hub_banner.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/search_send_row.dart';
 import 'package:go_router/go_router.dart';
 
-class FriendsScreen extends ConsumerWidget {
+class FriendsScreen extends ConsumerStatefulWidget {
   const FriendsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(friendsProvider);
+  ConsumerState<FriendsScreen> createState() => _FriendsScreenState();
+}
 
-    final placeholderFriends = [
-      const FriendshipResponse(
-        username: 'jantester',
-        status: InviteStatus.accepted,
-        isIncomingRequest: false,
-      ),
-      const FriendshipResponse(
-        username: 'johnbiznes',
-        status: InviteStatus.accepted,
-        isIncomingRequest: false,
-      ),
-    ];
+class _FriendsScreenState extends ConsumerState<FriendsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(friendsProvider.notifier).loadAll());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(friendsProvider);
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
@@ -65,9 +61,9 @@ class FriendsScreen extends ConsumerWidget {
                     ),
 
                     const SizedBox(height: 24),
-                    Text('YOUR FRIENDS (${placeholderFriends.length})', style: AppTextStyles.sectionTitle),
+                    Text('YOUR FRIENDS (${state.friends.length})', style: AppTextStyles.sectionTitle),
                     const SizedBox(height: 14),
-                    ...placeholderFriends.map((f) => Padding(
+                    ...state.friends.map((f) => Padding(
                       padding: const EdgeInsets.only(bottom: 14),
                       child: FriendCard(friend: f),
                     )),

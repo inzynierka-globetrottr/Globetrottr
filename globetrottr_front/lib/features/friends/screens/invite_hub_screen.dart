@@ -1,8 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
-import 'package:globetrottr_front/features/friends/data/invite_status.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/received_invite_card.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/sent_invite_card.dart';
@@ -34,19 +31,6 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(friendsProvider);
-
-    final placeholderReceived = [
-      const FriendshipResponse(
-        username: 'rafalwrona',
-        status: InviteStatus.pending,
-        isIncomingRequest: true,
-      ),
-      const FriendshipResponse(
-        username: 'discoadamus',
-        status: InviteStatus.pending,
-        isIncomingRequest: true,
-      ),
-    ];
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
@@ -99,12 +83,14 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                   children: [
                     ListView.separated(
                       padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                      itemCount: placeholderReceived.length,
+                      itemCount: state.receivedInvites.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) => ReceivedInviteCard(
-                        invite: placeholderReceived[index],
-                        onAccept: () {},
-                        onDecline: () {},
+                        invite: state.receivedInvites[index],
+                        onAccept: () => ref.read(friendsProvider.notifier)
+                            .acceptInvite(state.receivedInvites[index].username),
+                        onDecline: () => ref.read(friendsProvider.notifier)
+                            .deleteRelationship(state.receivedInvites[index].username),
                       ),
                     ),
                     ListView.separated(
