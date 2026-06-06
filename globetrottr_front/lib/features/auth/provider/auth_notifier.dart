@@ -50,7 +50,6 @@ class AuthNotifier extends Notifier<AuthState> {
         errorMessage: e.message,
       );
     } catch (e) {
-      print(e);
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,

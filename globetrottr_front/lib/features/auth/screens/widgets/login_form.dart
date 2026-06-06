@@ -84,7 +84,6 @@ class LoginForm extends StatelessWidget {
                 : (state.mode == AuthMode.login ? 'Sign in' : 'Sign up'),
             onPressed: state.isLoading ? null : onSubmit,
           ),
-
         ],
       )
     );
