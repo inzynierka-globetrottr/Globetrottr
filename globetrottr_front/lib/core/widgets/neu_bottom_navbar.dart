@@ -40,12 +40,12 @@ class NeuBottomNavbar extends ConsumerWidget {
               _NavbarButton(
                 icon: Icons.people_rounded,
                 isActive: activeItem == NavbarItem.friends,
-                onTap: () => context.go('/friends'), // TODO: change to real path when done
+                onTap: () => context.go('/friends'),
               ),
               _NavbarButton(
                 icon: Icons.person_rounded,
                 isActive: activeItem == NavbarItem.profile,
-                onTap: () => ref.read(authProvider.notifier).logout() //context.go('/profile'),
+                onTap: () => ref.read(authProvider.notifier).logout() //context.go('/profile'), // TODO: change to real path when done
               ),
             ],
           ),
