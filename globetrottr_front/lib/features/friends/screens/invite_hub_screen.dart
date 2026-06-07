@@ -23,12 +23,6 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
   InviteTab _selectedTab = InviteTab.received;
 
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() => ref.read(friendsProvider.notifier).loadAll());
-  }
-
-  @override
   Widget build(BuildContext context) {
     final state = ref.watch(friendsProvider);
 
