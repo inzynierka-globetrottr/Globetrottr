@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
-import 'package:globetrottr_front/core/widgets/neu_raised_container.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
 
 class ReceivedInviteCard extends StatelessWidget {
@@ -20,7 +20,7 @@ class ReceivedInviteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NeuRaisedContainer(
+    return NeuFloatingContainer(
       width: double.infinity,
       height: 72,
       child: Padding(
