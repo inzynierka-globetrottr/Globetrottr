@@ -9,10 +9,16 @@ import org.springframework.web.multipart.MultipartFile;
 import sniezynki.agh.globetrottr.friend.FriendshipRepository;
 import sniezynki.agh.globetrottr.friend.InviteStatus;
 import sniezynki.agh.globetrottr.profile.dto.UserProfileResponse;
+import sniezynki.agh.globetrottr.statistics.UserRegionStatistics;
+import sniezynki.agh.globetrottr.statistics.UserRegionStatisticsRepository;
+import sniezynki.agh.globetrottr.statistics.UserStatistics;
+import sniezynki.agh.globetrottr.statistics.UserStatisticsRepository;
+import sniezynki.agh.globetrottr.statistics.dto.RegionStatisticDto;
 import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +27,9 @@ public class UserProfileService {
     private final UserProfileRepository userProfileRepository;
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final UserStatisticsRepository userStatisticsRepository;
+    private final UserRegionStatisticsRepository userRegionStatisticsRepository;
+
     private final Cloudinary cloudinary;
 
     @Transactional(readOnly = true)
@@ -90,11 +99,34 @@ public class UserProfileService {
         UserProfile userProfile = userProfileRepository.findByUser_Username(username)
                 .orElse(new UserProfile());
 
+        UserStatistics globalStats = userStatisticsRepository.findByUser_Username(username)
+                .orElse(UserStatistics.builder()
+                        .totalDiscoveredKm2(0.0)
+                        .visitedCountriesCount(0)
+                        .completedQuestsCount(0)
+                        .build());
+
+        List<RegionStatisticDto> userRegions = userRegionStatisticsRepository
+                .findByUser_UserIdOrderByDiscoveryPercentageDesc(user.getUserId())
+                .stream()
+                .map(stat -> new RegionStatisticDto(
+                        stat.getRegion().getName(),
+                        stat.getRegion().getType(),
+                        stat.getDiscoveredAreaKm2(),
+                        stat.getDiscoveryPercentage()
+                ))
+                .toList();
+
         return UserProfileResponse.builder()
                 .username(user.getUsername())
                 .avatarUrl(userProfile.getAvatarUrl())
                 .bio(userProfile.getBio())
                 .totalPoints(user.getTotalPoints() != null ? user.getTotalPoints() : 0)
+                .totalDiscoveredKm2(globalStats.getTotalDiscoveredKm2())
+                .visitedCountriesCount(globalStats.getVisitedCountriesCount())
+                .completedQuestsCount(globalStats.getCompletedQuestsCount())
+                .currentStreak(globalStats.getCurrentStreak() != null ? globalStats.getCurrentStreak() : 0)
+                .regions(userRegions)
                 .build();
     }
 
