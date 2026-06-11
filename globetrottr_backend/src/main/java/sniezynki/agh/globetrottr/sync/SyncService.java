@@ -9,7 +9,7 @@ import sniezynki.agh.globetrottr.location.UserFog;
 import sniezynki.agh.globetrottr.location.UserFogRepository;
 import sniezynki.agh.globetrottr.location.dto.PointDto;
 import sniezynki.agh.globetrottr.quest.QuestService;
-import sniezynki.agh.globetrottr.quest.UserQuestRepository;
+import sniezynki.agh.globetrottr.statistics.StatisticsSyncService;
 import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
 
@@ -27,6 +27,7 @@ public class SyncService {
     private final UserRepository userRepository;
     private final QuestService  questService;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+    private final StatisticsSyncService statisticsSyncService;
 
     @Transactional
     public void processPoints(List<PointDto> points, String username) {
@@ -44,6 +45,8 @@ public class SyncService {
                 });
 
         Geometry currentFog = userFog.getFogArea();
+        Geometry batchNewArea = null;
+
         double distance = 0.0002;
 
         Map<String, List<PointDto>> groupedPoints = points.stream()
@@ -75,11 +78,21 @@ public class SyncService {
             } else {
                 currentFog = currentFog.union(newlyDiscoveredArea);
             }
+
+            if (batchNewArea == null) {
+                batchNewArea = newlyDiscoveredArea;
+            } else {
+                batchNewArea = batchNewArea.union(newlyDiscoveredArea);
+            }
         }
 
         userFog.setFogArea(currentFog);
         userFogRepository.save(userFog);
         log.info("Updated fog for user: {}", username);
         questService.checkAndCompleteQuests(user, userFog);
+
+        if (batchNewArea != null) {
+            statisticsSyncService.recalculateStatsForNewFog(user, batchNewArea);
+        }
     }
 }
