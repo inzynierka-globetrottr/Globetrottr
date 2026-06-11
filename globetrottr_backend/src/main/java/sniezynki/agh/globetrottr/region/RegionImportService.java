@@ -34,8 +34,9 @@ public class RegionImportService {
                 JsonNode features = root.get("features");
 
                 if (features == null || !features.isArray()) {
+                    String errorMessage = "Incorrect GeoJSON format: 'features' node is missing or is not an array in " + resourcePath;
                     log.error("Incorrect geojson format");
-                    return;
+                    throw new IllegalArgumentException(errorMessage);
                 }
 
                 for (JsonNode feature : features) {
