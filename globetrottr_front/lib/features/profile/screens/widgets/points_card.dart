@@ -3,10 +3,10 @@ import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
 
-class XpCard extends StatelessWidget {
+class PointsCard extends StatelessWidget {
   final int totalPoints;
 
-  const XpCard({
+  const PointsCard({
     super.key,
     required this.totalPoints,
   });

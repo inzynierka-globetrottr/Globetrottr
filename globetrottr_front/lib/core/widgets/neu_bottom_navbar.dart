@@ -2,7 +2,6 @@ import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
-import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:go_router/go_router.dart';
 
 enum NavbarItem { friends, map, profile, quests }
@@ -45,7 +44,7 @@ class NeuBottomNavbar extends ConsumerWidget {
               _NavbarButton(
                 icon: Icons.person_rounded,
                 isActive: activeItem == NavbarItem.profile,
-                onTap: () => context.go('/profile')//ref.read(authProvider.notifier).logout()
+                onTap: () => context.go('/profile')
               ),
             ],
           ),

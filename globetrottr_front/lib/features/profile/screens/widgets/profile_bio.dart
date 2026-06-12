@@ -6,11 +6,13 @@ import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 
 class ProfileBio extends StatefulWidget {
   final String initialBio;
+  final bool isUpdatingBio;
   final Function(String) onSave;
 
   const ProfileBio({
     super.key,
     required this.initialBio,
+    required this.isUpdatingBio,
     required this.onSave,
   });
 
@@ -110,10 +112,20 @@ class _ProfileBioState extends State<ProfileBio> {
               ),
               const SizedBox(width: 12),
               NeuPrimaryButton(
-                label: 'Save',
+                label: widget.isUpdatingBio ? '' : 'Save',
                 width: 90,
                 height: 38,
-                onPressed: _save,
+                onPressed: widget.isUpdatingBio ? null : _save,
+                child: widget.isUpdatingBio
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+                      ),
+                    )
+                  : null,
               ),
             ],
           ),

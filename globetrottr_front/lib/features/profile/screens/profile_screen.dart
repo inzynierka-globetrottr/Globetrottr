@@ -2,14 +2,13 @@ import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/logout_button.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_nav_button.dart';
-import 'package:go_router/go_router.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_avatar.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_bio.dart';
-import 'package:globetrottr_front/features/profile/screens/widgets/xp_card.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/points_card.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -22,9 +21,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(profileProvider.notifier).loadProfile();
-    });
+    Future.microtask(() => ref.read(profileProvider.notifier).loadProfile());
   }
 
   @override
@@ -71,6 +68,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 ProfileBio(
                   initialBio: userProfile?.bio ?? '',
+                  isUpdatingBio: profileState.isUpdatingBio,
                   onSave: (newBio) {
                     profileNotifier.updateBio(newBio);
                   },
@@ -78,7 +76,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 const SizedBox(height: 24),
 
-                XpCard(
+                PointsCard(
                   totalPoints: userProfile?.totalPoints ?? 0,
                 ),
 
