@@ -1,6 +1,10 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/logout_button.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/profile_nav_button.dart';
+import 'package:go_router/go_router.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_avatar.dart';
@@ -15,30 +19,19 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  final TextEditingController _bioController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async {
-      await ref.read(profileProvider.notifier).loadProfile();
-      final profile = ref.read(profileProvider).profile;
-      if (profile != null && profile.bio != null) {
-        _bioController.text = profile.bio!;
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileProvider.notifier).loadProfile();
     });
   }
 
   @override
-  void dispose() {
-    _bioController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final state = ref.watch(profileProvider);
-    final notifier = ref.read(profileProvider.notifier);
+    final profileState = ref.watch(profileProvider);
+    final profileNotifier = ref.read(profileProvider.notifier);
+    final userProfile = profileState.profile;
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
@@ -48,31 +41,79 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: state.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  children: [
-                    
-                    ProfileAvatar(
-                      username: state.profile?.username ?? '',
-                      avatarUrl: state.profile?.avatarUrl,
-                      isUploading: state.isUploadingAvatar,
-                      onAvatarSelected: (filePath) {
-                        notifier.uploadAvatar(filePath);
-                      },
-                    ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 10),
 
-                    const SizedBox(height: 10),
-
-                    ProfileBio(initialBio: "chuj", onSave: (a) {}),
-
-                    const SizedBox(height: 10),
-
-                    XpCard(totalPoints: 10)
-
-                  ],
+                ProfileAvatar(
+                  username: userProfile?.username ?? '',
+                  avatarUrl: userProfile?.avatarUrl,
+                  isUploading: profileState.isUploadingAvatar,
+                  onAvatarSelected: (filePath) {
+                    profileNotifier.uploadAvatar(filePath);
+                  },
                 ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  userProfile?.username ?? 'Traveler',
+                  style: AppTextStyles.rulesetTitle.copyWith(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                ProfileBio(
+                  initialBio: userProfile?.bio ?? '',
+                  onSave: (newBio) {
+                    profileNotifier.updateBio(newBio);
+                  },
+                ),
+
+                const SizedBox(height: 24),
+
+                XpCard(
+                  totalPoints: userProfile?.totalPoints ?? 0,
+                ),
+
+                const SizedBox(height: 24),
+
+                ProfileNavButton(
+                  icon: Icons.bar_chart_rounded,
+                  label: 'Statistics',
+                  onPressed: () => {}//context.push('/statistics'),
+                ),
+
+                const SizedBox(height: 14),
+
+                ProfileNavButton(
+                  icon: Icons.workspace_premium_rounded,
+                  label: 'Achievements',
+                  onPressed: () => {}//context.push('/achievements'),
+                ),
+
+                const SizedBox(height: 14),
+
+                ProfileNavButton(
+                  icon: Icons.settings_rounded,
+                  label: 'Settings',
+                  onPressed: () => {}//context.push('/settings'),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                LogoutButton(),
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
         ),
         bottomNavigationBar: const NeuBottomNavbar(
           activeItem: NavbarItem.profile,

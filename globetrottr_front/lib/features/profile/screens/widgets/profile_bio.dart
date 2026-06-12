@@ -85,7 +85,7 @@ class _ProfileBioState extends State<ProfileBio> {
               decoration: InputDecoration(
                 hintText: 'Tell others about your journeys...',
                 hintStyle: AppTextStyles.inputLabel.copyWith(
-                  color: AppColors.textLight.withOpacity(0.6),
+                  color: AppColors.textLight.withValues(alpha: 0.6),
                 ),
                 counterText: '',
                 border: InputBorder.none,
