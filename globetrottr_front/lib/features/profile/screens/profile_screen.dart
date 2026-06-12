@@ -4,6 +4,8 @@ import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_avatar.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/profile_bio.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/xp_card.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -60,6 +62,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         notifier.uploadAvatar(filePath);
                       },
                     ),
+
+                    const SizedBox(height: 10),
+
+                    ProfileBio(initialBio: "chuj", onSave: (a) {}),
+
+                    const SizedBox(height: 10),
+
+                    XpCard(totalPoints: 10)
 
                   ],
                 ),
