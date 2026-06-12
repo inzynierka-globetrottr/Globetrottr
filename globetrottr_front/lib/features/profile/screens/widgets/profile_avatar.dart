@@ -35,6 +35,7 @@ class ProfileAvatar extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
+        // TODO: show error differently than with a snack bar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to select image: ${e.toString()}'),
