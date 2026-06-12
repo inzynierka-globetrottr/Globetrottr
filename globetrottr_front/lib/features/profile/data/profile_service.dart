@@ -66,10 +66,22 @@ class ProfileService {
     headers.remove('Content-Type'); 
     request.headers.addAll(headers);
 
-    request.files.add(await http.MultipartFile.fromPath('file', filePath));
+    final extension = filePath.split('.').last.toLowerCase();
+    final subtype = (extension == 'jpg') ? 'jpeg' : extension;
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'file', 
+        filePath,
+        contentType: http.MediaType('image', subtype),
+      ),
+    );
 
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
+
+    // TODO: remove this mock
+      return 'https://i.imgflip.com/46dlgu.png';
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
