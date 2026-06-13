@@ -1,5 +1,5 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:globetrottr_front/core/config/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
 
 class NeuRaisedContainer extends StatelessWidget {
   final Widget child;
@@ -18,9 +18,7 @@ class NeuRaisedContainer extends StatelessWidget {
     return Neumorphic(
       style: NeumorphicStyle(
         shape: NeumorphicShape.flat,
-        boxShape: NeumorphicBoxShape.roundRect(
-          BorderRadius.all(Radius.circular(24)),
-        ),
+        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.all(Radius.circular(24))),
         depth: -4,
         intensity: 1,
         shadowLightColorEmboss: AppColors.neuShadow,

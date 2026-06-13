@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/config/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
 
 class PlayerMarker extends StatelessWidget {
   const PlayerMarker({super.key});
