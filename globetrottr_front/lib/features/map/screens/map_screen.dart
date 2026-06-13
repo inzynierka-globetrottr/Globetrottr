@@ -49,6 +49,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     final position = locationState.currentPosition;
     final isRecording = locationState.isRecording;
+    final discoveredPoints = locationState.discoveredPoints;
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
@@ -83,6 +84,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 // here for debug purposes, I am not sure if it will stay like this
                 FogLayer(
                   playerPosition: isRecording ? position : null,
+                  discoveredPoints: discoveredPoints,
                   visionRadiusInMeters: MapConfig.defaultVisionRadius,
                 ),
                 if (position != null)

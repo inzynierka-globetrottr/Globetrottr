@@ -4,9 +4,20 @@ import 'package:latlong2/latlong.dart';
 class FogHolepuncher {
   static List<List<LatLng>> getHoleCoordinates({
     required LatLng? playerPosition,
+    required List<LatLng> discoveredPoints,
     required double visionRadiusInMeters,
   }) {
     final List<List<LatLng>> holes = [];
+
+    for (final point in discoveredPoints) {
+      holes.add(
+        _calculateHoleCoordinates(
+          center: point,
+          radiusInMeters: visionRadiusInMeters,
+        ),
+      );
+    }
+
     if (playerPosition != null) {
       holes.add(
         _calculateHoleCoordinates(

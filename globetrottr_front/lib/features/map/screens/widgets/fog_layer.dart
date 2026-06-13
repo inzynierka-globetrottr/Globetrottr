@@ -8,11 +8,13 @@ class FogLayer extends StatelessWidget {
   // TODO: Refactor parameter to receive pre-computed hole points (e.g., List<List<LatLng>> readyHoles)
   // instead of raw coordinates, decoupling the UI from geometry generation.
   final LatLng? playerPosition;
+  final List<LatLng> discoveredPoints;
   final double visionRadiusInMeters;
 
   const FogLayer({
     super.key,
     required this.playerPosition,
+    this.discoveredPoints = const [],
     this.visionRadiusInMeters = MapConfig.defaultVisionRadius,
   });
 
@@ -23,6 +25,7 @@ class FogLayer extends StatelessWidget {
     // to prevent heavy computations on the UI thread during frequent GPS updates.
     final holes = FogHolepuncher.getHoleCoordinates(
       playerPosition: playerPosition,
+      discoveredPoints: discoveredPoints,
       visionRadiusInMeters: visionRadiusInMeters,
     );
 
