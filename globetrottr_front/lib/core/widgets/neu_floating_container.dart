@@ -1,5 +1,5 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:globetrottr_front/core/config/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
 
 class NeuFloatingContainer extends StatelessWidget {
   final Widget child;
