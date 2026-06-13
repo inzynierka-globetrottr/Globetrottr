@@ -18,7 +18,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenWidget extends ConsumerState<LoginScreen> {
-
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -48,9 +47,7 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(
-        baseColor: baseCanvasColor
-      ),
+      darkTheme: const NeumorphicThemeData(baseColor: baseCanvasColor),
       child: Scaffold(
         backgroundColor: baseCanvasColor,
         body: SafeArea(
@@ -61,13 +58,9 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 spacing: 18,
                 children: [
-
                   const Padding(
                     padding: EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      "globetrottr",
-                      style: AppTextStyles.appLogo,
-                    )
+                    child: Text("globetrottr", style: AppTextStyles.appLogo),
                   ),
 
                   AuthModeSwitcher(
@@ -86,23 +79,25 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
                         notifier.submit(
                           username: _usernameController.text,
                           password: _passwordController.text,
-                          email: state.mode == AuthMode.register ? _emailController.text : null,
+                          email: state.mode == AuthMode.register
+                              ? _emailController.text
+                              : null,
                         );
                       }
-                    }
+                    },
                   ),
 
                   FormDivider(),
 
                   GoogleLoginSection(
                     isLoading: state.isLoading,
-                    onGooglePressed:() => notifier.signInWithGoogle(),
-                  )
+                    onGooglePressed: () => notifier.signInWithGoogle(),
+                  ),
                 ],
               ),
             ),
-          )
-        )
+          ),
+        ),
       ),
     );
   }
