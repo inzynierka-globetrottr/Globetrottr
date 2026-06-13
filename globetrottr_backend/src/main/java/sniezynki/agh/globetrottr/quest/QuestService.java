@@ -86,7 +86,7 @@ public class QuestService {
 
     @Transactional
     public void checkAndCompleteQuests(User user, UserFog userFog) {
-        List<UserQuest> activeQuests = userQuestRepository.findByUser_UserIdAndCompletedFalse(user.getUserId());
+        List<UserQuest> activeQuests = userQuestRepository.findByUser_UserIdAndIsCompletedFalse(user.getUserId());
         double progressTolerance = 0.98;
         if (activeQuests.isEmpty()) {
             return;

@@ -1,3 +1,5 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
@@ -35,11 +37,11 @@ class LoginForm extends StatelessWidget {
             placeholder: 'Username',
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
-              if (value == null || value.trim().length < 3) {
-                return 'Must be at least 3 characters';
-              }
-              return null;
-            },
+                if (value == null || value.trim().length < 3) {
+                  return 'Must be at least 3 characters';
+                }
+                return null;
+              },
           ),
 
           if (state.mode == AuthMode.register)
@@ -48,12 +50,12 @@ class LoginForm extends StatelessWidget {
               placeholder: 'Email',
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-                if (value == null || !emailRegex.hasMatch(value.trim())) {
-                  return 'Enter a valid email address';
-                }
-                return null;
-              },
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+                  if (value == null || !emailRegex.hasMatch(value.trim())) {
+                    return 'Enter a valid email address';
+                  }
+                  return null;
+                },
             ),
 
           NeuTextField(
@@ -66,15 +68,13 @@ class LoginForm extends StatelessWidget {
                 return 'Must be at least 6 characters';
               }
               return null;
-            },
+            }
           ),
 
           if (state.errorMessage != null)
             Text(
               state.errorMessage!,
-              style: AppTextStyles.descriptiveStatusAction.copyWith(
-                color: Colors.redAccent,
-              ),
+              style: AppTextStyles.descriptiveStatusAction.copyWith(color: Colors.redAccent),
               textAlign: TextAlign.center,
             ),
 
@@ -84,8 +84,9 @@ class LoginForm extends StatelessWidget {
                 : (state.mode == AuthMode.login ? 'Sign in' : 'Sign up'),
             onPressed: state.isLoading ? null : onSubmit,
           ),
+
         ],
-      ),
+      )
     );
   }
 }

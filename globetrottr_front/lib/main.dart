@@ -10,7 +10,11 @@ import 'core/theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  runApp(ProviderScope(child: MyApp()));
+  runApp(
+    ProviderScope(
+      child: MyApp()
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {

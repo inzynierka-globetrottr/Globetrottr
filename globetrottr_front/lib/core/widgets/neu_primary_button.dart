@@ -40,9 +40,10 @@ class NeuPrimaryButton extends StatelessWidget {
         width: width,
         height: height,
         child: Center(
-          child:
-              child ??
-              Text(label!, style: labelStyle ?? AppTextStyles.submitButtonText),
+          child: child ?? Text(
+            label!,
+            style: labelStyle ?? AppTextStyles.submitButtonText,
+          ),
         ),
       ),
     );

@@ -26,10 +26,16 @@ class GoogleLoginSection extends StatelessWidget {
               color: AppColors.accentRed,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Text('G', style: AppTextStyles.rulesetTitle),
+            child: const Text(
+              'G',
+              style: AppTextStyles.rulesetTitle,
+            ),
           ),
           const SizedBox(width: 14),
-          const Text('Google Account', style: AppTextStyles.actionButtonText),
+          const Text(
+            'Google Account',
+            style: AppTextStyles.actionButtonText,
+          ),
         ],
       ),
     );
