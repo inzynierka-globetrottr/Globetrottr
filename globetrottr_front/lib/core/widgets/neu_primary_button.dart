@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/config/theme/app_colors.dart';
+import 'package:globetrottr_front/core/config/theme/app_theme.dart';
 
 class NeuPrimaryButton extends StatelessWidget {
   final String? label;
@@ -40,10 +40,9 @@ class NeuPrimaryButton extends StatelessWidget {
         width: width,
         height: height,
         child: Center(
-          child: child ?? Text(
-            label!,
-            style: labelStyle ?? AppTextStyles.submitButtonText,
-          ),
+          child:
+              child ??
+              Text(label!, style: labelStyle ?? AppTextStyles.submitButtonText),
         ),
       ),
     );

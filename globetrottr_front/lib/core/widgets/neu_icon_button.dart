@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/config/theme/app_colors.dart';
 
 class NeuIconButton extends StatelessWidget {
   final Widget child;
@@ -32,9 +32,7 @@ class NeuIconButton extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: Center(
-          child: child,
-        ),
+        child: Center(child: child),
       ),
     );
   }
