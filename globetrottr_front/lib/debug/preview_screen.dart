@@ -1,5 +1,5 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:globetrottr_front/core/config/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
@@ -26,7 +26,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
       darkTheme: const NeumorphicThemeData(
         baseColor: baseCanvasColor,
         shadowLightColor: AppColors.neuLight,
-        shadowDarkColor: AppColors.neuShadow,
+        shadowDarkColor: AppColors.neuShadow
       ),
       child: Scaffold(
         backgroundColor: baseCanvasColor,
@@ -37,15 +37,21 @@ class _PreviewScreenState extends State<PreviewScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  NeuFloatingContainer(child: Text("")),
+                  NeuFloatingContainer(
+                    child: Text("")
+                  ),
 
                   const SizedBox(height: 32),
 
-                  NeuInsetContainer(child: Text("")),
+                  NeuInsetContainer(
+                    child: Text("")
+                  ),
 
                   const SizedBox(height: 32),
 
-                  NeuRaisedContainer(child: Text("")),
+                  NeuRaisedContainer(
+                    child: Text("")
+                  ),
 
                   const SizedBox(height: 32),
 
@@ -65,7 +71,10 @@ class _PreviewScreenState extends State<PreviewScreen> {
 
                   const SizedBox(height: 32),
 
-                  NeuPrimaryButton(label: 'Zaloguj się', onPressed: () {}),
+                  NeuPrimaryButton(
+                    label: 'Zaloguj się',
+                    onPressed: () {},
+                  ),
 
                   const SizedBox(height: 32),
 
@@ -81,11 +90,12 @@ class _PreviewScreenState extends State<PreviewScreen> {
                       NeuSegment(label: 'Rejestracja', value: 'register'),
                     ],
                   ),
+
                 ],
               ),
             ),
-          ),
-        ),
+          )
+        )
       ),
     );
   }

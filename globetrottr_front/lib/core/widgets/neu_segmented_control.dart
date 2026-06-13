@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
-import 'package:globetrottr_front/core/config/theme/app_theme.dart'; // Ensure this points to your AppTextStyles
+import 'package:globetrottr_front/core/theme/app_theme.dart'; // Ensure this points to your AppTextStyles
 
 class NeuSegment<T> {
   final String label;
   final T value;
 
-  const NeuSegment({required this.label, required this.value});
+  const NeuSegment({
+    required this.label,
+    required this.value,
+  });
 }
 
 class NeuSegmentedControl<T> extends StatelessWidget {
@@ -46,13 +49,13 @@ class NeuSegmentedControl<T> extends StatelessWidget {
                     ? NeuFloatingContainer(
                         child: Text(
                           segment.label,
-                          style: AppTextStyles.actionButtonText,
+                          style: AppTextStyles.actionButtonText
                         ),
                       )
                     : Center(
                         child: Text(
                           segment.label,
-                          style: AppTextStyles.inputLabel,
+                          style: AppTextStyles.inputLabel
                         ),
                       ),
               ),
