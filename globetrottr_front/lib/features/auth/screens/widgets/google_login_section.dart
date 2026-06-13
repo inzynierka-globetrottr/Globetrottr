@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/config/theme/app_colors.dart';
-import 'package:globetrottr_front/core/config/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 
 class GoogleLoginSection extends StatelessWidget {

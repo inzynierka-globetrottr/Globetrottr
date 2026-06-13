@@ -1,7 +1,7 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/core/config/theme/app_colors.dart';
-import 'package:globetrottr_front/core/config/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
-import 'package:globetrottr_front/core/config/theme/app_theme.dart'; // Ensure this points to your AppTextStyles
+import 'package:globetrottr_front/core/theme/app_theme.dart'; // Ensure this points to your AppTextStyles
 
 class NeuSegment<T> {
   final String label;

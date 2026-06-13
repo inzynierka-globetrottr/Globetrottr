@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/config/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'neu_inset_container.dart';
 
 class NeuTextField extends StatefulWidget {
