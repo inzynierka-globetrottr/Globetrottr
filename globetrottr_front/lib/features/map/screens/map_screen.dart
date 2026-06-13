@@ -10,13 +10,11 @@ import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dar
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:globetrottr_front/core/config/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
-
-  static const double visionRadiusInMeters = 30.0;
 
   @override
   ConsumerState<MapScreen> createState() => _MapScreenState();

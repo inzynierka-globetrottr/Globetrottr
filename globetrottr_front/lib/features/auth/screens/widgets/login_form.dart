@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/config/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
