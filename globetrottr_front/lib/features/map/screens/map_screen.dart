@@ -46,10 +46,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     });
 
     final locationState = ref.watch(locationProvider);
-
     final position = locationState.currentPosition;
-    final isRecording = locationState.isRecording;
-    final discoveredPoints = locationState.discoveredPoints;
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
@@ -65,7 +62,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   50.0614,
                   19.9383,
                 ), // * for now hardcoded to Kraków
-                initialZoom: 14.0,
+                initialZoom: MapConfig.defaultZoom,
                 interactionOptions: InteractionOptions(
                   enableMultiFingerGestureRace: true,
                   rotationThreshold: 10.0,
@@ -79,14 +76,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.globetrottr.app',
                 ),
-
-                // displays fog and punches a hole in it around the player position, if recording is active
-                // here for debug purposes, I am not sure if it will stay like this
-                FogLayer(
-                  playerPosition: isRecording ? position : null,
-                  discoveredPoints: discoveredPoints,
-                  visionRadiusInMeters: MapConfig.defaultVisionRadius,
-                ),
+                FogLayer(readyHoles: locationState.calculatedHoles),
                 if (position != null)
                   // think about moving this to a separate widget too, but im not sure
                   // Marcel here, yes, I think you should move this to a separate widget, just like the buttons
