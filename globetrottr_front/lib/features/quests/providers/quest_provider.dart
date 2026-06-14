@@ -17,16 +17,13 @@ final questServiceProvider = Provider<QuestService>((ref) {
 final userQuestsProvider = FutureProvider<List<Quest>>((ref) async {
   final authService = ref.read(authServiceProvider);
   final questService = ref.read(questServiceProvider);
-  
-  // 1. Pobieramy dane zalogowanego użytkownika
-  final userId = await authService.getUserId();
+
   final token = await authService.getToken();
 
-  // 2. Weryfikacja
-  if (userId == null || token == null) {
-    throw Exception('Użytkownik nie jest zalogowany. Brak ID lub tokena.');
+  if (token == null) {
+    throw Exception('Użytkownik nie jest zalogowany. Brak tokena.');
   }
 
   // 3. Strzał do API
-  return questService.fetchUserQuests(userId, token);
+  return questService.fetchUserQuests(token);
 });

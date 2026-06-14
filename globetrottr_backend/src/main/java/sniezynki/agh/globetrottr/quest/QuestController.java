@@ -2,6 +2,7 @@ package sniezynki.agh.globetrottr.quest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,14 +15,16 @@ public class QuestController {
 
     private final QuestService questService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<QuestResponseDto>> getUserQuests(@PathVariable UUID userId) {
-        return ResponseEntity.ok(questService.getAllQuestsForSidebar(userId));
+    @GetMapping("/me")
+    public ResponseEntity<List<QuestResponseDto>> getMyQuests() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(questService.getAllQuestsForSidebar(username));
     }
 
-    @PostMapping("/{userId}/start/{questId}")
-    public ResponseEntity<Void> startQuest(@PathVariable UUID userId, @PathVariable Long questId) {
-        questService.startQuest(userId, questId);
+    @PostMapping("/me/start/{questId}")
+    public ResponseEntity<Void> startQuest(@PathVariable Long questId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        questService.startQuest(username, questId);
         return ResponseEntity.ok().build();
     }
 }

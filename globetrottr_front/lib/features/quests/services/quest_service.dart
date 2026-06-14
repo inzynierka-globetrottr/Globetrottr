@@ -6,9 +6,9 @@ import '../models/quest.dart';
 class QuestService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? 'http://10.0.2.2:8080';
 
-  Future<List<Quest>> fetchUserQuests(String userId, String token) async {
+  Future<List<Quest>> fetchUserQuests(String token) async {
     final response = await http.get(
-      Uri.parse('$_backendUrl/api/quests/$userId'),
+      Uri.parse('$_backendUrl/api/quests/me'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -23,9 +23,9 @@ class QuestService {
     }
   }
 
-  Future<void> startQuest(String userId, int questId, String token) async {
+  Future<void> startQuest(int questId, String token) async {
     final response = await http.post(
-      Uri.parse('$_backendUrl/api/quests/$userId/start/$questId'),
+      Uri.parse('$_backendUrl/api/quests/me/start/$questId'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',

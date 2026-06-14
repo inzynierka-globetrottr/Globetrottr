@@ -27,15 +27,14 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
       final authService = ref.read(authServiceProvider);
       final questService = ref.read(questServiceProvider);
 
-      final userId = await authService.getUserId();
       final token = await authService.getToken();
 
-      if (userId == null || token == null) {
+      if (token == null) {
         throw Exception("Brak autoryzacji. Zaloguj się ponownie.");
       }
 
       // Wysłanie żądania do API
-      await questService.startQuest(userId, questId, token);
+      await questService.startQuest(questId, token);
       
       // Magia Riverpoda: odświeżenie danych z API po kliknięciu
       ref.invalidate(userQuestsProvider);

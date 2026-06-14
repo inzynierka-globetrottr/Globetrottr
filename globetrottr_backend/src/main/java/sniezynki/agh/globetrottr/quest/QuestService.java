@@ -24,7 +24,11 @@ public class QuestService {
     private final UserRepository userRepository;
     private final UserFogRepository userFogRepository;
 
-    public List<QuestResponseDto> getAllQuestsForSidebar(UUID userId) {
+    public List<QuestResponseDto> getAllQuestsForSidebar(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UUID userId = user.getUserId();
+
         UserFog userFog = userFogRepository.findByUser_UserId(userId).orElse(null);
         List<Quest> allGlobalQuests = questRepository.findAll();
         List<UserQuest> userQuests = userQuestRepository.findByUser_UserId(userId);
@@ -136,14 +140,18 @@ public class QuestService {
     }
 
     @Transactional
-    public void startQuest(UUID userId, Long questId) {
+    public void startQuest(String username, Long questId) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UUID userId = user.getUserId();
+
         boolean alreadyStarted = userQuestRepository.findByUser_UserId(userId)
                 .stream().anyMatch(uq -> uq.getQuest().getId().equals(questId));
 
         if (alreadyStarted) return;
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Quest quest = questRepository.findById(questId).orElseThrow(() -> new RuntimeException("Quest not found"));
+        Quest quest = questRepository.findById(questId)
+                .orElseThrow(() -> new RuntimeException("Quest not found"));
 
         UserQuest newUserQuest = UserQuest.builder()
                 .user(user)
