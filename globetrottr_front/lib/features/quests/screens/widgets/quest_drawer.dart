@@ -7,7 +7,6 @@ import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/features/quests/providers/quest_provider.dart';
 import 'package:globetrottr_front/features/quests/models/quest.dart';
 
-// Enum definiujący nasze 3 strefy
 enum QuestZone { unstarted, inProgress, completed }
 
 class QuestDrawer extends ConsumerStatefulWidget {
@@ -18,10 +17,8 @@ class QuestDrawer extends ConsumerStatefulWidget {
 }
 
 class _QuestDrawerState extends ConsumerState<QuestDrawer> {
-  // Domyślnie rozwinięta strefa to "Niezaczęte"
   QuestZone _expandedZone = QuestZone.unstarted;
 
-  // Rozpoczęcie questa z automatycznym pobraniem danych użytkownika
   Future<void> _startQuest(int questId) async {
     try {
       final authService = ref.read(authServiceProvider);
@@ -33,10 +30,8 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
         throw Exception("Brak autoryzacji. Zaloguj się ponownie.");
       }
 
-      // Wysłanie żądania do API
       await questService.startQuest(questId, token);
       
-      // Magia Riverpoda: odświeżenie danych z API po kliknięciu
       ref.invalidate(userQuestsProvider);
     } catch (e) {
       if (mounted) {
@@ -49,7 +44,6 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    // Nasłuchiwanie providera, który sam ogarnia ID i pobieranie danych
     final questsAsyncValue = ref.watch(userQuestsProvider);
 
     return Drawer(
@@ -83,7 +77,6 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
                   ),
                 ),
                 data: (quests) {
-                  // Filtrowanie pobranych questów na 3 kategorie
                   final unstarted = quests.where((q) => !q.isStarted).toList();
                   final inProgress = quests.where((q) => q.isStarted && !q.isCompleted).toList();
                   final completed = quests.where((q) => q.isCompleted).toList();
@@ -122,7 +115,6 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
     );
   }
 
-  // Metoda budująca pojedynczą, rozwijaną strefę akordeonu
   Widget _buildZoneSection({
     required String title,
     required QuestZone zone,
@@ -134,16 +126,14 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // NAGŁÓWEK STREFY (Klikalny)
         GestureDetector(
           onTap: () {
             setState(() {
-              // Zwiń jeśli kliknięto w obecnie otwarty, w przeciwnym razie rozwiń nowy
-              _expandedZone = isExpanded ? _expandedZone : zone; 
+              _expandedZone = isExpanded ? _expandedZone : zone;
             });
           },
           child: Container(
-            color: Colors.transparent, // Zapewnia, że cała szerokość wiersza jest klikalna
+            color: Colors.transparent,
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: Row(
               children: [
@@ -168,8 +158,7 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
             ),
           ),
         ),
-        
-        // ROZWIJANA LISTA QUESTÓW (Z płynną animacją)
+
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
@@ -191,13 +180,12 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
     );
   }
 
-  // Metoda budująca kartę dla pojedynczego questa
   Widget _buildQuestCard(Quest quest, QuestZone zone) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: NeuFloatingContainer(
         width: double.infinity,
-        height: zone == QuestZone.unstarted ? 140 : 90, // Unstarted potrzebuje więcej miejsca na guzik
+        height: zone == QuestZone.unstarted ? 140 : 90,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -244,8 +232,7 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
                   ),
                 ],
               ),
-              
-              // GUZIK "ZACZNIJ" (Tylko dla strefy niezaczętych wyzwań)
+
               if (zone == QuestZone.unstarted) ...[
                 const Spacer(),
                 NeuPrimaryButton(

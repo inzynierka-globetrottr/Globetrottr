@@ -57,7 +57,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
       child: Scaffold(
         backgroundColor: AppColors.background,
-        // Dodany panel boczny z questami
         drawer: const QuestDrawer(), 
         body: Stack(
           children: [
@@ -105,7 +104,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ],
             ),
 
-            // Lewy górny róg - Przycisk otwierający Drawer (Questy)
             Positioned(
               top: 50.0,
               left: 16.0,
@@ -125,7 +123,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
             ),
 
-            // Prawy panel - istniejące przyciski narzędziowe
             Positioned(
               top: 50.0,
               right: 16.0,

@@ -4,7 +4,7 @@ class Quest {
   final String type;
   final int rewardPoints;
   final double progress;
-  final bool isStarted; // NOWE
+  final bool isStarted;
   final bool isCompleted;
 
   Quest({
