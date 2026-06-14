@@ -1,4 +1,12 @@
 package sniezynki.agh.globetrottr.user.dto;
 
-public record UserProfileResponse() {
-}
+import lombok.Builder;
+import java.util.UUID;
+
+@Builder
+public record UserProfileResponse(
+        UUID userId,
+        String username,
+        String email,
+        Integer totalPoints
+) {}

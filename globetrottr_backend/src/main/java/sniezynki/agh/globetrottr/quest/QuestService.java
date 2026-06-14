@@ -11,30 +11,41 @@ import sniezynki.agh.globetrottr.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class QuestService {
 
     private final UserQuestRepository userQuestRepository;
+    private final QuestRepository questRepository;
     private final UserRepository userRepository;
     private final UserFogRepository userFogRepository;
 
-    public List<QuestResponseDto> getAllQuestsForUser(UUID userId) {
+    public List<QuestResponseDto> getAllQuestsForSidebar(UUID userId) {
         UserFog userFog = userFogRepository.findByUser_UserId(userId).orElse(null);
+        List<Quest> allGlobalQuests = questRepository.findAll();
         List<UserQuest> userQuests = userQuestRepository.findByUser_UserId(userId);
 
-        return userQuests.stream().map(uq -> {
-            double progress = uq.isCompleted() ? 1.0 : calculateProgress(userFog, uq.getQuest());
+        Map<Long, UserQuest> userProgressMap = userQuests.stream()
+                .collect(Collectors.toMap(uq -> uq.getQuest().getId(), uq -> uq));
+
+        return allGlobalQuests.stream().map(quest -> {
+            UserQuest uq = userProgressMap.get(quest.getId());
+            boolean isStarted = (uq != null);
+            boolean isCompleted = isStarted && uq.isCompleted();
+            double progress = isStarted ? (isCompleted ? 1.0 : calculateProgress(userFog, quest)) : 0.0;
 
             return new QuestResponseDto(
-                    uq.getQuest().getId(),
-                    uq.getQuest().getTitle(),
-                    uq.getQuest().getType(),
-                    uq.getQuest().getRewardPoints(),
+                    quest.getId(),
+                    quest.getTitle(),
+                    quest.getType(),
+                    quest.getRewardPoints(),
                     progress,
-                    uq.isCompleted()
+                    isStarted,
+                    isCompleted
             );
         }).toList();
     }
@@ -122,5 +133,24 @@ public class QuestService {
         if (userPointsUpdated) {
             userRepository.save(user);
         }
+    }
+
+    @Transactional
+    public void startQuest(UUID userId, Long questId) {
+        boolean alreadyStarted = userQuestRepository.findByUser_UserId(userId)
+                .stream().anyMatch(uq -> uq.getQuest().getId().equals(questId));
+
+        if (alreadyStarted) return;
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        Quest quest = questRepository.findById(questId).orElseThrow(() -> new RuntimeException("Quest not found"));
+
+        UserQuest newUserQuest = UserQuest.builder()
+                .user(user)
+                .quest(quest)
+                .isCompleted(false)
+                .build();
+
+        userQuestRepository.save(newUserQuest);
     }
 }

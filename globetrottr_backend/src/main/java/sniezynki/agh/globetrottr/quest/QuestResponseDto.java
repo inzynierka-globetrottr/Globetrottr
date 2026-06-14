@@ -6,5 +6,6 @@ public record QuestResponseDto(
         QuestType type,
         Integer rewardPoints,
         Double progress,
+        boolean isStarted,
         boolean isCompleted
 ) {}
