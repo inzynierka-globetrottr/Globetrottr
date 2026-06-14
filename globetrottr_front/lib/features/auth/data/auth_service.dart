@@ -11,15 +11,12 @@ class AuthService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
   final _storage = const FlutterSecureStorage();
   final String _tokenKey = 'jwt_token';
-  final String _userIdKey = 'user_id'; 
 
   Future<String?> getToken() async => await _storage.read(key: _tokenKey);
   
-  Future<String?> getUserId() async => await _storage.read(key: _userIdKey); 
 
   Future<void> deleteToken() async {
     await _storage.delete(key: _tokenKey);
-    await _storage.delete(key: _userIdKey);
   }
 
   String _parseError(String responseBody, int statusCode) {
@@ -28,18 +25,6 @@ class AuthService {
       return data['error'] ?? 'Server error ($statusCode)';
     } catch (_) {
       return 'Unexpected server error ($statusCode)';
-    }
-  }
-
-
-  Future<void> _fetchAndStoreUserData(String token) async {
-    final response = await http.get(
-      Uri.parse('$_backendUrl/api/users/me'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      await _storage.write(key: _userIdKey, value: data['userId']);
     }
   }
 
@@ -71,8 +56,7 @@ class AuthService {
       final token = data['token'];
       
       await _storage.write(key: _tokenKey, value: token); 
-      await _fetchAndStoreUserData(token);
-      
+
       return token;
     }
 
@@ -93,8 +77,7 @@ class AuthService {
       final token = data['token'];
       await _storage.write(key: _tokenKey, value: token);
       
-      await _fetchAndStoreUserData(token);
-      
+
       return token;
     }
 
@@ -117,7 +100,6 @@ class AuthService {
 
       if (token != null && token.toString().isNotEmpty) {
         await _storage.write(key: _tokenKey, value: token);
-        await _fetchAndStoreUserData(token); // DODANE
       }
       
       return token ?? '';
