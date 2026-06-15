@@ -27,23 +27,41 @@ class FogService {
   }
 
   List<List<LatLng>> _parseMultiPolygon(String responseBody) {
-    final data = jsonDecode(responseBody);
-    final List<dynamic> coordinates = data['coordinates'] ?? data;
+    final Map<String, dynamic> data = jsonDecode(responseBody);
+
+    final dynamic coordinates = data['coordinates'];
+
+    if (coordinates == null) return [];
 
     List<List<LatLng>> holes = [];
+    final String type = data['type'] ?? 'Polygon';
 
-    for (var polygon in coordinates) {
-      for (var ring in polygon) {
-        List<LatLng> polygonRing = [];
-        for (var point in ring) {
-          final double lng = (point[0] as num).toDouble();
-          final double lat = (point[1] as num).toDouble();
-          polygonRing.add(LatLng(lat, lng));
+    if (type == 'Polygon') {
+      for (var ring in coordinates) {
+        holes.add(_parseRing(ring));
+      }
+    } else if (type == 'MultiPolygon') {
+      for (var polygon in coordinates) {
+        for (var ring in polygon) {
+          holes.add(_parseRing(ring));
         }
-        holes.add(polygonRing);
       }
     }
 
     return holes;
+  }
+
+  List<LatLng> _parseRing(dynamic ring) {
+    List<LatLng> polygonRing = [];
+    if (ring is List) {
+      for (var point in ring) {
+        if (point is List && point.length >= 2) {
+          final double lng = (point[0] as num).toDouble();
+          final double lat = (point[1] as num).toDouble();
+          polygonRing.add(LatLng(lat, lng));
+        }
+      }
+    }
+    return polygonRing;
   }
 }
