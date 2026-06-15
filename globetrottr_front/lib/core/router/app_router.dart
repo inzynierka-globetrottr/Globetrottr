@@ -6,6 +6,7 @@ import 'package:globetrottr_front/debug/preview_screen.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
+import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/invite_hub_screen.dart';
 import 'package:globetrottr_front/features/map/screens/map_screen.dart';
@@ -91,6 +92,12 @@ final appRouter = Provider<GoRouter>((ref) {
               child: child,
             );
           },
+        ),
+      ),
+      GoRoute(
+        path: '/friends/:username/map',
+        builder: (context, state) => FriendMapScreen(
+          friendUsername: state.pathParameters['username']!,
         ),
       ),
       if (kDebugMode)

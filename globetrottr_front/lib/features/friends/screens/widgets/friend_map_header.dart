@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
+import 'package:go_router/go_router.dart';
 
 class FriendMapHeader extends StatelessWidget {
   final String friendUsername;
@@ -17,7 +18,7 @@ class FriendMapHeader extends StatelessWidget {
       child: Row(
         children: [
           NeuIconButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Icon(
               Icons.arrow_back,
               color: AppColors.text,

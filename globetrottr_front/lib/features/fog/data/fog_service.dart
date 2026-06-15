@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 
+// TODO: make this more in line with other service classes for consistency
 class FogService {
   final String? _backendUrl = dotenv.env['BACKEND_URL'];
 
