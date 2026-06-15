@@ -60,7 +60,7 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
                   data: (holes) => FogLayer(readyHoles: holes),
                   loading: () => const SizedBox.shrink(),
                   error: (err, stack) {
-                    debugPrint('Błąd pobierania mgły: $err');
+                    debugPrint('Error downloading fog: $err');
                     return FogLayer(readyHoles: const []);
                   },
                 ),
