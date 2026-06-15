@@ -48,6 +48,7 @@ class FogPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant FogPainter oldDelegate) {
+    // TODO: consider whether these comparisons are correct (reference vs value)
     return oldDelegate.holes != holes || oldDelegate.camera != camera;
   }
 }
