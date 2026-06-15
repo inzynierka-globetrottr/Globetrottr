@@ -9,6 +9,7 @@ import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/invite_hub_screen.dart';
 import 'package:globetrottr_front/features/map/screens/map_screen.dart';
+import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final authStateProvider = FutureProvider<bool>((ref) async {
@@ -64,6 +65,10 @@ final appRouter = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/map',
         builder: (context, state) => const MapScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/friends',
