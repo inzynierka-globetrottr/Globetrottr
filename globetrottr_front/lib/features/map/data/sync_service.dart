@@ -29,7 +29,9 @@ class SyncService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        await MapStorage().clearPendingPoints();
+        //Temporary disabled for developement process
+        //await MapStorage().clearPendingPoints();
+        print("not deleting local db");
       }
     } catch (e) {
       print('Sync Error: $e');

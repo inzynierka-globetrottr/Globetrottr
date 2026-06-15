@@ -8,6 +8,8 @@ import '../data/map_storage.dart';
 import 'tracking_state.dart';
 import '../../fog/fog_holepuncher.dart';
 import '../../../core/config/map_config.dart';
+import 'package:globetrottr_front/features/auth/data/auth_service.dart';
+import 'package:globetrottr_front/features/map/data/sync_service.dart';
 
 class LocationNotifier extends Notifier<TrackingState> {
   late final LocationService _locationService;
@@ -63,9 +65,17 @@ class LocationNotifier extends Notifier<TrackingState> {
     state = state.copyWith(isTracking: false, isRecording: false);
   }
 
-  void setRecording(bool value) {
+  Future<void> setRecording(bool value) async {
     _locationService.setRecording(value);
-    state = state.copyWith(isRecording: value);
+    state = state.copyWith(isRecording: value, errorMessage: null);
+    final isRecording = state.isRecording;
+
+    if (!isRecording) {
+      final token = await AuthService().getToken();
+      if (token != null) {
+        await SyncService().syncPendingPoints(token);
+      }
+    }
   }
 
   void _onPosition(Position position) {

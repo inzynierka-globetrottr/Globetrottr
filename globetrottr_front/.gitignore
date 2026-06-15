@@ -55,3 +55,7 @@ windows/flutter/generated_plugins.cmake
 # My (kubikolo) project scraping scripts to use as context for AI models, to assist in debugging
 scrape_project.py
 project_bundle_context.txt
+
+# My (marcel) project scraping scripts to use as context for AI models, to assist in debugging
+scraper.py
+combined_flutter_code.txt
