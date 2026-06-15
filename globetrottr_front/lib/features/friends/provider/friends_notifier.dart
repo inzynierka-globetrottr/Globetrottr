@@ -10,6 +10,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
 
   @override
   FriendsState build() {
+    // TODO: make friends service a dependency injection
     _service = FriendsService();
     return const FriendsState();
   }
@@ -35,7 +36,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Network error. Please check your connection.',
+        errorMessage: 'Something went wrong.',
       );
     }
   }
@@ -56,7 +57,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException('Network error. Please check your connection.');
+      throw AppException('Something went wrong.');
     }
   }
 
@@ -64,6 +65,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     try {
       await _service.acceptInvite(username);
 
+      // TODO: handle case when user is not found
       final accepted = state.receivedInvites
           .firstWhere((r) => r.username == username);
 

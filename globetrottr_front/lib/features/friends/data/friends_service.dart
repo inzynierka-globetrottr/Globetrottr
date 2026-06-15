@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 class FriendsService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
+  // TODO: make auth service a dependency injection
   final AuthService _authService = AuthService();
 
   Future<Map<String, String>> _authHeaders() async {
@@ -49,6 +50,7 @@ class FriendsService {
   
   Future<List<FriendshipResponse>> getSentInvites() => _getList('/api/friends/invites/sent');
 
+  // TODO: change _getList to take in parameters, so this function could be simplified too
   Future<List<FriendshipResponse>> searchUsers(String query) async {
     final uri = Uri.parse('$_backendUrl/api/friends/search')
         .replace(queryParameters: {'query': query});
