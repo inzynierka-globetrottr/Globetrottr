@@ -27,7 +27,7 @@ class NeuTextField extends StatefulWidget {
     this.placeholderStyle,
     this.width = double.infinity,
     this.height = 48,
-    this.validator
+    this.validator,
   });
 
   @override
@@ -43,7 +43,10 @@ class _NeuTextFieldState extends State<NeuTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.label != null) ...[
-          Text(widget.label!, style: widget.labelStyle ?? AppTextStyles.inputLabel),
+          Text(
+            widget.label!,
+            style: widget.labelStyle ?? AppTextStyles.inputLabel,
+          ),
           const SizedBox(height: 6),
         ],
         NeuInsetContainer(
@@ -90,8 +93,8 @@ class _NeuTextFieldState extends State<NeuTextField> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-          )
-        ]
+          ),
+        ],
       ],
     );
   }

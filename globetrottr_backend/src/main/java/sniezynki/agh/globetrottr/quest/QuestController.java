@@ -2,10 +2,8 @@ package sniezynki.agh.globetrottr.quest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,8 +15,16 @@ public class QuestController {
 
     private final QuestService questService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<QuestResponseDto>> getUserQuests(@PathVariable UUID userId) {
-        return ResponseEntity.ok(questService.getAllQuestsForUser(userId));
+    @GetMapping("/me")
+    public ResponseEntity<List<QuestResponseDto>> getMyQuests() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(questService.getAllQuestsForSidebar(username));
+    }
+
+    @PostMapping("/me/start/{questId}")
+    public ResponseEntity<Void> startQuest(@PathVariable Long questId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        questService.startQuest(username, questId);
+        return ResponseEntity.ok().build();
     }
 }

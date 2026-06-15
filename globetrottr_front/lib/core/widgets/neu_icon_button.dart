@@ -32,9 +32,7 @@ class NeuIconButton extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: Center(
-          child: child,
-        ),
+        child: Center(child: child),
       ),
     );
   }

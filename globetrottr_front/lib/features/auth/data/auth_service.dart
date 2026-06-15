@@ -13,8 +13,11 @@ class AuthService {
   final String _tokenKey = 'jwt_token';
 
   Future<String?> getToken() async => await _storage.read(key: _tokenKey);
+  
 
-  Future<void> deleteToken() async => await _storage.delete(key: _tokenKey);
+  Future<void> deleteToken() async {
+    await _storage.delete(key: _tokenKey);
+  }
 
   String _parseError(String responseBody, int statusCode) {
     try {
@@ -50,7 +53,11 @@ class AuthService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      return data['token'];
+      final token = data['token'];
+      
+      await _storage.write(key: _tokenKey, value: token); 
+
+      return token;
     }
 
     throw AuthException(_parseError(response.body, response.statusCode), response.statusCode);
@@ -69,6 +76,8 @@ class AuthService {
       final data = jsonDecode(response.body);
       final token = data['token'];
       await _storage.write(key: _tokenKey, value: token);
+      
+
       return token;
     }
 
@@ -87,8 +96,13 @@ class AuthService {
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
       final token = data['token'];
-      await _storage.write(key: _tokenKey, value: token);
-      return token;
+      
+
+      if (token != null && token.toString().isNotEmpty) {
+        await _storage.write(key: _tokenKey, value: token);
+      }
+      
+      return token ?? '';
     }
 
     throw AuthException(_parseError(response.body, response.statusCode), response.statusCode);
