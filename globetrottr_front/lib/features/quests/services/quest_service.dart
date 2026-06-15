@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/quest.dart';
 
 class QuestService {
-  final String _backendUrl = dotenv.env['BACKEND_URL'] ?? 'http://10.0.2.2:8080';
+  final String? _backendUrl = dotenv.env['BACKEND_URL'];
 
   Future<List<Quest>> fetchUserQuests(String token) async {
     final response = await http.get(
@@ -19,7 +19,7 @@ class QuestService {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => Quest.fromJson(json)).toList();
     } else {
-      throw Exception('Błąd pobierania questów: Kod ${response.statusCode}');
+      throw Exception('Failed to fetch quests: code ${response.statusCode}');
     }
   }
 
@@ -33,7 +33,7 @@ class QuestService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Nie udało się rozpocząć questa (Kod: ${response.statusCode})');
+      throw Exception('Failed to start quest: code ${response.statusCode}');
     }
   }
 }

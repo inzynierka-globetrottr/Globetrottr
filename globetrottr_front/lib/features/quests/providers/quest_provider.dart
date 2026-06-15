@@ -18,7 +18,7 @@ final userQuestsProvider = FutureProvider<List<Quest>>((ref) async {
   final token = await authService.getToken();
 
   if (token == null) {
-    throw Exception('Użytkownik nie jest zalogowany. Brak tokena.');
+    throw Exception('User is not logged in. No token available.');
   }
 
   return questService.fetchUserQuests(token);
