@@ -68,9 +68,8 @@ class LocationNotifier extends Notifier<TrackingState> {
   Future<void> setRecording(bool value) async {
     _locationService.setRecording(value);
     state = state.copyWith(isRecording: value, errorMessage: null);
-    final isRecording = state.isRecording;
 
-    if (!isRecording) {
+    if (!value) {
       final token = await AuthService().getToken();
       if (token != null) {
         await SyncService().syncPendingPoints(token);
