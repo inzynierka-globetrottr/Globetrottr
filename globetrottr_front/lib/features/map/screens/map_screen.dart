@@ -6,7 +6,7 @@ import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
-import 'package:globetrottr_front/features/map/screens/widgets/fog_layer.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/fog_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
@@ -56,7 +56,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
       child: Scaffold(
         backgroundColor: AppColors.background,
-        drawer: const QuestDrawer(), 
+        drawer: const QuestDrawer(),
         body: Stack(
           children: [
             FlutterMap(
@@ -112,7 +112,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       size: 22,
                     ),
                   );
-                }
+                },
               ),
             ),
 
@@ -139,9 +139,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               right: 0,
               child: const NeuBottomNavbar(activeItem: NavbarItem.map),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 }

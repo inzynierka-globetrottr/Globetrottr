@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
-import 'package:globetrottr_front/features/map/screens/widgets/fog_layer.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/fog_layer.dart';
 import 'package:globetrottr_front/features/fog/provider/friend_fog_provider.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_map_header.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_map_loading_overlay.dart';
