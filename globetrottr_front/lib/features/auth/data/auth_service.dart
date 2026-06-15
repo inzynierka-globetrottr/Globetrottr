@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:globetrottr_front/features/auth/data/auth_exception.dart';
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -29,7 +29,7 @@ class AuthService {
   }
 
   Future<String?> signInWithGoogle() async {
-    if (_backendUrl.isEmpty) throw AuthException('Backend URL is not configured');
+    if (_backendUrl.isEmpty) throw AppException('Backend URL is not configured');
 
     final String? clientId = dotenv.env['GOOGLE_CLIENT_ID'];
 
@@ -43,7 +43,7 @@ class AuthService {
 
     final String? idToken = googleAuth.idToken;
 
-    if (idToken == null) throw AuthException('Google authentication failed.');
+    if (idToken == null) throw AppException('Google authentication failed.');
 
     final response = await http.post(
       Uri.parse('$_backendUrl/api/auth/google'),
@@ -60,11 +60,11 @@ class AuthService {
       return token;
     }
 
-    throw AuthException(_parseError(response.body, response.statusCode), response.statusCode);
+    throw AppException(_parseError(response.body, response.statusCode), response.statusCode);
   }
 
   Future<String> login(LoginRequest request) async {
-    if (_backendUrl.isEmpty) throw AuthException('Backend URL is not configured.');
+    if (_backendUrl.isEmpty) throw AppException('Backend URL is not configured.');
 
     final response = await http.post(
       Uri.parse('$_backendUrl/api/auth/login'),
@@ -81,11 +81,11 @@ class AuthService {
       return token;
     }
 
-    throw AuthException(_parseError(response.body, response.statusCode), response.statusCode);
+    throw AppException(_parseError(response.body, response.statusCode), response.statusCode);
   }
 
   Future<String> register(RegisterRequest request) async {
-    if (_backendUrl.isEmpty) throw AuthException('Backend URL is not configured.');
+    if (_backendUrl.isEmpty) throw AppException('Backend URL is not configured.');
 
     final response = await http.post(
       Uri.parse('$_backendUrl/api/auth/register'),
@@ -105,7 +105,7 @@ class AuthService {
       return token ?? '';
     }
 
-    throw AuthException(_parseError(response.body, response.statusCode), response.statusCode);
+    throw AppException(_parseError(response.body, response.statusCode), response.statusCode);
   }
 
   Future<String?> refreshToken() async {
@@ -128,9 +128,14 @@ class AuthService {
       return newToken;
     } else if (response.statusCode == 401 || response.statusCode == 403) {
       await deleteToken();
-      throw AuthException('Session expired. Please log in again.', response.statusCode);
+      throw AppException('Session expired. Please log in again.', response.statusCode);
     } else {
-      throw AuthException('Server temporarily unavailable.', response.statusCode);
+      throw AppException('Server temporarily unavailable.', response.statusCode);
     }
+  }
+
+  Future<void> logout() async {
+    final storage = const FlutterSecureStorage();
+    await storage.delete(key: 'jwt_token');
   }
 }

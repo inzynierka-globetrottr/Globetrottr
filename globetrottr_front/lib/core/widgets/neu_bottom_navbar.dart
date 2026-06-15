@@ -1,11 +1,13 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
+import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:go_router/go_router.dart';
 
 enum NavbarItem { friends, map, profile, quests }
 
-class NeuBottomNavbar extends StatelessWidget {
+class NeuBottomNavbar extends ConsumerWidget {
   final NavbarItem activeItem;
 
   const NeuBottomNavbar({
@@ -14,7 +16,7 @@ class NeuBottomNavbar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 30),
       child: NeuFloatingContainer(
@@ -38,12 +40,12 @@ class NeuBottomNavbar extends StatelessWidget {
               _NavbarButton(
                 icon: Icons.people_rounded,
                 isActive: activeItem == NavbarItem.friends,
-                onTap: () => {}//context.go('/friends'),
+                onTap: () => context.go('/friends'),
               ),
               _NavbarButton(
                 icon: Icons.person_rounded,
                 isActive: activeItem == NavbarItem.profile,
-                onTap: () => {}//context.go('/profile'),
+                onTap: () => ref.read(authProvider.notifier).logout() //context.go('/profile'), // TODO: change to real path when done
               ),
             ],
           ),
