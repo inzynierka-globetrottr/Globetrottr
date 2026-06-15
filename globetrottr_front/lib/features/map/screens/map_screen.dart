@@ -6,7 +6,7 @@ import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
-import 'package:globetrottr_front/features/map/screens/widgets/fog_layer.dart';
+import 'package:globetrottr_front/features/fog/fog_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
@@ -47,9 +47,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     });
 
     final locationState = ref.watch(locationProvider);
-
     final position = locationState.currentPosition;
-    final isRecording = locationState.isRecording;
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
@@ -66,7 +64,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   50.0614,
                   19.9383,
                 ), // * for now hardcoded to Kraków
-                initialZoom: 14.0,
+                initialZoom: MapConfig.defaultZoom,
                 interactionOptions: InteractionOptions(
                   enableMultiFingerGestureRace: true,
                   rotationThreshold: 10.0,
@@ -80,13 +78,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.globetrottr.app',
                 ),
-
-                // displays fog and punches a hole in it around the player position, if recording is active
-                // here for debug purposes, I am not sure if it will stay like this
-                FogLayer(
-                  playerPosition: isRecording ? position : null,
-                  visionRadiusInMeters: MapConfig.defaultVisionRadius,
-                ),
+                FogLayer(readyHoles: locationState.calculatedHoles),
                 if (position != null)
                   // think about moving this to a separate widget too, but im not sure
                   // Marcel here, yes, I think you should move this to a separate widget, just like the buttons

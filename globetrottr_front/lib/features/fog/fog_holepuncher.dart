@@ -4,12 +4,23 @@ import 'package:latlong2/latlong.dart';
 class FogHolepuncher {
   static List<List<LatLng>> getHoleCoordinates({
     required LatLng? playerPosition,
+    required List<LatLng> discoveredPoints,
     required double visionRadiusInMeters,
   }) {
     final List<List<LatLng>> holes = [];
+
+    for (final point in discoveredPoints) {
+      holes.add(
+        calculateSingleHole(
+          center: point,
+          radiusInMeters: visionRadiusInMeters,
+        ),
+      );
+    }
+
     if (playerPosition != null) {
       holes.add(
-        _calculateHoleCoordinates(
+        calculateSingleHole(
           center: playerPosition,
           radiusInMeters: visionRadiusInMeters,
         ),
@@ -18,7 +29,7 @@ class FogHolepuncher {
     return holes;
   }
 
-  static List<LatLng> _calculateHoleCoordinates({
+  static List<LatLng> calculateSingleHole({
     required LatLng center,
     required double radiusInMeters,
     //Number of edges to a holepunched "circle"

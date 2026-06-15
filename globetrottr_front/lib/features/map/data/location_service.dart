@@ -1,26 +1,32 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'map_storage.dart';
 import 'pending_point.dart';
 
 // TODO: potentially refactor this, as well as map storage to not be singletons, and instead make use of riverpod providers
 class LocationService {
-  StreamSubscription<Position>? _positionStream;
+  StreamSubscription<Position>? _dbSubscription;
+  Stream<Position>? _broadcastStream;
+
   late LocationSettings _locationSettings;
   bool _isRecording = false;
+  String? _sessionId;
 
   static final LocationService _instance = LocationService._internal();
   factory LocationService() => _instance;
   LocationService._internal();
 
-  String? _sessionId;
-
-  Stream<Position>? _positionStreamCache;
-  Stream<Position> get positionStream => _positionStreamCache ??= Geolocator.getPositionStream(
-    locationSettings: _locationSettings,
-  );
+  Stream<Position> get positionStream {
+    if (_broadcastStream == null) {
+      throw Exception(
+        'Localization stream not initiated, call startTracking() first.',
+      );
+    }
+    return _broadcastStream!;
+  }
 
   void setRecording(bool value) {
     _isRecording = value;
@@ -30,7 +36,7 @@ class LocationService {
   }
 
   Future<void> startTracking() async {
-    if (_positionStream != null) return;
+    if (_broadcastStream != null) return;
 
     if (await Permission.notification.isDenied) {
       await Permission.notification.request();
@@ -54,8 +60,9 @@ class LocationService {
     if (defaultTargetPlatform == TargetPlatform.android) {
       _locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 1,
-        forceLocationManager: true,
+        distanceFilter: MapConfig.distanceFilter,
+        forceLocationManager: false,
+        intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: const ForegroundNotificationConfig(
           notificationText: "Recording your route in the background...",
           notificationTitle: "Globetrottr",
@@ -70,7 +77,7 @@ class LocationService {
         defaultTargetPlatform == TargetPlatform.macOS) {
       _locationSettings = AppleSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 1,
+        distanceFilter: MapConfig.distanceFilter,
         activityType: ActivityType.fitness,
         pauseLocationUpdatesAutomatically: false,
         showBackgroundLocationIndicator: true,
@@ -78,34 +85,33 @@ class LocationService {
     } else {
       _locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 1,
+        distanceFilter: MapConfig.distanceFilter,
       );
     }
 
-    _positionStream =
-        Geolocator.getPositionStream(locationSettings: _locationSettings).listen(
-          (Position position) async {
-            if (_isRecording) {
-              final point = PendingPoint(
-                sessionId: _sessionId!,
-                latitude: position.latitude,
-                longitude: position.longitude,
-                timestamp: DateTime.now().millisecondsSinceEpoch,
-              );
+    _broadcastStream = Geolocator.getPositionStream(
+      locationSettings: _locationSettings,
+    ).asBroadcastStream();
 
-              await MapStorage().insertPendingPoint(point);
-              print(
-                "Location saved locally: ${point.latitude}, ${point.longitude}",
-              );
-            }
-          },
+    _dbSubscription = _broadcastStream!.listen((Position position) async {
+      if (_isRecording && _sessionId != null) {
+        final point = PendingPoint(
+          sessionId: _sessionId!,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
         );
+
+        await MapStorage().insertPendingPoint(point);
+        print("Location saved locally: ${point.latitude}, ${point.longitude}");
+      }
+    });
   }
 
   void stopTracking() {
-    _positionStream?.cancel();
-    _positionStream = null;
-    _positionStreamCache = null;
+    _dbSubscription?.cancel();
+    _dbSubscription = null;
+    _broadcastStream = null;
     _sessionId = null;
     _isRecording = false;
   }
