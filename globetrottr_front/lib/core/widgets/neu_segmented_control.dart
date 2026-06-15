@@ -7,10 +7,7 @@ class NeuSegment<T> {
   final String label;
   final T value;
 
-  const NeuSegment({
-    required this.label,
-    required this.value,
-  });
+  const NeuSegment({required this.label, required this.value});
 }
 
 class NeuSegmentedControl<T> extends StatelessWidget {
@@ -49,13 +46,13 @@ class NeuSegmentedControl<T> extends StatelessWidget {
                     ? NeuFloatingContainer(
                         child: Text(
                           segment.label,
-                          style: AppTextStyles.actionButtonText
+                          style: AppTextStyles.actionButtonText,
                         ),
                       )
                     : Center(
                         child: Text(
                           segment.label,
-                          style: AppTextStyles.inputLabel
+                          style: AppTextStyles.inputLabel,
                         ),
                       ),
               ),

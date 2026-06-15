@@ -18,7 +18,9 @@ class NeuInsetContainer extends StatelessWidget {
     return Neumorphic(
       style: NeumorphicStyle(
         shape: NeumorphicShape.flat,
-        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.all(Radius.circular(24))),
+        boxShape: NeumorphicBoxShape.roundRect(
+          BorderRadius.all(Radius.circular(24)),
+        ),
         depth: -4,
         intensity: 1,
         shadowLightColorEmboss: AppColors.neuLight,
