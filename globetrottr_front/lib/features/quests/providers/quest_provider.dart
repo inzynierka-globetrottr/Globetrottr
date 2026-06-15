@@ -12,7 +12,6 @@ final questServiceProvider = Provider<QuestService>((ref) {
 });
 
 final userQuestsProvider = FutureProvider.autoDispose<List<Quest>>((ref) async {
-  print('➡️ [Riverpod] userQuestsProvider został uruchomiony! Pobieram dane...'); 
   final authService = ref.read(authServiceProvider);
   final questService = ref.read(questServiceProvider);
 
