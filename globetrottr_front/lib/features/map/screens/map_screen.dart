@@ -9,9 +9,11 @@ import 'package:globetrottr_front/features/map/screens/widgets/fog_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_drawer.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -55,6 +57,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
       child: Scaffold(
         backgroundColor: AppColors.background,
+        drawer: const QuestDrawer(), 
         body: Stack(
           children: [
             FlutterMap(
@@ -101,19 +104,35 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ],
             ),
 
-            // this is temporary, until we get more widgets on screen and fully figure out the layout
+            Positioned(
+              top: 50.0,
+              left: 16.0,
+              child: Builder(
+                builder: (context) {
+                  return NeuIconButton(
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
+                    child: const Icon(
+                      Icons.menu_rounded,
+                      color: AppColors.text,
+                      size: 22,
+                    ),
+                  );
+                }
+              ),
+            ),
+
             Positioned(
               top: 50.0,
               right: 16.0,
               child: CompassButton(mapController: _mapController),
             ),
-
             Positioned(
               top: 110.0,
               right: 16.0,
               child: RecenterButton(mapController: _mapController),
             ),
-
             Positioned(
               top: 170.0,
               right: 16.0,
