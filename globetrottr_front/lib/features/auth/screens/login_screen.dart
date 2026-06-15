@@ -9,6 +9,7 @@ import 'package:globetrottr_front/features/auth/screens/widgets/auth_mode_switch
 import 'package:globetrottr_front/features/auth/screens/widgets/form_divider.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/google_login_section.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/login_form.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -41,7 +42,7 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
 
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
-        // TODO: route to map screen
+        context.go('/map');
       }
     });
 
