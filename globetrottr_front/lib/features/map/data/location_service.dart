@@ -54,7 +54,7 @@ class LocationService {
     if (defaultTargetPlatform == TargetPlatform.android) {
       _locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
+        distanceFilter: 1,
         forceLocationManager: true,
         foregroundNotificationConfig: const ForegroundNotificationConfig(
           notificationText: "Recording your route in the background...",
@@ -70,7 +70,7 @@ class LocationService {
         defaultTargetPlatform == TargetPlatform.macOS) {
       _locationSettings = AppleSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
+        distanceFilter: 1,
         activityType: ActivityType.fitness,
         pauseLocationUpdatesAutomatically: false,
         showBackgroundLocationIndicator: true,
@@ -78,7 +78,7 @@ class LocationService {
     } else {
       _locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
+        distanceFilter: 1,
       );
     }
 
