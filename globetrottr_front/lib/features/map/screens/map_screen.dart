@@ -29,9 +29,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(locationProvider.notifier).startTracking();
-    });
+    Future.microtask(() => ref.read(locationProvider.notifier).startTracking());
   }
 
   @override

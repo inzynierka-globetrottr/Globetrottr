@@ -19,6 +19,7 @@ class QuestService {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => Quest.fromJson(json)).toList();
     } else {
+      // TODO: change exception to appexception or sometheing like that
       throw Exception('Failed to fetch quests: code ${response.statusCode}');
     }
   }
@@ -33,6 +34,7 @@ class QuestService {
     );
 
     if (response.statusCode != 200) {
+      // TODO: change exception to appexception or sometheing like that
       throw Exception('Failed to start quest: code ${response.statusCode}');
     }
   }
