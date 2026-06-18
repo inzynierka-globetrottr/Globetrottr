@@ -33,7 +33,7 @@ class LoginForm extends StatelessWidget {
           NeuTextField(
             controller: usernameController,
             placeholder: 'Username',
-            keyboardType: TextInputType.emailAddress,
+            keyboardType: TextInputType.name,
             validator: (value) {
               if (value == null || value.trim().length < 3) {
                 return 'Must be at least 3 characters';
