@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:globetrottr_front/core/extensions/string_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
@@ -31,7 +32,7 @@ class FriendCard extends StatelessWidget {
                 height: 44,
                 // TODO: replace with profile picture
                 child: Text(
-                  friend.username[0].toUpperCase(),
+                  friend.username.initialOrFallback,
                   style: AppTextStyles.actionButtonText.copyWith(
                     color: AppColors.accentBlue,
                   ),

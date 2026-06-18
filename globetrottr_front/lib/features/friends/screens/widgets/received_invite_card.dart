@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/extensions/string_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
@@ -31,7 +32,7 @@ class ReceivedInviteCard extends StatelessWidget {
               width: 44,
               height: 44,
               child: Text(
-                invite.username[0].toUpperCase(),
+                invite.username.initialOrFallback,
                 style: AppTextStyles.actionButtonText.copyWith(
                   color: AppColors.accentBlue,
                 ),
