@@ -20,31 +20,19 @@ class AuthNotifierListenable extends ChangeNotifier {
 }
 
 final appRouter = Provider<GoRouter>((ref) {
-  ref.watch(authStateProvider);
   final listenable = AuthNotifierListenable(ref);
 
   return GoRouter(
     initialLocation: '/login',
     refreshListenable: listenable,
-    redirect: (context, state) async {
-      final authAsync = ref.read(authStateProvider);
+    redirect: (context, state) {
+      final authState = ref.read(authProvider);
 
-      if (authAsync.isLoading) {
-        return null;
-      }
-
-      final isStartupAuthed = authAsync.value ?? false;
-      final isManualAuthed = ref.read(authProvider).isAuthenticated;
-      final isAuthenticated = isStartupAuthed || isManualAuthed;
+      if (authState.isInitializing) return null;
 
       final onLoginPage = state.matchedLocation == '/login';
-
-      if (isAuthenticated && onLoginPage) {
-        return '/map';
-      }
-      if (!isAuthenticated && !onLoginPage) {
-        return '/login';
-      }
+      if (authState.isAuthenticated && onLoginPage) return '/map';
+      if (!authState.isAuthenticated && !onLoginPage) return '/login';
 
       return null;
     },
