@@ -8,7 +8,7 @@ class UserProfileResponse {
     required this.username,
     required this.avatarUrl,
     required this.bio,
-    required this.totalPoints
+    required this.totalPoints,
   });
 
   factory UserProfileResponse.fromJson(Map<String, dynamic> json) {
@@ -16,7 +16,7 @@ class UserProfileResponse {
       username: json['username'] as String,
       avatarUrl: json['avatarUrl'] as String?,
       bio: json['bio'] as String?,
-      totalPoints: json['totalPoints'] as int
+      totalPoints: json['totalPoints'] as int,
     );
   }
 }

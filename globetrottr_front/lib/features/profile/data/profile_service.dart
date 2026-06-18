@@ -19,7 +19,7 @@ class ProfileService {
 
   String _parseError(String responseBody, int statusCode) {
     try {
-      final data = jsonDecode(responseBody);
+      final data = jsonDecode(responseBody) as Map<String, dynamic>;
       return data['error'] ?? 'Server error ($statusCode)';
     } catch (_) {
       return 'Unexpected server error ($statusCode)';
@@ -62,8 +62,8 @@ class ProfileService {
     final request = http.MultipartRequest('POST', url);
 
     final headers = await _authHeaders();
-    
-    headers.remove('Content-Type'); 
+
+    headers.remove('Content-Type');
     request.headers.addAll(headers);
 
     final extension = filePath.split('.').last.toLowerCase();
@@ -71,7 +71,7 @@ class ProfileService {
 
     request.files.add(
       await http.MultipartFile.fromPath(
-        'file', 
+        'file',
         filePath,
         contentType: http.MediaType('image', subtype),
       ),
@@ -81,8 +81,8 @@ class ProfileService {
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['avatarUrl'] as String; 
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return data['avatarUrl'] as String;
     }
 
     throw AppException(

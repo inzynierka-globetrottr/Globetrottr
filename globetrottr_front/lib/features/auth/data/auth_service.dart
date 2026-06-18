@@ -20,7 +20,7 @@ class AuthService {
 
   String _parseError(String responseBody, int statusCode) {
     try {
-      final data = jsonDecode(responseBody);
+      final data = jsonDecode(responseBody) as Map<String, dynamic>;
       return data['error'] ?? 'Server error ($statusCode)';
     } catch (_) {
       return 'Unexpected server error ($statusCode)';
@@ -52,7 +52,7 @@ class AuthService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
       final token = data['token'];
 
       await _storage.write(key: _tokenKey, value: token);
@@ -70,16 +70,14 @@ class AuthService {
     if (_backendUrl.isEmpty)
       throw AppException('Backend URL is not configured.');
 
-    print('hej 1');
     final response = await http.post(
       Uri.parse('$_backendUrl/api/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(request.toJson()),
     );
-    print('hej 2');
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
       final token = data['token'];
       await _storage.write(key: _tokenKey, value: token);
 
@@ -103,7 +101,7 @@ class AuthService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
       final token = data['token'];
 
       if (token != null && token.toString().isNotEmpty) {
@@ -133,7 +131,7 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
       final newToken = data['token'];
       await _storage.write(key: _tokenKey, value: newToken);
       return newToken;

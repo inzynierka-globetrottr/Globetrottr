@@ -10,7 +10,7 @@ class AuthState {
     this.mode = AuthMode.login,
     this.isLoading = false,
     this.errorMessage,
-    this.isAuthenticated = false
+    this.isAuthenticated = false,
   });
 
   AuthState copyWith({

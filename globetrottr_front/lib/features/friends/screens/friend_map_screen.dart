@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,7 +60,7 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
                   loading: () => const SizedBox.shrink(),
                   error: (err, stack) {
                     debugPrint('Error downloading fog: $err');
-                    return FogLayer(readyHoles: const []);
+                    return const FogLayer(readyHoles: []);
                   },
                 ),
               ],

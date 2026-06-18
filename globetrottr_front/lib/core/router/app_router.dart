@@ -49,14 +49,8 @@ final appRouter = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/map',
-        builder: (context, state) => const MapScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
@@ -72,13 +66,13 @@ final appRouter = Provider<GoRouter>((ref) {
           transitionDuration: const Duration(milliseconds: 200),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOut,
-              )),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
+                  ),
               child: child,
             );
           },
@@ -86,9 +80,8 @@ final appRouter = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/friends/:username/map',
-        builder: (context, state) => FriendMapScreen(
-          friendUsername: state.pathParameters['username']!,
-        ),
+        builder: (context, state) =>
+            FriendMapScreen(friendUsername: state.pathParameters['username']!),
       ),
       if (kDebugMode)
         GoRoute(

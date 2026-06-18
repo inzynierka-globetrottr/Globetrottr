@@ -63,8 +63,7 @@ class _SearchSendRowState extends ConsumerState<SearchSendRow> {
         Row(
           children: [
             Expanded(
-              child: 
-              Padding(
+              child: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: NeuInsetContainer(
                   height: 48,
@@ -74,14 +73,14 @@ class _SearchSendRowState extends ConsumerState<SearchSendRow> {
                     child: TextField(
                       controller: _controller,
                       style: AppTextStyles.actionButtonText,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: InputBorder.none,
-                        hintText: 'Enter friend\'s username...',
+                        hintText: "Enter friend's username...",
                         hintStyle: AppTextStyles.inputLabel,
                       ),
                     ),
                   ),
-                )
+                ),
               ),
             ),
             const SizedBox(width: 12),

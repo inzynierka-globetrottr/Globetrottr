@@ -17,9 +17,8 @@ class NeuFloatingContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Neumorphic(
       style: NeumorphicStyle(
-        shape: NeumorphicShape.flat,
         boxShape: NeumorphicBoxShape.roundRect(
-          BorderRadius.all(Radius.circular(24)),
+          const BorderRadius.all(Radius.circular(24)),
         ),
         depth: 4,
         intensity: 1,

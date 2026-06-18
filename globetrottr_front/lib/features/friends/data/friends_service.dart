@@ -20,7 +20,7 @@ class FriendsService {
 
   String _parseError(String responseBody, int statusCode) {
     try {
-      final data = jsonDecode(responseBody);
+      final data = jsonDecode(responseBody) as Map<String, dynamic>;
       return data['error'] ?? 'Server error ($statusCode)';
     } catch (_) {
       return 'Unexpected server error ($statusCode)';
@@ -46,25 +46,23 @@ class FriendsService {
 
   Future<List<FriendshipResponse>> getFriends() => _getList('/api/friends');
 
-  Future<List<FriendshipResponse>> getReceivedInvites() => _getList('/api/friends/invites');
-  
-  Future<List<FriendshipResponse>> getSentInvites() => _getList('/api/friends/invites/sent');
+  Future<List<FriendshipResponse>> getReceivedInvites() =>
+      _getList('/api/friends/invites');
+
+  Future<List<FriendshipResponse>> getSentInvites() =>
+      _getList('/api/friends/invites/sent');
 
   // TODO: change _getList to take in parameters, so this function could be simplified too
   Future<List<FriendshipResponse>> searchUsers(String query) async {
-    final uri = Uri.parse('$_backendUrl/api/friends/search')
-        .replace(queryParameters: {'query': query});
+    final uri = Uri.parse(
+      '$_backendUrl/api/friends/search',
+    ).replace(queryParameters: {'query': query});
 
-    final response = await http.get(
-      uri,
-      headers: await _authHeaders(),
-    );
+    final response = await http.get(uri, headers: await _authHeaders());
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data
-          .map((json) => FriendshipResponse.fromJson(json))
-          .toList();
+      return data.map((json) => FriendshipResponse.fromJson(json)).toList();
     }
 
     throw AppException(

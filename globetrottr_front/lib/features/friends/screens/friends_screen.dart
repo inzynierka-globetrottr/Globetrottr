@@ -29,17 +29,15 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(
-        baseColor: AppColors.background,
-      ),
+      darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(24, 16, 24, 24),
                 child: Center(
                   child: Text(
                     'Friends',
@@ -51,8 +49,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   children: [
-
-                    SearchSendRow(),
+                    const SearchSendRow(),
 
                     const SizedBox(height: 24),
                     InviteHubBanner(
@@ -61,12 +58,17 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     ),
 
                     const SizedBox(height: 24),
-                    Text('YOUR FRIENDS (${state.friends.length})', style: AppTextStyles.sectionTitle),
+                    Text(
+                      'YOUR FRIENDS (${state.friends.length})',
+                      style: AppTextStyles.sectionTitle,
+                    ),
                     const SizedBox(height: 14),
-                    ...state.friends.map((f) => Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: FriendCard(friend: f),
-                    )),
+                    ...state.friends.map(
+                      (f) => Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: FriendCard(friend: f),
+                      ),
+                    ),
                   ],
                 ),
               ),

@@ -37,19 +37,19 @@ class _PreviewScreenState extends State<PreviewScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  NeuFloatingContainer(child: Text("")),
+                  const NeuFloatingContainer(child: Text('')),
 
                   const SizedBox(height: 32),
 
-                  NeuInsetContainer(child: Text("")),
+                  const NeuInsetContainer(child: Text('')),
 
                   const SizedBox(height: 32),
 
-                  NeuRaisedContainer(child: Text("")),
+                  const NeuRaisedContainer(child: Text('')),
 
                   const SizedBox(height: 32),
 
-                  NeuTextField(
+                  const NeuTextField(
                     label: 'Email',
                     placeholder: 'example@domain.com',
                     keyboardType: TextInputType.emailAddress,
@@ -57,7 +57,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
 
                   const SizedBox(height: 32),
 
-                  NeuTextField(
+                  const NeuTextField(
                     label: 'Password',
                     placeholder: '••••••••',
                     obscureText: true,

@@ -7,7 +7,7 @@ import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 class ProfileBio extends StatefulWidget {
   final String initialBio;
   final bool isUpdatingBio;
-  final Function(String) onSave;
+  final void Function(String) onSave;
 
   const ProfileBio({
     super.key,
@@ -117,15 +117,17 @@ class _ProfileBioState extends State<ProfileBio> {
                 height: 38,
                 onPressed: widget.isUpdatingBio ? null : _save,
                 child: widget.isUpdatingBio
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
-                      ),
-                    )
-                  : null,
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.accentBlue,
+                          ),
+                        ),
+                      )
+                    : null,
               ),
             ],
           ),

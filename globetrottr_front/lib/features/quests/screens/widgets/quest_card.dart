@@ -47,12 +47,14 @@ class QuestCard extends StatelessWidget {
                         if (zone == QuestZone.inProgress)
                           Text(
                             '${(quest.progress * 100).toInt()}% progress',
-                            style: AppTextStyles.descriptiveStatusAction.copyWith(color: AppColors.accentBlue),
+                            style: AppTextStyles.descriptiveStatusAction
+                                .copyWith(color: AppColors.accentBlue),
                           ),
                         if (zone == QuestZone.completed)
                           Text(
                             'Completed',
-                            style: AppTextStyles.descriptiveStatusAction.copyWith(color: AppColors.accentGreen),
+                            style: AppTextStyles.descriptiveStatusAction
+                                .copyWith(color: AppColors.accentGreen),
                           ),
                       ],
                     ),
@@ -66,7 +68,9 @@ class QuestCard extends StatelessWidget {
                       ),
                       Text(
                         '${quest.rewardPoints} XP',
-                        style: AppTextStyles.inputLabel.copyWith(color: AppColors.accentGold),
+                        style: AppTextStyles.inputLabel.copyWith(
+                          color: AppColors.accentGold,
+                        ),
                       ),
                     ],
                   ),
@@ -76,11 +80,13 @@ class QuestCard extends StatelessWidget {
                 const Spacer(),
                 NeuPrimaryButton(
                   height: 36,
-                  label: "Start Quest",
-                  labelStyle: AppTextStyles.tabButtonText.copyWith(color: AppColors.accentBlue),
+                  label: 'Start Quest',
+                  labelStyle: AppTextStyles.tabButtonText.copyWith(
+                    color: AppColors.accentBlue,
+                  ),
                   onPressed: onStart,
                 ),
-              ]
+              ],
             ],
           ),
         ),

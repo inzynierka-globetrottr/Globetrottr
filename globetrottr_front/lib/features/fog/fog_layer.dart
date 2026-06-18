@@ -7,11 +7,7 @@ class FogLayer extends StatelessWidget {
   final List<List<LatLng>> readyHoles;
   final int holesRevision;
 
-  const FogLayer({
-    super.key, 
-    required this.readyHoles,
-    this.holesRevision = 0
-  });
+  const FogLayer({super.key, required this.readyHoles, this.holesRevision = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +16,9 @@ class FogLayer extends StatelessWidget {
     return SizedBox.expand(
       child: CustomPaint(
         painter: FogPainter(
-          holes: readyHoles, 
+          holes: readyHoles,
           camera: camera,
-          holesRevision: holesRevision
+          holesRevision: holesRevision,
         ),
       ),
     );

@@ -25,11 +25,7 @@ class CompassButton extends StatelessWidget {
           },
           child: Transform.rotate(
             angle: (-rotationDegrees - 45) * (math.pi / 180),
-            child: const Icon(
-              Icons.explore,
-              color: Colors.white,
-              size: 22,
-            ),
+            child: const Icon(Icons.explore, color: Colors.white, size: 22),
           ),
         );
       },

@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'map_storage.dart';
-import 'pending_point.dart';
+import 'package:globetrottr_front/features/map/data/map_storage.dart';
+import 'package:globetrottr_front/features/map/data/pending_point.dart';
 
 // TODO: potentially refactor this, as well as map storage to not be singletons, and instead make use of riverpod providers
 class LocationService {
@@ -42,7 +42,7 @@ class LocationService {
       await Permission.notification.request();
     }
 
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) throw Exception('Location services are disabled.');
 
     LocationPermission permission = await Geolocator.checkPermission();
@@ -61,15 +61,13 @@ class LocationService {
       _locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
-        forceLocationManager: false,
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: "Recording your route in the background...",
-          notificationTitle: "Globetrottr",
+          notificationText: 'Recording your route in the background...',
+          notificationTitle: 'Globetrottr',
           enableWakeLock: true,
           notificationIcon: AndroidResource(
-            name: "ic_notification",
-            defType: "drawable",
+            name: 'ic_notification',
           ),
         ),
       );
@@ -79,7 +77,6 @@ class LocationService {
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
         activityType: ActivityType.fitness,
-        pauseLocationUpdatesAutomatically: false,
         showBackgroundLocationIndicator: true,
       );
     } else {
@@ -103,7 +100,7 @@ class LocationService {
         );
 
         await MapStorage().insertPendingPoint(point);
-        print("Location saved locally: ${point.latitude}, ${point.longitude}");
+        print('Location saved locally: ${point.latitude}, ${point.longitude}');
       }
     });
   }

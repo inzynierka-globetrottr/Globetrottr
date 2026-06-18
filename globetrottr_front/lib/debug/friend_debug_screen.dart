@@ -38,7 +38,10 @@ class _FriendDebugScreenState extends State<FriendDebugScreen> {
   String _formatList(List<FriendshipResponse> list) {
     if (list.isEmpty) return '(empty list)';
     return list
-        .map((r) => '• ${r.username} | status: ${r.status} | incoming: ${r.isIncomingRequest}')
+        .map(
+          (r) =>
+              '• ${r.username} | status: ${r.status} | incoming: ${r.isIncomingRequest}',
+        )
         .join('\n');
   }
 
@@ -60,7 +63,6 @@ class _FriendDebugScreenState extends State<FriendDebugScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-
             // --- OUTPUT BOX ---
             Container(
               width: double.infinity,
@@ -82,7 +84,10 @@ class _FriendDebugScreenState extends State<FriendDebugScreen> {
             ),
 
             const SizedBox(height: 24),
-            const Text('NO INPUT REQUIRED', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'NO INPUT REQUIRED',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const Divider(),
 
             // --- GET FRIENDS ---
@@ -113,7 +118,10 @@ class _FriendDebugScreenState extends State<FriendDebugScreen> {
             ),
 
             const SizedBox(height: 24),
-            const Text('REQUIRES USERNAME INPUT', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'REQUIRES USERNAME INPUT',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const Divider(),
 
             TextField(
@@ -130,7 +138,9 @@ class _FriendDebugScreenState extends State<FriendDebugScreen> {
             ElevatedButton(
               onPressed: () => _run(() async {
                 await _service.sendInvite(_usernameController.text.trim());
-                _setOutput('sendInvite() success\nSent to: ${_usernameController.text.trim()}');
+                _setOutput(
+                  'sendInvite() success\nSent to: ${_usernameController.text.trim()}',
+                );
               }),
               child: const Text('POST /api/friends/invites'),
             ),
@@ -139,7 +149,9 @@ class _FriendDebugScreenState extends State<FriendDebugScreen> {
             ElevatedButton(
               onPressed: () => _run(() async {
                 await _service.acceptInvite(_usernameController.text.trim());
-                _setOutput('acceptInvite() success\nAccepted: ${_usernameController.text.trim()}');
+                _setOutput(
+                  'acceptInvite() success\nAccepted: ${_usernameController.text.trim()}',
+                );
               }),
               child: const Text('POST /api/friends/invites/{username}/accept'),
             ),
@@ -148,8 +160,12 @@ class _FriendDebugScreenState extends State<FriendDebugScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => _run(() async {
-                await _service.deleteRelationship(_usernameController.text.trim());
-                _setOutput('deleteRelationship() success\nDeleted: ${_usernameController.text.trim()}');
+                await _service.deleteRelationship(
+                  _usernameController.text.trim(),
+                );
+                _setOutput(
+                  'deleteRelationship() success\nDeleted: ${_usernameController.text.trim()}',
+                );
               }),
               child: const Text('DELETE /api/friends/{username}'),
             ),
@@ -171,12 +187,15 @@ class _FriendDebugScreenState extends State<FriendDebugScreen> {
             // --- SEARCH USERS ---
             ElevatedButton(
               onPressed: () => _run(() async {
-                final result = await _service.searchUsers(_searchController.text.trim());
-                _setOutput('searchUsers("${_searchController.text.trim()}"):\n${_formatList(result)}');
+                final result = await _service.searchUsers(
+                  _searchController.text.trim(),
+                );
+                _setOutput(
+                  'searchUsers("${_searchController.text.trim()}"):\n${_formatList(result)}',
+                );
               }),
               child: const Text('GET /api/friends/search?query='),
             ),
-
           ],
         ),
       ),

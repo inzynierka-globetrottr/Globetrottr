@@ -17,7 +17,11 @@ class LogoutButton extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.logout_rounded, color: AppColors.accentRed, size: 20),
+            const Icon(
+              Icons.logout_rounded,
+              color: AppColors.accentRed,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Text(
               'Log Out',

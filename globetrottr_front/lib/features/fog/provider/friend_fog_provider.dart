@@ -7,5 +7,5 @@ final friendFogProvider = FutureProvider.family<List<List<LatLng>>, String>((
   username,
 ) async {
   final fogService = FogService();
-  return await fogService.getFriendFog(username);
+  return fogService.getFriendFog(username);
 });

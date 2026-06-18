@@ -23,7 +23,7 @@ class MapStorage {
     return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
-  Future _createDB(Database db, int version) async {
+  Future<void> _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE pending_points (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

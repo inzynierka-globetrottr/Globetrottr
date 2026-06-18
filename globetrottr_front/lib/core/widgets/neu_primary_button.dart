@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
@@ -26,7 +25,6 @@ class NeuPrimaryButton extends StatelessWidget {
     return NeumorphicButton(
       onPressed: onPressed,
       style: NeumorphicStyle(
-        shape: NeumorphicShape.flat,
         boxShape: NeumorphicBoxShape.roundRect(
           const BorderRadius.all(Radius.circular(24)),
         ),

@@ -9,7 +9,7 @@ class FogPainter extends CustomPainter {
   final int holesRevision;
 
   FogPainter({
-    required this.holes, 
+    required this.holes,
     required this.camera,
     required this.holesRevision,
   });
@@ -23,7 +23,7 @@ class FogPainter extends CustomPainter {
       ..color = Colors.transparent
       ..blendMode = BlendMode.clear
       ..style = PaintingStyle.fill;
-    
+
     final visibleBounds = camera.visibleBounds;
 
     for (final holePoints in holes) {
@@ -35,8 +35,8 @@ class FogPainter extends CustomPainter {
       for (int i = 0; i < holePoints.length; i++) {
         final screenPoint = camera.latLngToScreenPoint(holePoints[i]);
         final offset = Offset(
-          screenPoint.x.toDouble(),
-          screenPoint.y.toDouble(),
+          screenPoint.x,
+          screenPoint.y,
         );
 
         if (i == 0) {
@@ -45,7 +45,7 @@ class FogPainter extends CustomPainter {
           path.lineTo(offset.dx, offset.dy);
         }
       }
-      
+
       path.close();
       canvas.drawPath(path, eraserPaint);
     }
@@ -54,7 +54,10 @@ class FogPainter extends CustomPainter {
   }
 
   bool _intersectsVisible(List<LatLng> points, LatLngBounds visible) {
-    double? minLat, maxLat, minLng, maxLng;
+    double? minLat;
+    double? maxLat;
+    double? minLng;
+    double? maxLng;
     for (final p in points) {
       minLat = (minLat == null || p.latitude < minLat) ? p.latitude : minLat;
       maxLat = (maxLat == null || p.latitude > maxLat) ? p.latitude : maxLat;
