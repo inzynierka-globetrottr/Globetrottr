@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'pending_point.dart';
+import 'package:globetrottr_front/features/map/data/pending_point.dart';
 
 class MapStorage {
   static final MapStorage _instance = MapStorage._init();
@@ -20,7 +20,7 @@ class MapStorage {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
   Future _createDB(Database db, int version) async {
@@ -37,18 +37,28 @@ class MapStorage {
 
   Future<int> insertPendingPoint(PendingPoint point) async {
     final db = await database;
-    return await db.insert('pending_points', point.toMap());
+    return db.insert('pending_points', point.toMap());
   }
 
   Future<List<PendingPoint>> getPendingPoints() async {
     final db = await database;
     final result = await db.query('pending_points', orderBy: 'timestamp ASC');
 
-    return result.map((map) => PendingPoint.fromMap(map)).toList();
+    return result.map(PendingPoint.fromMap).toList();
   }
 
   Future<void> clearPendingPoints() async {
     final db = await database;
     await db.delete('pending_points');
   }
+
+  Future<void> deletePendingPointsByIds(List<int> ids) async {
+    final db = await database;
+    final placeholders = ids.map((_) => '?').join(',');
+    await db.delete(
+      'pending_points',
+      where: 'id IN ($placeholders)',
+      whereArgs: ids,
+    );
+}
 }

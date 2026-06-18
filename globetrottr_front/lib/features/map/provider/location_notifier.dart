@@ -2,57 +2,77 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:globetrottr_front/features/fog/data/fog_service.dart';
 import 'package:latlong2/latlong.dart';
-import '../data/location_service.dart';
-import '../data/map_storage.dart';
-import 'tracking_state.dart';
-import '../../fog/fog_holepuncher.dart';
-import '../../../core/config/map_config.dart';
+import 'package:globetrottr_front/features/map/data/location_service.dart';
+import 'package:globetrottr_front/features/map/data/map_storage.dart';
+import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
+import 'package:globetrottr_front/features/fog/fog_holepuncher.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 
 class LocationNotifier extends Notifier<TrackingState> {
-  late final LocationService _locationService;
+  final LocationService _locationService = LocationService();
   StreamSubscription<Position>? _positionStream;
 
   @override
   TrackingState build() {
-    _locationService = LocationService();
-    Future.microtask(() => _initializeHistoryFromDb());
+    Future.microtask(_initialize);
+
+    ref.onDispose(() {
+      _positionStream?.cancel();
+      _locationService.stopTracking();
+    });
+
     return const TrackingState();
   }
 
-  //Load previously recorded points from the database and compute initial holes for the fog layer.
-  Future<void> _initializeHistoryFromDb() async {
-    final pendingPoints = await MapStorage().getPendingPoints();
-
-    final latLngPoints = pendingPoints
-        .map((p) => LatLng(p.latitude, p.longitude))
-        .toList();
-
-    _processAndSetInitialState(latLngPoints);
+  Future<void> _initialize() async {
+    await _fetchBackendFog();
+    await _loadUnsyncedLocalPoints();
   }
 
-  // Convert raw LatLng points into hole coordinates and update the state with both discovered points and their corresponding holes.
-  void _processAndSetInitialState(List<LatLng> points) {
-    final initialHoles = points.map((point) {
-      return FogHolepuncher.calculateSingleHole(
-        center: point,
-        radiusInMeters: MapConfig.defaultVisionRadius,
+  Future<void> _fetchBackendFog() async {
+    try {
+      final holes = await FogService().getMyFog();
+      state = state.copyWith(
+        backendHoles: holes,
+        holesRevision: state.holesRevision + 1,
       );
-    }).toList();
+    } catch (e) {
+      print('Failed to fetch backend fog: $e');
+    }
+  }
 
-    state = state.copyWith(
-      calculatedHoles: initialHoles,
-      holesRevision: state.holesRevision + 1
-    );
+  Future<void> _loadUnsyncedLocalPoints() async {
+    try {
+      final pending = await MapStorage().getPendingPoints();
+      if (pending.isEmpty) return;
+
+      final holes = pending
+          .map(
+            (p) => FogHolepuncher.calculateSingleHole(
+              center: LatLng(p.latitude, p.longitude),
+              radiusInMeters: MapConfig.defaultVisionRadius,
+            ),
+          )
+          .toList();
+
+      state = state.copyWith(
+        sessionHoles: holes,
+        holesRevision: state.holesRevision + 1,
+      );
+    } catch (e, stack) {
+      print('Failed to load unsynced points from DB: $e\n$stack');
+    }
   }
 
   Future<void> startTracking() async {
     try {
       await _locationService.startTracking();
       _positionStream = _locationService.positionStream.listen(_onPosition);
-      state = state.copyWith(isTracking: true, errorMessage: null);
+      state = state.copyWith(isTracking: true);
     } catch (e) {
       state = state.copyWith(isTracking: false, errorMessage: e.toString());
     }
@@ -67,12 +87,22 @@ class LocationNotifier extends Notifier<TrackingState> {
 
   Future<void> setRecording(bool value) async {
     _locationService.setRecording(value);
-    state = state.copyWith(isRecording: value, errorMessage: null);
+    state = state.copyWith(isRecording: value);
 
     if (!value) {
       final token = await AuthService().getToken();
       if (token != null) {
         await SyncService().syncPendingPoints(token);
+      }
+
+      try {
+        final updatedHoles = await FogService().getMyFog();
+        state = state.copyWith(
+          backendHoles: updatedHoles,
+          holesRevision: state.holesRevision + 1,
+        );
+      } catch (e) {
+        print('Fog re-fetch after sync failed: $e');
       }
     }
   }
@@ -80,7 +110,7 @@ class LocationNotifier extends Notifier<TrackingState> {
   void _onPosition(Position position) {
     final newPosition = LatLng(position.latitude, position.longitude);
 
-    List<List<LatLng>> updatedHoles = state.calculatedHoles;
+    List<List<LatLng>> updatedHoles = state.sessionHoles;
 
     if (state.isRecording) {
       //Optimized calculation: Instead of recalculating holes for all points, we only calculate a new hole
@@ -89,15 +119,19 @@ class LocationNotifier extends Notifier<TrackingState> {
         radiusInMeters: MapConfig.defaultVisionRadius,
       );
 
-      updatedHoles = List.from(state.calculatedHoles)..add(newHoleGeometry);
+      updatedHoles = List.from(state.sessionHoles)..add(newHoleGeometry);
     }
 
     state = state.copyWith(
       currentPosition: newPosition,
-      calculatedHoles: updatedHoles,
+      sessionHoles: updatedHoles,
       holesRevision: state.isRecording
-        ? state.holesRevision + 1
-        : state.holesRevision,
+          ? state.holesRevision + 1
+          : state.holesRevision,
     );
+  }
+
+  void reset() {
+    state = const TrackingState();
   }
 }
