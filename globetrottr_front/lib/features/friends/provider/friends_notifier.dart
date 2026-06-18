@@ -65,10 +65,6 @@ class FriendsNotifier extends Notifier<FriendsState> {
     try {
       await _service.acceptInvite(username);
 
-      // TODO: handle case when user is not found
-      final accepted = state.receivedInvites
-          .firstWhere((r) => r.username == username);
-
       state = state.copyWith(
         receivedInvites: state.receivedInvites
             .where((r) => r.username != username)
@@ -76,7 +72,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
         friends: [
           ...state.friends,
           FriendshipResponse(
-            username: accepted.username,
+            username: username,
             status: InviteStatus.accepted,
             isIncomingRequest: false,
           ),
