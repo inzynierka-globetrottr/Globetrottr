@@ -43,8 +43,8 @@ class LocationNotifier extends Notifier<TrackingState> {
     }).toList();
 
     state = state.copyWith(
-      discoveredPoints: points,
       calculatedHoles: initialHoles,
+      holesRevision: state.holesRevision + 1
     );
   }
 
@@ -80,12 +80,9 @@ class LocationNotifier extends Notifier<TrackingState> {
   void _onPosition(Position position) {
     final newPosition = LatLng(position.latitude, position.longitude);
 
-    List<LatLng> updatedPoints = state.discoveredPoints;
     List<List<LatLng>> updatedHoles = state.calculatedHoles;
 
     if (state.isRecording) {
-      updatedPoints = List.from(state.discoveredPoints)..add(newPosition);
-
       //Optimized calculation: Instead of recalculating holes for all points, we only calculate a new hole
       final newHoleGeometry = FogHolepuncher.calculateSingleHole(
         center: newPosition,
@@ -97,8 +94,10 @@ class LocationNotifier extends Notifier<TrackingState> {
 
     state = state.copyWith(
       currentPosition: newPosition,
-      discoveredPoints: updatedPoints,
       calculatedHoles: updatedHoles,
+      holesRevision: state.isRecording
+        ? state.holesRevision + 1
+        : state.holesRevision,
     );
   }
 }

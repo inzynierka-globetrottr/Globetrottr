@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,7 +77,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.globetrottr.app',
                 ),
-                FogLayer(readyHoles: locationState.calculatedHoles),
+                FogLayer(readyHoles: locationState.calculatedHoles, holesRevision: locationState.holesRevision),
                 if (position != null)
                   // think about moving this to a separate widget too, but im not sure
                   // Marcel here, yes, I think you should move this to a separate widget, just like the buttons
