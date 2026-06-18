@@ -29,7 +29,7 @@ class AuthService {
   }
 
   Future<String?> signInWithGoogle() async {
-    if (_backendUrl.isEmpty) throw AppException('Backend URL is not configured');
+    if (_backendUrl.isEmpty) throw AppException('Backend URL is not configured.');
 
     final String? clientId = dotenv.env['GOOGLE_CLIENT_ID'];
 
