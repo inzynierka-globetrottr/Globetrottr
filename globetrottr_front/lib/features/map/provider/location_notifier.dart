@@ -35,6 +35,8 @@ class LocationNotifier extends Notifier<TrackingState> {
 
   Future<void> _fetchBackendFog() async {
     try {
+      final token = await AuthService().getToken();
+      if (token == null) return;
       final holes = await FogService().getMyFog();
       state = state.copyWith(
         backendHoles: holes,

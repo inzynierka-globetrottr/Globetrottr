@@ -3,7 +3,6 @@ import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/debug/friend_debug_screen.dart';
 import 'package:globetrottr_front/debug/preview_screen.dart';
-import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
@@ -12,15 +11,6 @@ import 'package:globetrottr_front/features/friends/screens/invite_hub_screen.dar
 import 'package:globetrottr_front/features/map/screens/map_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
 import 'package:go_router/go_router.dart';
-
-final authStateProvider = FutureProvider<bool>((ref) async {
-  try {
-    final token = await AuthService().refreshToken();
-    return token != null;
-  } catch (_) {
-    return false;
-  }
-});
 
 class AuthNotifierListenable extends ChangeNotifier {
   AuthNotifierListenable(this._ref) {
