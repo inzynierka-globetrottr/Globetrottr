@@ -80,9 +80,6 @@ class ProfileService {
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
 
-    // TODO: remove this mock
-      return 'https://i.imgflip.com/46dlgu.png';
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data['avatarUrl'] as String; 
