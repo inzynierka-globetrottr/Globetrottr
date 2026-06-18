@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
@@ -7,8 +8,8 @@ import 'package:http/http.dart' as http;
 
 class FriendsService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
-  // TODO: make auth service a dependency injection
-  final AuthService _authService = AuthService();
+  final AuthService _authService;
+  FriendsService(this._authService); 
 
   Future<Map<String, String>> _authHeaders() async {
     final token = await _authService.getToken();
@@ -114,3 +115,7 @@ class FriendsService {
     );
   }
 }
+
+final friendsServiceProvider = Provider<FriendsService>(
+  (ref) => FriendsService(ref.read(authServiceProvider)),
+);

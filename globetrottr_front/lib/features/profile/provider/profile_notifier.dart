@@ -9,7 +9,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   @override
   ProfileState build() {
-    _service = ProfileService();
+    _service = ref.read(profileServiceProvider);
     return const ProfileState();
   }
 

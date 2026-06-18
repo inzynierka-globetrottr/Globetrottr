@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
@@ -8,12 +9,15 @@ import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 // TODO: make this more in line with other service classes for consistency
 class FogService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
+  final AuthService _authService;
+
+  FogService(this._authService);
 
   Future<List<List<LatLng>>> getMyFog() async {
     if (_backendUrl.isEmpty)
       throw AppException('Backend URL is not configured.');
 
-    final token = await AuthService().getToken();
+    final token = await _authService.getToken();
     if (token == null) throw Exception('User not authenticated.');
 
     final response = await http.get(
@@ -34,7 +38,7 @@ class FogService {
     if (_backendUrl.isEmpty)
       throw AppException('Backend URL is not configured.');
 
-    final token = await AuthService().getToken();
+    final token = await _authService.getToken();
     if (token == null) throw Exception('User not authenticated.');
 
     final response = await http.get(
@@ -91,3 +95,7 @@ class FogService {
     return polygonRing;
   }
 }
+
+final fogServiceProvider = Provider<FogService>(
+  (ref) => FogService(ref.read(authServiceProvider)),
+);

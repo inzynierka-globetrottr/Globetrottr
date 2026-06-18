@@ -10,8 +10,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
 
   @override
   FriendsState build() {
-    // TODO: make friends service a dependency injection
-    _service = FriendsService();
+    _service = ref.read(friendsServiceProvider);
     return const FriendsState();
   }
 

@@ -15,7 +15,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   @override
   AuthState build() {
-    _authService = AuthService();
+    _authService = ref.read(authServiceProvider);
     Future.microtask(_checkExistingSession);
     return const AuthState();
   }
