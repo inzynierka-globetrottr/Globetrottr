@@ -34,9 +34,13 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
         );
       }
     } catch (e) {
+      print('Unexpected error starting quest: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e'), backgroundColor: AppColors.accentRed),
+          const SnackBar(
+            content: Text('Something went wrong. Please try again.'),
+            backgroundColor: AppColors.accentRed,
+          ),
         );
       }
     }
