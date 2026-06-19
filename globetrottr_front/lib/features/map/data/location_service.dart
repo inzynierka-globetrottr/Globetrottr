@@ -3,11 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/data/pending_point.dart';
 
-// TODO: potentially refactor this, as well as map storage to not be singletons, and instead make use of riverpod providers
 class LocationService {
   LocationService(this._mapStorage);
 
@@ -22,7 +22,7 @@ class LocationService {
 
   Stream<Position> get positionStream {
     if (_broadcastStream == null) {
-      throw Exception(
+      throw StateError(
         'Localization stream not initiated, call startTracking() first.',
       );
     }
@@ -44,14 +44,18 @@ class LocationService {
     }
 
     final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) throw Exception('Location services are disabled.');
+    
+    if (!serviceEnabled) {
+      throw const LocationException(
+        'Location services are disabled. Please enable them in your device settings.',
+      );
+    }
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw Exception('No permission to access location.');
-      }
+      throw const LocationException(
+        'Location permission is required to track your trips.',
+      );
     }
 
     if (permission == LocationPermission.whileInUse) {

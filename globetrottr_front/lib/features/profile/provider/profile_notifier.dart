@@ -19,10 +19,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(isLoading: false, profile: profile);
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
-    } catch (_) {
+    } catch (e) {
+      print('Unexpected error loading profile: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Network error. Failed to load profile.',
+        errorMessage: 'Something went wrong. Failed to load profile.',
       );
     }
   }
@@ -40,11 +41,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       );
     } on AppException catch (e) {
       state = state.copyWith(isUpdatingBio: false, errorMessage: e.message);
-    } catch (_) {
-      state = state.copyWith(
-        isUpdatingBio: false,
-        errorMessage: 'Failed to update bio.',
-      );
+    } catch (e) {
+      print('Unexpected error updating bio: $e');
+      state = state.copyWith(isUpdatingBio: false, errorMessage: 'Failed to update bio.');
     }
   }
 
@@ -59,11 +58,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
       );
     } on AppException catch (e) {
       state = state.copyWith(isUploadingAvatar: false, errorMessage: e.message);
-    } catch (_) {
-      state = state.copyWith(
-        isUploadingAvatar: false,
-        errorMessage: 'Failed to upload avatar.',
-      );
+    } catch (e) {
+      print('Unexpected error uploading avatar: $e');
+      state = state.copyWith(isUpdatingBio: false, errorMessage: 'Failed to upload avatar.');
     }
   }
 }

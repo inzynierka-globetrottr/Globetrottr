@@ -33,10 +33,8 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Something went wrong.',
-      );
+      print('Unexpected error loading friends: $e');
+      state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong.');
     }
   }
 
@@ -56,7 +54,8 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException('Something went wrong.');
+      print('Unexpected error sending invite: $e');
+      throw const UnknownException();
     }
   }
 
@@ -80,7 +79,8 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException('Network error. Please check your connection.');
+      print('Unexpected error accepting invite: $e');
+      throw const UnknownException();
     }
   }
 
@@ -100,7 +100,8 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException('Network error. Please check your connection.');
+      print('Unexpected error deleting relationship: $e');
+      throw const UnknownException();
     }
   }
 }

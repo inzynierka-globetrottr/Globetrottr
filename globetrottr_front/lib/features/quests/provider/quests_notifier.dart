@@ -19,11 +19,9 @@ class QuestsNotifier extends Notifier<QuestsState> {
       state = state.copyWith(isLoading: false, quests: quests);
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
-    } catch (_) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Network error. Failed to load quests.',
-      );
+    } catch (e) {
+      print('Unexpected error loading quests: $e');
+      state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong. Failed to load quests.');
     }
   }
 
@@ -33,8 +31,9 @@ class QuestsNotifier extends Notifier<QuestsState> {
       await loadQuests();
     } on AppException {
       rethrow;
-    } catch (_) {
-      throw AppException('Something went wrong.');
+    } catch (e) {
+      print('Unexpected error starting quest: $e');
+      throw const UnknownException();
     }
   }
 }

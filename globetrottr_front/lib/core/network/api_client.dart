@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
@@ -29,19 +31,55 @@ class ApiClient {
   }
 
   void _guard() {
-    if (_baseUrl.isEmpty) throw AppException('Backend URL is not configured.');
+    if (_baseUrl.isEmpty) throw const ConfigurationException('Backend URL is not configured.');
+  }
+
+  Future<http.Response> _send(Future<http.Response> Function() request) async {
+    http.Response response;
+    try {
+      response = await request();
+    } on SocketException {
+      throw const NetworkException();
+    } on TimeoutException {
+      throw const NetworkException('Request timed out. Please try again.');
+    } on HttpException catch (e) {
+      throw NetworkException(e.message);
+    } on http.ClientException catch (e) {
+      throw NetworkException(e.message);
+    }
+ 
+    if (response.statusCode >= 200 && response.statusCode < 300) return response;
+    _throw(response);
   }
 
   Never _throw(http.Response response) {
-    String message;
+    String? serverMessage;
+
     try {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      message = data['error'] as String? ?? 'Server error (${response.statusCode})';
+      serverMessage = data['error'] as String?;
     } catch (_) {
-      message = 'Unexpected server error (${response.statusCode})';
+      serverMessage = null;
     }
-    throw AppException(message, response.statusCode);
+ 
+    final statusCode = response.statusCode;
+    final message = serverMessage ?? 'Server error ($statusCode)';
+ 
+    switch (statusCode) {
+      case 401:
+        throw UnauthorizedException(message);
+      case 403:
+        throw ForbiddenException(message);
+      case 404:
+        throw NotFoundException(message);
+      case 400:
+      case 422:
+        throw ValidationException(message, statusCode);
+      default:
+        throw ServerException(message, statusCode);
+    }
   }
+
 
   Future<http.Response> get(
     String path, {
@@ -51,49 +89,47 @@ class ApiClient {
     final resolvedUri = queryParameters != null
         ? uri(path).replace(queryParameters: queryParameters)
         : uri(path);
-    final response = await _http.get(resolvedUri, headers: await _headers());
-    if (response.statusCode >= 200 && response.statusCode < 300) return response;
-    _throw(response);
+    final headers = await _headers();
+    return _send(() => _http.get(resolvedUri, headers: headers));
   }
 
   Future<http.Response> post(String path, {Map<String, dynamic>? body}) async {
     _guard();
-    final response = await _http.post(
-      uri(path),
-      headers: await _headers(),
-      body: body != null ? jsonEncode(body) : null,
-    );
-    if (response.statusCode >= 200 && response.statusCode < 300) return response;
-    _throw(response);
+    final headers = await _headers();
+    return _send(() => _http.post(
+          uri(path),
+          headers: headers,
+          body: body != null ? jsonEncode(body) : null,
+        ));
   }
 
   Future<http.Response> patch(String path, {Map<String, dynamic>? body}) async {
     _guard();
-    final response = await _http.patch(
-      uri(path),
-      headers: await _headers(),
-      body: body != null ? jsonEncode(body) : null,
-    );
-    if (response.statusCode >= 200 && response.statusCode < 300) return response;
-    _throw(response);
+    final headers = await _headers();
+    return _send(() => _http.patch(
+          uri(path),
+          headers: headers,
+          body: body != null ? jsonEncode(body) : null,
+        ));
   }
 
   Future<http.Response> delete(String path) async {
     _guard();
-    final response = await _http.delete(uri(path), headers: await _headers());
-    if (response.statusCode >= 200 && response.statusCode < 300) return response;
-    _throw(response);
+    final headers = await _headers();
+    return _send(() => _http.delete(uri(path), headers: headers));
   }
+
 
   Future<http.Response> sendMultipart(http.MultipartRequest request) async {
     _guard();
     final token = await _tokenProvider();
     if (token != null) request.headers['Authorization'] = 'Bearer $token';
-    final streamed = await _http.send(request);
-    final response = await http.Response.fromStream(streamed);
-    if (response.statusCode >= 200 && response.statusCode < 300) return response;
-    _throw(response);
+    return _send(() async {
+      final streamed = await _http.send(request);
+      return http.Response.fromStream(streamed);
+    });
   }
+
 }
 
 final apiClientProvider = Provider<ApiClient>(
