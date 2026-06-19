@@ -16,7 +16,7 @@ class DebugScreen extends ConsumerStatefulWidget {
 }
 
 class _DebugScreenState extends ConsumerState<DebugScreen> {
-  final LocationService _locationService = LocationService();
+  late final LocationService _locationService;
   List<PendingPoint> _points = [];
   bool _isTracking = false;
 
@@ -28,6 +28,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   @override
   void initState() {
     super.initState();
+    _locationService = ref.read(locationServiceProvider);
     _refreshDb();
     _checkSavedToken();
   }
@@ -58,7 +59,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     _locationService.stopTracking();
     setState(() => _isTracking = false);
 
-    await MapStorage().clearPendingPoints();
+    await ref.read(mapStorageProvider).clearPendingPoints();
     await _refreshDb();
     await ref.read(authServiceProvider).logout();
 
@@ -76,7 +77,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   }
 
   Future<void> _refreshDb() async {
-    final points = await MapStorage().getPendingPoints();
+    final points = await ref.read(mapStorageProvider).getPendingPoints();
     if (!mounted) return;
     setState(() {
       _points = points;
@@ -296,7 +297,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                           backgroundColor: Colors.red,
                         ),
                         onPressed: () async {
-                          await MapStorage().clearPendingPoints();
+                          await ref.read(mapStorageProvider).clearPendingPoints();
                           if (!context.mounted) return;
                           await _refreshDb();
                         },

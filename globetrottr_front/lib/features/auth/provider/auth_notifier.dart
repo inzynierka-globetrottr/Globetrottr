@@ -109,7 +109,7 @@ class AuthNotifier extends Notifier<AuthState> {
       await notifier.setRecording(false);
     }
 
-    await MapStorage().clearPendingPoints();
+    await ref.read(mapStorageProvider).clearPendingPoints();
     await _authService.logout();
 
     ref.invalidate(locationProvider);

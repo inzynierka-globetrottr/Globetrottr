@@ -1,14 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:globetrottr_front/features/map/data/pending_point.dart';
 
 class MapStorage {
-  static final MapStorage _instance = MapStorage._init();
   static Database? _database;
-
-  factory MapStorage() => _instance;
-
-  MapStorage._init();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -60,5 +56,7 @@ class MapStorage {
       where: 'id IN ($placeholders)',
       whereArgs: ids,
     );
+  }
 }
-}
+
+final mapStorageProvider = Provider<MapStorage>((ref) => MapStorage());
