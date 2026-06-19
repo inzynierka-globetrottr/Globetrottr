@@ -151,8 +151,7 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    const storage = FlutterSecureStorage();
-    await storage.delete(key: 'jwt_token');
+    await _storage.delete(key: _tokenKey);
   }
 }
 

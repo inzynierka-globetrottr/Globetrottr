@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/friends/data/friends_service.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
 
-class FriendDebugScreen extends StatefulWidget {
+class FriendDebugScreen extends ConsumerStatefulWidget {
   const FriendDebugScreen({super.key});
 
   @override
-  State<FriendDebugScreen> createState() => _FriendDebugScreenState();
+  ConsumerState<FriendDebugScreen> createState() => _FriendDebugScreenState();
 }
 
-class _FriendDebugScreenState extends State<FriendDebugScreen> {
-  final FriendsService _service = FriendsService();
+class _FriendDebugScreenState extends ConsumerState<FriendDebugScreen> {
+  late final FriendsService _service;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
   String _output = 'Output will appear here...';
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _service = ref.read(friendsServiceProvider);
+  }
 
   @override
   void dispose() {
