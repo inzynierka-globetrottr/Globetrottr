@@ -3,7 +3,7 @@ import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
-import 'package:globetrottr_front/features/quests/models/quest.dart';
+import 'package:globetrottr_front/features/quests/data/quest.dart';
 
 enum QuestZone { unstarted, inProgress, completed }
 
