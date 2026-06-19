@@ -1,6 +1,5 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 
@@ -8,44 +7,15 @@ class ProfileAvatar extends ConsumerWidget {
   final String? avatarUrl;
   final String username;
   final bool isUploading;
-  final void Function(String filePath)? onAvatarSelected;
+  final VoidCallback? onAvatarTap;
 
   const ProfileAvatar({
     super.key,
     required this.username,
     this.avatarUrl,
     this.isUploading = false,
-    this.onAvatarSelected,
+    this.onAvatarTap,
   });
-
-  Future<void> _pickAndUploadImage(BuildContext context) async {
-    if (isUploading) return;
-
-    try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 85,
-      );
-
-      if (pickedFile != null && onAvatarSelected != null) {
-        onAvatarSelected!(pickedFile.path);
-      }
-    } catch (e) {
-      print('Failed to select image: $e');
-      if (context.mounted) {
-        // TODO: show error differently than with a snack bar
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to select image: $e'),
-            backgroundColor: AppColors.accentRed,
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,7 +24,7 @@ class ProfileAvatar extends ConsumerWidget {
         : 'T';
 
     return GestureDetector(
-      onTap: () => _pickAndUploadImage(context),
+      onTap: onAvatarTap,
       child: Center(
         child: SizedBox(
           width: 120,
