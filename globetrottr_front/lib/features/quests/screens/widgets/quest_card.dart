@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 
@@ -23,7 +23,8 @@ class QuestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: NeuFloatingContainer(
+      child: NeuContainer(
+        elevation: NeuElevation.floating,
         width: double.infinity,
         height: zone == QuestZone.unstarted ? 140 : 90,
         child: Padding(

@@ -1,7 +1,7 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:go_router/go_router.dart';
 
 enum NavbarItem { friends, map, profile, quests }
@@ -15,7 +15,8 @@ class NeuBottomNavbar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 30),
-      child: NeuFloatingContainer(
+      child: NeuContainer(
+        elevation: NeuElevation.floating,
         width: double.infinity,
         height: 70,
         child: Padding(

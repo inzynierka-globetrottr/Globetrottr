@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
-import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart'; // Ensure this points to your AppTextStyles
+import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 
 class NeuSegment<T> {
   final String label;
@@ -28,7 +27,8 @@ class NeuSegmentedControl<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NeuInsetContainer(
+    return NeuContainer(
+      elevation: NeuElevation.inset,
       width: width,
       height: height,
       child: Padding(
@@ -43,7 +43,8 @@ class NeuSegmentedControl<T> extends StatelessWidget {
                 onTap: () => onChanged(segment.value),
                 behavior: HitTestBehavior.opaque,
                 child: isSelected
-                    ? NeuFloatingContainer(
+                    ? NeuContainer(
+                        elevation: NeuElevation.floating,
                         child: Text(
                           segment.label,
                           style: AppTextStyles.actionButtonText,
