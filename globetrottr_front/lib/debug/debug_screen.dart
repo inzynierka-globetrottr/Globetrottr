@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
@@ -7,14 +8,14 @@ import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 
-class DebugScreen extends StatefulWidget {
+class DebugScreen extends ConsumerStatefulWidget {
   const DebugScreen({super.key});
 
   @override
-  State<DebugScreen> createState() => _DebugScreenState();
+  ConsumerState<DebugScreen> createState() => _DebugScreenState();
 }
 
-class _DebugScreenState extends State<DebugScreen> {
+class _DebugScreenState extends ConsumerState<DebugScreen> {
   final LocationService _locationService = LocationService();
   List<PendingPoint> _points = [];
   bool _isTracking = false;
@@ -325,7 +326,7 @@ class _DebugScreenState extends State<DebugScreen> {
                             ),
                           );
 
-                          await SyncService().syncPendingPoints(_jwtToken!);
+                          await ref.read(syncServiceProvider).syncPendingPoints();
                           if (!context.mounted) return;
                           await _refreshDb();
                         },

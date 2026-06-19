@@ -1,40 +1,29 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/network/api_client.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 
 class SyncService {
-  final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
+  final ApiClient _client;
+  SyncService(this._client);
 
-  Future<void> syncPendingPoints(String token) async {
-    if (_backendUrl.isEmpty) return;
-
+  Future<void> syncPendingPoints() async {
     final points = await MapStorage().getPendingPoints();
 
     if (points.isEmpty) return;
 
     try {
-      final List<Map<String, dynamic>> pointsJson = points
-          .map((p) => p.toMap())
-          .toList();
-      final requestBody = jsonEncode({'points': pointsJson});
-
-      final response = await http.post(
-        Uri.parse('$_backendUrl/api/map/sync'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: requestBody,
+      await _client.post(
+        '/api/map/sync',
+        body: {'points': points.map((p) => p.toMap()).toList()},
       );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final syncedIds = points.map((p) => p.id!).toList();
-        await MapStorage().deletePendingPointsByIds(syncedIds); // new method
-        print('Local DB was cleared');
-      }
+      await MapStorage().deletePendingPointsByIds(points.map((p) => p.id!).toList());
+      print('Local DB was cleared');
     } catch (e) {
       print('Sync Error: $e');
     }
   }
 }
+
+final syncServiceProvider = Provider<SyncService>(
+  (ref) => SyncService(ref.read(apiClientProvider)),
+);

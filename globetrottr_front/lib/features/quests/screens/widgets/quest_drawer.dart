@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/quests/providers/quest_provider.dart';
 
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
@@ -20,17 +19,7 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
 
   Future<void> _startQuest(int questId) async {
     try {
-      final authService = ref.read(authServiceProvider);
-      final questService = ref.read(questServiceProvider);
-
-      final token = await authService.getToken();
-
-      if (token == null) {
-        throw Exception('Authorization missing. Please log in again.');
-      }
-
-      await questService.startQuest(questId, token);
-
+      await ref.read(questServiceProvider).startQuest(questId);
       ref.invalidate(userQuestsProvider);
     } catch (e) {
       if (mounted) {

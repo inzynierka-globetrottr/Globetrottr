@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
-import 'package:globetrottr_front/core/network/response_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -9,10 +8,20 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 
+// TODO: refactor to extend ApiClient
 class AuthService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
   final _storage = const FlutterSecureStorage();
   final String _tokenKey = 'jwt_token';
+
+  String _parseError(String responseBody, int statusCode) {
+    try {
+      final data = jsonDecode(responseBody) as Map<String, dynamic>;
+      return data['error'] ?? 'Server error ($statusCode)';
+    } catch (_) {
+      return 'Unexpected server error ($statusCode)';
+    }
+  }
 
   Future<String?> getToken() async => _storage.read(key: _tokenKey);
 
@@ -54,7 +63,7 @@ class AuthService {
     }
 
     throw AppException(
-      parseApiError(response.body, response.statusCode),
+      _parseError(response.body, response.statusCode),
       response.statusCode,
     );
   }
@@ -78,7 +87,7 @@ class AuthService {
     }
 
     throw AppException(
-      parseApiError(response.body, response.statusCode),
+      _parseError(response.body, response.statusCode),
       response.statusCode,
     );
   }
@@ -105,7 +114,7 @@ class AuthService {
     }
 
     throw AppException(
-      parseApiError(response.body, response.statusCode),
+      _parseError(response.body, response.statusCode),
       response.statusCode,
     );
   }
