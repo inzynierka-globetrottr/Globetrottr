@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
 import 'package:globetrottr_front/features/fog/fog_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_drawer.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
@@ -59,10 +59,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             FlutterMap(
               mapController: _mapController,
               options: const MapOptions(
-                initialCenter: LatLng(
-                  50.0614,
-                  19.9383,
-                ), // * for now hardcoded to Kraków
+                initialCenter: MapConfig.initialCenter,
                 initialZoom: MapConfig.defaultZoom,
                 interactionOptions: InteractionOptions(
                   enableMultiFingerGestureRace: true,
@@ -70,13 +67,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
               ),
               children: [
-                TileLayer(
-                  urlTemplate:
-                      //TODO: change styling, temporarily changed for better fog visibility
-                      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                  subdomains: const ['a', 'b', 'c', 'd'],
-                  userAgentPackageName: 'com.globetrottr.app',
-                ),
+                const AppTileLayer(),
                 FogLayer(
                   readyHoles: locationState.allHoles,
                   holesRevision: locationState.holesRevision,
