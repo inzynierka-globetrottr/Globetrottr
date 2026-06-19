@@ -31,6 +31,12 @@ class ProfileService {
     final response = await _client.sendMultipart(request);
     return (jsonDecode(response.body) as Map<String, dynamic>)['avatarUrl'] as String;
   }
+
+  Future<String?> getAvatarUrl(String username) async {
+    final response = await _client.get('/api/profile/$username');
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    return json['avatarUrl'] as String?;
+  }
 }
 
 final profileServiceProvider = Provider<ProfileService>(
