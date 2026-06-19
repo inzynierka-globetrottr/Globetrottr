@@ -34,7 +34,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
 
   Future<void> _checkSavedToken() async {
     try {
-      final newToken = await AuthService().refreshToken();
+      final newToken = await ref.read(authServiceProvider).refreshToken();
       if (!mounted) return;
 
       if (newToken != null) {
@@ -60,7 +60,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
 
     await MapStorage().clearPendingPoints();
     await _refreshDb();
-    await AuthService().deleteToken();
+    await ref.read(authServiceProvider).logout();
 
     if (!mounted) return;
 
@@ -142,7 +142,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                               email: _emailController.text,
                               password: _passwordController.text,
                             );
-                            final token = await AuthService().register(request);
+                            final token = await ref.read(authServiceProvider).register(request);
 
                             if (!context.mounted) return;
 
@@ -180,7 +180,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                               login: _usernameController.text,
                               password: _passwordController.text,
                             );
-                            final token = await AuthService().login(request);
+                            final token = await ref.read(authServiceProvider).login(request);
 
                             if (!context.mounted) return;
 
@@ -207,8 +207,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           try {
-                            final token = await AuthService()
-                                .signInWithGoogle();
+                            final token = await ref.read(authServiceProvider).signInWithGoogle();
 
                             if (!context.mounted) return;
 

@@ -1,38 +1,20 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
-import 'package:http/http.dart' as http;
+import 'package:globetrottr_front/core/network/api_client.dart';
+import 'package:globetrottr_front/core/network/token_store.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 
-// TODO: refactor to extend ApiClient
 class AuthService {
-  final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
-  final _storage = const FlutterSecureStorage();
-  final String _tokenKey = 'jwt_token';
+  final ApiClient _client;
+  final TokenStore _tokenStore;
 
-  String _parseError(String responseBody, int statusCode) {
-    try {
-      final data = jsonDecode(responseBody) as Map<String, dynamic>;
-      return data['error'] ?? 'Server error ($statusCode)';
-    } catch (_) {
-      return 'Unexpected server error ($statusCode)';
-    }
-  }
-
-  Future<String?> getToken() async => _storage.read(key: _tokenKey);
-
-  Future<void> deleteToken() async {
-    await _storage.delete(key: _tokenKey);
-  }
+  AuthService(this._client, this._tokenStore);
 
   Future<String?> signInWithGoogle() async {
-    if (_backendUrl.isEmpty)
-      throw AppException('Backend URL is not configured.');
-
     final String? clientId = dotenv.env['GOOGLE_CLIENT_ID'];
 
     final GoogleSignIn googleSignIn = GoogleSignIn(serverClientId: clientId);
@@ -47,113 +29,45 @@ class AuthService {
 
     if (idToken == null) throw AppException('Google authentication failed.');
 
-    final response = await http.post(
-      Uri.parse('$_backendUrl/api/auth/google'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'token': idToken}),
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final token = data['token'];
-
-      await _storage.write(key: _tokenKey, value: token);
-
-      return token;
-    }
-
-    throw AppException(
-      _parseError(response.body, response.statusCode),
-      response.statusCode,
-    );
+    final response = await _client.post('/api/auth/google', body: {'token': idToken});
+    final token = (jsonDecode(response.body) as Map<String, dynamic>)['token'];
+    await _tokenStore.saveToken(token);
+    return token;
   }
 
   Future<String> login(LoginRequest request) async {
-    if (_backendUrl.isEmpty)
-      throw AppException('Backend URL is not configured.');
-
-    final response = await http.post(
-      Uri.parse('$_backendUrl/api/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(request.toJson()),
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final token = data['token'];
-      await _storage.write(key: _tokenKey, value: token);
-
-      return token;
-    }
-
-    throw AppException(
-      _parseError(response.body, response.statusCode),
-      response.statusCode,
-    );
+    final response = await _client.post('/api/auth/login', body: request.toJson());
+    final token = (jsonDecode(response.body) as Map<String, dynamic>)['token'];
+    await _tokenStore.saveToken(token);
+    return token;
   }
 
   Future<String> register(RegisterRequest request) async {
-    if (_backendUrl.isEmpty)
-      throw AppException('Backend URL is not configured.');
-
-    final response = await http.post(
-      Uri.parse('$_backendUrl/api/auth/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(request.toJson()),
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final token = data['token'];
-
-      if (token != null && token.toString().isNotEmpty) {
-        await _storage.write(key: _tokenKey, value: token);
-      }
-
-      return token ?? '';
-    }
-
-    throw AppException(
-      _parseError(response.body, response.statusCode),
-      response.statusCode,
-    );
+    final response = await _client.post('/api/auth/register', body: request.toJson());
+    final token = (jsonDecode(response.body) as Map<String, dynamic>)['token'] ?? '';
+    if (token.toString().isNotEmpty) await _tokenStore.saveToken(token);
+    return token;
   }
 
   Future<String?> refreshToken() async {
-    final currentToken = await getToken();
-
-    if (currentToken == null || _backendUrl.isEmpty) return null;
-
-    final response = await http.get(
-      Uri.parse('$_backendUrl/api/auth/refresh'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $currentToken',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final newToken = data['token'];
-      await _storage.write(key: _tokenKey, value: newToken);
+    if (await _tokenStore.getToken() == null) return null;
+    try {
+      final response = await _client.get('/api/auth/refresh');
+      final newToken = (jsonDecode(response.body) as Map<String, dynamic>)['token'];
+      await _tokenStore.saveToken(newToken);
       return newToken;
-    } else if (response.statusCode == 401 || response.statusCode == 403) {
-      await deleteToken();
-      throw AppException(
-        'Session expired. Please log in again.',
-        response.statusCode,
-      );
-    } else {
-      throw AppException(
-        'Server temporarily unavailable.',
-        response.statusCode,
-      );
+    } on AppException catch (e) {
+      if (e.statusCode == 401 || e.statusCode == 403) {
+        await _tokenStore.deleteToken();
+        throw AppException('Session expired. Please log in again.', e.statusCode);
+      }
+      throw AppException('Server temporarily unavailable.', e.statusCode);
     }
   }
 
-  Future<void> logout() async {
-    await _storage.delete(key: _tokenKey);
-  }
+  Future<void> logout() => _tokenStore.deleteToken();
 }
 
-final authServiceProvider = Provider<AuthService>((ref) => AuthService());
+final authServiceProvider = Provider<AuthService>(
+  (ref) => AuthService(ref.read(apiClientProvider), ref.read(tokenStoreProvider)),
+);

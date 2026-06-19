@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
-import 'package:globetrottr_front/features/auth/data/auth_service.dart';
+import 'package:globetrottr_front/core/network/token_store.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
@@ -100,6 +100,6 @@ final apiClientProvider = Provider<ApiClient>(
   (ref) => ApiClient(
     http: http.Client(),
     baseUrl: dotenv.env['BACKEND_URL'] ?? '',
-    tokenProvider: () => ref.read(authServiceProvider).getToken(),
+    tokenProvider: () => ref.read(tokenStoreProvider).getToken(),
   ),
 );
