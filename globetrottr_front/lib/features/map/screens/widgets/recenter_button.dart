@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 
@@ -17,7 +18,7 @@ class RecenterButton extends ConsumerWidget {
 
     return NeuIconButton(
       onPressed: () {
-        mapController.move(position, 16.0);
+        mapController.move(position, MapConfig.defaultZoom);
       },
       child: const Icon(Icons.my_location, color: Colors.white, size: 22),
     );

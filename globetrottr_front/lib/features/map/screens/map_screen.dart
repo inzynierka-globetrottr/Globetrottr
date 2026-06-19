@@ -41,7 +41,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     ref.listen<TrackingState>(locationProvider, (previous, next) {
       if (previous?.currentPosition == null && next.currentPosition != null) {
-        _mapController.move(next.currentPosition!, 16.0);
+        _mapController.move(next.currentPosition!, MapConfig.defaultZoom);
       }
     });
 
