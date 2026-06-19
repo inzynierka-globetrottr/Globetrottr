@@ -88,8 +88,8 @@ class _NavbarButton extends StatelessWidget {
               icon,
               size: 26,
               color: isActive
-                  ? const Color(0xFF4FD1C5)
-                  : const Color(0xFF94A3B8),
+                  ? AppColors.active
+                  : AppColors.inactive,
             ),
           ),
         ),
