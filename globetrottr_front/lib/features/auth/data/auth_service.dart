@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+import 'package:globetrottr_front/core/network/response_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -17,15 +18,6 @@ class AuthService {
 
   Future<void> deleteToken() async {
     await _storage.delete(key: _tokenKey);
-  }
-
-  String _parseError(String responseBody, int statusCode) {
-    try {
-      final data = jsonDecode(responseBody) as Map<String, dynamic>;
-      return data['error'] ?? 'Server error ($statusCode)';
-    } catch (_) {
-      return 'Unexpected server error ($statusCode)';
-    }
   }
 
   Future<String?> signInWithGoogle() async {
@@ -62,7 +54,7 @@ class AuthService {
     }
 
     throw AppException(
-      _parseError(response.body, response.statusCode),
+      parseApiError(response.body, response.statusCode),
       response.statusCode,
     );
   }
@@ -86,7 +78,7 @@ class AuthService {
     }
 
     throw AppException(
-      _parseError(response.body, response.statusCode),
+      parseApiError(response.body, response.statusCode),
       response.statusCode,
     );
   }
@@ -113,7 +105,7 @@ class AuthService {
     }
 
     throw AppException(
-      _parseError(response.body, response.statusCode),
+      parseApiError(response.body, response.statusCode),
       response.statusCode,
     );
   }

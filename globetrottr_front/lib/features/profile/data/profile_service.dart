@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+import 'package:globetrottr_front/core/network/response_utils.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/profile/data/user_profile_response.dart';
 import 'package:http/http.dart' as http;
@@ -20,15 +21,6 @@ class ProfileService {
     };
   }
 
-  String _parseError(String responseBody, int statusCode) {
-    try {
-      final data = jsonDecode(responseBody) as Map<String, dynamic>;
-      return data['error'] ?? 'Server error ($statusCode)';
-    } catch (_) {
-      return 'Unexpected server error ($statusCode)';
-    }
-  }
-
   Future<UserProfileResponse> getMyProfile() async {
     final response = await http.get(
       Uri.parse('$_backendUrl/api/profile/me'),
@@ -40,7 +32,7 @@ class ProfileService {
     }
 
     throw AppException(
-      _parseError(response.body, response.statusCode),
+      parseApiError(response.body, response.statusCode),
       response.statusCode,
     );
   }
@@ -55,7 +47,7 @@ class ProfileService {
     if (response.statusCode == 200) return;
 
     throw AppException(
-      _parseError(response.body, response.statusCode),
+      parseApiError(response.body, response.statusCode),
       response.statusCode,
     );
   }
@@ -89,7 +81,7 @@ class ProfileService {
     }
 
     throw AppException(
-      _parseError(response.body, response.statusCode),
+      parseApiError(response.body, response.statusCode),
       response.statusCode,
     );
   }
