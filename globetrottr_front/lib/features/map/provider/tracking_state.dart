@@ -4,34 +4,40 @@ class TrackingState {
   final bool isTracking;
   final bool isRecording;
   final LatLng? currentPosition;
-  final List<LatLng> discoveredPoints;
-  final List<List<LatLng>> calculatedHoles;
+  final List<List<LatLng>> backendHoles;
+  final List<List<LatLng>> sessionHoles;
   final String? errorMessage;
+  final int holesRevision;
 
   const TrackingState({
     this.isTracking = false,
     this.isRecording = false,
     this.currentPosition,
-    this.discoveredPoints = const [],
-    this.calculatedHoles = const [],
+    this.backendHoles = const [],
+    this.sessionHoles = const [],
     this.errorMessage,
+    this.holesRevision = 0,
   });
+
+  List<List<LatLng>> get allHoles => [...backendHoles, ...sessionHoles];
 
   TrackingState copyWith({
     bool? isTracking,
     bool? isRecording,
     LatLng? currentPosition,
-    List<LatLng>? discoveredPoints,
-    List<List<LatLng>>? calculatedHoles,
+    List<List<LatLng>>? backendHoles,
+    List<List<LatLng>>? sessionHoles,
     String? errorMessage,
+    int? holesRevision,
   }) {
     return TrackingState(
       isTracking: isTracking ?? this.isTracking,
       isRecording: isRecording ?? this.isRecording,
       currentPosition: currentPosition ?? this.currentPosition,
-      discoveredPoints: discoveredPoints ?? this.discoveredPoints,
-      calculatedHoles: calculatedHoles ?? this.calculatedHoles,
+      backendHoles: backendHoles ?? this.backendHoles,
+      sessionHoles: sessionHoles ?? this.sessionHoles,
       errorMessage: errorMessage ?? this.errorMessage,
+      holesRevision: holesRevision ?? this.holesRevision,
     );
   }
 }

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,7 +53,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
       child: Scaffold(
         backgroundColor: AppColors.background,
-        drawer: const QuestDrawer(), 
+        drawer: const QuestDrawer(),
         body: Stack(
           children: [
             FlutterMap(
@@ -78,7 +77,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   subdomains: const ['a', 'b', 'c', 'd'],
                   userAgentPackageName: 'com.globetrottr.app',
                 ),
-                FogLayer(readyHoles: locationState.calculatedHoles),
+                FogLayer(
+                  readyHoles: locationState.allHoles,
+                  holesRevision: locationState.holesRevision,
+                ),
                 if (position != null)
                   // think about moving this to a separate widget too, but im not sure
                   // Marcel here, yes, I think you should move this to a separate widget, just like the buttons
@@ -110,7 +112,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       size: 22,
                     ),
                   );
-                }
+                },
               ),
             ),
 
@@ -124,22 +126,22 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               right: 16.0,
               child: RecenterButton(mapController: _mapController),
             ),
-            Positioned(
+            const Positioned(
               top: 170.0,
               right: 16.0,
-              child: const RecordingToggleButton(),
+              child: RecordingToggleButton(),
             ),
 
             // In map_screen.dart, inside the Stack
-            Positioned(
+            const Positioned(
               bottom: 0,
               left: 0,
               right: 0,
-              child: const NeuBottomNavbar(activeItem: NavbarItem.map),
+              child: NeuBottomNavbar(activeItem: NavbarItem.map),
             ),
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 }

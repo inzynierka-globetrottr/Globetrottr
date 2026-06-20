@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'map_storage.dart';
+import 'package:globetrottr_front/features/map/data/map_storage.dart';
 
 class SyncService {
   final String _backendUrl = dotenv.env['BACKEND_URL'] ?? '';
@@ -29,9 +29,9 @@ class SyncService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        //Temporary disabled for developement process
-        //await MapStorage().clearPendingPoints();
-        print("not deleting local db");
+        final syncedIds = points.map((p) => p.id!).toList();
+        await MapStorage().deletePendingPointsByIds(syncedIds); // new method
+        print('Local DB was cleared');
       }
     } catch (e) {
       print('Sync Error: $e');

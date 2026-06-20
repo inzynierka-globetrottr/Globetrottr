@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/validators.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
@@ -33,13 +34,8 @@ class LoginForm extends StatelessWidget {
           NeuTextField(
             controller: usernameController,
             placeholder: 'Username',
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.trim().length < 3) {
-                return 'Must be at least 3 characters';
-              }
-              return null;
-            },
+            keyboardType: TextInputType.name,
+            validator: validateUsername,
           ),
 
           if (state.mode == AuthMode.register)
@@ -47,26 +43,14 @@ class LoginForm extends StatelessWidget {
               controller: emailController,
               placeholder: 'Email',
               keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-                if (value == null || !emailRegex.hasMatch(value.trim())) {
-                  return 'Enter a valid email address';
-                }
-                return null;
-              },
+              validator: validateEmail
             ),
 
           NeuTextField(
             controller: passwordController,
             placeholder: 'Password',
             obscureText: true,
-            validator: (value) {
-              if (value == null || value.length < 6) {
-                // TODO: add more constraints
-                return 'Must be at least 6 characters';
-              }
-              return null;
-            },
+            validator: validatePassword
           ),
 
           if (state.errorMessage != null)

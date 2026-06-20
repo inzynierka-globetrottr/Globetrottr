@@ -4,7 +4,10 @@ import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
+import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
+import 'package:globetrottr_front/features/map/data/map_storage.dart';
+import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 
 class AuthNotifier extends Notifier<AuthState> {
   late final AuthService _authService;
@@ -77,7 +80,19 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> logout() async {
+    final locationState = ref.read(locationProvider);
+    final notifier = ref.read(locationProvider.notifier);
+
+    if (locationState.isRecording) {
+      await notifier.setRecording(false);
+    }
+
+    await MapStorage().clearPendingPoints();
     await _authService.logout();
+
+    ref.invalidate(locationProvider);
+    ref.invalidate(authStateProvider);
+
     state = const AuthState();
   }
 }
