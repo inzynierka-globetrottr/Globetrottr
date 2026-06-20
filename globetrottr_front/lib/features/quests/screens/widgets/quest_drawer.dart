@@ -4,8 +4,8 @@ import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/quests/providers/quest_provider.dart';
 
-import 'quest_card.dart';
-import 'quest_accordion_section.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_accordion_section.dart';
 
 class QuestDrawer extends ConsumerStatefulWidget {
   const QuestDrawer({super.key});
@@ -25,17 +25,17 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
       final token = await authService.getToken();
 
       if (token == null) {
-        throw Exception("Authorization missing. Please log in again.");
+        throw Exception('Authorization missing. Please log in again.');
       }
 
       await questService.startQuest(questId, token);
-      
+
       ref.invalidate(userQuestsProvider);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'), 
+            content: Text('Error: $e'),
             backgroundColor: AppColors.accentRed,
           ),
         );
@@ -79,11 +79,16 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
                 ),
                 data: (quests) {
                   final unstarted = quests.where((q) => !q.isStarted).toList();
-                  final inProgress = quests.where((q) => q.isStarted && !q.isCompleted).toList();
+                  final inProgress = quests
+                      .where((q) => q.isStarted && !q.isCompleted)
+                      .toList();
                   final completed = quests.where((q) => q.isCompleted).toList();
 
                   return ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     children: [
                       QuestAccordionSection(
                         title: 'Available Quests (${unstarted.length})',
@@ -91,7 +96,8 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
                         quests: unstarted,
                         icon: Icons.explore_outlined,
                         isExpanded: _expandedZone == QuestZone.unstarted,
-                        onToggle: () => setState(() => _expandedZone = QuestZone.unstarted),
+                        onToggle: () =>
+                            setState(() => _expandedZone = QuestZone.unstarted),
                         onStartQuest: _startQuest,
                       ),
                       const SizedBox(height: 16),
@@ -101,7 +107,9 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
                         quests: inProgress,
                         icon: Icons.run_circle_outlined,
                         isExpanded: _expandedZone == QuestZone.inProgress,
-                        onToggle: () => setState(() => _expandedZone = QuestZone.inProgress),
+                        onToggle: () => setState(
+                          () => _expandedZone = QuestZone.inProgress,
+                        ),
                         onStartQuest: _startQuest,
                       ),
                       const SizedBox(height: 16),
@@ -111,7 +119,8 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
                         quests: completed,
                         icon: Icons.emoji_events_outlined,
                         isExpanded: _expandedZone == QuestZone.completed,
-                        onToggle: () => setState(() => _expandedZone = QuestZone.completed),
+                        onToggle: () =>
+                            setState(() => _expandedZone = QuestZone.completed),
                         onStartQuest: _startQuest,
                       ),
                     ],

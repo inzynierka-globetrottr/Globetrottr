@@ -16,7 +16,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
   }
 
   Future<void> loadAll() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true);
 
     try {
       final results = await Future.wait([
@@ -90,9 +90,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
       await _service.deleteRelationship(username);
 
       state = state.copyWith(
-        friends: state.friends
-            .where((r) => r.username != username)
-            .toList(),
+        friends: state.friends.where((r) => r.username != username).toList(),
         receivedInvites: state.receivedInvites
             .where((r) => r.username != username)
             .toList(),

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
-import '../services/quest_service.dart';
-import '../models/quest.dart';
+import 'package:globetrottr_front/features/quests/services/quest_service.dart';
+import 'package:globetrottr_front/features/quests/models/quest.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();

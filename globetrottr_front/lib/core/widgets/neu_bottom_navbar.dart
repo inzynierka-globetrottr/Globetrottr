@@ -9,10 +9,7 @@ enum NavbarItem { friends, map, profile, quests }
 class NeuBottomNavbar extends ConsumerWidget {
   final NavbarItem activeItem;
 
-  const NeuBottomNavbar({
-    super.key,
-    required this.activeItem,
-  });
+  const NeuBottomNavbar({super.key, required this.activeItem});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +31,7 @@ class NeuBottomNavbar extends ConsumerWidget {
               _NavbarButton(
                 icon: Icons.emoji_events_rounded,
                 isActive: activeItem == NavbarItem.quests,
-                onTap: () => {}//context.go('/quests'),
+                onTap: () => {}, //context.go('/quests'),
               ),
               _NavbarButton(
                 icon: Icons.people_rounded,
@@ -44,7 +41,7 @@ class NeuBottomNavbar extends ConsumerWidget {
               _NavbarButton(
                 icon: Icons.person_rounded,
                 isActive: activeItem == NavbarItem.profile,
-                onTap: () => context.go('/profile')
+                onTap: () => context.go('/profile'),
               ),
             ],
           ),
@@ -71,9 +68,8 @@ class _NavbarButton extends StatelessWidget {
       onTap: isActive ? null : onTap,
       child: Neumorphic(
         style: NeumorphicStyle(
-          shape: NeumorphicShape.flat,
           boxShape: NeumorphicBoxShape.roundRect(
-            BorderRadius.all(Radius.circular(16)),
+            const BorderRadius.all(Radius.circular(16)),
           ),
           depth: isActive ? -4 : 0,
           intensity: 1,
@@ -90,7 +86,9 @@ class _NavbarButton extends StatelessWidget {
             child: Icon(
               icon,
               size: 26,
-              color: isActive ? const Color(0xFF4FD1C5) : const Color(0xFF94A3B8),
+              color: isActive
+                  ? const Color(0xFF4FD1C5)
+                  : const Color(0xFF94A3B8),
             ),
           ),
         ),

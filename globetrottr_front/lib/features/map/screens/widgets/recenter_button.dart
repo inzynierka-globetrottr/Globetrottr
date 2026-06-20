@@ -19,11 +19,7 @@ class RecenterButton extends ConsumerWidget {
       onPressed: () {
         mapController.move(position, 16.0);
       },
-      child: const Icon(
-        Icons.my_location,
-        color: Colors.white,
-        size: 22,
-      ),
+      child: const Icon(Icons.my_location, color: Colors.white, size: 22),
     );
   }
 }

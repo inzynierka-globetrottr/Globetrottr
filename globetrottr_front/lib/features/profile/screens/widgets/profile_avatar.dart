@@ -8,7 +8,7 @@ class ProfileAvatar extends ConsumerWidget {
   final String? avatarUrl;
   final String username;
   final bool isUploading;
-  final Function(String filePath)? onAvatarSelected;
+  final void Function(String filePath)? onAvatarSelected;
 
   const ProfileAvatar({
     super.key,
@@ -34,12 +34,12 @@ class ProfileAvatar extends ConsumerWidget {
         onAvatarSelected!(pickedFile.path);
       }
     } catch (e) {
-      print('Failed to select image: ${e.toString()}');
+      print('Failed to select image: $e');
       if (context.mounted) {
         // TODO: show error differently than with a snack bar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to select image: ${e.toString()}'),
+            content: Text('Failed to select image: $e'),
             backgroundColor: AppColors.accentRed,
           ),
         );
@@ -49,8 +49,8 @@ class ProfileAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final String fallbackLetter = username.isNotEmpty 
-        ? username[0].toUpperCase() 
+    final String fallbackLetter = username.isNotEmpty
+        ? username[0].toUpperCase()
         : 'T';
 
     return GestureDetector(
@@ -62,12 +62,10 @@ class ProfileAvatar extends ConsumerWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              
               Positioned.fill(
                 child: Neumorphic(
                   padding: const EdgeInsets.all(6),
                   style: const NeumorphicStyle(
-                    shape: NeumorphicShape.flat,
                     boxShape: NeumorphicBoxShape.circle(),
                     depth: -4,
                     intensity: 1,
@@ -85,13 +83,16 @@ class ProfileAvatar extends ConsumerWidget {
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => _buildFallback(fallbackLetter),
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildFallback(fallbackLetter),
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return const Center(
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.accentBlue,
+                                  ),
                                 ),
                               );
                             },
@@ -108,7 +109,9 @@ class ProfileAvatar extends ConsumerWidget {
                           ),
                           child: const Center(
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.accentBlue,
+                              ),
                             ),
                           ),
                         ),
@@ -122,7 +125,6 @@ class ProfileAvatar extends ConsumerWidget {
                 right: -2,
                 child: Neumorphic(
                   style: const NeumorphicStyle(
-                    shape: NeumorphicShape.flat,
                     boxShape: NeumorphicBoxShape.circle(),
                     depth: 3,
                     intensity: 0.9,

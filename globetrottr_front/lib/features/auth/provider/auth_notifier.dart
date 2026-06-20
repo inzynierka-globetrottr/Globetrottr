@@ -19,7 +19,7 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   void setMode(AuthMode mode) {
-    state = state.copyWith(mode: mode, errorMessage: null);
+    state = state.copyWith(mode: mode);
   }
 
   Future<void> submit({
@@ -27,7 +27,10 @@ class AuthNotifier extends Notifier<AuthState> {
     required String password,
     String? email,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, isAuthenticated: false);
+    state = state.copyWith(
+      isLoading: true,
+      isAuthenticated: false,
+    );
 
     try {
       if (state.mode == AuthMode.login) {
@@ -36,7 +39,10 @@ class AuthNotifier extends Notifier<AuthState> {
         );
       } else {
         if (email == null) {
-          state = state.copyWith(isLoading: false, errorMessage: 'Email is required');
+          state = state.copyWith(
+            isLoading: false,
+            errorMessage: 'Email is required',
+          );
           return;
         }
         await _authService.register(
@@ -45,7 +51,6 @@ class AuthNotifier extends Notifier<AuthState> {
       }
 
       state = state.copyWith(isLoading: false, isAuthenticated: true);
-
     } on AppException catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -62,7 +67,10 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> signInWithGoogle() async {
-    state = state.copyWith(isLoading: true, errorMessage: null, isAuthenticated: false);
+    state = state.copyWith(
+      isLoading: true,
+      isAuthenticated: false,
+    );
 
     try {
       final token = await _authService.signInWithGoogle();
@@ -75,7 +83,10 @@ class AuthNotifier extends Notifier<AuthState> {
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Network error. Please try again.');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Network error. Please try again.',
+      );
     }
   }
 

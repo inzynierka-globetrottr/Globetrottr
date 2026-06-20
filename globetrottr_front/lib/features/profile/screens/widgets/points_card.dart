@@ -6,10 +6,7 @@ import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
 class PointsCard extends StatelessWidget {
   final int totalPoints;
 
-  const PointsCard({
-    super.key,
-    required this.totalPoints,
-  });
+  const PointsCard({super.key, required this.totalPoints});
 
   @override
   Widget build(BuildContext context) {

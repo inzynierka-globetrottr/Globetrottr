@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/quests/models/quest.dart';
-import 'quest_card.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
 
 class QuestAccordionSection extends StatelessWidget {
   final String title;
@@ -11,7 +11,7 @@ class QuestAccordionSection extends StatelessWidget {
   final IconData icon;
   final bool isExpanded;
   final VoidCallback onToggle;
-  final Function(int) onStartQuest;
+  final void Function(int) onStartQuest;
 
   const QuestAccordionSection({
     super.key,
@@ -38,20 +38,30 @@ class QuestAccordionSection extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: isExpanded ? AppColors.accentBlue : AppColors.textLight,
+                  color: isExpanded
+                      ? AppColors.accentBlue
+                      : AppColors.textLight,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
                 Text(
                   title,
                   style: isExpanded
-                      ? AppTextStyles.rulesetTitle.copyWith(color: AppColors.accentBlue)
-                      : AppTextStyles.rulesetTitle.copyWith(color: AppColors.textLight),
+                      ? AppTextStyles.rulesetTitle.copyWith(
+                          color: AppColors.accentBlue,
+                        )
+                      : AppTextStyles.rulesetTitle.copyWith(
+                          color: AppColors.textLight,
+                        ),
                 ),
                 const Spacer(),
                 Icon(
-                  isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                  color: isExpanded ? AppColors.accentBlue : AppColors.textLight,
+                  isExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: isExpanded
+                      ? AppColors.accentBlue
+                      : AppColors.textLight,
                 ),
               ],
             ),
@@ -62,22 +72,24 @@ class QuestAccordionSection extends StatelessWidget {
           curve: Curves.easeInOut,
           child: isExpanded
               ? (quests.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Text(
-                        'No quests in this category.',
-                        style: AppTextStyles.descriptiveStatusAction,
-                      ),
-                    )
-                  : Column(
-                      children: quests
-                          .map((q) => QuestCard(
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        child: Text(
+                          'No quests in this category.',
+                          style: AppTextStyles.descriptiveStatusAction,
+                        ),
+                      )
+                    : Column(
+                        children: quests
+                            .map(
+                              (q) => QuestCard(
                                 quest: q,
                                 zone: zone,
                                 onStart: () => onStartQuest(q.id),
-                              ))
-                          .toList(),
-                    ))
+                              ),
+                            )
+                            .toList(),
+                      ))
               : const SizedBox.shrink(),
         ),
       ],

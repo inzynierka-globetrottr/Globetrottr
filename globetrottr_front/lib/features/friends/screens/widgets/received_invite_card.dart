@@ -40,10 +40,7 @@ class ReceivedInviteCard extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                invite.username,
-                style: AppTextStyles.rulesetTitle,
-              ),
+              child: Text(invite.username, style: AppTextStyles.rulesetTitle),
             ),
             Row(
               children: [

@@ -11,10 +11,7 @@ import 'package:go_router/go_router.dart';
 class FriendCard extends StatelessWidget {
   final FriendshipResponse friend;
 
-  const FriendCard({
-    super.key,
-    required this.friend,
-  });
+  const FriendCard({super.key, required this.friend});
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +36,11 @@ class FriendCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              Text(
-                friend.username,
-                style: AppTextStyles.rulesetTitle,
-              ),
+              Text(friend.username, style: AppTextStyles.rulesetTitle),
             ],
           ),
         ),
-      )
+      ),
     );
   }
 }

@@ -21,12 +21,11 @@ class ProfileState {
     bool? isUpdatingBio,
     bool? isUploadingAvatar,
     String? errorMessage,
-  }) =>
-      ProfileState(
-        profile: profile ?? this.profile,
-        isLoading: isLoading ?? this.isLoading,
-        isUpdatingBio: isUpdatingBio ?? this.isUpdatingBio,
-        isUploadingAvatar: isUploadingAvatar ?? this.isUploadingAvatar,
-        errorMessage: errorMessage ?? this.errorMessage,
-      );
+  }) => ProfileState(
+    profile: profile ?? this.profile,
+    isLoading: isLoading ?? this.isLoading,
+    isUpdatingBio: isUpdatingBio ?? this.isUpdatingBio,
+    isUploadingAvatar: isUploadingAvatar ?? this.isUploadingAvatar,
+    errorMessage: errorMessage ?? this.errorMessage,
+  );
 }

@@ -14,7 +14,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   Future<void> loadProfile() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true);
     try {
       final profile = await _service.getMyProfile();
       state = state.copyWith(isLoading: false, profile: profile);
@@ -31,8 +31,8 @@ class ProfileNotifier extends Notifier<ProfileState> {
   Future<void> updateBio(String bio) async {
     if (state.profile == null) return;
 
-    state = state.copyWith(isUpdatingBio: true, errorMessage: null);
-    
+    state = state.copyWith(isUpdatingBio: true);
+
     try {
       await _service.updateBio(bio);
       final current = state.profile!;
@@ -48,13 +48,16 @@ class ProfileNotifier extends Notifier<ProfileState> {
     } on AppException catch (e) {
       state = state.copyWith(isUpdatingBio: false, errorMessage: e.message);
     } catch (_) {
-      state = state.copyWith(isUpdatingBio: false, errorMessage: 'Failed to update bio.');
+      state = state.copyWith(
+        isUpdatingBio: false,
+        errorMessage: 'Failed to update bio.',
+      );
     }
   }
 
   Future<void> uploadAvatar(String filePath) async {
     if (state.profile == null) return;
-    state = state.copyWith(isUploadingAvatar: true, errorMessage: null);
+    state = state.copyWith(isUploadingAvatar: true);
     try {
       final newUrl = await _service.uploadAvatar(filePath);
       final current = state.profile!;
@@ -70,7 +73,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
     } on AppException catch (e) {
       state = state.copyWith(isUploadingAvatar: false, errorMessage: e.message);
     } catch (_) {
-      state = state.copyWith(isUploadingAvatar: false, errorMessage: 'Failed to upload avatar.');
+      state = state.copyWith(
+        isUploadingAvatar: false,
+        errorMessage: 'Failed to upload avatar.',
+      );
     }
   }
 }

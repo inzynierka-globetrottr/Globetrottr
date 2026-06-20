@@ -34,7 +34,7 @@ class FriendMapHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                "Player fog: $friendUsername",
+                'Player fog: $friendUsername',
                 style: AppTextStyles.rulesetTitle,
                 overflow: TextOverflow.ellipsis,
               ),

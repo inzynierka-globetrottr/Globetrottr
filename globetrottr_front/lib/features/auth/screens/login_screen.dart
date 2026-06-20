@@ -56,17 +56,16 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
             padding: const EdgeInsets.all(24),
             child: Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 spacing: 18,
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(bottom: 12),
-                    child: Text("globetrottr", style: AppTextStyles.appLogo),
+                    child: Text('globetrottr', style: AppTextStyles.appLogo),
                   ),
 
                   AuthModeSwitcher(
                     currentMode: state.mode,
-                    onModeChanged: (value) => notifier.setMode(value),
+                    onModeChanged: notifier.setMode,
                   ),
 
                   LoginForm(
@@ -88,11 +87,11 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
                     },
                   ),
 
-                  FormDivider(),
+                  const FormDivider(),
 
                   GoogleLoginSection(
                     isLoading: state.isLoading,
-                    onGooglePressed: () => notifier.signInWithGoogle(),
+                    onGooglePressed: notifier.signInWithGoogle,
                   ),
                 ],
               ),

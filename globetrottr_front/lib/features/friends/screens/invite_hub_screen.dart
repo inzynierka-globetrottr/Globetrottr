@@ -28,9 +28,7 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(
-        baseColor: AppColors.background,
-      ),
+      darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -48,7 +46,7 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                         size: 22,
                       ),
                     ),
-                    Expanded(
+                    const Expanded(
                       child: Center(
                         child: Text(
                           'Friend Requests',
@@ -81,10 +79,16 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) => ReceivedInviteCard(
                         invite: state.receivedInvites[index],
-                        onAccept: () => ref.read(friendsProvider.notifier)
-                            .acceptInvite(state.receivedInvites[index].username),
-                        onDecline: () => ref.read(friendsProvider.notifier)
-                            .deleteRelationship(state.receivedInvites[index].username),
+                        onAccept: () => ref
+                            .read(friendsProvider.notifier)
+                            .acceptInvite(
+                              state.receivedInvites[index].username,
+                            ),
+                        onDecline: () => ref
+                            .read(friendsProvider.notifier)
+                            .deleteRelationship(
+                              state.receivedInvites[index].username,
+                            ),
                       ),
                     ),
                     ListView.separated(
@@ -93,8 +97,11 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) => SentInviteCard(
                         invite: state.sentInvites[index],
-                        onCancel: () => ref.read(friendsProvider.notifier)
-                            .deleteRelationship(state.sentInvites[index].username),
+                        onCancel: () => ref
+                            .read(friendsProvider.notifier)
+                            .deleteRelationship(
+                              state.sentInvites[index].username,
+                            ),
                       ),
                     ),
                   ],
