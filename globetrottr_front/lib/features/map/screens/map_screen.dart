@@ -47,6 +47,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     final locationState = ref.watch(locationProvider);
     final position = locationState.currentPosition;
+    final topSafeInset = MediaQuery.paddingOf(context).top;
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
@@ -89,7 +90,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
 
             Positioned(
-              top: 50.0,
+              top: topSafeInset + 16.0,
               left: 16.0,
               child: Builder(
                 builder: (context) {
@@ -106,24 +107,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 },
               ),
             ),
-
+            
             Positioned(
-              top: 50.0,
+              top: topSafeInset + 16.0,
               right: 16.0,
-              child: CompassButton(mapController: _mapController),
+              child: const RecordingToggleButton(),
             ),
             Positioned(
-              top: 110.0,
+              top: topSafeInset + 76.0,
               right: 16.0,
               child: RecenterButton(mapController: _mapController),
             ),
-            const Positioned(
-              top: 170.0,
+            Positioned(
+              top: topSafeInset + 136.0,
               right: 16.0,
-              child: RecordingToggleButton(),
+              child: CompassButton(mapController: _mapController),
             ),
 
-            // In map_screen.dart, inside the Stack
             const Positioned(
               bottom: 0,
               left: 0,
