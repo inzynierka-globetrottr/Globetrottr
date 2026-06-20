@@ -39,7 +39,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
 
                   const SizedBox(height: 32),
 
-                  const NeuContainer(elevation: NeuElevation.floating, child: Text('')),
+                  const NeuContainer(elevation: NeuElevation.inset, child: Text('')),
 
                   const SizedBox(height: 32),
 

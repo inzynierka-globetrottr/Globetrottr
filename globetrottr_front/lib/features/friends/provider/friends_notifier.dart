@@ -17,6 +17,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     return const FriendsState();
   }
 
+    // TODO: N + 1 problem, make an endpoint for this in the backend
   Future<Map<String, String?>> _fetchAvatars(Iterable<String> usernames) async {
     final entries = await Future.wait(usernames.map((username) async {
       try {
