@@ -7,7 +7,7 @@ import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
 import 'package:globetrottr_front/features/fog/fog_layer.dart';
-import 'package:globetrottr_front/features/map/screens/widgets/player_marker.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/player_marker_player.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_drawer.dart';
@@ -74,18 +74,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   holesRevision: locationState.holesRevision,
                 ),
                 if (position != null)
-                  // think about moving this to a separate widget too, but im not sure
-                  // Marcel here, yes, I think you should move this to a separate widget, just like the buttons
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: position,
-                        width: 20,
-                        height: 20,
-                        child: const PlayerMarker(),
-                      ),
-                    ],
-                  ),
+                  PlayerMarkerLayer(position: position)
               ],
             ),
 
