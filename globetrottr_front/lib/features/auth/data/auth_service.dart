@@ -4,15 +4,23 @@ import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/network/api_client.dart';
 import 'package:globetrottr_front/core/network/token_store.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:globetrottr_front/features/auth/data/auth_response.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
+import 'package:http/http.dart';
 
 class AuthService {
   final ApiClient _client;
   final TokenStore _tokenStore;
 
   AuthService(this._client, this._tokenStore);
+
+  Future<String> _extractAndSaveToken(Response response) async {
+    final auth = AuthResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    if (auth.token.isNotEmpty) await _tokenStore.saveToken(auth.token);
+    return auth.token;
+  }
 
   Future<String?> signInWithGoogle() async {
     final String? clientId = dotenv.env['GOOGLE_CLIENT_ID'];
@@ -30,32 +38,26 @@ class AuthService {
     if (idToken == null) throw AppException('Google authentication failed.');
 
     final response = await _client.post('/api/auth/google', body: {'token': idToken});
-    final token = (jsonDecode(response.body) as Map<String, dynamic>)['token'];
-    await _tokenStore.saveToken(token);
-    return token;
+    final token = await _extractAndSaveToken(response);
+    return token.isEmpty ? null : token;
   }
 
   Future<String> login(LoginRequest request) async {
     final response = await _client.post('/api/auth/login', body: request.toJson());
-    final token = (jsonDecode(response.body) as Map<String, dynamic>)['token'];
-    await _tokenStore.saveToken(token);
-    return token;
+    return _extractAndSaveToken(response);
   }
 
   Future<String> register(RegisterRequest request) async {
     final response = await _client.post('/api/auth/register', body: request.toJson());
-    final token = (jsonDecode(response.body) as Map<String, dynamic>)['token'] ?? '';
-    if (token.toString().isNotEmpty) await _tokenStore.saveToken(token);
-    return token;
+    return _extractAndSaveToken(response);
   }
 
   Future<String?> refreshToken() async {
     if (await _tokenStore.getToken() == null) return null;
     try {
       final response = await _client.get('/api/auth/refresh');
-      final newToken = (jsonDecode(response.body) as Map<String, dynamic>)['token'];
-      await _tokenStore.saveToken(newToken);
-      return newToken;
+      final token = await _extractAndSaveToken(response);
+      return token.isEmpty ? null : token;
     } on AppException catch (e) {
       if (e.statusCode == 401 || e.statusCode == 403) {
         await _tokenStore.deleteToken();
