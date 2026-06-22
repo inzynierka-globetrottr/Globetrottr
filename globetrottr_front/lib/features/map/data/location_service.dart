@@ -53,9 +53,12 @@ class LocationService {
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
-      throw const LocationException(
-        'Location permission is required to track your trips.',
-      );
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw const LocationException(
+          'Location permission is required to track your trips.',
+        );
+      }
     }
 
     if (permission == LocationPermission.whileInUse) {
