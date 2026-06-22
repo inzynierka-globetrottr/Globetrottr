@@ -1,3 +1,5 @@
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+
 enum InviteStatus {
   pending,
   accepted,
@@ -7,7 +9,7 @@ enum InviteStatus {
     if (value == null) return null;
     return InviteStatus.values.firstWhere(
       (e) => e.name.toUpperCase() == value.toUpperCase(),
-      orElse: () => throw ArgumentError('Unknown InviteStatus: $value'),
+      orElse: () => throw DataParsingException('Unknown InviteStatus: $value'),
     );
   }
 }

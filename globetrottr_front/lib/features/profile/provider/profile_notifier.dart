@@ -60,7 +60,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(isUploadingAvatar: false, errorMessage: e.message);
     } catch (e) {
       print('Unexpected error uploading avatar: $e');
-      state = state.copyWith(isUpdatingBio: false, errorMessage: 'Failed to upload avatar.');
+      state = state.copyWith(isUploadingAvatar: false, errorMessage: 'Failed to upload avatar.');
     }
   }
 }
