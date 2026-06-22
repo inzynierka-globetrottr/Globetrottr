@@ -1,7 +1,7 @@
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/fog_layer.dart';
@@ -41,7 +41,7 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
             FlutterMap(
               mapController: _mapController,
               options: const MapOptions(
-                initialCenter: LatLng(50.0614, 19.9383),
+                initialCenter: MapConfig.initialCenter,
                 initialZoom: MapConfig.defaultZoom,
                 interactionOptions: InteractionOptions(
                   enableMultiFingerGestureRace: true,
@@ -49,12 +49,7 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
                 ),
               ),
               children: [
-                TileLayer(
-                  urlTemplate:
-                      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                  subdomains: const ['a', 'b', 'c', 'd'],
-                  userAgentPackageName: 'com.globetrottr.app',
-                ),
+                const AppTileLayer(),
                 fogAsyncValue.when(
                   data: (holes) => FogLayer(readyHoles: holes),
                   loading: () => const SizedBox.shrink(),

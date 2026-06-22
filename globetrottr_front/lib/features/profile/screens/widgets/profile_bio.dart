@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 
 class ProfileBio extends StatefulWidget {
@@ -73,7 +73,8 @@ class _ProfileBioState extends State<ProfileBio> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        NeuInsetContainer(
+        NeuContainer(
+          elevation: NeuElevation.inset,
           width: double.infinity,
           height: 110,
           child: Padding(

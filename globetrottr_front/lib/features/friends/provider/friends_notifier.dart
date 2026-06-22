@@ -4,14 +4,37 @@ import 'package:globetrottr_front/features/friends/data/friends_service.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
 import 'package:globetrottr_front/features/friends/data/invite_status.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_state.dart';
+import 'package:globetrottr_front/features/profile/data/profile_service.dart';
 
 class FriendsNotifier extends Notifier<FriendsState> {
   late FriendsService _service;
+  late ProfileService _profileService;
 
   @override
   FriendsState build() {
     _service = ref.read(friendsServiceProvider);
+    _profileService = ref.read(profileServiceProvider);
     return const FriendsState();
+  }
+
+    // TODO: N + 1 problem, make an endpoint for this in the backend
+  Future<Map<String, String?>> _fetchAvatars(Iterable<String> usernames) async {
+    final entries = await Future.wait(usernames.map((username) async {
+      try {
+        final avatarUrl = await _profileService.getAvatarUrl(username);
+        return MapEntry(username, avatarUrl);
+      } catch (e) {
+        return MapEntry(username, null);
+      }
+    }));
+    return Map.fromEntries(entries);
+  }
+
+  List<FriendshipResponse> _withAvatars(
+    List<FriendshipResponse> list,
+    Map<String, String?> avatars,
+  ) {
+    return list.map((r) => r.copyWith(avatarUrl: avatars[r.username])).toList();
   }
 
   Future<void> loadAll() async {
@@ -24,11 +47,22 @@ class FriendsNotifier extends Notifier<FriendsState> {
         _service.getSentInvites(),
       ]);
 
+      final friends = results[0];
+      final receivedInvites = results[1];
+      final sentInvites = results[2];
+
+      final usernames = {
+        ...friends.map((f) => f.username),
+        ...receivedInvites.map((f) => f.username),
+        ...sentInvites.map((f) => f.username),
+      };
+      final avatars = await _fetchAvatars(usernames);
+
       state = state.copyWith(
         isLoading: false,
-        friends: results[0],
-        receivedInvites: results[1],
-        sentInvites: results[2],
+        friends: _withAvatars(friends, avatars),
+        receivedInvites: _withAvatars(receivedInvites, avatars),
+        sentInvites: _withAvatars(sentInvites, avatars),
       );
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);

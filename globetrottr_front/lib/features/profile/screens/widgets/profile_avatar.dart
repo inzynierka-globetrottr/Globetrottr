@@ -1,7 +1,7 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/widgets/user_avatar_bubble.dart';
 
 class ProfileAvatar extends ConsumerWidget {
   final String? avatarUrl;
@@ -19,10 +19,6 @@ class ProfileAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final String fallbackLetter = username.isNotEmpty
-        ? username[0].toUpperCase()
-        : 'T';
-
     return GestureDetector(
       onTap: onAvatarTap,
       child: Center(
@@ -43,49 +39,12 @@ class ProfileAvatar extends ConsumerWidget {
                     shadowDarkColorEmboss: AppColors.neuShadow,
                     color: AppColors.background,
                   ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (avatarUrl != null && avatarUrl!.isNotEmpty)
-                        ClipOval(
-                          child: Image.network(
-                            avatarUrl!,
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildFallback(fallbackLetter),
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.accentBlue,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        )
-                      else
-                        _buildFallback(fallbackLetter),
-
-                      if (isUploading)
-                        Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.accentBlue,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
+                  child: UserAvatarBubble(
+                    username: username,
+                    avatarUrl: avatarUrl,
+                    isUploading: isUploading,
+                    fallbackFontSize: 32,
+                    useContainerChrome: false,
                   ),
                 ),
               ),
@@ -112,19 +71,6 @@ class ProfileAvatar extends ConsumerWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFallback(String letter) {
-    return Center(
-      child: Text(
-        letter,
-        style: AppTextStyles.screenHeaderLarge.copyWith(
-          color: AppColors.accentBlue,
-          fontSize: 32,
-          fontWeight: FontWeight.w800,
         ),
       ),
     );

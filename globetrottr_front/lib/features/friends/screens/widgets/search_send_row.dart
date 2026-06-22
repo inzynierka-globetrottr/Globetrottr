@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
-import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 
 class SearchSendRow extends ConsumerStatefulWidget {
@@ -65,7 +65,8 @@ class _SearchSendRowState extends ConsumerState<SearchSendRow> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: NeuInsetContainer(
+                child: NeuContainer(
+                  elevation: NeuElevation.inset,
                   height: 48,
                   width: double.infinity,
                   child: Padding(

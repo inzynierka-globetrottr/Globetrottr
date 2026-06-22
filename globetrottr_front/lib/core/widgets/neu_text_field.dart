@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 
 class NeuTextField extends StatefulWidget {
   final String? label;
@@ -49,7 +49,8 @@ class _NeuTextFieldState extends State<NeuTextField> {
           ),
           const SizedBox(height: 6),
         ],
-        NeuInsetContainer(
+        NeuContainer(
+          elevation: NeuElevation.inset,
           width: widget.width,
           height: widget.height,
           child: Padding(

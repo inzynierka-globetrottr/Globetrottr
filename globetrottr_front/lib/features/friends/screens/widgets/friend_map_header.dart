@@ -11,8 +11,10 @@ class FriendMapHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topSafeInset = MediaQuery.paddingOf(context).top;
+
     return Positioned(
-      top: 50.0,
+      top: topSafeInset + 16.0,
       left: 16.0,
       right: 16.0,
       child: Row(
