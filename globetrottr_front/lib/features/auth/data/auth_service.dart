@@ -35,7 +35,7 @@ class AuthService {
 
     final String? idToken = googleAuth.idToken;
 
-    if (idToken == null) throw AppException('Google authentication failed.');
+    if (idToken == null) throw const AuthException('Google authentication failed.');
 
     final response = await _client.post('/api/auth/google', body: {'token': idToken});
     final token = await _extractAndSaveToken(response);
@@ -58,12 +58,12 @@ class AuthService {
       final response = await _client.get('/api/auth/refresh');
       final token = await _extractAndSaveToken(response);
       return token.isEmpty ? null : token;
-    } on AppException catch (e) {
-      if (e.statusCode == 401 || e.statusCode == 403) {
-        await _tokenStore.deleteToken();
-        throw AppException('Session expired. Please log in again.', e.statusCode);
-      }
-      throw AppException('Server temporarily unavailable.', e.statusCode);
+    } on UnauthorizedException {
+      await _tokenStore.deleteToken();
+      rethrow;
+    } on ForbiddenException {
+      await _tokenStore.deleteToken();
+      rethrow;
     }
   }
 

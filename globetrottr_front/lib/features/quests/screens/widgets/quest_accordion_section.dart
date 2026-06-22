@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/features/quests/models/quest.dart';
+import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
 
 class QuestAccordionSection extends StatelessWidget {

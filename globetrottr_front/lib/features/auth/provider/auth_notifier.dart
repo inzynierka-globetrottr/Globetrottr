@@ -24,7 +24,11 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final token = await _authService.refreshToken();
       state = state.copyWith(isAuthenticated: token != null, isInitializing: false);
-    } catch (_) {
+    } on AppException catch (e) {
+      print('Session check did not authenticate: ${e.message}');
+      state = state.copyWith(isAuthenticated: false, isInitializing: false);
+    } catch (e) {
+      print('Unexpected error checking existing session: $e');
       state = state.copyWith(isAuthenticated: false, isInitializing: false);
     }
   }
@@ -69,10 +73,11 @@ class AuthNotifier extends Notifier<AuthState> {
         errorMessage: e.message,
       );
     } catch (e) {
+      print('Unexpected error during auth submit: $e');
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: 'Network error. Please check your connection.',
+        errorMessage: 'Something went wrong. Please try again.',
       );
     }
   }
@@ -94,10 +99,8 @@ class AuthNotifier extends Notifier<AuthState> {
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Network error. Please try again.',
-      );
+      print('Unexpected error during Google sign-in: $e');
+      state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong. Please try again.');
     }
   }
 
@@ -109,7 +112,7 @@ class AuthNotifier extends Notifier<AuthState> {
       await notifier.setRecording(false);
     }
 
-    await MapStorage().clearPendingPoints();
+    await ref.read(mapStorageProvider).clearPendingPoints();
     await _authService.logout();
 
     ref.invalidate(locationProvider);

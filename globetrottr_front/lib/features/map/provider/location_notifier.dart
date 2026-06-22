@@ -11,11 +11,12 @@ import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 
 class LocationNotifier extends Notifier<TrackingState> {
-  final LocationService _locationService = LocationService();
+  late LocationService _locationService;
   StreamSubscription<Position>? _positionStream;
 
   @override
   TrackingState build() {
+    _locationService = ref.read(locationServiceProvider);
     Future.microtask(_initialize);
 
     ref.onDispose(() {
@@ -45,7 +46,7 @@ class LocationNotifier extends Notifier<TrackingState> {
 
   Future<void> _loadUnsyncedLocalPoints() async {
     try {
-      final pending = await MapStorage().getPendingPoints();
+      final pending = await ref.read(mapStorageProvider).getPendingPoints();
       if (pending.isEmpty) return;
 
       final holes = pending

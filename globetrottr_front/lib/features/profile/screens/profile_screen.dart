@@ -9,6 +9,7 @@ import 'package:globetrottr_front/features/profile/provider/profile_provider.dar
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_avatar.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_bio.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/points_card.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -22,6 +23,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(profileProvider.notifier).loadProfile());
+  }
+
+  Future<void> _pickAndUploadAvatar(BuildContext context) async {
+    if (ref.read(profileProvider).isUploadingAvatar) return;
+
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        await ref.read(profileProvider.notifier).uploadAvatar(pickedFile.path);
+      }
+    } catch (e) {
+      print('Failed to select image: $e');
+      if (context.mounted) {
+        // TODO: show error differently than with a snack bar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to select image: $e'),
+            backgroundColor: AppColors.accentRed,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -49,7 +79,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   username: userProfile?.username ?? '',
                   avatarUrl: userProfile?.avatarUrl,
                   isUploading: profileState.isUploadingAvatar,
-                  onAvatarSelected: profileNotifier.uploadAvatar
+                  onAvatarTap: () => _pickAndUploadAvatar(context),
                 ),
 
                 const SizedBox(height: 16),

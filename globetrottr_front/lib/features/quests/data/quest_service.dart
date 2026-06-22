@@ -1,6 +1,7 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/network/api_client.dart';
-import 'package:globetrottr_front/features/quests/models/quest.dart';
+import 'package:globetrottr_front/features/quests/data/quest.dart';
 
 class QuestService {
   final ApiClient _client;
@@ -15,3 +16,7 @@ class QuestService {
   Future<void> startQuest(int questId) =>
       _client.post('/api/quests/me/start/$questId');
 }
+
+final questServiceProvider = Provider<QuestService>(
+  (ref) => QuestService(ref.read(apiClientProvider)),
+);

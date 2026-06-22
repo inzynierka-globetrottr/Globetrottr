@@ -1,5 +1,6 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/received_invite_card.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/sent_invite_card.dart';
@@ -21,6 +22,35 @@ class InviteHubScreen extends ConsumerStatefulWidget {
 
 class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
   InviteTab _selectedTab = InviteTab.received;
+
+  // TODO: handle it differently than a snackbar
+  Future<void> _handleAccept(String username) async {
+    try {
+      await ref.read(friendsProvider.notifier).acceptInvite(username);
+    } on AppException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong.')),
+      );
+    }
+  }
+
+  Future<void> _handleDeleteRelationship(String username) async {
+    try {
+      await ref.read(friendsProvider.notifier).deleteRelationship(username);
+    } on AppException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,16 +109,8 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) => ReceivedInviteCard(
                         invite: state.receivedInvites[index],
-                        onAccept: () => ref
-                            .read(friendsProvider.notifier)
-                            .acceptInvite(
-                              state.receivedInvites[index].username,
-                            ),
-                        onDecline: () => ref
-                            .read(friendsProvider.notifier)
-                            .deleteRelationship(
-                              state.receivedInvites[index].username,
-                            ),
+                        onAccept: () => _handleAccept(state.receivedInvites[index].username),
+                        onDecline: () => _handleDeleteRelationship(state.receivedInvites[index].username),
                       ),
                     ),
                     ListView.separated(
@@ -97,11 +119,7 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) => SentInviteCard(
                         invite: state.sentInvites[index],
-                        onCancel: () => ref
-                            .read(friendsProvider.notifier)
-                            .deleteRelationship(
-                              state.sentInvites[index].username,
-                            ),
+                        onCancel: () => _handleDeleteRelationship(state.sentInvites[index].username),
                       ),
                     ),
                   ],
