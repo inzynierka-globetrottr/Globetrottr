@@ -19,17 +19,7 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
 
   Future<void> _startQuest(int questId) async {
     try {
-      final authService = ref.read(authServiceProvider);
-      final questService = ref.read(questServiceProvider);
-
-      final token = await authService.getToken();
-
-      if (token == null) {
-        throw Exception('Authorization missing. Please log in again.');
-      }
-
-      await questService.startQuest(questId, token);
-
+      await ref.read(questServiceProvider).startQuest(questId);
       ref.invalidate(userQuestsProvider);
     } catch (e) {
       if (mounted) {

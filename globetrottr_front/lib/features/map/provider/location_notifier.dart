@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/features/fog/data/fog_service.dart';
@@ -9,7 +8,6 @@ import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/fog/fog_holepuncher.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
-import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 
 class LocationNotifier extends Notifier<TrackingState> {
@@ -35,9 +33,7 @@ class LocationNotifier extends Notifier<TrackingState> {
 
   Future<void> _fetchBackendFog() async {
     try {
-      final token = await AuthService().getToken();
-      if (token == null) return;
-      final holes = await FogService().getMyFog();
+      final holes = await ref.read(fogServiceProvider).getMyFog();
       state = state.copyWith(
         backendHoles: holes,
         holesRevision: state.holesRevision + 1,
@@ -92,13 +88,10 @@ class LocationNotifier extends Notifier<TrackingState> {
     state = state.copyWith(isRecording: value);
 
     if (!value) {
-      final token = await AuthService().getToken();
-      if (token != null) {
-        await SyncService().syncPendingPoints(token);
-      }
+      await ref.read(syncServiceProvider).syncPendingPoints();
 
       try {
-        final updatedHoles = await FogService().getMyFog();
+        final updatedHoles = await ref.read(fogServiceProvider).getMyFog();
         state = state.copyWith(
           backendHoles: updatedHoles,
           holesRevision: state.holesRevision + 1,

@@ -6,12 +6,11 @@ import 'package:globetrottr_front/features/friends/data/invite_status.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_state.dart';
 
 class FriendsNotifier extends Notifier<FriendsState> {
-  late final FriendsService _service;
+  late FriendsService _service;
 
   @override
   FriendsState build() {
-    // TODO: make friends service a dependency injection
-    _service = FriendsService();
+    _service = ref.read(friendsServiceProvider);
     return const FriendsState();
   }
 

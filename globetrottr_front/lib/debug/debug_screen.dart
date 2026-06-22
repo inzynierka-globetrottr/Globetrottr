@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
@@ -7,14 +8,14 @@ import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 
-class DebugScreen extends StatefulWidget {
+class DebugScreen extends ConsumerStatefulWidget {
   const DebugScreen({super.key});
 
   @override
-  State<DebugScreen> createState() => _DebugScreenState();
+  ConsumerState<DebugScreen> createState() => _DebugScreenState();
 }
 
-class _DebugScreenState extends State<DebugScreen> {
+class _DebugScreenState extends ConsumerState<DebugScreen> {
   final LocationService _locationService = LocationService();
   List<PendingPoint> _points = [];
   bool _isTracking = false;
@@ -33,7 +34,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
   Future<void> _checkSavedToken() async {
     try {
-      final newToken = await AuthService().refreshToken();
+      final newToken = await ref.read(authServiceProvider).refreshToken();
       if (!mounted) return;
 
       if (newToken != null) {
@@ -59,7 +60,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
     await MapStorage().clearPendingPoints();
     await _refreshDb();
-    await AuthService().deleteToken();
+    await ref.read(authServiceProvider).logout();
 
     if (!mounted) return;
 
@@ -141,7 +142,7 @@ class _DebugScreenState extends State<DebugScreen> {
                               email: _emailController.text,
                               password: _passwordController.text,
                             );
-                            final token = await AuthService().register(request);
+                            final token = await ref.read(authServiceProvider).register(request);
 
                             if (!context.mounted) return;
 
@@ -179,7 +180,7 @@ class _DebugScreenState extends State<DebugScreen> {
                               login: _usernameController.text,
                               password: _passwordController.text,
                             );
-                            final token = await AuthService().login(request);
+                            final token = await ref.read(authServiceProvider).login(request);
 
                             if (!context.mounted) return;
 
@@ -206,8 +207,7 @@ class _DebugScreenState extends State<DebugScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           try {
-                            final token = await AuthService()
-                                .signInWithGoogle();
+                            final token = await ref.read(authServiceProvider).signInWithGoogle();
 
                             if (!context.mounted) return;
 
@@ -325,7 +325,7 @@ class _DebugScreenState extends State<DebugScreen> {
                             ),
                           );
 
-                          await SyncService().syncPendingPoints(_jwtToken!);
+                          await ref.read(syncServiceProvider).syncPendingPoints();
                           if (!context.mounted) return;
                           await _refreshDb();
                         },

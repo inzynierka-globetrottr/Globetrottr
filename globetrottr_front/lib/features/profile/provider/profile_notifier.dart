@@ -5,11 +5,11 @@ import 'package:globetrottr_front/features/profile/data/user_profile_response.da
 import 'package:globetrottr_front/features/profile/provider/profile_state.dart';
 
 class ProfileNotifier extends Notifier<ProfileState> {
-  late final ProfileService _service;
+  late ProfileService _service;
 
   @override
   ProfileState build() {
-    _service = ProfileService();
+    _service = ref.read(profileServiceProvider);
     return const ProfileState();
   }
 

@@ -4,18 +4,29 @@ import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
-import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
+import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
+import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 
 class AuthNotifier extends Notifier<AuthState> {
   late final AuthService _authService;
 
   @override
   AuthState build() {
-    _authService = AuthService();
+    _authService = ref.read(authServiceProvider);
+    Future.microtask(_checkExistingSession);
     return const AuthState();
+  }
+
+  Future<void> _checkExistingSession() async {
+    try {
+      final token = await _authService.refreshToken();
+      state = state.copyWith(isAuthenticated: token != null, isInitializing: false);
+    } catch (_) {
+      state = state.copyWith(isAuthenticated: false, isInitializing: false);
+    }
   }
 
   void setMode(AuthMode mode) {
@@ -102,8 +113,9 @@ class AuthNotifier extends Notifier<AuthState> {
     await _authService.logout();
 
     ref.invalidate(locationProvider);
-    ref.invalidate(authStateProvider);
+    ref.invalidate(profileProvider);
+    ref.invalidate(friendsProvider);
 
-    state = const AuthState();
+    state = const AuthState(isInitializing: false);
   }
 }
