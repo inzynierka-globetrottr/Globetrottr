@@ -65,7 +65,7 @@ spotless {
     java {
         targetExclude 'build/generated/**/*.java'
 
-        googleJavaFormat()
+        googleJavaFormat().aosp()
 
         removeUnusedImports()
 
