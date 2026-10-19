@@ -20,7 +20,7 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   void setMode(AuthMode mode) {
-    state = state.copyWith(mode: mode);
+    state = state.copyWith(mode: mode, clearError: true);
   }
 
   Future<void> submit({
@@ -31,6 +31,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       isAuthenticated: false,
+      clearError: true,
     );
 
     try {
@@ -71,6 +72,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       isAuthenticated: false,
+      clearError: true,
     );
 
     try {

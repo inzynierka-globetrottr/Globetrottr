@@ -18,10 +18,11 @@ class AuthState {
     bool? isLoading,
     String? errorMessage,
     bool? isAuthenticated,
+    bool clearError = false,
   }) => AuthState(
     mode: mode ?? this.mode,
     isLoading: isLoading ?? this.isLoading,
-    errorMessage: errorMessage ?? this.errorMessage,
+    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     isAuthenticated: isAuthenticated ?? this.isAuthenticated,
   );
 }

@@ -16,7 +16,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
   }
 
   Future<void> loadAll() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       final results = await Future.wait([

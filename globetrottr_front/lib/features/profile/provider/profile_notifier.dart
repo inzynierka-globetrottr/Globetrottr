@@ -14,7 +14,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
   }
 
   Future<void> loadProfile() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final profile = await _service.getMyProfile();
       state = state.copyWith(isLoading: false, profile: profile);
@@ -31,7 +31,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
   Future<void> updateBio(String bio) async {
     if (state.profile == null) return;
 
-    state = state.copyWith(isUpdatingBio: true);
+    state = state.copyWith(isUpdatingBio: true, clearError: true);
 
     try {
       await _service.updateBio(bio);
@@ -57,7 +57,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
 
   Future<void> uploadAvatar(String filePath) async {
     if (state.profile == null) return;
-    state = state.copyWith(isUploadingAvatar: true);
+    state = state.copyWith(isUploadingAvatar: true, clearError: true);
     try {
       final newUrl = await _service.uploadAvatar(filePath);
       final current = state.profile!;
