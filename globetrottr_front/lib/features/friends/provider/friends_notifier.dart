@@ -38,6 +38,11 @@ class FriendsNotifier extends Notifier<FriendsState> {
     return list.map((r) => r.copyWith(avatarUrl: avatars[r.username])).toList();
   }
 
+  Future<void> _loadFriendAvatars(Iterable<String> usernames) async {
+    final avatars = await _fetchAvatars(usernames);
+    state = state.copyWith(friends: _withAvatars(state.friends, avatars));
+  }
+
   Future<void> loadAll() async {
     state = state.copyWith(isLoading: true, clearError: true);
 
@@ -48,23 +53,14 @@ class FriendsNotifier extends Notifier<FriendsState> {
         _service.getSentInvites(),
       ]);
 
-      final friends = results[0];
-      final receivedInvites = results[1];
-      final sentInvites = results[2];
-
-      final usernames = {
-        ...friends.map((f) => f.username),
-        ...receivedInvites.map((f) => f.username),
-        ...sentInvites.map((f) => f.username),
-      };
-      final avatars = await _fetchAvatars(usernames);
-
       state = state.copyWith(
         isLoading: false,
-        friends: _withAvatars(friends, avatars),
-        receivedInvites: _withAvatars(receivedInvites, avatars),
-        sentInvites: _withAvatars(sentInvites, avatars),
+        friends: results[0],
+        receivedInvites: results[1],
+        sentInvites: results[2],
       );
+
+      await _loadFriendAvatars(results[0].map((f) => f.username));
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
@@ -101,19 +97,28 @@ class FriendsNotifier extends Notifier<FriendsState> {
     try {
       await _service.acceptInvite(username);
 
-      state = state.copyWith(
-        receivedInvites: state.receivedInvites
-            .where((r) => r.username != username)
-            .toList(),
-        friends: [
-          ...state.friends,
+      final invite = state.receivedInvites
+          .where((r) => r.username == username)
+          .firstOrNull;
+      final friend =
+          invite?.copyWith(
+            status: InviteStatus.accepted,
+            isIncomingRequest: false,
+          ) ??
           FriendshipResponse(
             username: username,
             status: InviteStatus.accepted,
             isIncomingRequest: false,
-          ),
-        ],
+          );
+
+      state = state.copyWith(
+        receivedInvites: state.receivedInvites
+            .where((r) => r.username != username)
+            .toList(),
+        friends: [...state.friends, friend],
       );
+
+      await _loadFriendAvatars([username]);
     } on AppException {
       rethrow;
     } catch (e) {
