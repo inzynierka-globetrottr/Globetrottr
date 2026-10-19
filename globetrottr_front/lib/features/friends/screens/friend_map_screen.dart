@@ -57,11 +57,14 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
                   userAgentPackageName: 'com.globetrottr.app',
                 ),
                 fogAsyncValue.when(
-                  data: (holes) => FogLayer(readyHoles: holes),
+                  data: (holes) => FogLayer(
+                    readyHoles: holes,
+                    holesRevision: identityHashCode(holes),
+                  ),
                   loading: () => const SizedBox.shrink(),
                   error: (err, stack) {
                     debugPrint('Error downloading fog: $err');
-                    return FogLayer(readyHoles: const []);
+                    return const FogLayer(readyHoles: [], holesRevision: 0);
                   },
                 ),
               ],

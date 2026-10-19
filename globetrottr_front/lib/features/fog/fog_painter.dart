@@ -53,18 +53,11 @@ class FogPainter extends CustomPainter {
     canvas.restore();
   }
 
+  static final Expando<LatLngBounds> _holeBounds = Expando();
+
   bool _intersectsVisible(List<LatLng> points, LatLngBounds visible) {
-    double? minLat, maxLat, minLng, maxLng;
-    for (final p in points) {
-      minLat = (minLat == null || p.latitude < minLat) ? p.latitude : minLat;
-      maxLat = (maxLat == null || p.latitude > maxLat) ? p.latitude : maxLat;
-      minLng = (minLng == null || p.longitude < minLng) ? p.longitude : minLng;
-      maxLng = (maxLng == null || p.longitude > maxLng) ? p.longitude : maxLng;
-    }
-    return !(maxLat! < visible.south ||
-        minLat! > visible.north ||
-        maxLng! < visible.west ||
-        minLng! > visible.east);
+    final bounds = _holeBounds[points] ??= LatLngBounds.fromPoints(points);
+    return bounds.isOverlapping(visible);
   }
 
   @override

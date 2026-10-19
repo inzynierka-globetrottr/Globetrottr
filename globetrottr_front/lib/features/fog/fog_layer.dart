@@ -10,7 +10,7 @@ class FogLayer extends StatelessWidget {
   const FogLayer({
     super.key, 
     required this.readyHoles,
-    this.holesRevision = 0
+    required this.holesRevision,
   });
 
   @override
