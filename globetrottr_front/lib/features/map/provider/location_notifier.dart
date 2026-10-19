@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/features/fog/data/fog_service.dart';
@@ -39,7 +41,7 @@ class LocationNotifier extends Notifier<TrackingState> {
         holesRevision: state.holesRevision + 1,
       );
     } catch (e) {
-      print('Failed to fetch backend fog: $e');
+      debugPrint('Failed to fetch backend fog: $e');
     }
   }
 
@@ -62,7 +64,7 @@ class LocationNotifier extends Notifier<TrackingState> {
         holesRevision: state.holesRevision + 1,
       );
     } catch (e, stack) {
-      print('Failed to load unsynced points from DB: $e\n$stack');
+      debugPrint('Failed to load unsynced points from DB: $e\n$stack');
     }
   }
 
@@ -70,7 +72,7 @@ class LocationNotifier extends Notifier<TrackingState> {
     try {
       await _locationService.startTracking();
       _positionStream = _locationService.positionStream.listen(_onPosition);
-      state = state.copyWith(isTracking: true);
+      state = state.copyWith(isTracking: true, clearError: true);
     } catch (e) {
       state = state.copyWith(isTracking: false, errorMessage: e.toString());
     }
@@ -88,16 +90,17 @@ class LocationNotifier extends Notifier<TrackingState> {
     state = state.copyWith(isRecording: value);
 
     if (!value) {
-      await ref.read(syncServiceProvider).syncPendingPoints();
+      final synced = await ref.read(syncServiceProvider).syncPendingPoints();
 
       try {
         final updatedHoles = await ref.read(fogServiceProvider).getMyFog();
         state = state.copyWith(
           backendHoles: updatedHoles,
+          sessionHoles: synced ? const [] : null,
           holesRevision: state.holesRevision + 1,
         );
       } catch (e) {
-        print('Fog re-fetch after sync failed: $e');
+        debugPrint('Fog re-fetch after sync failed: $e');
       }
     }
   }
@@ -124,9 +127,5 @@ class LocationNotifier extends Notifier<TrackingState> {
           ? state.holesRevision + 1
           : state.holesRevision,
     );
-  }
-
-  void reset() {
-    state = const TrackingState();
   }
 }

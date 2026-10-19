@@ -34,7 +34,7 @@ class ProfileAvatar extends ConsumerWidget {
         onAvatarSelected!(pickedFile.path);
       }
     } catch (e) {
-      print('Failed to select image: $e');
+      debugPrint('Failed to select image: $e');
       if (context.mounted) {
         // TODO: show error differently than with a snack bar
         ScaffoldMessenger.of(context).showSnackBar(

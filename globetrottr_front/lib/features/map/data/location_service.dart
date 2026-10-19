@@ -100,7 +100,9 @@ class LocationService {
         );
 
         await MapStorage().insertPendingPoint(point);
-        print('Location saved locally: ${point.latitude}, ${point.longitude}');
+        debugPrint(
+          'Location saved locally: ${point.latitude}, ${point.longitude}',
+        );
       }
     });
   }

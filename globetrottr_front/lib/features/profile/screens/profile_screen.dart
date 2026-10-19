@@ -49,7 +49,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   username: userProfile?.username ?? '',
                   avatarUrl: userProfile?.avatarUrl,
                   isUploading: profileState.isUploadingAvatar,
-                  onAvatarSelected: profileNotifier.uploadAvatar
+                  onAvatarSelected: profileNotifier.uploadAvatar,
                 ),
 
                 const SizedBox(height: 16),
@@ -67,7 +67,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ProfileBio(
                   initialBio: userProfile?.bio ?? '',
                   isUpdatingBio: profileState.isUpdatingBio,
-                  onSave: profileNotifier.updateBio
+                  onSave: profileNotifier.updateBio,
                 ),
 
                 const SizedBox(height: 24),

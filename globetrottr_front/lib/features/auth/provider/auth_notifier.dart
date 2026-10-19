@@ -7,6 +7,7 @@ import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
+import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 
@@ -30,7 +31,7 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   void setMode(AuthMode mode) {
-    state = state.copyWith(mode: mode);
+    state = state.copyWith(mode: mode, clearError: true);
   }
 
   Future<void> submit({
@@ -41,6 +42,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       isAuthenticated: false,
+      clearError: true,
     );
 
     try {
@@ -81,6 +83,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       isAuthenticated: false,
+      clearError: true,
     );
 
     try {
@@ -101,12 +104,17 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> logout() async {
+  Future<bool> logout({bool discardUnsyncedPoints = false}) async {
     final locationState = ref.read(locationProvider);
     final notifier = ref.read(locationProvider.notifier);
 
     if (locationState.isRecording) {
       await notifier.setRecording(false);
+    }
+
+    if (!discardUnsyncedPoints) {
+      final synced = await ref.read(syncServiceProvider).syncPendingPoints();
+      if (!synced) return false;
     }
 
     await MapStorage().clearPendingPoints();
@@ -117,5 +125,6 @@ class AuthNotifier extends Notifier<AuthState> {
     ref.invalidate(friendsProvider);
 
     state = const AuthState(isInitializing: false);
+    return true;
   }
 }

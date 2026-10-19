@@ -11,6 +11,12 @@ analyzer:
     - "build/**"
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 # turn off a rule if it's annoying
 linter:
@@ -27,4 +33,6 @@ linter:
     curly_braces_in_flow_control_structures: false
     omit_local_variable_types: false
     cascade_invocations: false
-    avoid_print: false
+
+formatter:
+  trailing_commas: preserve
