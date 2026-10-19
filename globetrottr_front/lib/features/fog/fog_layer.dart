@@ -7,7 +7,11 @@ class FogLayer extends StatelessWidget {
   final List<List<LatLng>> readyHoles;
   final int holesRevision;
 
-  const FogLayer({super.key, required this.readyHoles, this.holesRevision = 0});
+  const FogLayer({
+    super.key,
+    required this.readyHoles,
+    required this.holesRevision,
+  });
 
   @override
   Widget build(BuildContext context) {

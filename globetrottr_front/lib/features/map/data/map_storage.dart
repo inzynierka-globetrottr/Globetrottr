@@ -48,13 +48,12 @@ class MapStorage {
     await db.delete('pending_points');
   }
 
-  Future<void> deletePendingPointsByIds(List<int> ids) async {
+  Future<void> deletePendingPointsUpTo(int maxId) async {
     final db = await database;
-    final placeholders = ids.map((_) => '?').join(',');
     await db.delete(
       'pending_points',
-      where: 'id IN ($placeholders)',
-      whereArgs: ids,
+      where: 'id <= ?',
+      whereArgs: [maxId],
     );
   }
 }

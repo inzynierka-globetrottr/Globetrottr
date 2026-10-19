@@ -24,12 +24,13 @@ class FriendsState {
     List<FriendshipResponse>? searchResults,
     bool? isLoading,
     String? errorMessage,
+    bool clearError = false,
   }) => FriendsState(
     friends: friends ?? this.friends,
     receivedInvites: receivedInvites ?? this.receivedInvites,
     sentInvites: sentInvites ?? this.sentInvites,
     searchResults: searchResults ?? this.searchResults,
     isLoading: isLoading ?? this.isLoading,
-    errorMessage: errorMessage ?? this.errorMessage,
+    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
   );
 }

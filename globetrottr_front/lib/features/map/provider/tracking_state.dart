@@ -29,6 +29,7 @@ class TrackingState {
     List<List<LatLng>>? sessionHoles,
     String? errorMessage,
     int? holesRevision,
+    bool clearError = false,
   }) {
     return TrackingState(
       isTracking: isTracking ?? this.isTracking,
@@ -36,7 +37,7 @@ class TrackingState {
       currentPosition: currentPosition ?? this.currentPosition,
       backendHoles: backendHoles ?? this.backendHoles,
       sessionHoles: sessionHoles ?? this.sessionHoles,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       holesRevision: holesRevision ?? this.holesRevision,
     );
   }

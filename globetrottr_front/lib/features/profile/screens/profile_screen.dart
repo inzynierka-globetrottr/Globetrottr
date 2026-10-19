@@ -97,7 +97,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ProfileBio(
                   initialBio: userProfile?.bio ?? '',
                   isUpdatingBio: profileState.isUpdatingBio,
-                  onSave: profileNotifier.updateBio
+                  onSave: profileNotifier.updateBio,
                 ),
 
                 const SizedBox(height: 24),

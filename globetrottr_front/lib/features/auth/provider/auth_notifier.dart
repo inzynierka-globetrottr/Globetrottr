@@ -1,17 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+import 'package:globetrottr_front/core/network/token_store.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
+import 'package:globetrottr_front/features/fog/provider/friend_fog_provider.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
+import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 
 class AuthNotifier extends Notifier<AuthState> {
-  late final AuthService _authService;
+  late AuthService _authService;
 
   @override
   AuthState build() {
@@ -24,17 +28,15 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final token = await _authService.refreshToken();
       state = state.copyWith(isAuthenticated: token != null, isInitializing: false);
-    } on AppException catch (e) {
-      print('Session check did not authenticate: ${e.message}');
-      state = state.copyWith(isAuthenticated: false, isInitializing: false);
     } catch (e) {
-      print('Unexpected error checking existing session: $e');
-      state = state.copyWith(isAuthenticated: false, isInitializing: false);
+      debugPrint('Session check did not authenticate: $e');
+      final hasToken = await ref.read(tokenStoreProvider).getToken() != null;
+      state = state.copyWith(isAuthenticated: hasToken, isInitializing: false);
     }
   }
 
   void setMode(AuthMode mode) {
-    state = state.copyWith(mode: mode);
+    state = state.copyWith(mode: mode, clearError: true);
   }
 
   Future<void> submit({
@@ -45,6 +47,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       isAuthenticated: false,
+      clearError: true,
     );
 
     try {
@@ -86,6 +89,7 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       isAuthenticated: false,
+      clearError: true,
     );
 
     try {
@@ -104,12 +108,17 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> logout() async {
+  Future<bool> logout({bool discardUnsyncedPoints = false}) async {
     final locationState = ref.read(locationProvider);
     final notifier = ref.read(locationProvider.notifier);
 
     if (locationState.isRecording) {
       await notifier.setRecording(false);
+    }
+
+    if (!discardUnsyncedPoints) {
+      final synced = await ref.read(syncServiceProvider).syncPendingPoints();
+      if (!synced) return false;
     }
 
     await ref.read(mapStorageProvider).clearPendingPoints();
@@ -118,7 +127,9 @@ class AuthNotifier extends Notifier<AuthState> {
     ref.invalidate(locationProvider);
     ref.invalidate(profileProvider);
     ref.invalidate(friendsProvider);
+    ref.invalidate(friendFogProvider);
 
     state = const AuthState(isInitializing: false);
+    return true;
   }
 }
