@@ -44,7 +44,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(isUpdatingBio: false, errorMessage: e.message);
     } catch (e) {
       debugPrint('Unexpected error updating bio: $e');
-      state = state.copyWith(isUpdatingBio: false, errorMessage: 'Failed to update bio.');
+      state = state.copyWith(
+        isUpdatingBio: false,
+        errorMessage: 'Failed to update bio.',
+      );
     }
   }
 
@@ -61,7 +64,10 @@ class ProfileNotifier extends Notifier<ProfileState> {
       state = state.copyWith(isUploadingAvatar: false, errorMessage: e.message);
     } catch (e) {
       debugPrint('Unexpected error uploading avatar: $e');
-      state = state.copyWith(isUploadingAvatar: false, errorMessage: 'Failed to upload avatar.');
+      state = state.copyWith(
+        isUploadingAvatar: false,
+        errorMessage: 'Failed to upload avatar.',
+      );
     }
   }
 }

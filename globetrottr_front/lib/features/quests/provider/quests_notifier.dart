@@ -22,7 +22,10 @@ class QuestsNotifier extends Notifier<QuestsState> {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
       debugPrint('Unexpected error loading quests: $e');
-      state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong. Failed to load quests.');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Something went wrong. Failed to load quests.',
+      );
     }
   }
 

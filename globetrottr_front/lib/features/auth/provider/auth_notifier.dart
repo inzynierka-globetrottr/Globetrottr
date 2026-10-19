@@ -28,7 +28,10 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> _checkExistingSession() async {
     try {
       final token = await _authService.refreshToken();
-      state = state.copyWith(isAuthenticated: token != null, isInitializing: false);
+      state = state.copyWith(
+        isAuthenticated: token != null,
+        isInitializing: false,
+      );
     } catch (e) {
       debugPrint('Session check did not authenticate: $e');
       final hasToken = await ref.read(tokenStoreProvider).getToken() != null;
@@ -105,7 +108,10 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
       debugPrint('Unexpected error during Google sign-in: $e');
-      state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong. Please try again.');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Something went wrong. Please try again.',
+      );
     }
   }
 

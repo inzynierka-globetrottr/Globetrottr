@@ -33,7 +33,7 @@ class FriendsService {
   }
 
   Future<void> sendInvite(String username) =>
-    _client.post('/api/friends/invites', body: {'username': username});
+      _client.post('/api/friends/invites', body: {'username': username});
 
   Future<void> acceptInvite(String username) =>
       _client.post('/api/friends/invites/$username/accept');

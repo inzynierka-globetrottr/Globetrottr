@@ -35,7 +35,10 @@ class FriendsNotifier extends Notifier<FriendsState> {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
       debugPrint('Unexpected error loading friends: $e');
-      state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong.');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Something went wrong.',
+      );
     }
   }
 

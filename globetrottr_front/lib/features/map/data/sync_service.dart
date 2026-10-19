@@ -32,5 +32,6 @@ class SyncService {
 }
 
 final syncServiceProvider = Provider<SyncService>(
-  (ref) => SyncService(ref.read(apiClientProvider), ref.read(mapStorageProvider)),
+  (ref) =>
+      SyncService(ref.read(apiClientProvider), ref.read(mapStorageProvider)),
 );

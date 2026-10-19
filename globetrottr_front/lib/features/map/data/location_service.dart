@@ -44,7 +44,7 @@ class LocationService {
     }
 
     final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    
+
     if (!serviceEnabled) {
       throw const LocationException(
         'Location services are disabled. Please enable them in your device settings.',

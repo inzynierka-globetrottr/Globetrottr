@@ -6,7 +6,8 @@ class TokenStore {
   final String _key = 'jwt_token';
 
   Future<String?> getToken() => _storage.read(key: _key);
-  Future<void> saveToken(String token) => _storage.write(key: _key, value: token);
+  Future<void> saveToken(String token) =>
+      _storage.write(key: _key, value: token);
   Future<void> deleteToken() => _storage.delete(key: _key);
 }
 

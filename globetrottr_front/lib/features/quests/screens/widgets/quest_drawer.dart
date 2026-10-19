@@ -30,7 +30,10 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
     } on AppException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message), backgroundColor: AppColors.accentRed),
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: AppColors.accentRed,
+          ),
         );
       }
     } catch (e) {
@@ -58,7 +61,10 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
           children: [
             const Padding(
               padding: EdgeInsets.all(24.0),
-              child: Text('Quest Board', style: AppTextStyles.screenHeaderLarge),
+              child: Text(
+                'Quest Board',
+                style: AppTextStyles.screenHeaderLarge,
+              ),
             ),
             const Divider(color: AppColors.neuShadow, thickness: 2),
             Expanded(child: _buildBody(state)),
@@ -88,8 +94,9 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
     }
 
     final unstarted = state.quests.where((q) => !q.isStarted).toList();
-    final inProgress =
-        state.quests.where((q) => q.isStarted && !q.isCompleted).toList();
+    final inProgress = state.quests
+        .where((q) => q.isStarted && !q.isCompleted)
+        .toList();
     final completed = state.quests.where((q) => q.isCompleted).toList();
 
     return ListView(

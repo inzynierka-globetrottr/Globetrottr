@@ -17,7 +17,9 @@ class AuthService {
   AuthService(this._client, this._tokenStore);
 
   Future<String> _extractAndSaveToken(Response response) async {
-    final auth = AuthResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    final auth = AuthResponse.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
     if (auth.token.isNotEmpty) await _tokenStore.saveToken(auth.token);
     return auth.token;
   }
@@ -35,20 +37,30 @@ class AuthService {
 
     final String? idToken = googleAuth.idToken;
 
-    if (idToken == null) throw const AuthException('Google authentication failed.');
+    if (idToken == null)
+      throw const AuthException('Google authentication failed.');
 
-    final response = await _client.post('/api/auth/google', body: {'token': idToken});
+    final response = await _client.post(
+      '/api/auth/google',
+      body: {'token': idToken},
+    );
     final token = await _extractAndSaveToken(response);
     return token.isEmpty ? null : token;
   }
 
   Future<String> login(LoginRequest request) async {
-    final response = await _client.post('/api/auth/login', body: request.toJson());
+    final response = await _client.post(
+      '/api/auth/login',
+      body: request.toJson(),
+    );
     return _extractAndSaveToken(response);
   }
 
   Future<String> register(RegisterRequest request) async {
-    final response = await _client.post('/api/auth/register', body: request.toJson());
+    final response = await _client.post(
+      '/api/auth/register',
+      body: request.toJson(),
+    );
     return _extractAndSaveToken(response);
   }
 
@@ -71,5 +83,6 @@ class AuthService {
 }
 
 final authServiceProvider = Provider<AuthService>(
-  (ref) => AuthService(ref.read(apiClientProvider), ref.read(tokenStoreProvider)),
+  (ref) =>
+      AuthService(ref.read(apiClientProvider), ref.read(tokenStoreProvider)),
 );

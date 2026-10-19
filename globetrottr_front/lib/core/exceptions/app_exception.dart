@@ -41,7 +41,8 @@ class ForbiddenException extends AppException {
 
 /// 404
 class NotFoundException extends AppException {
-  const NotFoundException([String message = 'Not found.']) : super(message, 404);
+  const NotFoundException([String message = 'Not found.'])
+    : super(message, 404);
 }
 
 /// 400/422-style validation failure. Kept distinct from [ServerException]

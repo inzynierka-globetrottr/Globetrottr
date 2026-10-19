@@ -29,7 +29,9 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
       await ref.read(friendsProvider.notifier).acceptInvite(username);
     } on AppException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -43,7 +45,9 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
       await ref.read(friendsProvider.notifier).deleteRelationship(username);
     } on AppException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,8 +113,12 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) => ReceivedInviteCard(
                         invite: state.receivedInvites[index],
-                        onAccept: () => _handleAccept(state.receivedInvites[index].username),
-                        onDecline: () => _handleDeleteRelationship(state.receivedInvites[index].username),
+                        onAccept: () => _handleAccept(
+                          state.receivedInvites[index].username,
+                        ),
+                        onDecline: () => _handleDeleteRelationship(
+                          state.receivedInvites[index].username,
+                        ),
                       ),
                     ),
                     ListView.separated(
@@ -119,7 +127,9 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                       separatorBuilder: (_, __) => const SizedBox(height: 14),
                       itemBuilder: (context, index) => SentInviteCard(
                         invite: state.sentInvites[index],
-                        onCancel: () => _handleDeleteRelationship(state.sentInvites[index].username),
+                        onCancel: () => _handleDeleteRelationship(
+                          state.sentInvites[index].username,
+                        ),
                       ),
                     ),
                   ],
