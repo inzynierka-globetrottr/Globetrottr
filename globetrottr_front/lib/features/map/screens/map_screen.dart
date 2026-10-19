@@ -7,7 +7,7 @@ import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
 import 'package:globetrottr_front/features/fog/fog_layer.dart';
-import 'package:globetrottr_front/features/map/screens/widgets/player_marker_player.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/player_marker_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_drawer.dart';
@@ -74,7 +74,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   holesRevision: locationState.holesRevision,
                 ),
                 if (position != null)
-                  PlayerMarkerLayer(position: position)
+                  PlayerMarkerLayer(position: position),
               ],
             ),
 
