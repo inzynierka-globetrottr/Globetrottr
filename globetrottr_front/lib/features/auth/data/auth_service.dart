@@ -70,13 +70,11 @@ class AuthService {
     if (_backendUrl.isEmpty)
       throw AppException('Backend URL is not configured.');
 
-    print('hej 1');
     final response = await http.post(
       Uri.parse('$_backendUrl/api/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(request.toJson()),
     );
-    print('hej 2');
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
