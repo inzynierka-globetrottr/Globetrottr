@@ -34,7 +34,7 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
         );
       }
     } catch (e) {
-      print('Unexpected error starting quest: $e');
+      debugPrint('Unexpected error starting quest: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

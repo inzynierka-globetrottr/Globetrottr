@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/profile/data/profile_service.dart';
@@ -20,7 +21,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
-      print('Unexpected error loading profile: $e');
+      debugPrint('Unexpected error loading profile: $e');
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Something went wrong. Failed to load profile.',
@@ -42,7 +43,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     } on AppException catch (e) {
       state = state.copyWith(isUpdatingBio: false, errorMessage: e.message);
     } catch (e) {
-      print('Unexpected error updating bio: $e');
+      debugPrint('Unexpected error updating bio: $e');
       state = state.copyWith(isUpdatingBio: false, errorMessage: 'Failed to update bio.');
     }
   }
@@ -59,7 +60,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     } on AppException catch (e) {
       state = state.copyWith(isUploadingAvatar: false, errorMessage: e.message);
     } catch (e) {
-      print('Unexpected error uploading avatar: $e');
+      debugPrint('Unexpected error uploading avatar: $e');
       state = state.copyWith(isUploadingAvatar: false, errorMessage: 'Failed to upload avatar.');
     }
   }

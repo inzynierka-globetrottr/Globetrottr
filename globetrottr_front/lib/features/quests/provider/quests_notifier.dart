@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/quests/data/quest_service.dart';
@@ -20,7 +21,7 @@ class QuestsNotifier extends Notifier<QuestsState> {
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
-      print('Unexpected error loading quests: $e');
+      debugPrint('Unexpected error loading quests: $e');
       state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong. Failed to load quests.');
     }
   }
@@ -32,7 +33,7 @@ class QuestsNotifier extends Notifier<QuestsState> {
     } on AppException {
       rethrow;
     } catch (e) {
-      print('Unexpected error starting quest: $e');
+      debugPrint('Unexpected error starting quest: $e');
       throw const UnknownException();
     }
   }

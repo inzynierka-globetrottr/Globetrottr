@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/friends/data/friends_service.dart';
@@ -33,7 +34,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
-      print('Unexpected error loading friends: $e');
+      debugPrint('Unexpected error loading friends: $e');
       state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong.');
     }
   }
@@ -54,7 +55,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException {
       rethrow;
     } catch (e) {
-      print('Unexpected error sending invite: $e');
+      debugPrint('Unexpected error sending invite: $e');
       throw const UnknownException();
     }
   }
@@ -79,7 +80,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException {
       rethrow;
     } catch (e) {
-      print('Unexpected error accepting invite: $e');
+      debugPrint('Unexpected error accepting invite: $e');
       throw const UnknownException();
     }
   }
@@ -100,7 +101,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException {
       rethrow;
     } catch (e) {
-      print('Unexpected error deleting relationship: $e');
+      debugPrint('Unexpected error deleting relationship: $e');
       throw const UnknownException();
     }
   }

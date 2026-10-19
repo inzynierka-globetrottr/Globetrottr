@@ -77,7 +77,7 @@ class AuthNotifier extends Notifier<AuthState> {
         errorMessage: e.message,
       );
     } catch (e) {
-      print('Unexpected error during auth submit: $e');
+      debugPrint('Unexpected error during auth submit: $e');
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,
@@ -104,7 +104,7 @@ class AuthNotifier extends Notifier<AuthState> {
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
-      print('Unexpected error during Google sign-in: $e');
+      debugPrint('Unexpected error during Google sign-in: $e');
       state = state.copyWith(isLoading: false, errorMessage: 'Something went wrong. Please try again.');
     }
   }
