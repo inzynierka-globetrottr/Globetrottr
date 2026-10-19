@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+import 'package:globetrottr_front/core/network/token_store.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
+import 'package:globetrottr_front/features/fog/provider/friend_fog_provider.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
@@ -12,7 +14,7 @@ import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 
 class AuthNotifier extends Notifier<AuthState> {
-  late final AuthService _authService;
+  late AuthService _authService;
 
   @override
   AuthState build() {
@@ -26,7 +28,8 @@ class AuthNotifier extends Notifier<AuthState> {
       final token = await _authService.refreshToken();
       state = state.copyWith(isAuthenticated: token != null, isInitializing: false);
     } catch (_) {
-      state = state.copyWith(isAuthenticated: false, isInitializing: false);
+      final hasToken = await ref.read(tokenStoreProvider).getToken() != null;
+      state = state.copyWith(isAuthenticated: hasToken, isInitializing: false);
     }
   }
 
@@ -123,6 +126,7 @@ class AuthNotifier extends Notifier<AuthState> {
     ref.invalidate(locationProvider);
     ref.invalidate(profileProvider);
     ref.invalidate(friendsProvider);
+    ref.invalidate(friendFogProvider);
 
     state = const AuthState(isInitializing: false);
     return true;
