@@ -13,6 +13,7 @@ import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 
 class AuthNotifier extends Notifier<AuthState> {
   late AuthService _authService;
@@ -128,6 +129,7 @@ class AuthNotifier extends Notifier<AuthState> {
     ref.invalidate(profileProvider);
     ref.invalidate(friendsProvider);
     ref.invalidate(friendFogProvider);
+    ref.invalidate(questsProvider);
 
     state = const AuthState(isInitializing: false);
     return true;
