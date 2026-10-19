@@ -8,6 +8,8 @@ import 'package:globetrottr_front/core/network/token_store.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
+  static const _timeout = Duration(seconds: 30);
+
   final http.Client _http;
   final String _baseUrl;
   final Future<String?> Function() _tokenProvider;
@@ -37,7 +39,7 @@ class ApiClient {
   Future<http.Response> _send(Future<http.Response> Function() request) async {
     http.Response response;
     try {
-      response = await request();
+      response = await request().timeout(_timeout);
     } on SocketException {
       throw const NetworkException();
     } on TimeoutException {
