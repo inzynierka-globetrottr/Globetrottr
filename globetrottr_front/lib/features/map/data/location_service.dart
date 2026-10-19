@@ -44,7 +44,7 @@ class LocationService {
     }
 
     final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    
+
     if (!serviceEnabled) {
       throw const LocationException(
         'Location services are disabled. Please enable them in your device settings.',
@@ -108,7 +108,9 @@ class LocationService {
         );
 
         await _mapStorage.insertPendingPoint(point);
-        print('Location saved locally: ${point.latitude}, ${point.longitude}');
+        debugPrint(
+          'Location saved locally: ${point.latitude}, ${point.longitude}',
+        );
       }
     });
   }

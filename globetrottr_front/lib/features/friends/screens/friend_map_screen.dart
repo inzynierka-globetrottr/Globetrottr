@@ -51,11 +51,14 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
               children: [
                 const AppTileLayer(),
                 fogAsyncValue.when(
-                  data: (holes) => FogLayer(readyHoles: holes),
+                  data: (holes) => FogLayer(
+                    readyHoles: holes,
+                    holesRevision: identityHashCode(holes),
+                  ),
                   loading: () => const SizedBox.shrink(),
                   error: (err, stack) {
                     debugPrint('Error downloading fog: $err');
-                    return const FogLayer(readyHoles: []);
+                    return const FogLayer(readyHoles: [], holesRevision: 0);
                   },
                 ),
               ],

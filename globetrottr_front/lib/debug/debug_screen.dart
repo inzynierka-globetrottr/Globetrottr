@@ -143,7 +143,9 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                               email: _emailController.text,
                               password: _passwordController.text,
                             );
-                            final token = await ref.read(authServiceProvider).register(request);
+                            final token = await ref
+                                .read(authServiceProvider)
+                                .register(request);
 
                             if (!context.mounted) return;
 
@@ -181,7 +183,9 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                               login: _usernameController.text,
                               password: _passwordController.text,
                             );
-                            final token = await ref.read(authServiceProvider).login(request);
+                            final token = await ref
+                                .read(authServiceProvider)
+                                .login(request);
 
                             if (!context.mounted) return;
 
@@ -208,7 +212,9 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           try {
-                            final token = await ref.read(authServiceProvider).signInWithGoogle();
+                            final token = await ref
+                                .read(authServiceProvider)
+                                .signInWithGoogle();
 
                             if (!context.mounted) return;
 
@@ -297,7 +303,9 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                           backgroundColor: Colors.red,
                         ),
                         onPressed: () async {
-                          await ref.read(mapStorageProvider).clearPendingPoints();
+                          await ref
+                              .read(mapStorageProvider)
+                              .clearPendingPoints();
                           if (!context.mounted) return;
                           await _refreshDb();
                         },
@@ -326,7 +334,9 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                             ),
                           );
 
-                          await ref.read(syncServiceProvider).syncPendingPoints();
+                          await ref
+                              .read(syncServiceProvider)
+                              .syncPendingPoints();
                           if (!context.mounted) return;
                           await _refreshDb();
                         },

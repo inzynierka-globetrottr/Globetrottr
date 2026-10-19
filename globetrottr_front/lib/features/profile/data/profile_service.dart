@@ -18,18 +18,25 @@ class ProfileService {
       _client.patch('/api/profile/bio', body: {'bio': bio});
 
   Future<String> uploadAvatar(String filePath) async {
-    final request = http.MultipartRequest('POST', _client.uri('/api/profile/avatar'));
+    final request = http.MultipartRequest(
+      'POST',
+      _client.uri('/api/profile/avatar'),
+    );
 
     final extension = filePath.split('.').last.toLowerCase();
     final subtype = extension == 'jpg' ? 'jpeg' : extension;
 
-    request.files.add(await http.MultipartFile.fromPath(
-      'file', filePath,
-      contentType: http.MediaType('image', subtype),
-    ));
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'file',
+        filePath,
+        contentType: http.MediaType('image', subtype),
+      ),
+    );
 
     final response = await _client.sendMultipart(request);
-    return (jsonDecode(response.body) as Map<String, dynamic>)['avatarUrl'] as String;
+    return (jsonDecode(response.body) as Map<String, dynamic>)['avatarUrl']
+        as String;
   }
 
   Future<String?> getAvatarUrl(String username) async {

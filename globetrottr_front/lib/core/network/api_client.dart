@@ -8,6 +8,8 @@ import 'package:globetrottr_front/core/network/token_store.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
+  static const _timeout = Duration(seconds: 30);
+
   final http.Client _http;
   final String _baseUrl;
   final Future<String?> Function() _tokenProvider;
@@ -16,9 +18,9 @@ class ApiClient {
     required http.Client http,
     required String baseUrl,
     required Future<String?> Function() tokenProvider,
-  })  : _http = http,
-        _baseUrl = baseUrl,
-        _tokenProvider = tokenProvider;
+  }) : _http = http,
+       _baseUrl = baseUrl,
+       _tokenProvider = tokenProvider;
 
   Uri uri(String path) => Uri.parse('$_baseUrl$path');
 
@@ -31,13 +33,14 @@ class ApiClient {
   }
 
   void _guard() {
-    if (_baseUrl.isEmpty) throw const ConfigurationException('Backend URL is not configured.');
+    if (_baseUrl.isEmpty)
+      throw const ConfigurationException('Backend URL is not configured.');
   }
 
   Future<http.Response> _send(Future<http.Response> Function() request) async {
     http.Response response;
     try {
-      response = await request();
+      response = await request().timeout(_timeout);
     } on SocketException {
       throw const NetworkException();
     } on TimeoutException {
@@ -47,8 +50,9 @@ class ApiClient {
     } on http.ClientException catch (e) {
       throw NetworkException(e.message);
     }
- 
-    if (response.statusCode >= 200 && response.statusCode < 300) return response;
+
+    if (response.statusCode >= 200 && response.statusCode < 300)
+      return response;
     _throw(response);
   }
 
@@ -61,10 +65,10 @@ class ApiClient {
     } catch (_) {
       serverMessage = null;
     }
- 
+
     final statusCode = response.statusCode;
     final message = serverMessage ?? 'Server error ($statusCode)';
- 
+
     switch (statusCode) {
       case 401:
         throw UnauthorizedException(message);
@@ -79,7 +83,6 @@ class ApiClient {
         throw ServerException(message, statusCode);
     }
   }
-
 
   Future<http.Response> get(
     String path, {
@@ -96,21 +99,25 @@ class ApiClient {
   Future<http.Response> post(String path, {Map<String, dynamic>? body}) async {
     _guard();
     final headers = await _headers();
-    return _send(() => _http.post(
-          uri(path),
-          headers: headers,
-          body: body != null ? jsonEncode(body) : null,
-        ));
+    return _send(
+      () => _http.post(
+        uri(path),
+        headers: headers,
+        body: body != null ? jsonEncode(body) : null,
+      ),
+    );
   }
 
   Future<http.Response> patch(String path, {Map<String, dynamic>? body}) async {
     _guard();
     final headers = await _headers();
-    return _send(() => _http.patch(
-          uri(path),
-          headers: headers,
-          body: body != null ? jsonEncode(body) : null,
-        ));
+    return _send(
+      () => _http.patch(
+        uri(path),
+        headers: headers,
+        body: body != null ? jsonEncode(body) : null,
+      ),
+    );
   }
 
   Future<http.Response> delete(String path) async {
@@ -118,7 +125,6 @@ class ApiClient {
     final headers = await _headers();
     return _send(() => _http.delete(uri(path), headers: headers));
   }
-
 
   Future<http.Response> sendMultipart(http.MultipartRequest request) async {
     _guard();
@@ -129,7 +135,6 @@ class ApiClient {
       return http.Response.fromStream(streamed);
     });
   }
-
 }
 
 final apiClientProvider = Provider<ApiClient>(

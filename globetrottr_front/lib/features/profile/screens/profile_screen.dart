@@ -41,7 +41,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         await ref.read(profileProvider.notifier).uploadAvatar(pickedFile.path);
       }
     } catch (e) {
-      print('Failed to select image: $e');
+      debugPrint('Failed to select image: $e');
       if (context.mounted) {
         // TODO: show error differently than with a snack bar
         ScaffoldMessenger.of(context).showSnackBar(
@@ -97,7 +97,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ProfileBio(
                   initialBio: userProfile?.bio ?? '',
                   isUpdatingBio: profileState.isUpdatingBio,
-                  onSave: profileNotifier.updateBio
+                  onSave: profileNotifier.updateBio,
                 ),
 
                 const SizedBox(height: 24),

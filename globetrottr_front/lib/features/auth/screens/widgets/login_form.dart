@@ -43,14 +43,14 @@ class LoginForm extends StatelessWidget {
               controller: emailController,
               placeholder: 'Email',
               keyboardType: TextInputType.emailAddress,
-              validator: validateEmail
+              validator: validateEmail,
             ),
 
           NeuTextField(
             controller: passwordController,
             placeholder: 'Password',
             obscureText: true,
-            validator: validatePassword
+            validator: validatePassword,
           ),
 
           if (state.errorMessage != null)
