@@ -14,7 +14,7 @@ class FogService {
       throw AppException('Backend URL is not configured.');
 
     final token = await AuthService().getToken();
-    if (token == null) throw Exception('User not authenticated.');
+    if (token == null) throw AppException('User not authenticated.');
 
     final response = await http.get(
       Uri.parse('$_backendUrl/api/fog/me'),
@@ -27,7 +27,7 @@ class FogService {
     if (response.statusCode == 200) {
       return _parseMultiPolygon(response.body);
     }
-    throw Exception('Failed to load fog: ${response.statusCode}');
+    throw AppException('Failed to load fog.', response.statusCode);
   }
 
   Future<List<List<LatLng>>> getFriendFog(String friendUsername) async {
@@ -35,7 +35,7 @@ class FogService {
       throw AppException('Backend URL is not configured.');
 
     final token = await AuthService().getToken();
-    if (token == null) throw Exception('User not authenticated.');
+    if (token == null) throw AppException('User not authenticated.');
 
     final response = await http.get(
       Uri.parse('$_backendUrl/api/fog/$friendUsername'),
@@ -48,7 +48,7 @@ class FogService {
     if (response.statusCode == 200) {
       return _parseMultiPolygon(response.body);
     } else {
-      throw Exception('Failed to load friend fog: ${response.statusCode}');
+      throw AppException('Failed to load friend fog.', response.statusCode);
     }
   }
 

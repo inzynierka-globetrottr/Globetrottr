@@ -34,7 +34,7 @@ String? validatePassword(String? value) {
   final hasDigit = RegExp('[0-9]').hasMatch(value);
   final hasSpecial = RegExp(r'[!@#$%^&*()\-_=+]').hasMatch(value);
   if (!hasLower || !hasUpper || !hasDigit || !hasSpecial) {
-    return 'Password must contain at least one digit and one special character';
+    return 'Password must contain an uppercase letter, a lowercase letter, a digit and a special character';
   }
   return null;
 }

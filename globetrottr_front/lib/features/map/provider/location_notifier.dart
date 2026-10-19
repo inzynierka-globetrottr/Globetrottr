@@ -93,14 +93,14 @@ class LocationNotifier extends Notifier<TrackingState> {
 
     if (!value) {
       final token = await AuthService().getToken();
-      if (token != null) {
-        await SyncService().syncPendingPoints(token);
-      }
+      final synced =
+          token != null && await SyncService().syncPendingPoints(token);
 
       try {
         final updatedHoles = await FogService().getMyFog();
         state = state.copyWith(
           backendHoles: updatedHoles,
+          sessionHoles: synced ? const [] : null,
           holesRevision: state.holesRevision + 1,
         );
       } catch (e) {
@@ -131,9 +131,5 @@ class LocationNotifier extends Notifier<TrackingState> {
           ? state.holesRevision + 1
           : state.holesRevision,
     );
-  }
-
-  void reset() {
-    state = const TrackingState();
   }
 }
