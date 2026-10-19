@@ -87,9 +87,7 @@ class _NavbarButton extends StatelessWidget {
             child: Icon(
               icon,
               size: 26,
-              color: isActive
-                  ? AppColors.active
-                  : AppColors.inactive,
+              color: isActive ? AppColors.active : AppColors.inactive,
             ),
           ),
         ),

@@ -22,7 +22,7 @@ class UserAvatarBubble extends StatelessWidget {
     this.fallbackFontSize,
     this.isUploading = false,
     this.useContainerChrome = true,
-    this.ringPadding = 4
+    this.ringPadding = 4,
   });
 
   @override

@@ -26,10 +26,12 @@ class NeuContainer extends StatelessWidget {
         boxShape: NeumorphicBoxShape.roundRect(borderRadius),
         depth: elevation == NeuElevation.floating ? 4 : -4,
         intensity: 1,
-        shadowLightColor:
-            elevation == NeuElevation.floating ? AppColors.neuLight : null,
-        shadowDarkColor:
-            elevation == NeuElevation.floating ? AppColors.neuShadow : null,
+        shadowLightColor: elevation == NeuElevation.floating
+            ? AppColors.neuLight
+            : null,
+        shadowDarkColor: elevation == NeuElevation.floating
+            ? AppColors.neuShadow
+            : null,
         shadowLightColorEmboss: switch (elevation) {
           NeuElevation.floating => null,
           NeuElevation.inset => AppColors.neuLight,

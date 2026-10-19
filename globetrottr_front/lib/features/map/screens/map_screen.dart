@@ -73,8 +73,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   readyHoles: locationState.allHoles,
                   holesRevision: locationState.holesRevision,
                 ),
-                if (position != null)
-                  PlayerMarkerLayer(position: position),
+                if (position != null) PlayerMarkerLayer(position: position),
               ],
             ),
 
@@ -96,7 +95,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 },
               ),
             ),
-            
+
             Positioned(
               top: topSafeInset + 16.0,
               right: 16.0,

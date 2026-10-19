@@ -18,16 +18,18 @@ class FriendsNotifier extends Notifier<FriendsState> {
     return const FriendsState();
   }
 
-    // TODO: N + 1 problem, make an endpoint for this in the backend
+  // TODO: N + 1 problem, make an endpoint for this in the backend
   Future<Map<String, String?>> _fetchAvatars(Iterable<String> usernames) async {
-    final entries = await Future.wait(usernames.map((username) async {
-      try {
-        final avatarUrl = await _profileService.getAvatarUrl(username);
-        return MapEntry(username, avatarUrl);
-      } catch (e) {
-        return MapEntry(username, null);
-      }
-    }));
+    final entries = await Future.wait(
+      usernames.map((username) async {
+        try {
+          final avatarUrl = await _profileService.getAvatarUrl(username);
+          return MapEntry(username, avatarUrl);
+        } catch (e) {
+          return MapEntry(username, null);
+        }
+      }),
+    );
     return Map.fromEntries(entries);
   }
 
