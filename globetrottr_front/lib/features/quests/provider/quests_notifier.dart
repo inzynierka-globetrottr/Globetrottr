@@ -13,7 +13,7 @@ class QuestsNotifier extends Notifier<QuestsState> {
   }
 
   Future<void> loadQuests() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final quests = await _service.fetchUserQuests();
       state = state.copyWith(isLoading: false, quests: quests);

@@ -15,9 +15,10 @@ class QuestsState {
     List<Quest>? quests,
     bool? isLoading,
     String? errorMessage,
+    bool clearError = false,
   }) => QuestsState(
     quests: quests ?? this.quests,
     isLoading: isLoading ?? this.isLoading,
-    errorMessage: errorMessage ?? this.errorMessage,
+    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
   );
 }
