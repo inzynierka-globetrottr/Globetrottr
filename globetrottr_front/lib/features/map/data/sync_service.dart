@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
@@ -32,12 +33,12 @@ class SyncService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final lastSyncedId = points.map((p) => p.id!).reduce(math.max);
         await MapStorage().deletePendingPointsUpTo(lastSyncedId);
-        print('Local DB was cleared');
+        debugPrint('Local DB was cleared');
         return true;
       }
       return false;
     } catch (e) {
-      print('Sync Error: $e');
+      debugPrint('Sync Error: $e');
       return false;
     }
   }
