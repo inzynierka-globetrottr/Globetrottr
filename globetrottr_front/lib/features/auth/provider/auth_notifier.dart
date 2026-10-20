@@ -124,8 +124,12 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     if (!discardUnsyncedPoints) {
-      final synced = await ref.read(syncServiceProvider).syncPendingPoints();
-      if (!synced) return false;
+      final hasPendingPoints =
+          (await ref.read(mapStorageProvider).getPendingPoints()).isNotEmpty;
+      if (hasPendingPoints) {
+        final synced = await ref.read(syncServiceProvider).syncPendingPoints();
+        if (!synced) return false;
+      }
     }
 
     await ref.read(mapStorageProvider).clearPendingPoints();

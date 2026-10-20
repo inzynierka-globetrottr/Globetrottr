@@ -22,31 +22,30 @@ environment:
     sdk: ^3.12.0
 
 dependencies:
+    cupertino_icons: ^1.0.8
     flutter:
         sdk: flutter
-
-    cupertino_icons: ^1.0.8
-    permission_handler: ^12.0.1
     flutter_dotenv: ^6.0.1
-    google_sign_in: ^6.3.0
-    sqflite: ^2.4.2+1
-    path: ^1.8.3
-    geolocator: ^14.0.2
-    http: ^1.6.0
-    flutter_secure_storage: ^10.0.0
+    flutter_map: ^6.2.1
     flutter_neumorphic_plus: ^3.5.0
     flutter_riverpod: ^3.3.1
-    latlong2: ^0.9.1
-    flutter_map: ^6.2.1
+    flutter_secure_storage: ^10.0.0
+    geolocator: ^14.0.2
     go_router: ^17.2.3
+    google_sign_in: ^6.3.0
+    http: ^1.6.0
     image_picker: ^1.2.2
+    latlong2: ^0.9.1
+    path: ^1.8.3
+    permission_handler: ^12.0.1
+    sqflite: ^2.4.2+1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  very_good_analysis: ^6.0.0
   riverpod_lint: ^3.1.4
+  very_good_analysis: ^6.0.0
 
 flutter:
     uses-material-design: true
