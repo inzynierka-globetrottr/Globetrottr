@@ -8,9 +8,13 @@ class Quest {
   final bool isCompleted;
 
   Quest({
-    required this.id, required this.title, required this.type,
-    required this.rewardPoints, required this.progress,
-    required this.isStarted, required this.isCompleted,
+    required this.id,
+    required this.title,
+    required this.type,
+    required this.rewardPoints,
+    required this.progress,
+    required this.isStarted,
+    required this.isCompleted,
   });
 
   factory Quest.fromJson(Map<String, dynamic> json) {

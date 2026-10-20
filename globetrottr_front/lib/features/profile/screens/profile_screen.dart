@@ -9,6 +9,7 @@ import 'package:globetrottr_front/features/profile/provider/profile_provider.dar
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_avatar.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_bio.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/points_card.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -24,6 +25,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Future.microtask(() => ref.read(profileProvider.notifier).loadProfile());
   }
 
+  Future<void> _pickAndUploadAvatar(BuildContext context) async {
+    if (ref.read(profileProvider).isUploadingAvatar) return;
+
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        await ref.read(profileProvider.notifier).uploadAvatar(pickedFile.path);
+      }
+    } catch (e) {
+      debugPrint('Failed to select image: $e');
+      if (context.mounted) {
+        // TODO: show error differently than with a snack bar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to select image: $e'),
+            backgroundColor: AppColors.accentRed,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
@@ -32,16 +62,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return NeumorphicTheme(
       themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(
-        baseColor: AppColors.background,
-      ),
+      darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 20.0,
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 10),
 
@@ -49,9 +79,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   username: userProfile?.username ?? '',
                   avatarUrl: userProfile?.avatarUrl,
                   isUploading: profileState.isUploadingAvatar,
-                  onAvatarSelected: (filePath) {
-                    profileNotifier.uploadAvatar(filePath);
-                  },
+                  onAvatarTap: () => _pickAndUploadAvatar(context),
                 ),
 
                 const SizedBox(height: 16),
@@ -69,23 +97,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ProfileBio(
                   initialBio: userProfile?.bio ?? '',
                   isUpdatingBio: profileState.isUpdatingBio,
-                  onSave: (newBio) {
-                    profileNotifier.updateBio(newBio);
-                  },
+                  onSave: profileNotifier.updateBio,
                 ),
 
                 const SizedBox(height: 24),
 
-                PointsCard(
-                  totalPoints: userProfile?.totalPoints ?? 0,
-                ),
+                PointsCard(totalPoints: userProfile?.totalPoints ?? 0),
 
                 const SizedBox(height: 24),
 
                 ProfileNavButton(
                   icon: Icons.bar_chart_rounded,
                   label: 'Statistics',
-                  onPressed: () => {}//context.push('/statistics'),
+                  onPressed: () => {}, //context.push('/statistics'),
                 ),
 
                 const SizedBox(height: 14),
@@ -93,7 +117,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ProfileNavButton(
                   icon: Icons.workspace_premium_rounded,
                   label: 'Achievements',
-                  onPressed: () => {}//context.push('/achievements'),
+                  onPressed: () => {}, //context.push('/achievements'),
                 ),
 
                 const SizedBox(height: 14),
@@ -101,12 +125,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ProfileNavButton(
                   icon: Icons.settings_rounded,
                   label: 'Settings',
-                  onPressed: () => {}//context.push('/settings'),
+                  onPressed: () => {}, //context.push('/settings'),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
-                LogoutButton(),
+
+                const LogoutButton(),
 
                 const SizedBox(height: 20),
               ],

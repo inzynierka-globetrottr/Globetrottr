@@ -3,7 +3,6 @@ import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/debug/friend_debug_screen.dart';
 import 'package:globetrottr_front/debug/preview_screen.dart';
-import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
@@ -13,15 +12,6 @@ import 'package:globetrottr_front/features/map/screens/map_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
 import 'package:go_router/go_router.dart';
 
-final authStateProvider = FutureProvider<bool>((ref) async {
-  try {
-    final token = await AuthService().refreshToken();
-    return token != null;
-  } catch (_) {
-    return false;
-  }
-});
-
 class AuthNotifierListenable extends ChangeNotifier {
   AuthNotifierListenable(this._ref) {
     _ref.listen(authProvider, (_, __) => notifyListeners());
@@ -30,43 +20,25 @@ class AuthNotifierListenable extends ChangeNotifier {
 }
 
 final appRouter = Provider<GoRouter>((ref) {
-  ref.watch(authStateProvider);
   final listenable = AuthNotifierListenable(ref);
 
   return GoRouter(
     initialLocation: '/login',
     refreshListenable: listenable,
-    redirect: (context, state) async {
-      final authAsync = ref.read(authStateProvider);
+    redirect: (context, state) {
+      final authState = ref.read(authProvider);
 
-      if (authAsync.isLoading) {
-        return null;
-      }
-
-      final isStartupAuthed = authAsync.value ?? false;
-      final isManualAuthed = ref.read(authProvider).isAuthenticated;
-      final isAuthenticated = isStartupAuthed || isManualAuthed;
+      if (authState.isInitializing) return null;
 
       final onLoginPage = state.matchedLocation == '/login';
-
-      if (isAuthenticated && onLoginPage) {
-        return '/map';
-      }
-      if (!isAuthenticated && !onLoginPage) {
-        return '/login';
-      }
+      if (authState.isAuthenticated && onLoginPage) return '/map';
+      if (!authState.isAuthenticated && !onLoginPage) return '/login';
 
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/map',
-        builder: (context, state) => const MapScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
@@ -82,13 +54,13 @@ final appRouter = Provider<GoRouter>((ref) {
           transitionDuration: const Duration(milliseconds: 200),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOut,
-              )),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
+                  ),
               child: child,
             );
           },
@@ -96,9 +68,8 @@ final appRouter = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/friends/:username/map',
-        builder: (context, state) => FriendMapScreen(
-          friendUsername: state.pathParameters['username']!,
-        ),
+        builder: (context, state) =>
+            FriendMapScreen(friendUsername: state.pathParameters['username']!),
       ),
       if (kDebugMode)
         GoRoute(

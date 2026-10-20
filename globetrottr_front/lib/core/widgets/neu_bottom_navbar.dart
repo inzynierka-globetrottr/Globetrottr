@@ -1,7 +1,7 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:go_router/go_router.dart';
 
 enum NavbarItem { friends, map, profile, quests }
@@ -9,16 +9,14 @@ enum NavbarItem { friends, map, profile, quests }
 class NeuBottomNavbar extends ConsumerWidget {
   final NavbarItem activeItem;
 
-  const NeuBottomNavbar({
-    super.key,
-    required this.activeItem,
-  });
+  const NeuBottomNavbar({super.key, required this.activeItem});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 30),
-      child: NeuFloatingContainer(
+      child: NeuContainer(
+        elevation: NeuElevation.floating,
         width: double.infinity,
         height: 70,
         child: Padding(
@@ -34,7 +32,7 @@ class NeuBottomNavbar extends ConsumerWidget {
               _NavbarButton(
                 icon: Icons.emoji_events_rounded,
                 isActive: activeItem == NavbarItem.quests,
-                onTap: () => {}//context.go('/quests'),
+                onTap: () => {}, //context.go('/quests'),
               ),
               _NavbarButton(
                 icon: Icons.people_rounded,
@@ -44,7 +42,7 @@ class NeuBottomNavbar extends ConsumerWidget {
               _NavbarButton(
                 icon: Icons.person_rounded,
                 isActive: activeItem == NavbarItem.profile,
-                onTap: () => context.go('/profile')
+                onTap: () => context.go('/profile'),
               ),
             ],
           ),
@@ -71,9 +69,8 @@ class _NavbarButton extends StatelessWidget {
       onTap: isActive ? null : onTap,
       child: Neumorphic(
         style: NeumorphicStyle(
-          shape: NeumorphicShape.flat,
           boxShape: NeumorphicBoxShape.roundRect(
-            BorderRadius.all(Radius.circular(16)),
+            const BorderRadius.all(Radius.circular(16)),
           ),
           depth: isActive ? -4 : 0,
           intensity: 1,
@@ -90,7 +87,7 @@ class _NavbarButton extends StatelessWidget {
             child: Icon(
               icon,
               size: 26,
-              color: isActive ? const Color(0xFF4FD1C5) : const Color(0xFF94A3B8),
+              color: isActive ? AppColors.active : AppColors.inactive,
             ),
           ),
         ),

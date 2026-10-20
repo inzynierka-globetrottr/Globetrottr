@@ -1,13 +1,18 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'map_storage.dart';
-import 'pending_point.dart';
+import 'package:globetrottr_front/features/map/data/map_storage.dart';
+import 'package:globetrottr_front/features/map/data/pending_point.dart';
 
-// TODO: potentially refactor this, as well as map storage to not be singletons, and instead make use of riverpod providers
 class LocationService {
+  LocationService(this._mapStorage);
+
+  final MapStorage _mapStorage;
+
   StreamSubscription<Position>? _dbSubscription;
   Stream<Position>? _broadcastStream;
 
@@ -15,13 +20,9 @@ class LocationService {
   bool _isRecording = false;
   String? _sessionId;
 
-  static final LocationService _instance = LocationService._internal();
-  factory LocationService() => _instance;
-  LocationService._internal();
-
   Stream<Position> get positionStream {
     if (_broadcastStream == null) {
-      throw Exception(
+      throw StateError(
         'Localization stream not initiated, call startTracking() first.',
       );
     }
@@ -42,14 +43,21 @@ class LocationService {
       await Permission.notification.request();
     }
 
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) throw Exception('Location services are disabled.');
+    final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (!serviceEnabled) {
+      throw const LocationException(
+        'Location services are disabled. Please enable them in your device settings.',
+      );
+    }
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        throw Exception('No permission to access location.');
+        throw const LocationException(
+          'Location permission is required to track your trips.',
+        );
       }
     }
 
@@ -61,15 +69,13 @@ class LocationService {
       _locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
-        forceLocationManager: false,
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: "Recording your route in the background...",
-          notificationTitle: "Globetrottr",
+          notificationText: 'Recording your route in the background...',
+          notificationTitle: 'Globetrottr',
           enableWakeLock: true,
           notificationIcon: AndroidResource(
-            name: "ic_notification",
-            defType: "drawable",
+            name: 'ic_notification',
           ),
         ),
       );
@@ -79,7 +85,6 @@ class LocationService {
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
         activityType: ActivityType.fitness,
-        pauseLocationUpdatesAutomatically: false,
         showBackgroundLocationIndicator: true,
       );
     } else {
@@ -102,8 +107,10 @@ class LocationService {
           timestamp: DateTime.now().millisecondsSinceEpoch,
         );
 
-        await MapStorage().insertPendingPoint(point);
-        print("Location saved locally: ${point.latitude}, ${point.longitude}");
+        await _mapStorage.insertPendingPoint(point);
+        debugPrint(
+          'Location saved locally: ${point.latitude}, ${point.longitude}',
+        );
       }
     });
   }
@@ -116,3 +123,7 @@ class LocationService {
     _isRecording = false;
   }
 }
+
+final locationServiceProvider = Provider<LocationService>((ref) {
+  return LocationService(ref.watch(mapStorageProvider));
+});

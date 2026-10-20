@@ -1,29 +1,30 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/profile/data/profile_service.dart';
-import 'package:globetrottr_front/features/profile/data/user_profile_response.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_state.dart';
 
 class ProfileNotifier extends Notifier<ProfileState> {
-  late final ProfileService _service;
+  late ProfileService _service;
 
   @override
   ProfileState build() {
-    _service = ProfileService();
+    _service = ref.read(profileServiceProvider);
     return const ProfileState();
   }
 
   Future<void> loadProfile() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final profile = await _service.getMyProfile();
       state = state.copyWith(isLoading: false, profile: profile);
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Unexpected error loading profile: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Network error. Failed to load profile.',
+        errorMessage: 'Something went wrong. Failed to load profile.',
       );
     }
   }
@@ -31,46 +32,42 @@ class ProfileNotifier extends Notifier<ProfileState> {
   Future<void> updateBio(String bio) async {
     if (state.profile == null) return;
 
-    state = state.copyWith(isUpdatingBio: true, errorMessage: null);
-    
+    state = state.copyWith(isUpdatingBio: true, clearError: true);
+
     try {
       await _service.updateBio(bio);
-      final current = state.profile!;
       state = state.copyWith(
         isUpdatingBio: false,
-        profile: UserProfileResponse(
-          username: current.username,
-          avatarUrl: current.avatarUrl,
-          bio: bio,
-          totalPoints: current.totalPoints,
-        ),
+        profile: state.profile!.copyWith(bio: bio),
       );
     } on AppException catch (e) {
       state = state.copyWith(isUpdatingBio: false, errorMessage: e.message);
-    } catch (_) {
-      state = state.copyWith(isUpdatingBio: false, errorMessage: 'Failed to update bio.');
+    } catch (e) {
+      debugPrint('Unexpected error updating bio: $e');
+      state = state.copyWith(
+        isUpdatingBio: false,
+        errorMessage: 'Failed to update bio.',
+      );
     }
   }
 
   Future<void> uploadAvatar(String filePath) async {
     if (state.profile == null) return;
-    state = state.copyWith(isUploadingAvatar: true, errorMessage: null);
+    state = state.copyWith(isUploadingAvatar: true, clearError: true);
     try {
       final newUrl = await _service.uploadAvatar(filePath);
-      final current = state.profile!;
       state = state.copyWith(
         isUploadingAvatar: false,
-        profile: UserProfileResponse(
-          username: current.username,
-          avatarUrl: newUrl,
-          bio: current.bio,
-          totalPoints: current.totalPoints,
-        ),
+        profile: state.profile!.copyWith(avatarUrl: newUrl),
       );
     } on AppException catch (e) {
       state = state.copyWith(isUploadingAvatar: false, errorMessage: e.message);
-    } catch (_) {
-      state = state.copyWith(isUploadingAvatar: false, errorMessage: 'Failed to upload avatar.');
+    } catch (e) {
+      debugPrint('Unexpected error uploading avatar: $e');
+      state = state.copyWith(
+        isUploadingAvatar: false,
+        errorMessage: 'Failed to upload avatar.',
+      );
     }
   }
 }

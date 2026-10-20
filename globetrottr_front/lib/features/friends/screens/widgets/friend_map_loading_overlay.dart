@@ -11,7 +11,7 @@ class FriendMapLoadingOverlay extends StatelessWidget {
     if (!isLoading) return const SizedBox.shrink();
 
     return Positioned.fill(
-      child: Container(
+      child: ColoredBox(
         color: AppColors.background.withValues(alpha: 0.5),
         child: const Center(
           child: CircularProgressIndicator(color: AppColors.accentBlue),

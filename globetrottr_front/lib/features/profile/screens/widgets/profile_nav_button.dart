@@ -27,7 +27,11 @@ class ProfileNavButton extends StatelessWidget {
             const SizedBox(width: 14),
             Text(label, style: AppTextStyles.actionButtonText),
             const Spacer(),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textLight, size: 22),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textLight,
+              size: 22,
+            ),
           ],
         ),
       ),

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 
@@ -19,9 +18,8 @@ class NeuIconButton extends StatelessWidget {
     return NeumorphicButton(
       onPressed: onPressed,
       style: NeumorphicStyle(
-        shape: NeumorphicShape.flat,
         boxShape: NeumorphicBoxShape.roundRect(
-          BorderRadius.all(Radius.circular(12.0)),
+          const BorderRadius.all(Radius.circular(12.0)),
         ),
         depth: 4,
         intensity: 1,

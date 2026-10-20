@@ -1,30 +1,21 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/network/api_client.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 
-// TODO: make this more in line with other service classes for consistency
 class FogService {
-  final String? _backendUrl = dotenv.env['BACKEND_URL'];
+  final ApiClient _client;
+
+  FogService(this._client);
+
+  Future<List<List<LatLng>>> getMyFog() async {
+    final response = await _client.get('/api/fog/me');
+    return _parseMultiPolygon(response.body);
+  }
 
   Future<List<List<LatLng>>> getFriendFog(String friendUsername) async {
-    final token = await AuthService().getToken();
-    if (token == null) throw Exception('User not authenticated.');
-
-    final response = await http.get(
-      Uri.parse('$_backendUrl/api/fog/$friendUsername'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return _parseMultiPolygon(response.body);
-    } else {
-      throw Exception('Failed to load friend fog: ${response.statusCode}');
-    }
+    final response = await _client.get('/api/fog/$friendUsername');
+    return _parseMultiPolygon(response.body);
   }
 
   List<List<LatLng>> _parseMultiPolygon(String responseBody) {
@@ -34,16 +25,16 @@ class FogService {
 
     if (coordinates == null) return [];
 
-    List<List<LatLng>> holes = [];
+    final List<List<LatLng>> holes = [];
     final String type = data['type'] ?? 'Polygon';
 
     if (type == 'Polygon') {
-      for (var ring in coordinates) {
+      for (final ring in coordinates) {
         holes.add(_parseRing(ring));
       }
     } else if (type == 'MultiPolygon') {
-      for (var polygon in coordinates) {
-        for (var ring in polygon) {
+      for (final polygon in coordinates) {
+        for (final ring in polygon) {
           holes.add(_parseRing(ring));
         }
       }
@@ -53,9 +44,9 @@ class FogService {
   }
 
   List<LatLng> _parseRing(dynamic ring) {
-    List<LatLng> polygonRing = [];
+    final List<LatLng> polygonRing = [];
     if (ring is List) {
-      for (var point in ring) {
+      for (final point in ring) {
         if (point is List && point.length >= 2) {
           final double lng = (point[0] as num).toDouble();
           final double lat = (point[1] as num).toDouble();
@@ -66,3 +57,7 @@ class FogService {
     return polygonRing;
   }
 }
+
+final fogServiceProvider = Provider<FogService>(
+  (ref) => FogService(ref.read(apiClientProvider)),
+);

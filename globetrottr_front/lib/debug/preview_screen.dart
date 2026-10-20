@@ -1,9 +1,7 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
-import 'package:globetrottr_front/core/widgets/neu_inset_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
-import 'package:globetrottr_front/core/widgets/neu_raised_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 
@@ -37,19 +35,28 @@ class _PreviewScreenState extends State<PreviewScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  NeuFloatingContainer(child: Text("")),
+                  const NeuContainer(
+                    elevation: NeuElevation.floating,
+                    child: Text(''),
+                  ),
 
                   const SizedBox(height: 32),
 
-                  NeuInsetContainer(child: Text("")),
+                  const NeuContainer(
+                    elevation: NeuElevation.inset,
+                    child: Text(''),
+                  ),
 
                   const SizedBox(height: 32),
 
-                  NeuRaisedContainer(child: Text("")),
+                  const NeuContainer(
+                    elevation: NeuElevation.raised,
+                    child: Text(''),
+                  ),
 
                   const SizedBox(height: 32),
 
-                  NeuTextField(
+                  const NeuTextField(
                     label: 'Email',
                     placeholder: 'example@domain.com',
                     keyboardType: TextInputType.emailAddress,
@@ -57,7 +64,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
 
                   const SizedBox(height: 32),
 
-                  NeuTextField(
+                  const NeuTextField(
                     label: 'Password',
                     placeholder: '••••••••',
                     obscureText: true,

@@ -9,9 +9,7 @@ class FormDivider extends StatelessWidget {
 
     return Row(
       children: [
-        Expanded(
-          child: Divider(color: dividerColor, thickness: 1),
-        ),
+        Expanded(child: Divider(color: dividerColor, thickness: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -24,9 +22,7 @@ class FormDivider extends StatelessWidget {
             ),
           ),
         ),
-        Expanded(
-          child: Divider(color: dividerColor, thickness: 1),
-        ),
+        Expanded(child: Divider(color: dividerColor, thickness: 1)),
       ],
     );
   }

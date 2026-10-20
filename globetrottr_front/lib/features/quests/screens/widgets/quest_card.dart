@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
-import 'package:globetrottr_front/features/quests/models/quest.dart';
+import 'package:globetrottr_front/features/quests/data/quest.dart';
 
 enum QuestZone { unstarted, inProgress, completed }
 
@@ -23,7 +23,8 @@ class QuestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: NeuFloatingContainer(
+      child: NeuContainer(
+        elevation: NeuElevation.floating,
         width: double.infinity,
         height: zone == QuestZone.unstarted ? 140 : 90,
         child: Padding(
@@ -47,12 +48,14 @@ class QuestCard extends StatelessWidget {
                         if (zone == QuestZone.inProgress)
                           Text(
                             '${(quest.progress * 100).toInt()}% progress',
-                            style: AppTextStyles.descriptiveStatusAction.copyWith(color: AppColors.accentBlue),
+                            style: AppTextStyles.descriptiveStatusAction
+                                .copyWith(color: AppColors.accentBlue),
                           ),
                         if (zone == QuestZone.completed)
                           Text(
                             'Completed',
-                            style: AppTextStyles.descriptiveStatusAction.copyWith(color: AppColors.accentGreen),
+                            style: AppTextStyles.descriptiveStatusAction
+                                .copyWith(color: AppColors.accentGreen),
                           ),
                       ],
                     ),
@@ -66,7 +69,9 @@ class QuestCard extends StatelessWidget {
                       ),
                       Text(
                         '${quest.rewardPoints} XP',
-                        style: AppTextStyles.inputLabel.copyWith(color: AppColors.accentGold),
+                        style: AppTextStyles.inputLabel.copyWith(
+                          color: AppColors.accentGold,
+                        ),
                       ),
                     ],
                   ),
@@ -76,11 +81,13 @@ class QuestCard extends StatelessWidget {
                 const Spacer(),
                 NeuPrimaryButton(
                   height: 36,
-                  label: "Start Quest",
-                  labelStyle: AppTextStyles.tabButtonText.copyWith(color: AppColors.accentBlue),
+                  label: 'Start Quest',
+                  labelStyle: AppTextStyles.tabButtonText.copyWith(
+                    color: AppColors.accentBlue,
+                  ),
                   onPressed: onStart,
                 ),
-              ]
+              ],
             ],
           ),
         ),

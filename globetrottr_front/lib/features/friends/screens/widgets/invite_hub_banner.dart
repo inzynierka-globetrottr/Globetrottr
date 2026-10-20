@@ -18,7 +18,6 @@ class InviteHubBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeuPrimaryButton(
       onPressed: onTap,
-      width: double.infinity,
       height: 56,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -30,11 +29,8 @@ class InviteHubBanner extends StatelessWidget {
               size: 20,
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Friend requests',
-                style: AppTextStyles.rulesetTitle,
-              ),
+            const Expanded(
+              child: Text('Friend requests', style: AppTextStyles.rulesetTitle),
             ),
             if (receivedCount > 0)
               Container(

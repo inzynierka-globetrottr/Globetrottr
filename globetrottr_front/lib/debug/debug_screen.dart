@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import '../features/map/data/map_storage.dart';
-import '../features/map/data/location_service.dart';
-import '../features/map/data/sync_service.dart';
-import '../features/map/data/pending_point.dart';
-import '../features/auth/data/auth_service.dart';
-import '../features/auth/data/login_request.dart';
-import '../features/auth/data/register_request.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/features/map/data/map_storage.dart';
+import 'package:globetrottr_front/features/map/data/location_service.dart';
+import 'package:globetrottr_front/features/map/data/sync_service.dart';
+import 'package:globetrottr_front/features/map/data/pending_point.dart';
+import 'package:globetrottr_front/features/auth/data/auth_service.dart';
+import 'package:globetrottr_front/features/auth/data/login_request.dart';
+import 'package:globetrottr_front/features/auth/data/register_request.dart';
 
-class DebugScreen extends StatefulWidget {
+class DebugScreen extends ConsumerStatefulWidget {
   const DebugScreen({super.key});
 
   @override
-  State<DebugScreen> createState() => _DebugScreenState();
+  ConsumerState<DebugScreen> createState() => _DebugScreenState();
 }
 
-class _DebugScreenState extends State<DebugScreen> {
-  final LocationService _locationService = LocationService();
+class _DebugScreenState extends ConsumerState<DebugScreen> {
+  late final LocationService _locationService;
   List<PendingPoint> _points = [];
   bool _isTracking = false;
 
@@ -27,28 +28,29 @@ class _DebugScreenState extends State<DebugScreen> {
   @override
   void initState() {
     super.initState();
+    _locationService = ref.read(locationServiceProvider);
     _refreshDb();
     _checkSavedToken();
   }
 
   Future<void> _checkSavedToken() async {
     try {
-      final newToken = await AuthService().refreshToken();
+      final newToken = await ref.read(authServiceProvider).refreshToken();
       if (!mounted) return;
 
       if (newToken != null) {
         setState(() {
           _jwtToken = newToken;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Restored session!")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Restored session!')));
       }
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Session restore failed: ${e.toString()}")),
+        SnackBar(content: Text('Session restore failed: $e')),
       );
     }
   }
@@ -57,9 +59,9 @@ class _DebugScreenState extends State<DebugScreen> {
     _locationService.stopTracking();
     setState(() => _isTracking = false);
 
-    await MapStorage().clearPendingPoints();
+    await ref.read(mapStorageProvider).clearPendingPoints();
     await _refreshDb();
-    await AuthService().deleteToken();
+    await ref.read(authServiceProvider).logout();
 
     if (!mounted) return;
 
@@ -69,13 +71,13 @@ class _DebugScreenState extends State<DebugScreen> {
       _passwordController.clear();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Successfully logout!")),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Successfully logout!')));
   }
 
   Future<void> _refreshDb() async {
-    final points = await MapStorage().getPendingPoints();
+    final points = await ref.read(mapStorageProvider).getPendingPoints();
     if (!mounted) return;
     setState(() {
       _points = points;
@@ -120,7 +122,9 @@ class _DebugScreenState extends State<DebugScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    _jwtToken != null ? "Status: Logged in" : "Status: No token",
+                    _jwtToken != null
+                        ? 'Status: Logged in'
+                        : 'Status: No token',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
@@ -139,7 +143,9 @@ class _DebugScreenState extends State<DebugScreen> {
                               email: _emailController.text,
                               password: _passwordController.text,
                             );
-                            final token = await AuthService().register(request);
+                            final token = await ref
+                                .read(authServiceProvider)
+                                .register(request);
 
                             if (!context.mounted) return;
 
@@ -148,14 +154,16 @@ class _DebugScreenState extends State<DebugScreen> {
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Registered and Logged in!"),
+                                content: Text('Registered and Logged in!'),
                               ),
                             );
                           } catch (e) {
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text("Registration failed: ${e.toString()}"),
+                                content: Text(
+                                  'Registration failed: $e',
+                                ),
                               ),
                             );
                           }
@@ -175,7 +183,9 @@ class _DebugScreenState extends State<DebugScreen> {
                               login: _usernameController.text,
                               password: _passwordController.text,
                             );
-                            final token = await AuthService().login(request);
+                            final token = await ref
+                                .read(authServiceProvider)
+                                .login(request);
 
                             if (!context.mounted) return;
 
@@ -183,13 +193,13 @@ class _DebugScreenState extends State<DebugScreen> {
                               _jwtToken = token;
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Logged in")),
+                              const SnackBar(content: Text('Logged in')),
                             );
                           } catch (e) {
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text("Login failed: ${e.toString()}"),
+                                content: Text('Login failed: $e'),
                               ),
                             );
                           }
@@ -202,7 +212,9 @@ class _DebugScreenState extends State<DebugScreen> {
                       ElevatedButton(
                         onPressed: () async {
                           try {
-                            final token = await AuthService().signInWithGoogle();
+                            final token = await ref
+                                .read(authServiceProvider)
+                                .signInWithGoogle();
 
                             if (!context.mounted) return;
 
@@ -212,13 +224,15 @@ class _DebugScreenState extends State<DebugScreen> {
                               });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Zalogowano przez Google"),
+                                  content: Text('Zalogowano przez Google'),
                                 ),
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Anulowano logowanie przez Google"),
+                                  content: Text(
+                                    'Anulowano logowanie przez Google',
+                                  ),
                                 ),
                               );
                             }
@@ -226,7 +240,9 @@ class _DebugScreenState extends State<DebugScreen> {
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text("Błąd logowania przez Google: ${e.toString()}"),
+                                content: Text(
+                                  'Błąd logowania przez Google: $e',
+                                ),
                               ),
                             );
                           }
@@ -257,13 +273,13 @@ class _DebugScreenState extends State<DebugScreen> {
                                   setState(() => _isTracking = true);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text("Tracking started!"),
+                                      content: Text('Tracking started!'),
                                     ),
                                   );
                                 } catch (e) {
                                   if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("Error: $e")),
+                                    SnackBar(content: Text('Error: $e')),
                                   );
                                 }
                               },
@@ -287,9 +303,11 @@ class _DebugScreenState extends State<DebugScreen> {
                           backgroundColor: Colors.red,
                         ),
                         onPressed: () async {
-                          await MapStorage().clearPendingPoints();
+                          await ref
+                              .read(mapStorageProvider)
+                              .clearPendingPoints();
                           if (!context.mounted) return;
-                          _refreshDb();
+                          await _refreshDb();
                         },
                         child: const Text(
                           'Clear DB',
@@ -304,7 +322,7 @@ class _DebugScreenState extends State<DebugScreen> {
                           if (_jwtToken == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Error: Log in first!"),
+                                content: Text('Error: Log in first!'),
                               ),
                             );
                             return;
@@ -312,11 +330,13 @@ class _DebugScreenState extends State<DebugScreen> {
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("Sending data to backend..."),
+                              content: Text('Sending data to backend...'),
                             ),
                           );
 
-                          await SyncService().syncPendingPoints(_jwtToken!);
+                          await ref
+                              .read(syncServiceProvider)
+                              .syncPendingPoints();
                           if (!context.mounted) return;
                           await _refreshDb();
                         },
@@ -335,7 +355,7 @@ class _DebugScreenState extends State<DebugScreen> {
           Expanded(
             flex: 4,
             child: _points.isEmpty
-                ? const Center(child: Text("Database is empty."))
+                ? const Center(child: Text('Database is empty.'))
                 : ListView.builder(
                     itemCount: _points.length,
                     itemBuilder: (context, index) {

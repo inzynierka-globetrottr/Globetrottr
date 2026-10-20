@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_floating_container.dart';
+import 'package:globetrottr_front/core/widgets/neu_container.dart';
 
 class PointsCard extends StatelessWidget {
   final int totalPoints;
 
-  const PointsCard({
-    super.key,
-    required this.totalPoints,
-  });
+  const PointsCard({super.key, required this.totalPoints});
 
   @override
   Widget build(BuildContext context) {
-    return NeuFloatingContainer(
+    return NeuContainer(
+      elevation: NeuElevation.floating,
       width: double.infinity,
       height: 80,
       child: Row(
