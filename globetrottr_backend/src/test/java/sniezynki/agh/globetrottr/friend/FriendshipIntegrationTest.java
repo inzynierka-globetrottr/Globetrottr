@@ -1,5 +1,9 @@
 package sniezynki.agh.globetrottr.friend;
 
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,33 +24,25 @@ import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
 import sniezynki.agh.globetrottr.user.UserRole;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.*;
-
 @SpringBootTest
 @Testcontainers
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 class FriendshipIntegrationTest {
 
-    @Container
-    @ServiceConnection
+    @Container @ServiceConnection
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private FriendshipRepository friendshipRepository;
+    @Autowired private FriendshipRepository friendshipRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private JwtService jwtService;
+    @Autowired private JwtService jwtService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper objectMapper =
+            new ObjectMapper().registerModule(new JavaTimeModule());
 
     private String tokenA;
     private String tokenB;
@@ -60,19 +56,20 @@ class FriendshipIntegrationTest {
         User userA = createUser("userA", "usera@example.com");
         User userB = createUser("userB", "userb@example.com");
         User userC = createUser("userC", "userc@example.com");
-        
+
         tokenA = jwtService.generateToken(userA);
         tokenB = jwtService.generateToken(userB);
         tokenC = jwtService.generateToken(userC);
     }
-    
+
     private User createUser(String username, String email) {
-        User user = User.builder()
-                .username(username)
-                .email(email)
-                .passwordHash("password")
-                .role(UserRole.USER)
-                .build();
+        User user =
+                User.builder()
+                        .username(username)
+                        .email(email)
+                        .passwordHash("password")
+                        .role(UserRole.USER)
+                        .build();
         return userRepository.save(user);
     }
 
@@ -80,25 +77,26 @@ class FriendshipIntegrationTest {
     void testSendInviteAndAccept() throws Exception {
         // User A sends invite to User B
         FriendshipRequest request = new FriendshipRequest("userB");
-        
-        mockMvc.perform(post("/api/friends/invites")
-                        .header("Authorization", "Bearer " + tokenA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+
+        mockMvc.perform(
+                        post("/api/friends/invites")
+                                .header("Authorization", "Bearer " + tokenA)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         // Check that B has pending invite from A
-        mockMvc.perform(get("/api/friends/invites")
-                        .header("Authorization", "Bearer " + tokenB))
+        mockMvc.perform(get("/api/friends/invites").header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].username").value("userA"))
                 .andExpect(jsonPath("$[0].status").value("PENDING"))
                 .andExpect(jsonPath("$[0].isIncomingRequest").value(true));
-                
+
         // Check that A has sent invite to B
-        mockMvc.perform(get("/api/friends/invites/sent")
-                        .header("Authorization", "Bearer " + tokenA))
+        mockMvc.perform(
+                        get("/api/friends/invites/sent")
+                                .header("Authorization", "Bearer " + tokenA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].username").value("userB"))
@@ -106,13 +104,13 @@ class FriendshipIntegrationTest {
                 .andExpect(jsonPath("$[0].isIncomingRequest").value(false));
 
         // User B accepts invite
-        mockMvc.perform(post("/api/friends/invites/userA/accept")
-                        .header("Authorization", "Bearer " + tokenB))
+        mockMvc.perform(
+                        post("/api/friends/invites/userA/accept")
+                                .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk());
 
         // Check that they are friends
-        mockMvc.perform(get("/api/friends")
-                        .header("Authorization", "Bearer " + tokenA))
+        mockMvc.perform(get("/api/friends").header("Authorization", "Bearer " + tokenA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].username").value("userB"))
@@ -122,28 +120,32 @@ class FriendshipIntegrationTest {
     @Test
     void testBlockUserAndHideStatus() throws Exception {
         // A blocks B
-        mockMvc.perform(post("/api/friends/userB/block")
-                        .header("Authorization", "Bearer " + tokenA))
+        mockMvc.perform(
+                        post("/api/friends/userB/block")
+                                .header("Authorization", "Bearer " + tokenA))
                 .andExpect(status().isOk());
 
         // B tries to check status with A, should see no status (null)
-        mockMvc.perform(get("/api/friends/userA/status")
-                        .header("Authorization", "Bearer " + tokenB))
+        mockMvc.perform(
+                        get("/api/friends/userA/status")
+                                .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("userA"))
                 .andExpect(jsonPath("$.status").doesNotExist());
-                
+
         // A searches for B, should not see B due to block
-        mockMvc.perform(get("/api/friends/search")
-                        .param("query", "userB")
-                        .header("Authorization", "Bearer " + tokenA))
+        mockMvc.perform(
+                        get("/api/friends/search")
+                                .param("query", "userB")
+                                .header("Authorization", "Bearer " + tokenA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
-                
+
         // B searches for A, should see A but with no relationship status
-        mockMvc.perform(get("/api/friends/search")
-                        .param("query", "userA")
-                        .header("Authorization", "Bearer " + tokenB))
+        mockMvc.perform(
+                        get("/api/friends/search")
+                                .param("query", "userA")
+                                .header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].username").value("userA"))
@@ -154,20 +156,21 @@ class FriendshipIntegrationTest {
     void testRejectInviteOrDeleteFriend() throws Exception {
         // A sends invite to C
         FriendshipRequest request = new FriendshipRequest("userC");
-        mockMvc.perform(post("/api/friends/invites")
-                        .header("Authorization", "Bearer " + tokenA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(
+                        post("/api/friends/invites")
+                                .header("Authorization", "Bearer " + tokenA)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
-                
+
         // C rejects invite
-        mockMvc.perform(delete("/api/friends/userA")
-                        .header("Authorization", "Bearer " + tokenC))
+        mockMvc.perform(delete("/api/friends/userA").header("Authorization", "Bearer " + tokenC))
                 .andExpect(status().isOk());
-                
+
         // Check A has no sent invites
-        mockMvc.perform(get("/api/friends/invites/sent")
-                        .header("Authorization", "Bearer " + tokenA))
+        mockMvc.perform(
+                        get("/api/friends/invites/sent")
+                                .header("Authorization", "Bearer " + tokenA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }

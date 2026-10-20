@@ -1,16 +1,15 @@
 package sniezynki.agh.globetrottr.friend;
 
+import static java.util.stream.Collectors.toMap;
+
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sniezynki.agh.globetrottr.friend.dto.FriendshipResponse;
 import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
-
-import java.util.List;
-import java.util.Map;
-
-import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -21,35 +20,55 @@ public class FriendshipService {
 
     public List<FriendshipResponse> getUserFriends(String username) {
         return friendshipRepository.findAllAcceptedFriendships(username).stream()
-                .map(friendship -> {
-                    String friendUsername = getOtherUsername(friendship, username);
-                    return new FriendshipResponse(friendUsername, friendship.getStatus(), false);
-                })
+                .map(
+                        friendship -> {
+                            String friendUsername = getOtherUsername(friendship, username);
+                            return new FriendshipResponse(
+                                    friendUsername, friendship.getStatus(), false);
+                        })
                 .toList();
     }
 
     public List<FriendshipResponse> getUserFriendRequests(String username) {
         return friendshipRepository.findAllIncomingPendingRequests(username).stream()
-                .map(friendship -> new FriendshipResponse(friendship.getSender().getUsername(), friendship.getStatus(), true))
+                .map(
+                        friendship ->
+                                new FriendshipResponse(
+                                        friendship.getSender().getUsername(),
+                                        friendship.getStatus(),
+                                        true))
                 .toList();
     }
 
     public List<FriendshipResponse> getSentFriendRequests(String username) {
         return friendshipRepository.findAllOutgoingPendingRequests(username).stream()
-                .map(friendship -> new FriendshipResponse(friendship.getReceiver().getUsername(), friendship.getStatus(), false))
+                .map(
+                        friendship ->
+                                new FriendshipResponse(
+                                        friendship.getReceiver().getUsername(),
+                                        friendship.getStatus(),
+                                        false))
                 .toList();
     }
 
     public FriendshipResponse getFriendshipStatus(String currentUsername, String targetUsername) {
-        return friendshipRepository.findFriendshipBetween(currentUsername, targetUsername)
-                .map(friendship -> {
-                    if (friendship.getStatus() == InviteStatus.BLOCKED && !friendship.getSender().getUsername().equals(currentUsername)) {
-                        return new FriendshipResponse(targetUsername, null, false);
-                    }
-                    boolean isIncoming = friendship.getReceiver().getUsername().equals(currentUsername)
-                            && friendship.getStatus() == InviteStatus.PENDING;
-                    return new FriendshipResponse(targetUsername, friendship.getStatus(), isIncoming);
-                })
+        return friendshipRepository
+                .findFriendshipBetween(currentUsername, targetUsername)
+                .map(
+                        friendship -> {
+                            if (friendship.getStatus() == InviteStatus.BLOCKED
+                                    && !friendship
+                                            .getSender()
+                                            .getUsername()
+                                            .equals(currentUsername)) {
+                                return new FriendshipResponse(targetUsername, null, false);
+                            }
+                            boolean isIncoming =
+                                    friendship.getReceiver().getUsername().equals(currentUsername)
+                                            && friendship.getStatus() == InviteStatus.PENDING;
+                            return new FriendshipResponse(
+                                    targetUsername, friendship.getStatus(), isIncoming);
+                        })
                 .orElse(new FriendshipResponse(targetUsername, null, false));
     }
 
@@ -59,12 +78,17 @@ public class FriendshipService {
             throw new IllegalArgumentException("You cannot invite yourself");
         }
 
-        User sender = userRepository.findByUsername(senderUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Sender not found"));
-        User receiver = userRepository.findByUsername(targetUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Receiver not found"));
+        User sender =
+                userRepository
+                        .findByUsername(senderUsername)
+                        .orElseThrow(() -> new IllegalArgumentException("Sender not found"));
+        User receiver =
+                userRepository
+                        .findByUsername(targetUsername)
+                        .orElseThrow(() -> new IllegalArgumentException("Receiver not found"));
 
-        var existingFriendship = friendshipRepository.findFriendshipBetween(senderUsername, targetUsername);
+        var existingFriendship =
+                friendshipRepository.findFriendshipBetween(senderUsername, targetUsername);
 
         if (existingFriendship.isPresent()) {
             InviteStatus status = existingFriendship.get().getStatus();
@@ -75,27 +99,30 @@ public class FriendshipService {
                 throw new RuntimeException("Friendship invitation already exists and is pending");
             } else if (status == InviteStatus.BLOCKED) {
                 if (existingFriendship.get().getSender().getUsername().equals(senderUsername)) {
-                    throw new IllegalArgumentException("You must unblock this user before sending an invitation");
+                    throw new IllegalArgumentException(
+                            "You must unblock this user before sending an invitation");
                 } else {
                     throw new IllegalArgumentException("Cannot send invitation to this user");
                 }
             }
         }
 
-
-        Friendship friendship = Friendship.builder()
-                .sender(sender)
-                .receiver(receiver)
-                .status(InviteStatus.PENDING)
-                .build();
+        Friendship friendship =
+                Friendship.builder()
+                        .sender(sender)
+                        .receiver(receiver)
+                        .status(InviteStatus.PENDING)
+                        .build();
 
         friendshipRepository.save(friendship);
     }
 
     @Transactional
     public void acceptInvite(String currentUsername, String senderUsername) {
-        Friendship friendship = friendshipRepository.findBySenderUsernameAndReceiverUsername(senderUsername, currentUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Invite not found"));
+        Friendship friendship =
+                friendshipRepository
+                        .findBySenderUsernameAndReceiverUsername(senderUsername, currentUsername)
+                        .orElseThrow(() -> new IllegalArgumentException("Invite not found"));
 
         if (friendship.getStatus() != InviteStatus.PENDING) {
             throw new IllegalArgumentException("Cannot accept an invite that is not pending");
@@ -107,33 +134,44 @@ public class FriendshipService {
 
     @Transactional
     public void deleteFriendOrRejectInvite(String currentUsername, String targetUsername) {
-        friendshipRepository.findFriendshipBetween(currentUsername, targetUsername)
-                .ifPresent(friendship -> {
-                    if (friendship.getStatus() == InviteStatus.BLOCKED) {
-                        if (!friendship.getSender().getUsername().equals(currentUsername)) {
-                            return;
-                        }
-                        throw new IllegalArgumentException("You cannot delete a blocked relationship, you must unblock first");
-                    }
-                    friendshipRepository.delete(friendship);
-                });
+        friendshipRepository
+                .findFriendshipBetween(currentUsername, targetUsername)
+                .ifPresent(
+                        friendship -> {
+                            if (friendship.getStatus() == InviteStatus.BLOCKED) {
+                                if (!friendship.getSender().getUsername().equals(currentUsername)) {
+                                    return;
+                                }
+                                throw new IllegalArgumentException(
+                                        "You cannot delete a blocked relationship, you must unblock first");
+                            }
+                            friendshipRepository.delete(friendship);
+                        });
     }
 
     @Transactional
     public void blockUser(String currentUsername, String targetUsername) {
-        User blocker = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        User blocked = userRepository.findByUsername(targetUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
+        User blocker =
+                userRepository
+                        .findByUsername(currentUsername)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User blocked =
+                userRepository
+                        .findByUsername(targetUsername)
+                        .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
         if (currentUsername.equals(targetUsername)) {
             throw new IllegalArgumentException("You cannot block yourself");
         }
 
-        friendshipRepository.findFriendshipBetween(currentUsername, targetUsername)
+        friendshipRepository
+                .findFriendshipBetween(currentUsername, targetUsername)
                 .ifPresentOrElse(
                         existingFriendship -> {
                             if (existingFriendship.getStatus() == InviteStatus.BLOCKED
-                                    && existingFriendship.getReceiver().getUsername().equals(currentUsername)) {
+                                    && existingFriendship
+                                            .getReceiver()
+                                            .getUsername()
+                                            .equals(currentUsername)) {
                                 throw new IllegalArgumentException("Cannot block this user");
                             }
                             existingFriendship.setStatus(InviteStatus.BLOCKED);
@@ -142,19 +180,20 @@ public class FriendshipService {
                             friendshipRepository.save(existingFriendship);
                         },
                         () -> {
-                            Friendship newBlock = Friendship.builder()
-                                    .sender(blocker)
-                                    .receiver(blocked)
-                                    .status(InviteStatus.BLOCKED)
-                                    .build();
+                            Friendship newBlock =
+                                    Friendship.builder()
+                                            .sender(blocker)
+                                            .receiver(blocked)
+                                            .status(InviteStatus.BLOCKED)
+                                            .build();
                             friendshipRepository.save(newBlock);
-                        }
-                );
+                        });
     }
 
     @Transactional
     public void unblockUser(String currentUsername, String targetUsername) {
-        friendshipRepository.findBySenderUsernameAndReceiverUsername(currentUsername, targetUsername)
+        friendshipRepository
+                .findBySenderUsernameAndReceiverUsername(currentUsername, targetUsername)
                 .filter(friendship -> friendship.getStatus() == InviteStatus.BLOCKED)
                 .ifPresent(friendshipRepository::delete);
     }
@@ -164,49 +203,60 @@ public class FriendshipService {
             throw new IllegalArgumentException("Search query must be at least 3 characters long");
         }
 
-        List<User> matchingUsers = userRepository.findByUsernameContainingIgnoreCase(query).stream()
-                .filter(user -> !user.getUsername().equals(currentUsername))
-                .toList();
+        List<User> matchingUsers =
+                userRepository.findByUsernameContainingIgnoreCase(query).stream()
+                        .filter(user -> !user.getUsername().equals(currentUsername))
+                        .toList();
 
         if (matchingUsers.isEmpty()) {
             return List.of();
         }
 
-        List<String> targetUsernames = matchingUsers.stream()
-                .map(User::getUsername)
-                .toList();
+        List<String> targetUsernames = matchingUsers.stream().map(User::getUsername).toList();
 
-        List<Friendship> relevantFriendships = friendshipRepository
-                .findFriendshipsBetweenCurrentAndTargets(currentUsername, targetUsernames);
+        List<Friendship> relevantFriendships =
+                friendshipRepository.findFriendshipsBetweenCurrentAndTargets(
+                        currentUsername, targetUsernames);
 
-        Map<String, Friendship> friendshipMap = relevantFriendships.stream()
-                .collect(toMap(
-                        friendship -> getOtherUsername(friendship, currentUsername),
-                        friendship -> friendship
-                ));
+        Map<String, Friendship> friendshipMap =
+                relevantFriendships.stream()
+                        .collect(
+                                toMap(
+                                        friendship -> getOtherUsername(friendship, currentUsername),
+                                        friendship -> friendship));
 
         return matchingUsers.stream()
-                .map(user -> {
-                    InviteStatus status = null;
-                    boolean isIncoming = false;
+                .map(
+                        user -> {
+                            InviteStatus status = null;
+                            boolean isIncoming = false;
 
-                    Friendship friendship = friendshipMap.get(user.getUsername());
-                    if (friendship != null) {
-                        if (friendship.getStatus() == InviteStatus.BLOCKED) {
-                            if (friendship.getSender().getUsername().equals(currentUsername)) {
-                                return new FriendshipResponse(user.getUsername(), InviteStatus.BLOCKED, false);
-                            } else {
-                                return new FriendshipResponse(user.getUsername(), null, false);
+                            Friendship friendship = friendshipMap.get(user.getUsername());
+                            if (friendship != null) {
+                                if (friendship.getStatus() == InviteStatus.BLOCKED) {
+                                    if (friendship
+                                            .getSender()
+                                            .getUsername()
+                                            .equals(currentUsername)) {
+                                        return new FriendshipResponse(
+                                                user.getUsername(), InviteStatus.BLOCKED, false);
+                                    } else {
+                                        return new FriendshipResponse(
+                                                user.getUsername(), null, false);
+                                    }
+                                }
+
+                                status = friendship.getStatus();
+                                isIncoming =
+                                        friendship
+                                                        .getReceiver()
+                                                        .getUsername()
+                                                        .equals(currentUsername)
+                                                && status == InviteStatus.PENDING;
                             }
-                        }
 
-                        status = friendship.getStatus();
-                        isIncoming = friendship.getReceiver().getUsername().equals(currentUsername)
-                                && status == InviteStatus.PENDING;
-                    }
-
-                    return new FriendshipResponse(user.getUsername(), status, isIncoming);
-                })
+                            return new FriendshipResponse(user.getUsername(), status, isIncoming);
+                        })
                 .filter(response -> response.status() != InviteStatus.BLOCKED)
                 .toList();
     }

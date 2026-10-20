@@ -1,9 +1,8 @@
 package sniezynki.agh.globetrottr.profile.dto;
 
+import java.util.List;
 import lombok.Builder;
 import sniezynki.agh.globetrottr.statistics.dto.RegionStatisticDto;
-
-import java.util.List;
 
 @Builder
 public record UserProfileResponse(
@@ -20,6 +19,4 @@ public record UserProfileResponse(
         int currentStreak,
 
         // User regions
-        List<RegionStatisticDto> regions
-) {
-}
+        List<RegionStatisticDto> regions) {}

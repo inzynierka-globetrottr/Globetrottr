@@ -20,7 +20,10 @@ public class EmailService {
         message.setFrom(fromAddress);
         message.setTo(to);
         message.setSubject("Globetrottr Email Verification");
-        message.setText("Your code for account activation is " + code + "\nThe code is valid for the next 15min");
+        message.setText(
+                "Your code for account activation is "
+                        + code
+                        + "\nThe code is valid for the next 15min");
         mailSender.send(message);
     }
 }

@@ -1,5 +1,13 @@
 package sniezynki.agh.globetrottr.quest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.offset;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,32 +22,18 @@ import sniezynki.agh.globetrottr.location.UserFogRepository;
 import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.Offset.offset;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class QuestServiceTest {
 
-    @Mock
-    private UserQuestRepository userQuestRepository;
+    @Mock private UserQuestRepository userQuestRepository;
 
-    @Mock
-    private QuestRepository questRepository;
+    @Mock private QuestRepository questRepository;
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private UserFogRepository userFogRepository;
+    @Mock private UserFogRepository userFogRepository;
 
-    @InjectMocks
-    private QuestService questService;
+    @InjectMocks private QuestService questService;
 
     private UUID userId;
     private String username;
@@ -137,7 +131,8 @@ class QuestServiceTest {
 
         QuestResponseDto response = result.getFirst();
         assertThat(response.title()).isEqualTo("Completed Quest");
-        // Even if the geometry is outside the fog, we expect 1.0 because the quest status is isCompleted = true
+        // Even if the geometry is outside the fog, we expect 1.0 because the quest status is
+        // isCompleted = true
         assertThat(response.progress()).isEqualTo(1.0);
         assertThat(response.isStarted()).isTrue();
         assertThat(response.isCompleted()).isTrue();
@@ -145,7 +140,8 @@ class QuestServiceTest {
 
     @Test
     void calculateProgress_ShouldReturnZeroWhenFogIsNull() {
-        Quest quest = createQuest(1L, "Q", QuestType.VISIT_POINTS, 10, createGeometry("POINT(1 1)"));
+        Quest quest =
+                createQuest(1L, "Q", QuestType.VISIT_POINTS, 10, createGeometry("POINT(1 1)"));
 
         double progress = questService.calculateProgress(null, quest);
 
@@ -188,7 +184,8 @@ class QuestServiceTest {
         Quest quest = createQuest(1L, "Route", QuestType.FOLLOW_ROUTE, 50, questGeometry);
         UserQuest userQuest = createUserQuest(quest, false);
 
-        when(userQuestRepository.findByUser_UserIdAndIsCompletedFalse(userId)).thenReturn(List.of(userQuest));
+        when(userQuestRepository.findByUser_UserIdAndIsCompletedFalse(userId))
+                .thenReturn(List.of(userQuest));
 
         questService.checkAndCompleteQuests(user, userFog);
 
@@ -209,7 +206,8 @@ class QuestServiceTest {
         Quest quest = createQuest(1L, "Route", QuestType.FOLLOW_ROUTE, 50, questGeometry);
         UserQuest userQuest = createUserQuest(quest, false);
 
-        when(userQuestRepository.findByUser_UserIdAndIsCompletedFalse(userId)).thenReturn(List.of(userQuest));
+        when(userQuestRepository.findByUser_UserIdAndIsCompletedFalse(userId))
+                .thenReturn(List.of(userQuest));
 
         questService.checkAndCompleteQuests(user, userFog);
 
@@ -229,7 +227,8 @@ class QuestServiceTest {
         }
     }
 
-    private Quest createQuest(Long id, String title, QuestType type, int reward, Geometry geometry) {
+    private Quest createQuest(
+            Long id, String title, QuestType type, int reward, Geometry geometry) {
         return Quest.builder()
                 .id(id)
                 .title(title)
@@ -240,9 +239,6 @@ class QuestServiceTest {
     }
 
     private UserQuest createUserQuest(Quest quest, boolean isCompleted) {
-        return UserQuest.builder()
-                .quest(quest)
-                .isCompleted(isCompleted)
-                .build();
+        return UserQuest.builder().quest(quest).isCompleted(isCompleted).build();
     }
 }

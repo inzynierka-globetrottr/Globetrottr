@@ -4,10 +4,4 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
 @Builder
-public record AuthRequest(
-        @NotBlank
-        String login,
-
-        @NotBlank
-        String password
-) {}
+public record AuthRequest(@NotBlank String login, @NotBlank String password) {}

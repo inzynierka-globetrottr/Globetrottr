@@ -1,5 +1,10 @@
 package sniezynki.agh.globetrottr.quest;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.stereotype.Service;
@@ -8,12 +13,6 @@ import sniezynki.agh.globetrottr.location.UserFog;
 import sniezynki.agh.globetrottr.location.UserFogRepository;
 import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,33 +24,43 @@ public class QuestService {
     private final UserFogRepository userFogRepository;
 
     public List<QuestResponseDto> getAllQuestsForSidebar(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
         UUID userId = user.getUserId();
 
         UserFog userFog = userFogRepository.findByUser_UserId(userId).orElse(null);
         List<Quest> allGlobalQuests = questRepository.findAll();
         List<UserQuest> userQuests = userQuestRepository.findByUser_UserId(userId);
 
-        Map<Long, UserQuest> userProgressMap = userQuests.stream()
-                .collect(Collectors.toMap(uq -> uq.getQuest().getId(), uq -> uq));
+        Map<Long, UserQuest> userProgressMap =
+                userQuests.stream()
+                        .collect(Collectors.toMap(uq -> uq.getQuest().getId(), uq -> uq));
 
-        return allGlobalQuests.stream().map(quest -> {
-            UserQuest uq = userProgressMap.get(quest.getId());
-            boolean isStarted = (uq != null);
-            boolean isCompleted = isStarted && uq.isCompleted();
-            double progress = isStarted ? (isCompleted ? 1.0 : calculateProgress(userFog, quest)) : 0.0;
+        return allGlobalQuests.stream()
+                .map(
+                        quest -> {
+                            UserQuest uq = userProgressMap.get(quest.getId());
+                            boolean isStarted = (uq != null);
+                            boolean isCompleted = isStarted && uq.isCompleted();
+                            double progress =
+                                    isStarted
+                                            ? (isCompleted
+                                                    ? 1.0
+                                                    : calculateProgress(userFog, quest))
+                                            : 0.0;
 
-            return new QuestResponseDto(
-                    quest.getId(),
-                    quest.getTitle(),
-                    quest.getType(),
-                    quest.getRewardPoints(),
-                    progress,
-                    isStarted,
-                    isCompleted
-            );
-        }).toList();
+                            return new QuestResponseDto(
+                                    quest.getId(),
+                                    quest.getTitle(),
+                                    quest.getType(),
+                                    quest.getRewardPoints(),
+                                    progress,
+                                    isStarted,
+                                    isCompleted);
+                        })
+                .toList();
     }
 
     public double calculateProgress(UserFog userFog, Quest quest) {
@@ -86,7 +95,6 @@ public class QuestService {
         return (double) visitedPoints / totalPoints;
     }
 
-
     private double calculateFollowRouteProgress(Geometry fogArea, Geometry targetRoute) {
         Geometry coveredRoute = targetRoute.intersection(fogArea);
 
@@ -101,7 +109,8 @@ public class QuestService {
 
     @Transactional
     public void checkAndCompleteQuests(User user, UserFog userFog) {
-        List<UserQuest> activeQuests = userQuestRepository.findByUser_UserIdAndIsCompletedFalse(user.getUserId());
+        List<UserQuest> activeQuests =
+                userQuestRepository.findByUser_UserIdAndIsCompletedFalse(user.getUserId());
         double progressTolerance = 0.98;
         if (activeQuests.isEmpty()) {
             return;
@@ -115,10 +124,10 @@ public class QuestService {
             double progress = calculateProgress(userFog, quest);
 
             /*
-            * Geolocation tolerance: 0.98 instead of 1.0 (i.e., 98%)
-            * GPS or floating-point operations in PostGIS might truncate tiny fractions.
-            * It's better to mark the quest as completed when the player has 98-99% coverage.
-            * */
+             * Geolocation tolerance: 0.98 instead of 1.0 (i.e., 98%)
+             * GPS or floating-point operations in PostGIS might truncate tiny fractions.
+             * It's better to mark the quest as completed when the player has 98-99% coverage.
+             * */
 
             if (progress >= progressTolerance) {
 
@@ -141,23 +150,25 @@ public class QuestService {
 
     @Transactional
     public void startQuest(String username, Long questId) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
         UUID userId = user.getUserId();
 
-        boolean alreadyStarted = userQuestRepository.findByUser_UserId(userId)
-                .stream().anyMatch(uq -> uq.getQuest().getId().equals(questId));
+        boolean alreadyStarted =
+                userQuestRepository.findByUser_UserId(userId).stream()
+                        .anyMatch(uq -> uq.getQuest().getId().equals(questId));
 
         if (alreadyStarted) return;
 
-        Quest quest = questRepository.findById(questId)
-                .orElseThrow(() -> new RuntimeException("Quest not found"));
+        Quest quest =
+                questRepository
+                        .findById(questId)
+                        .orElseThrow(() -> new RuntimeException("Quest not found"));
 
-        UserQuest newUserQuest = UserQuest.builder()
-                .user(user)
-                .quest(quest)
-                .isCompleted(false)
-                .build();
+        UserQuest newUserQuest =
+                UserQuest.builder().user(user).quest(quest).isCompleted(false).build();
 
         userQuestRepository.save(newUserQuest);
     }

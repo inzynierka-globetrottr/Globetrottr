@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.5'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'com.diffplug.spotless' version '6.25.0'
+    id 'com.diffplug.spotless' version '7.0.2'
 }
 
 group = 'sniezynki.agh'
@@ -65,7 +65,7 @@ spotless {
     java {
         targetExclude 'build/generated/**/*.java'
 
-        googleJavaFormat().aosp()
+        googleJavaFormat('1.28.0').aosp()
 
         removeUnusedImports()
 

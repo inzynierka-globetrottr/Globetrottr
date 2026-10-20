@@ -2,20 +2,20 @@ package sniezynki.agh.globetrottr.friend;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import java.sql.Timestamp;
 import lombok.*;
 import sniezynki.agh.globetrottr.user.User;
 
-import java.sql.Timestamp;
-
 @Entity
-@Table(name = "friends", uniqueConstraints = {
-        @UniqueConstraint(
-                name = "uc_friends_sender_receiver",
-                columnNames = {"sender_id", "receiver_id"}
-        )
-})
-
-@Getter @Setter
+@Table(
+        name = "friends",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uc_friends_sender_receiver",
+                    columnNames = {"sender_id", "receiver_id"})
+        })
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

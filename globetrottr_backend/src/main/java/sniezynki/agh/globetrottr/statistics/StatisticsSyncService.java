@@ -1,5 +1,7 @@
 package sniezynki.agh.globetrottr.statistics;
 
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Geometry;
@@ -9,9 +11,6 @@ import sniezynki.agh.globetrottr.region.Region;
 import sniezynki.agh.globetrottr.region.RegionRepository;
 import sniezynki.agh.globetrottr.region.RegionType;
 import sniezynki.agh.globetrottr.user.User;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -27,7 +26,9 @@ public class StatisticsSyncService {
         List<Region> affectedRegions = regionRepository.findRegionsIntersectingWithFog(newFogGeom);
 
         for (Region region : affectedRegions) {
-            Double discoveredArea = userRegionStatRepository.calculateIntersectionAreaKm2(user.getUserId(), region.getId());
+            Double discoveredArea =
+                    userRegionStatRepository.calculateIntersectionAreaKm2(
+                            user.getUserId(), region.getId());
 
             if (discoveredArea == null) {
                 discoveredArea = 0.0;
@@ -36,11 +37,14 @@ public class StatisticsSyncService {
             double percentage = (discoveredArea / region.getTotalAreaKm2()) * 100.0;
             percentage = Math.min(percentage, 100.0);
 
-            UserRegionStatistics stat = userRegionStatRepository.findByUser_UserIdAndRegion_Id(user.getUserId(), region.getId())
-                    .orElse(UserRegionStatistics.builder()
-                            .user(user)
-                            .region(region)
-                            .build());
+            UserRegionStatistics stat =
+                    userRegionStatRepository
+                            .findByUser_UserIdAndRegion_Id(user.getUserId(), region.getId())
+                            .orElse(
+                                    UserRegionStatistics.builder()
+                                            .user(user)
+                                            .region(region)
+                                            .build());
 
             stat.setDiscoveredAreaKm2(discoveredArea);
             stat.setDiscoveryPercentage(percentage);
@@ -52,19 +56,25 @@ public class StatisticsSyncService {
     }
 
     private void updateGlobalStatistics(User user) {
-        Double totalArea = userRegionStatRepository.findTotalDiscoveredAreaKm2(user.getUserId()).orElse(0.0);
+        Double totalArea =
+                userRegionStatRepository.findTotalDiscoveredAreaKm2(user.getUserId()).orElse(0.0);
 
-        Integer countriesCount = userRegionStatRepository.countVisitedRegionsByType(user.getUserId(), RegionType.COUNTRY);
+        Integer countriesCount =
+                userRegionStatRepository.countVisitedRegionsByType(
+                        user.getUserId(), RegionType.COUNTRY);
         if (countriesCount == null) {
             countriesCount = 0;
         }
 
-        UserStatistics globalStats = userStatisticsRepository.findByUser_Username(user.getUsername())
-                .orElse(UserStatistics.builder()
-                        .user(user)
-                        .completedQuestsCount(0)
-                        .currentStreak(0)
-                        .build());
+        UserStatistics globalStats =
+                userStatisticsRepository
+                        .findByUser_Username(user.getUsername())
+                        .orElse(
+                                UserStatistics.builder()
+                                        .user(user)
+                                        .completedQuestsCount(0)
+                                        .currentStreak(0)
+                                        .build());
 
         globalStats.setTotalDiscoveredKm2(totalArea);
         globalStats.setVisitedCountriesCount(countriesCount);

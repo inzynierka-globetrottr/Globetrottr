@@ -25,8 +25,5 @@ public class FogController {
     public ResponseEntity<String> getFriendFog(@PathVariable String friendUsername) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(fogService.getFriendFogGeoJson(username, friendUsername));
-
     }
-
-
 }
