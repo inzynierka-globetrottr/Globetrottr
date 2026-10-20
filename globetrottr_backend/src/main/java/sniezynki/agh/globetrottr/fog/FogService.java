@@ -18,24 +18,28 @@ public class FogService {
     private final UserRepository userRepository;
 
     public String getUserFogGeoJson(String username) {
-        return userFogRepository.findFogGeoJsonByUsername(username)
-                .orElse(createEmptyGeoJson());
+        return userFogRepository.findFogGeoJsonByUsername(username).orElse(createEmptyGeoJson());
     }
 
     public String getFriendFogGeoJson(String currentUsername, String friendUsername) {
 
-        userRepository.findByUsername(friendUsername)
+        userRepository
+                .findByUsername(friendUsername)
                 .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
 
-        boolean areFriends = friendshipRepository.findFriendshipBetween(currentUsername, friendUsername)
-                .filter(friendship -> friendship.getStatus() == InviteStatus.ACCEPTED)
-                .isPresent();
+        boolean areFriends =
+                friendshipRepository
+                        .findFriendshipBetween(currentUsername, friendUsername)
+                        .filter(friendship -> friendship.getStatus() == InviteStatus.ACCEPTED)
+                        .isPresent();
 
         if (!areFriends) {
-            throw new IllegalArgumentException("You cannot view this user's map. You are not friends.");
+            throw new IllegalArgumentException(
+                    "You cannot view this user's map. You are not friends.");
         }
 
-        return userFogRepository.findFogGeoJsonByUsername(friendUsername)
+        return userFogRepository
+                .findFogGeoJsonByUsername(friendUsername)
                 .orElse(createEmptyGeoJson());
     }
 

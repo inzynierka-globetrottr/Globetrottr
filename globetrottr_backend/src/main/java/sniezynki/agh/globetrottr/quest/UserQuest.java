@@ -1,10 +1,9 @@
 package sniezynki.agh.globetrottr.quest;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.*;
 import sniezynki.agh.globetrottr.user.User;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_quests")
@@ -27,8 +26,7 @@ public class UserQuest {
     @JoinColumn(name = "quest_id")
     private Quest quest;
 
-    @Builder.Default
-    private boolean isCompleted = false;
+    @Builder.Default private boolean isCompleted = false;
 
     private LocalDateTime completedAt;
 }

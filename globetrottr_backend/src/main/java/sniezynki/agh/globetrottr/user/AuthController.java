@@ -2,12 +2,11 @@ package sniezynki.agh.globetrottr.user;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sniezynki.agh.globetrottr.user.dto.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,17 +31,21 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<AuthResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+    public ResponseEntity<AuthResponse> verifyEmail(
+            @Valid @RequestBody VerifyEmailRequest request) {
         return ResponseEntity.ok(authService.verifyEmail(request));
     }
 
     @PostMapping("/resend-code")
-    public ResponseEntity<Map<String, String>> resendCode(@Valid @RequestBody ResendCodeRequest email) {
+    public ResponseEntity<Map<String, String>> resendCode(
+            @Valid @RequestBody ResendCodeRequest email) {
         authService.resendVerificationCode(email);
         return ResponseEntity.ok(Map.of("message", "Code sent to email from request"));
     }
+
     @GetMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<AuthResponse> refreshToken(
+            @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader) {
         return ResponseEntity.ok(authService.refreshToken(authHeader));
     }
 }

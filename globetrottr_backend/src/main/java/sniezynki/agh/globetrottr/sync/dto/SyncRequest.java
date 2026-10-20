@@ -1,10 +1,6 @@
 package sniezynki.agh.globetrottr.sync.dto;
 
+import java.util.List;
 import sniezynki.agh.globetrottr.location.dto.PointDto;
 
-import java.util.List;
-
-public record SyncRequest(
-        List<PointDto> points
-) {
-}
+public record SyncRequest(List<PointDto> points) {}

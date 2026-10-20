@@ -6,12 +6,18 @@ import sniezynki.agh.globetrottr.region.Region;
 import sniezynki.agh.globetrottr.user.User;
 
 @Entity
-@Table(name = "user_region_statistics",
-        uniqueConstraints = {@UniqueConstraint(
-                name = "uc_user_region_statistics_user_id_region_id",
-                columnNames = {"user_id", "region_id"})})
-@Getter @Setter @Builder
-@NoArgsConstructor @AllArgsConstructor
+@Table(
+        name = "user_region_statistics",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uc_user_region_statistics_user_id_region_id",
+                    columnNames = {"user_id", "region_id"})
+        })
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserRegionStatistics {
 
     @Id

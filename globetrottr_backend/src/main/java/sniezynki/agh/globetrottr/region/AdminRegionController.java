@@ -13,17 +13,19 @@ public class AdminRegionController {
 
     private final RegionImportService importService;
 
-    //TODO: add admin protection
+    // TODO: add admin protection
 
     @PostMapping("/import-cities")
     public ResponseEntity<String> importCities() {
-        importService.importRegionsFromGeoJson("classpath:data/poland_cities.geojson", RegionType.CITY, "JPT_NAZWA_");
+        importService.importRegionsFromGeoJson(
+                "classpath:data/poland_cities.geojson", RegionType.CITY, "JPT_NAZWA_");
         return ResponseEntity.ok("Polish cities import completed!");
     }
 
     @PostMapping("/import-countries")
     public ResponseEntity<String> importCountries() {
-        importService.importRegionsFromGeoJson("classpath:data/countries.geojson", RegionType.COUNTRY, "ADMIN");
+        importService.importRegionsFromGeoJson(
+                "classpath:data/countries.geojson", RegionType.COUNTRY, "ADMIN");
         return ResponseEntity.ok("Countries import completed!");
     }
 }

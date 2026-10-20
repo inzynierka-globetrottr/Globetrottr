@@ -2,6 +2,7 @@ package sniezynki.agh.globetrottr.region;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.InputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -9,8 +10,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.InputStream;
 
 @Slf4j
 @Service
@@ -25,7 +24,8 @@ public class RegionImportService {
     private final RegionRepository regionRepository;
 
     @Transactional
-    public void importRegionsFromGeoJson(String resourcePath, RegionType type, String namePropertyKey) {
+    public void importRegionsFromGeoJson(
+            String resourcePath, RegionType type, String namePropertyKey) {
         log.info("Started import from: {}", resourcePath);
         try {
             Resource resource = resourceLoader.getResource(resourcePath);
@@ -34,7 +34,9 @@ public class RegionImportService {
                 JsonNode features = root.get("features");
 
                 if (features == null || !features.isArray()) {
-                    String errorMessage = "Incorrect GeoJSON format: 'features' node is missing or is not an array in " + resourcePath;
+                    String errorMessage =
+                            "Incorrect GeoJSON format: 'features' node is missing or is not an array in "
+                                    + resourcePath;
                     log.error("Incorrect geojson format");
                     throw new IllegalArgumentException(errorMessage);
                 }
@@ -53,11 +55,12 @@ public class RegionImportService {
                     String geometryJson = feature.get("geometry").toString();
                     String typeString = type.name();
 
-                    String sql = """
+                    String sql =
+                            """
                             INSERT INTO regions (name, type, geom, total_area_km2)
                             VALUES (
-                                ?, 
-                                ?, 
+                                ?,
+                                ?,
                                 ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326)),
                                 ST_Area(ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326))::geography) / 1000000.0
                             )

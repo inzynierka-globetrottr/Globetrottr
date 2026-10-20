@@ -1,5 +1,9 @@
 package sniezynki.agh.globetrottr.sync;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.*;
@@ -13,11 +17,6 @@ import sniezynki.agh.globetrottr.statistics.StatisticsSyncService;
 import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -25,7 +24,7 @@ public class SyncService {
 
     private final UserFogRepository userFogRepository;
     private final UserRepository userRepository;
-    private final QuestService  questService;
+    private final QuestService questService;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final StatisticsSyncService statisticsSyncService;
 
@@ -37,21 +36,23 @@ public class SyncService {
         }
 
         User user = userRepository.findByUsername(username).orElseThrow();
-        UserFog userFog = userFogRepository.findByUser_UserId(user.getUserId())
-                .orElseGet(() -> {
-                    UserFog newFog = new UserFog();
-                    newFog.setUser(user);
-                    return newFog;
-                });
+        UserFog userFog =
+                userFogRepository
+                        .findByUser_UserId(user.getUserId())
+                        .orElseGet(
+                                () -> {
+                                    UserFog newFog = new UserFog();
+                                    newFog.setUser(user);
+                                    return newFog;
+                                });
 
         Geometry currentFog = userFog.getFogArea();
         Geometry batchNewArea = null;
 
         double distance = 0.0002;
 
-        Map<String, List<PointDto>> groupedPoints = points.stream()
-                .collect(Collectors.groupingBy(PointDto::sessionId));
-
+        Map<String, List<PointDto>> groupedPoints =
+                points.stream().collect(Collectors.groupingBy(PointDto::sessionId));
 
         for (Map.Entry<String, List<PointDto>> entry : groupedPoints.entrySet()) {
             List<PointDto> sessionPoints = entry.getValue();
@@ -61,17 +62,19 @@ public class SyncService {
             Geometry newlyDiscoveredArea;
 
             if (sessionPoints.size() >= 2) {
-                Coordinate[] coordinates = sessionPoints.stream()
-                        .map(p -> new Coordinate(p.longitude(), p.latitude()))
-                        .toArray(Coordinate[]::new);
+                Coordinate[] coordinates =
+                        sessionPoints.stream()
+                                .map(p -> new Coordinate(p.longitude(), p.latitude()))
+                                .toArray(Coordinate[]::new);
 
                 LineString walkedPath = geometryFactory.createLineString(coordinates);
                 newlyDiscoveredArea = walkedPath.buffer(distance);
             } else {
                 PointDto p = sessionPoints.getFirst();
-                Point singlePoint = geometryFactory.createPoint(new Coordinate(p.longitude(), p.latitude()));
+                Point singlePoint =
+                        geometryFactory.createPoint(new Coordinate(p.longitude(), p.latitude()));
                 newlyDiscoveredArea = singlePoint.buffer(distance);
-        }
+            }
 
             if (currentFog == null) {
                 currentFog = newlyDiscoveredArea;

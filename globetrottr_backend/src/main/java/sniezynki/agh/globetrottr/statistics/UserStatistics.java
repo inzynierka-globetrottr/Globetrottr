@@ -1,11 +1,10 @@
 package sniezynki.agh.globetrottr.statistics;
 
 import jakarta.persistence.*;
-import lombok.*;
-import sniezynki.agh.globetrottr.user.User;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.*;
+import sniezynki.agh.globetrottr.user.User;
 
 @Entity
 @Table(name = "user_statistics")

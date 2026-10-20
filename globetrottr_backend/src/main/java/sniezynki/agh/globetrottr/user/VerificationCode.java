@@ -2,12 +2,11 @@ package sniezynki.agh.globetrottr.user;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import java.sql.Timestamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.sql.Timestamp;
 
 @Entity
 @Table(name = "verification_codes")

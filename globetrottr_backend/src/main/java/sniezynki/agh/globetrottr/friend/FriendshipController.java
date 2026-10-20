@@ -1,13 +1,12 @@
 package sniezynki.agh.globetrottr.friend;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import sniezynki.agh.globetrottr.friend.dto.FriendshipRequest;
 import sniezynki.agh.globetrottr.friend.dto.FriendshipResponse;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/friends")
@@ -34,7 +33,8 @@ public class FriendshipController {
     }
 
     @GetMapping("/{targetUsername}/status")
-    public ResponseEntity<FriendshipResponse> getFriendshipStatus(@PathVariable String targetUsername) {
+    public ResponseEntity<FriendshipResponse> getFriendshipStatus(
+            @PathVariable String targetUsername) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(friendshipService.getFriendshipStatus(username, targetUsername));
     }

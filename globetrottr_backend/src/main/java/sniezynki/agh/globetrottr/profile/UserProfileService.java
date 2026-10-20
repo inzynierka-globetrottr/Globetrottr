@@ -2,6 +2,8 @@ package sniezynki.agh.globetrottr.profile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,16 +11,12 @@ import org.springframework.web.multipart.MultipartFile;
 import sniezynki.agh.globetrottr.friend.FriendshipRepository;
 import sniezynki.agh.globetrottr.friend.InviteStatus;
 import sniezynki.agh.globetrottr.profile.dto.UserProfileResponse;
-import sniezynki.agh.globetrottr.statistics.UserRegionStatistics;
 import sniezynki.agh.globetrottr.statistics.UserRegionStatisticsRepository;
 import sniezynki.agh.globetrottr.statistics.UserStatistics;
 import sniezynki.agh.globetrottr.statistics.UserStatisticsRepository;
 import sniezynki.agh.globetrottr.statistics.dto.RegionStatisticDto;
 import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
-
-import java.io.IOException;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,15 +37,19 @@ public class UserProfileService {
 
     @Transactional(readOnly = true)
     public UserProfileResponse getFriendProfile(String username, String friendUsername) {
-        userRepository.findByUsername(friendUsername)
+        userRepository
+                .findByUsername(friendUsername)
                 .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
 
-        boolean areFriends = friendshipRepository.findFriendshipBetween(username, friendUsername)
-                .filter(friendship -> friendship.getStatus() == InviteStatus.ACCEPTED)
-                .isPresent();
+        boolean areFriends =
+                friendshipRepository
+                        .findFriendshipBetween(username, friendUsername)
+                        .filter(friendship -> friendship.getStatus() == InviteStatus.ACCEPTED)
+                        .isPresent();
 
         if (!areFriends) {
-            throw new IllegalArgumentException("You cannot view this user's profile. You are not friends.");
+            throw new IllegalArgumentException(
+                    "You cannot view this user's profile. You are not friends.");
         }
 
         return buildProfileResponse(friendUsername);
@@ -72,10 +74,14 @@ public class UserProfileService {
         }
 
         try {
-            var uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                    "folder", "globetrottr/avatars",
-                    "transformation", "c_fill,g_face,w_400,h_400"
-            ));
+            var uploadResult =
+                    cloudinary
+                            .uploader()
+                            .upload(
+                                    file.getBytes(),
+                                    ObjectUtils.asMap(
+                                            "folder", "globetrottr/avatars",
+                                            "transformation", "c_fill,g_face,w_400,h_400"));
 
             String secureUrl = uploadResult.get("secure_url").toString();
 
@@ -93,29 +99,36 @@ public class UserProfileService {
     // Helpers
 
     private UserProfileResponse buildProfileResponse(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        UserProfile userProfile = userProfileRepository.findByUser_Username(username)
-                .orElse(new UserProfile());
+        UserProfile userProfile =
+                userProfileRepository.findByUser_Username(username).orElse(new UserProfile());
 
-        UserStatistics globalStats = userStatisticsRepository.findByUser_Username(username)
-                .orElse(UserStatistics.builder()
-                        .totalDiscoveredKm2(0.0)
-                        .visitedCountriesCount(0)
-                        .completedQuestsCount(0)
-                        .build());
+        UserStatistics globalStats =
+                userStatisticsRepository
+                        .findByUser_Username(username)
+                        .orElse(
+                                UserStatistics.builder()
+                                        .totalDiscoveredKm2(0.0)
+                                        .visitedCountriesCount(0)
+                                        .completedQuestsCount(0)
+                                        .build());
 
-        List<RegionStatisticDto> userRegions = userRegionStatisticsRepository
-                .findByUser_UserIdOrderByDiscoveryPercentageDesc(user.getUserId())
-                .stream()
-                .map(stat -> new RegionStatisticDto(
-                        stat.getRegion().getName(),
-                        stat.getRegion().getType(),
-                        stat.getDiscoveredAreaKm2(),
-                        stat.getDiscoveryPercentage()
-                ))
-                .toList();
+        List<RegionStatisticDto> userRegions =
+                userRegionStatisticsRepository
+                        .findByUser_UserIdOrderByDiscoveryPercentageDesc(user.getUserId())
+                        .stream()
+                        .map(
+                                stat ->
+                                        new RegionStatisticDto(
+                                                stat.getRegion().getName(),
+                                                stat.getRegion().getType(),
+                                                stat.getDiscoveredAreaKm2(),
+                                                stat.getDiscoveryPercentage()))
+                        .toList();
 
         return UserProfileResponse.builder()
                 .username(user.getUsername())
@@ -125,19 +138,27 @@ public class UserProfileService {
                 .totalDiscoveredKm2(globalStats.getTotalDiscoveredKm2())
                 .visitedCountriesCount(globalStats.getVisitedCountriesCount())
                 .completedQuestsCount(globalStats.getCompletedQuestsCount())
-                .currentStreak(globalStats.getCurrentStreak() != null ? globalStats.getCurrentStreak() : 0)
+                .currentStreak(
+                        globalStats.getCurrentStreak() != null ? globalStats.getCurrentStreak() : 0)
                 .regions(userRegions)
                 .build();
     }
 
     private UserProfile getOrCreateUserProfile(String username) {
-        return userProfileRepository.findByUser_Username(username)
-                .orElseGet(() -> {
-                    User user = userRepository.findByUsername(username)
-                            .orElseThrow(() -> new IllegalArgumentException("User not found"));
-                    UserProfile userProfile = new UserProfile();
-                    userProfile.setUser(user);
-                    return userProfile;
-                });
+        return userProfileRepository
+                .findByUser_Username(username)
+                .orElseGet(
+                        () -> {
+                            User user =
+                                    userRepository
+                                            .findByUsername(username)
+                                            .orElseThrow(
+                                                    () ->
+                                                            new IllegalArgumentException(
+                                                                    "User not found"));
+                            UserProfile userProfile = new UserProfile();
+                            userProfile.setUser(user);
+                            return userProfile;
+                        });
     }
 }
