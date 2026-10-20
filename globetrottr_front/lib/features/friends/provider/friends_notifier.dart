@@ -40,9 +40,22 @@ class FriendsNotifier extends Notifier<FriendsState> {
     return list.map((r) => r.copyWith(avatarUrl: avatars[r.username])).toList();
   }
 
-  Future<void> _loadFriendAvatars(Iterable<String> usernames) async {
-    final avatars = await _fetchAvatars(usernames);
-    state = state.copyWith(friends: _withAvatars(state.friends, avatars));
+  Future<void> _loadAvatars({
+    required Iterable<String> friends,
+    required Iterable<String> received,
+    required Iterable<String> sent,
+  }) async {
+    final allUsernames = {
+      ...friends,
+      ...received,
+      ...sent,
+    };
+    final avatars = await _fetchAvatars(allUsernames);
+    state = state.copyWith(
+      friends: _withAvatars(state.friends, avatars),
+      receivedInvites: _withAvatars(state.receivedInvites, avatars),
+      sentInvites: _withAvatars(state.sentInvites, avatars),
+    );
   }
 
   Future<void> loadAll() async {
@@ -62,7 +75,11 @@ class FriendsNotifier extends Notifier<FriendsState> {
         sentInvites: results[2],
       );
 
-      await _loadFriendAvatars(results[0].map((f) => f.username));
+      await _loadAvatars(
+        friends: results[0].map((f) => f.username),
+        received: results[1].map((f) => f.username),
+        sent: results[2].map((f) => f.username),
+      );
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
@@ -77,15 +94,17 @@ class FriendsNotifier extends Notifier<FriendsState> {
   Future<void> sendInvite(String username) async {
     try {
       await _service.sendInvite(username);
+      final newInvite = FriendshipResponse(
+        username: username,
+        status: InviteStatus.pending,
+        isIncomingRequest: false,
+      );
       state = state.copyWith(
-        sentInvites: [
-          ...state.sentInvites,
-          FriendshipResponse(
-            username: username,
-            status: InviteStatus.pending,
-            isIncomingRequest: false,
-          ),
-        ],
+        sentInvites: [...state.sentInvites, newInvite],
+      );
+      final avatars = await _fetchAvatars([username]);
+      state = state.copyWith(
+        sentInvites: _withAvatars(state.sentInvites, avatars),
       );
     } on AppException {
       rethrow;
@@ -120,7 +139,10 @@ class FriendsNotifier extends Notifier<FriendsState> {
         friends: [...state.friends, friend],
       );
 
-      await _loadFriendAvatars([username]);
+      if (friend.avatarUrl == null) {
+        final avatars = await _fetchAvatars([username]);
+        state = state.copyWith(friends: _withAvatars(state.friends, avatars));
+      }
     } on AppException {
       rethrow;
     } catch (e) {

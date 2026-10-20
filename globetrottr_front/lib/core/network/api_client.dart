@@ -15,12 +15,10 @@ class ApiClient {
   final Future<String?> Function() _tokenProvider;
 
   ApiClient({
-    required http.Client http,
-    required String baseUrl,
-    required Future<String?> Function() tokenProvider,
-  }) : _http = http,
-       _baseUrl = baseUrl,
-       _tokenProvider = tokenProvider;
+    required this._http,
+    required this._baseUrl,
+    required this._tokenProvider,
+  });
 
   Uri uri(String path) => Uri.parse('$_baseUrl$path');
 

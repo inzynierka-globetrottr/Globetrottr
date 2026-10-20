@@ -30,6 +30,9 @@ class QuestServiceTest {
     private UserQuestRepository userQuestRepository;
 
     @Mock
+    private QuestRepository questRepository;
+
+    @Mock
     private UserRepository userRepository;
 
     @Mock
@@ -39,6 +42,7 @@ class QuestServiceTest {
     private QuestService questService;
 
     private UUID userId;
+    private String username;
     private User user;
     private UserFog userFog;
     private final WKTReader wktReader = new WKTReader();
@@ -46,8 +50,10 @@ class QuestServiceTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
+        username = "testuser";
         user = new User();
         user.setUserId(userId);
+        user.setUsername(username);
         user.setTotalPoints(100);
 
         userFog = new UserFog();
@@ -64,10 +70,12 @@ class QuestServiceTest {
         Quest quest = createQuest(1L, "Route Quest", QuestType.FOLLOW_ROUTE, 50, routeQuestGeom);
         UserQuest userQuest = createUserQuest(quest, false);
 
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(userFogRepository.findByUser_UserId(userId)).thenReturn(Optional.of(userFog));
+        when(questRepository.findAll()).thenReturn(List.of(quest));
         when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(userQuest));
 
-        List<QuestResponseDto> result = questService.getAllQuestsForUser(userId);
+        List<QuestResponseDto> result = questService.getAllQuestsForSidebar(username);
 
         assertThat(result).hasSize(1);
 
@@ -75,6 +83,7 @@ class QuestServiceTest {
         assertThat(response.title()).isEqualTo("Route Quest");
         assertThat(response.type()).isEqualTo(QuestType.FOLLOW_ROUTE);
         assertThat(response.progress()).isCloseTo(0.5, offset(0.001));
+        assertThat(response.isStarted()).isTrue();
         assertThat(response.isCompleted()).isFalse();
     }
 
@@ -88,10 +97,12 @@ class QuestServiceTest {
         Quest quest = createQuest(2L, "Points Quest", QuestType.VISIT_POINTS, 20, pointsGeom);
         UserQuest userQuest = createUserQuest(quest, false);
 
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(userFogRepository.findByUser_UserId(userId)).thenReturn(Optional.of(userFog));
+        when(questRepository.findAll()).thenReturn(List.of(quest));
         when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(userQuest));
 
-        List<QuestResponseDto> result = questService.getAllQuestsForUser(userId);
+        List<QuestResponseDto> result = questService.getAllQuestsForSidebar(username);
 
         assertThat(result).hasSize(1);
 
@@ -99,6 +110,7 @@ class QuestServiceTest {
         assertThat(response.title()).isEqualTo("Points Quest");
         assertThat(response.type()).isEqualTo(QuestType.VISIT_POINTS);
         assertThat(response.progress()).isCloseTo(0.666, offset(0.01));
+        assertThat(response.isStarted()).isTrue();
         assertThat(response.isCompleted()).isFalse();
     }
 
@@ -114,10 +126,12 @@ class QuestServiceTest {
         // But marking the quest as COMPLETED
         UserQuest userQuest = createUserQuest(quest, true);
 
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(userFogRepository.findByUser_UserId(userId)).thenReturn(Optional.of(userFog));
+        when(questRepository.findAll()).thenReturn(List.of(quest));
         when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(userQuest));
 
-        List<QuestResponseDto> result = questService.getAllQuestsForUser(userId);
+        List<QuestResponseDto> result = questService.getAllQuestsForSidebar(username);
 
         assertThat(result).hasSize(1);
 
@@ -125,6 +139,7 @@ class QuestServiceTest {
         assertThat(response.title()).isEqualTo("Completed Quest");
         // Even if the geometry is outside the fog, we expect 1.0 because the quest status is isCompleted = true
         assertThat(response.progress()).isEqualTo(1.0);
+        assertThat(response.isStarted()).isTrue();
         assertThat(response.isCompleted()).isTrue();
     }
 
