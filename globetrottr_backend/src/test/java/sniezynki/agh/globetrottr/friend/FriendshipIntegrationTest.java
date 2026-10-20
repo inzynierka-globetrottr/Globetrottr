@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import sniezynki.agh.globetrottr.friend.dto.FriendshipRequest;
 import sniezynki.agh.globetrottr.security.JwtService;
 import sniezynki.agh.globetrottr.user.User;
@@ -31,7 +32,10 @@ import sniezynki.agh.globetrottr.user.UserRole;
 class FriendshipIntegrationTest {
 
     @Container @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>(
+                    DockerImageName.parse("postgis/postgis:16-3.4")
+                            .asCompatibleSubstituteFor("postgres"));
 
     @Autowired private MockMvc mockMvc;
 

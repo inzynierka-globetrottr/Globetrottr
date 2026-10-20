@@ -16,12 +16,16 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import sniezynki.agh.globetrottr.email.EmailService;
 import sniezynki.agh.globetrottr.user.UserRepository;
+import sniezynki.agh.globetrottr.user.VerificationCodeRepository;
 import sniezynki.agh.globetrottr.user.dto.AuthRequest;
 import sniezynki.agh.globetrottr.user.dto.AuthResponse;
 import sniezynki.agh.globetrottr.user.dto.RegisterRequest;
@@ -33,17 +37,25 @@ import sniezynki.agh.globetrottr.user.dto.RegisterRequest;
 class AuthIntegrationTest {
 
     @Container @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>(
+                    DockerImageName.parse("postgis/postgis:16-3.4")
+                            .asCompatibleSubstituteFor("postgres"));
 
     @Autowired private MockMvc mockMvc;
 
     @Autowired private UserRepository userRepository;
+
+    @Autowired private VerificationCodeRepository verificationCodeRepository;
+
+    @MockitoBean private EmailService emailService;
 
     private final ObjectMapper objectMapper =
             new ObjectMapper().registerModule(new JavaTimeModule());
 
     @BeforeEach
     void cleanUp() {
+        verificationCodeRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -60,8 +72,11 @@ class AuthIntegrationTest {
                         post("/api/auth/register")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists());
+                .andExpect(status().isOk());
+
+        var user = userRepository.findByUsername("testuser").orElseThrow();
+        user.setEmailVerified(true);
+        userRepository.save(user);
 
         AuthRequest loginRequest =
                 AuthRequest.builder().login("testuser").password("StrongPass123!").build();
@@ -242,15 +257,28 @@ class AuthIntegrationTest {
                         .password("StrongPass123!")
                         .build();
 
-        MvcResult registerResult =
+        mockMvc.perform(
+                        post("/api/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isOk());
+
+        var user = userRepository.findByUsername("refresher").orElseThrow();
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        AuthRequest loginRequest =
+                AuthRequest.builder().login("refresher").password("StrongPass123!").build();
+
+        MvcResult loginResult =
                 mockMvc.perform(
-                                post("/api/auth/register")
+                                post("/api/auth/login")
                                         .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(registerRequest)))
+                                        .content(objectMapper.writeValueAsString(loginRequest)))
                         .andExpect(status().isOk())
                         .andReturn();
 
-        String responseBody = registerResult.getResponse().getContentAsString();
+        String responseBody = loginResult.getResponse().getContentAsString();
         AuthResponse authResponse = objectMapper.readValue(responseBody, AuthResponse.class);
         String oldToken = authResponse.token();
 

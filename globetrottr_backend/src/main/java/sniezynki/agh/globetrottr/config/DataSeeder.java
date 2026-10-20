@@ -17,7 +17,7 @@ import sniezynki.agh.globetrottr.user.UserRole;
 
 @Component
 @RequiredArgsConstructor
-@Profile("!prod")
+@Profile("dev")
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
