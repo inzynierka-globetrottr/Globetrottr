@@ -9,5 +9,4 @@ public class GlobetrottrApplication {
     public static void main(String[] args) {
         SpringApplication.run(GlobetrottrApplication.class, args);
     }
-
 }

@@ -9,6 +9,9 @@ RUN chmod +x ./gradlew && \
 FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/*.jar app.jar
+RUN addgroup -S spring && adduser -S spring -G spring
+COPY --chown=spring:spring --from=builder /app/build/libs/*.jar app.jar
+USER spring:spring
+
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

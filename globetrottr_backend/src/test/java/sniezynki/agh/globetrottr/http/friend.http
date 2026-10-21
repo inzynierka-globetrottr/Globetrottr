@@ -1,0 +1,81 @@
+### Authenticate User 1 (jantester)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "jantester",
+  "password": "Test1!"
+}
+
+> {% client.global.set("token1", response.body.token); %}
+
+### Authenticate User 2 (marekgarek)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "marekgarek",
+  "password": "Dziekan1!"
+}
+
+> {% client.global.set("token2", response.body.token); %}
+
+### Authenticate User 3 (tortillla)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "login": "tortillla",
+  "password": "Zkurczakiem1!"
+}
+
+> {% client.global.set("token3", response.body.token); %}
+
+### User 1 (jantester) sends invite to User 2 (marekgarek)
+POST http://localhost:8080/api/friends/invites
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "username": "marekgarek"
+}
+
+### User 2 (marekgarek) checks invites
+GET http://localhost:8080/api/friends/invites
+Authorization: Bearer {{token2}}
+
+### User 1 (jantester) checks sent invites
+GET http://localhost:8080/api/friends/invites/sent
+Authorization: Bearer {{token1}}
+
+### User 2 (marekgarek) accepts invite from User 1 (jantester)
+POST http://localhost:8080/api/friends/invites/jantester/accept
+Authorization: Bearer {{token2}}
+
+### User 1 (jantester) checks friends
+GET http://localhost:8080/api/friends
+Authorization: Bearer {{token1}}
+
+### User 2 (marekgarek) checks friends
+GET http://localhost:8080/api/friends
+Authorization: Bearer {{token2}}
+
+### User 1 (jantester) deletes User 2 (marekgarek) from friends
+DELETE http://localhost:8080/api/friends/marekgarek
+Authorization: Bearer {{token1}}
+
+### User 1 (jantester) blocks User 2 (marekgarek)
+POST http://localhost:8080/api/friends/marekgarek/block
+Authorization: Bearer {{token1}}
+
+### User 2 (marekgarek) checks friendship status (should not see blocked)
+GET http://localhost:8080/api/friends/jantester/status
+Authorization: Bearer {{token2}}
+
+### User 1 (jantester) unblocks User 2 (marekgarek)
+DELETE http://localhost:8080/api/friends/marekgarek/block
+Authorization: Bearer {{token1}}
+
+### User 1 (jantester) searches for User 2 (marekgarek)
+GET http://localhost:8080/api/friends/search?query=marek
+Authorization: Bearer {{token1}}

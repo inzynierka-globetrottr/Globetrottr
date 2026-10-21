@@ -12,13 +12,10 @@ import org.springframework.context.annotation.Profile;
 @Profile("!prod")
 @OpenAPIDefinition(
         info = @Info(title = "Globetrottr API", version = "1.0"),
-        security = @SecurityRequirement(name = "bearerAuth")
-)
+        security = @SecurityRequirement(name = "bearerAuth"))
 @SecurityScheme(
         name = "bearerAuth",
         type = SecuritySchemeType.HTTP,
         bearerFormat = "JWT",
-        scheme = "bearer"
-)
-public class OpenApiConfig {
-}
+        scheme = "bearer")
+public class OpenApiConfig {}

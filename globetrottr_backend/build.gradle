@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.5'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'com.diffplug.spotless' version '6.25.0'
+    id 'com.diffplug.spotless' version '7.0.2'
 }
 
 group = 'sniezynki.agh'
@@ -33,6 +33,11 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.hibernate.orm:hibernate-spatial'
+    implementation 'com.google.api-client:google-api-client:2.9.0'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'com.cloudinary:cloudinary-http44:1.36.0'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
@@ -60,7 +65,7 @@ spotless {
     java {
         targetExclude 'build/generated/**/*.java'
 
-        googleJavaFormat()
+        googleJavaFormat('1.28.0').aosp()
 
         removeUnusedImports()
 

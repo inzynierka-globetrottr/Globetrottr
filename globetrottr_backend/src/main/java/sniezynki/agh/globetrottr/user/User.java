@@ -1,6 +1,10 @@
 package sniezynki.agh.globetrottr.user;
 
 import jakarta.persistence.*;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,11 +12,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -33,7 +32,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "total_points")
@@ -41,6 +40,10 @@ public class User implements UserDetails {
 
     @Column(name = "created_at")
     private Timestamp createdAt;
+
+    @Builder.Default
+    @Column(name = "is_email_verified")
+    private boolean isEmailVerified = false;
 
     @Builder.Default
     @Column(name = "is_enabled")
@@ -54,6 +57,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role = UserRole.USER;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider authProvider = AuthProvider.LOCAL;
 
     @PrePersist
     protected void onCreate() {
@@ -82,7 +90,6 @@ public class User implements UserDetails {
     public boolean isAccountNonLocked() {
         return accountNonLocked;
     }
-
 
     @Override
     public boolean isEnabled() {
