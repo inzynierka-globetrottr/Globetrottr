@@ -1,15 +1,17 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
-import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
-import 'package:globetrottr_front/features/friends/screens/widgets/received_invite_card.dart';
-import 'package:globetrottr_front/features/friends/screens/widgets/sent_invite_card.dart';
-import 'package:go_router/go_router.dart';
+import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
+import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/received_invite_card.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/sent_invite_card.dart';
+import 'package:go_router/go_router.dart';
 
 enum InviteTab { received, sent }
 
@@ -29,13 +31,13 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
       await ref.read(friendsProvider.notifier).acceptInvite(username);
     } on AppException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.localizeErrorMessage(e.message))),
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Something went wrong.')),
+        SnackBar(content: Text(context.l10n.errorSomethingWentWrong)),
       );
     }
   }
@@ -45,19 +47,20 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
       await ref.read(friendsProvider.notifier).deleteRelationship(username);
     } on AppException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.localizeErrorMessage(e.message))),
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Something went wrong.')),
+        SnackBar(content: Text(context.l10n.errorSomethingWentWrong)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final state = ref.watch(friendsProvider);
 
     return NeumorphicTheme(
@@ -80,10 +83,10 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                         size: 22,
                       ),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Center(
                         child: Text(
-                          'Friend Requests',
+                          l10n.friendsRequestsTitle,
                           style: AppTextStyles.screenHeaderLarge,
                         ),
                       ),
@@ -97,9 +100,15 @@ class _InviteHubScreenState extends ConsumerState<InviteHubScreen> {
                 child: NeuSegmentedControl<InviteTab>(
                   selected: _selectedTab,
                   onChanged: (tab) => setState(() => _selectedTab = tab),
-                  segments: const [
-                    NeuSegment(label: 'Received', value: InviteTab.received),
-                    NeuSegment(label: 'Sent', value: InviteTab.sent),
+                  segments: [
+                    NeuSegment(
+                      label: l10n.friendsTabReceived,
+                      value: InviteTab.received,
+                    ),
+                    NeuSegment(
+                      label: l10n.friendsTabSent,
+                      value: InviteTab.sent,
+                    ),
                   ],
                 ),
               ),

@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/data/pending_point.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LocationService {
   LocationService(this._mapStorage);
@@ -70,11 +71,14 @@ class LocationService {
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
         intervalDuration: const Duration(seconds: 1),
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: 'Recording your route in the background...',
+        foregroundNotificationConfig: ForegroundNotificationConfig(
+          notificationText: translateErrorDart(
+            'Recording your route in the background...',
+            locale: PlatformDispatcher.instance.locale.languageCode,
+          ),
           notificationTitle: 'Globetrottr',
           enableWakeLock: true,
-          notificationIcon: AndroidResource(
+          notificationIcon: const AndroidResource(
             name: 'ic_notification',
           ),
         ),

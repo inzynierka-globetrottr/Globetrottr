@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
@@ -9,6 +10,7 @@ class LogoutButton extends ConsumerWidget {
   const LogoutButton({super.key});
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     final notifier = ref.read(authProvider.notifier);
     if (await notifier.logout()) return;
     if (!context.mounted) return;
@@ -17,28 +19,27 @@ class LogoutButton extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.background,
-        title: const Text(
-          'Unsynced trips',
-          style: TextStyle(color: AppColors.text),
+        title: Text(
+          l10n.profileUnsyncedTripsTitle,
+          style: const TextStyle(color: AppColors.text),
         ),
-        content: const Text(
-          'Some of your recorded points could not be uploaded. '
-          'If you log out now, they will be lost.',
-          style: TextStyle(color: AppColors.textLight),
+        content: Text(
+          l10n.profileUnsyncedTripsMessage,
+          style: const TextStyle(color: AppColors.textLight),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.accentBlue),
+            child: Text(
+              l10n.profileCancel,
+              style: const TextStyle(color: AppColors.accentBlue),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Log out anyway',
-              style: TextStyle(color: AppColors.accentRed),
+            child: Text(
+              l10n.profileLogOutAnyway,
+              style: const TextStyle(color: AppColors.accentRed),
             ),
           ),
         ],
@@ -66,7 +67,7 @@ class LogoutButton extends ConsumerWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              'Log Out',
+              context.l10n.profileLogOut,
               style: AppTextStyles.actionButtonText.copyWith(
                 color: AppColors.accentRed,
                 fontWeight: FontWeight.bold,

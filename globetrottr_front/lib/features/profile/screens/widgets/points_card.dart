@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_container.dart';
@@ -28,7 +29,7 @@ class PointsCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Total Points',
+                context.l10n.profileTotalPoints,
                 style: AppTextStyles.inputLabel.copyWith(
                   fontSize: 14,
                   color: AppColors.textLight,
