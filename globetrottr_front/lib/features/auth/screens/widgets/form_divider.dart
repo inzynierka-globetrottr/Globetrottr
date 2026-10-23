@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 
 class FormDivider extends StatelessWidget {
   const FormDivider({super.key});
@@ -13,7 +14,7 @@ class FormDivider extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'OR CONTINUE WITH',
+            context.l10n.authOrContinueWith,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.4),
               fontSize: 11,
