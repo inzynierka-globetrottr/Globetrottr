@@ -11,7 +11,16 @@ import 'package:globetrottr_front/l10n/app_localizations.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
-  runApp(const ProviderScope(child: MyApp()));
+  final initialLocale = await loadPersistedLocale();
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        initialLocaleProvider.overrideWithValue(initialLocale),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {

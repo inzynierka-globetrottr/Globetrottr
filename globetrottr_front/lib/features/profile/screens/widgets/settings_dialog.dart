@@ -21,61 +21,70 @@ class SettingsDialog extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         side: const BorderSide(color: AppColors.neuLight, width: 1.5),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.settingsTitle,
-                  style: AppTextStyles.screenHeaderLarge.copyWith(fontSize: 20),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    color: AppColors.textLight,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.settingsTitle,
+                    style: AppTextStyles.screenHeaderLarge.copyWith(
+                      fontSize: 20,
+                    ),
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.settingsLanguage,
-              style: AppTextStyles.inputLabel.copyWith(
-                color: AppColors.textLight,
-                fontWeight: FontWeight.bold,
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.textLight,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 12),
-            _LocaleOption(
-              label: l10n.settingsEnglish,
-              isSelected: currentLocale?.languageCode == 'en',
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale('en'));
-              },
-            ),
-            const SizedBox(height: 12),
-            _LocaleOption(
-              label: l10n.settingsPolish,
-              isSelected: currentLocale?.languageCode == 'pl',
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(const Locale('pl'));
-              },
-            ),
-            const SizedBox(height: 12),
-            _LocaleOption(
-              label: l10n.settingsSystemDefault,
-              isSelected: currentLocale == null,
-              onTap: () {
-                ref.read(localeProvider.notifier).setLocale(null);
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                l10n.settingsLanguage,
+                style: AppTextStyles.inputLabel.copyWith(
+                  color: AppColors.textLight,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _LocaleOption(
+                label: l10n.settingsEnglish,
+                isSelected: currentLocale?.languageCode == 'en',
+                onTap: () {
+                  ref
+                      .read(localeProvider.notifier)
+                      .setLocale(const Locale('en'));
+                },
+              ),
+              const SizedBox(height: 12),
+              _LocaleOption(
+                label: l10n.settingsPolish,
+                isSelected: currentLocale?.languageCode == 'pl',
+                onTap: () {
+                  ref
+                      .read(localeProvider.notifier)
+                      .setLocale(const Locale('pl'));
+                },
+              ),
+              const SizedBox(height: 12),
+              _LocaleOption(
+                label: l10n.settingsSystemDefault,
+                isSelected: currentLocale == null,
+                onTap: () {
+                  ref.read(localeProvider.notifier).setLocale(null);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -102,20 +111,24 @@ class _LocaleOption extends StatelessWidget {
         elevation: isSelected ? NeuElevation.inset : NeuElevation.floating,
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         width: double.infinity,
-        height: 52,
+        height: null,
+        constraints: const BoxConstraints(minHeight: 52),
         color: isSelected ? AppColors.neuShadow : AppColors.background,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label,
-                style: AppTextStyles.actionButtonText.copyWith(
-                  color: isSelected ? AppColors.accentBlue : AppColors.text,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.actionButtonText.copyWith(
+                    color: isSelected ? AppColors.accentBlue : AppColors.text,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Icon(
                 isSelected
                     ? Icons.check_circle_rounded

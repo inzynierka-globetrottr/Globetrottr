@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
+import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
 
 void main() {
@@ -95,9 +96,25 @@ void main() {
         'Błąd serwera (502)',
       );
       expect(
+        translateErrorDart(
+          'Recording your route in the background...',
+          locale: 'pl',
+        ),
+        'Nagrywanie trasy w tle...',
+      );
+      expect(
         translateErrorDart('Unknown error string', locale: 'pl'),
         'Unknown error string',
       );
     });
+
+    test(
+      'loadPersistedLocale returns null when storage is uninitialized',
+      () async {
+        TestWidgetsFlutterBinding.ensureInitialized();
+        final locale = await loadPersistedLocale();
+        expect(locale, isNull);
+      },
+    );
   });
 }

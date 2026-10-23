@@ -1,27 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:globetrottr_front/l10n/app_localizations.dart';
 
 const String _kLocaleKey = 'app_locale';
+const FlutterSecureStorage _storage = FlutterSecureStorage();
+
+Future<Locale?> loadPersistedLocale() async {
+  try {
+    final code = await _storage.read(key: _kLocaleKey);
+    if (code != null &&
+        AppLocalizations.supportedLocales.any((l) => l.languageCode == code)) {
+      return Locale(code);
+    }
+  } catch (_) {
+    // Fall back to null on storage read errors
+  }
+  return null;
+}
+
+final initialLocaleProvider = Provider<Locale?>((ref) => null);
 
 class LocaleNotifier extends Notifier<Locale?> {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
-
   @override
   Locale? build() {
-    Future.microtask(_loadPersistedLocale);
-    return null;
-  }
-
-  Future<void> _loadPersistedLocale() async {
-    try {
-      final code = await _storage.read(key: _kLocaleKey);
-      if (code != null && (code == 'en' || code == 'pl')) {
-        state = Locale(code);
-      }
-    } catch (_) {
-      // Graceful fallback to null (system default)
-    }
+    return ref.watch(initialLocaleProvider);
   }
 
   Future<void> setLocale(Locale? locale) async {

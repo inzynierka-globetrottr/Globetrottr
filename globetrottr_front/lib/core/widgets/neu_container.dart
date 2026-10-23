@@ -5,8 +5,9 @@ enum NeuElevation { floating, inset, raised }
 
 class NeuContainer extends StatelessWidget {
   final Widget child;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
+  final BoxConstraints? constraints;
   final NeuElevation elevation;
   final BorderRadius borderRadius;
   final Color? color;
@@ -16,6 +17,7 @@ class NeuContainer extends StatelessWidget {
     required this.child,
     this.width = 160,
     this.height = 160,
+    this.constraints,
     required this.elevation,
     this.borderRadius = const BorderRadius.all(Radius.circular(24)),
     this.color,
@@ -46,10 +48,12 @@ class NeuContainer extends StatelessWidget {
           NeuElevation.raised => AppColors.neuLight,
         },
       ),
-      child: SizedBox(
+      child: Container(
         width: width,
         height: height,
-        child: Center(child: child),
+        constraints: constraints,
+        alignment: Alignment.center,
+        child: child,
       ),
     );
   }
