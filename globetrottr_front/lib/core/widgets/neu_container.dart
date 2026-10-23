@@ -9,6 +9,7 @@ class NeuContainer extends StatelessWidget {
   final double height;
   final NeuElevation elevation;
   final BorderRadius borderRadius;
+  final Color? color;
 
   const NeuContainer({
     super.key,
@@ -17,12 +18,14 @@ class NeuContainer extends StatelessWidget {
     this.height = 160,
     required this.elevation,
     this.borderRadius = const BorderRadius.all(Radius.circular(24)),
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return Neumorphic(
       style: NeumorphicStyle(
+        color: color ?? AppColors.background,
         boxShape: NeumorphicBoxShape.roundRect(borderRadius),
         depth: elevation == NeuElevation.floating ? 4 : -4,
         intensity: 1,

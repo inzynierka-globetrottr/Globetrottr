@@ -1,4 +1,4 @@
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
@@ -16,7 +16,11 @@ class SettingsDialog extends ConsumerWidget {
 
     return Dialog(
       backgroundColor: AppColors.background,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.neuLight, width: 1.5),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -28,15 +32,18 @@ class SettingsDialog extends ConsumerWidget {
               children: [
                 Text(
                   l10n.settingsTitle,
-                  style: AppTextStyles.rulesetTitle.copyWith(fontSize: 20),
+                  style: AppTextStyles.screenHeaderLarge.copyWith(fontSize: 20),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textLight),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.textLight,
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               l10n.settingsLanguage,
               style: AppTextStyles.inputLabel.copyWith(
@@ -52,7 +59,7 @@ class SettingsDialog extends ConsumerWidget {
                 ref.read(localeProvider.notifier).setLocale(const Locale('en'));
               },
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             _LocaleOption(
               label: l10n.settingsPolish,
               isSelected: currentLocale?.languageCode == 'pl',
@@ -60,7 +67,7 @@ class SettingsDialog extends ConsumerWidget {
                 ref.read(localeProvider.notifier).setLocale(const Locale('pl'));
               },
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             _LocaleOption(
               label: l10n.settingsSystemDefault,
               isSelected: currentLocale == null,
@@ -90,10 +97,13 @@ class _LocaleOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: NeuContainer(
         elevation: isSelected ? NeuElevation.inset : NeuElevation.floating,
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
         width: double.infinity,
-        height: 50,
+        height: 52,
+        color: isSelected ? AppColors.neuShadow : AppColors.background,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -103,15 +113,16 @@ class _LocaleOption extends StatelessWidget {
                 label,
                 style: AppTextStyles.actionButtonText.copyWith(
                   color: isSelected ? AppColors.accentBlue : AppColors.text,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                 ),
               ),
-              if (isSelected)
-                const Icon(
-                  Icons.check_rounded,
-                  color: AppColors.accentBlue,
-                  size: 20,
-                ),
+              Icon(
+                isSelected
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                color: isSelected ? AppColors.accentBlue : AppColors.textLight,
+                size: 20,
+              ),
             ],
           ),
         ),
