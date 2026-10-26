@@ -1,14 +1,16 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/features/profile/screens/widgets/logout_button.dart';
-import 'package:globetrottr_front/features/profile/screens/widgets/profile_nav_button.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/logout_button.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/points_card.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_avatar.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_bio.dart';
-import 'package:globetrottr_front/features/profile/screens/widgets/points_card.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/profile_nav_button.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/settings_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -46,7 +48,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         // TODO: show error differently than with a snack bar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to select image: $e'),
+            content: Text(context.l10n.profileImageSelectError(e.toString())),
             backgroundColor: AppColors.accentRed,
           ),
         );
@@ -56,6 +58,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final profileState = ref.watch(profileProvider);
     final profileNotifier = ref.read(profileProvider.notifier);
     final userProfile = profileState.profile;
@@ -85,7 +88,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(height: 16),
 
                 Text(
-                  userProfile?.username ?? 'Traveler',
+                  userProfile?.username ?? l10n.profileDefaultUsername,
                   style: AppTextStyles.rulesetTitle.copyWith(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -108,7 +111,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 ProfileNavButton(
                   icon: Icons.bar_chart_rounded,
-                  label: 'Statistics',
+                  label: l10n.profileStatistics,
                   onPressed: () => {}, //context.push('/statistics'),
                 ),
 
@@ -116,7 +119,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 ProfileNavButton(
                   icon: Icons.workspace_premium_rounded,
-                  label: 'Achievements',
+                  label: l10n.profileAchievements,
                   onPressed: () => {}, //context.push('/achievements'),
                 ),
 
@@ -124,8 +127,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 ProfileNavButton(
                   icon: Icons.settings_rounded,
-                  label: 'Settings',
-                  onPressed: () => {}, //context.push('/settings'),
+                  label: l10n.profileSettings,
+                  onPressed: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (_) => const SettingsDialog(),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 32),
