@@ -1,3 +1,4 @@
+import 'package:globetrottr_front/features/fog/data/fog_track.dart';
 import 'package:latlong2/latlong.dart';
 
 class TrackingState {
@@ -5,7 +6,7 @@ class TrackingState {
   final bool isRecording;
   final LatLng? currentPosition;
   final List<List<LatLng>> backendHoles;
-  final List<List<LatLng>> sessionHoles;
+  final List<FogTrack> sessionTracks;
   final String? errorMessage;
   final int holesRevision;
 
@@ -14,19 +15,17 @@ class TrackingState {
     this.isRecording = false,
     this.currentPosition,
     this.backendHoles = const [],
-    this.sessionHoles = const [],
+    this.sessionTracks = const [],
     this.errorMessage,
     this.holesRevision = 0,
   });
-
-  List<List<LatLng>> get allHoles => [...backendHoles, ...sessionHoles];
 
   TrackingState copyWith({
     bool? isTracking,
     bool? isRecording,
     LatLng? currentPosition,
     List<List<LatLng>>? backendHoles,
-    List<List<LatLng>>? sessionHoles,
+    List<FogTrack>? sessionTracks,
     String? errorMessage,
     int? holesRevision,
     bool clearError = false,
@@ -36,7 +35,7 @@ class TrackingState {
       isRecording: isRecording ?? this.isRecording,
       currentPosition: currentPosition ?? this.currentPosition,
       backendHoles: backendHoles ?? this.backendHoles,
-      sessionHoles: sessionHoles ?? this.sessionHoles,
+      sessionTracks: sessionTracks ?? this.sessionTracks,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       holesRevision: holesRevision ?? this.holesRevision,
     );

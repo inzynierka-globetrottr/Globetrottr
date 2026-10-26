@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 class MapConfig {
   static const double defaultVisionRadius = 30.0;
   static const double defaultZoom = 16.0;
-  static const int distanceFilter = 1;
+  static const int distanceFilter = 10;
 
   static const LatLng initialCenter = LatLng(50.0614, 19.9383); // Kraków
 

@@ -72,7 +72,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               children: [
                 const AppTileLayer(),
                 FogLayer(
-                  readyHoles: locationState.allHoles,
+                  readyHoles: locationState.backendHoles,
+                  tracks: locationState.sessionTracks,
                   holesRevision: locationState.holesRevision,
                 ),
                 if (position != null) PlayerMarkerLayer(position: position),

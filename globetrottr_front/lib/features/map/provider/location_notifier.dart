@@ -8,8 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
-import 'package:globetrottr_front/features/fog/fog_holepuncher.dart';
-import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/features/fog/data/fog_track.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 
 class LocationNotifier extends Notifier<TrackingState> {
@@ -51,18 +50,8 @@ class LocationNotifier extends Notifier<TrackingState> {
       final pending = await ref.read(mapStorageProvider).getPendingPoints();
       if (pending.isEmpty) return;
 
-      final holes = pending
-          .map(
-            (p) => FogHolepuncher.calculateSingleHole(
-              center: LatLng(p.latitude, p.longitude),
-              radiusInMeters: MapConfig.defaultVisionRadius,
-            ),
-          )
-          .toList();
-
       state = state.copyWith(
-        sessionHoles: holes,
-        holesRevision: state.holesRevision + 1,
+        sessionTracks: FogTrack.fromPendingPoints(pending),
       );
     } catch (e, stack) {
       debugPrint('Failed to load unsynced points from DB: $e\n$stack');
@@ -97,7 +86,7 @@ class LocationNotifier extends Notifier<TrackingState> {
         final updatedHoles = await ref.read(fogServiceProvider).getMyFog();
         state = state.copyWith(
           backendHoles: updatedHoles,
-          sessionHoles: synced ? const [] : null,
+          sessionTracks: synced ? const [] : null,
           holesRevision: state.holesRevision + 1,
         );
       } catch (e) {
@@ -109,24 +98,28 @@ class LocationNotifier extends Notifier<TrackingState> {
   void _onPosition(Position position) {
     final newPosition = LatLng(position.latitude, position.longitude);
 
-    List<List<LatLng>> updatedHoles = state.sessionHoles;
+    final sessionId = _locationService.sessionId;
+    final tracks = state.isRecording && sessionId != null
+        ? _withPoint(state.sessionTracks, sessionId, newPosition)
+        : state.sessionTracks;
 
-    if (state.isRecording) {
-      //Optimized calculation: Instead of recalculating holes for all points, we only calculate a new hole
-      final newHoleGeometry = FogHolepuncher.calculateSingleHole(
-        center: newPosition,
-        radiusInMeters: MapConfig.defaultVisionRadius,
-      );
+    state = state.copyWith(currentPosition: newPosition, sessionTracks: tracks);
+  }
 
-      updatedHoles = List.from(state.sessionHoles)..add(newHoleGeometry);
+  List<FogTrack> _withPoint(
+    List<FogTrack> tracks,
+    String sessionId,
+    LatLng point,
+  ) {
+    if (tracks.isNotEmpty && tracks.last.sessionId == sessionId) {
+      return [
+        ...tracks.take(tracks.length - 1),
+        tracks.last.append(point),
+      ];
     }
-
-    state = state.copyWith(
-      currentPosition: newPosition,
-      sessionHoles: updatedHoles,
-      holesRevision: state.isRecording
-          ? state.holesRevision + 1
-          : state.holesRevision,
-    );
+    return [
+      ...tracks,
+      FogTrack(sessionId: sessionId, points: [point]),
+    ];
   }
 }

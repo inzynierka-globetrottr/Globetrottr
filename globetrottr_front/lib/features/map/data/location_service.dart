@@ -29,10 +29,14 @@ class LocationService {
     return _broadcastStream!;
   }
 
+  String? get sessionId => _sessionId;
+
   void setRecording(bool value) {
     _isRecording = value;
-    if (value && _sessionId == null) {
-      _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+    if (!value) {
+      _sessionId = null;
+    } else {
+      _sessionId ??= DateTime.now().millisecondsSinceEpoch.toString();
     }
   }
 
