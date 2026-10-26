@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/config/dev_config.dart';
+import 'package:globetrottr_front/debug/debug_screen.dart';
+import 'package:globetrottr_front/debug/dev_options_screen.dart';
 import 'package:globetrottr_front/debug/friend_debug_screen.dart';
 import 'package:globetrottr_front/debug/preview_screen.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
@@ -26,6 +29,11 @@ final appRouter = Provider<GoRouter>((ref) {
     initialLocation: '/login',
     refreshListenable: listenable,
     redirect: (context, state) {
+      if ((DevConfig.isDevMode || kDebugMode) &&
+          state.matchedLocation == '/dev') {
+        return null;
+      }
+
       final authState = ref.read(authProvider);
 
       if (authState.isInitializing) return null;
@@ -71,6 +79,16 @@ final appRouter = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             FriendMapScreen(friendUsername: state.pathParameters['username']!),
       ),
+      if (kDebugMode || DevConfig.isDevMode)
+        GoRoute(
+          path: '/dev',
+          builder: (context, state) => const DevOptionsScreen(),
+        ),
+      if (kDebugMode)
+        GoRoute(
+          path: '/debug',
+          builder: (context, state) => const DebugScreen(),
+        ),
       if (kDebugMode)
         GoRoute(
           path: '/debug/preview',

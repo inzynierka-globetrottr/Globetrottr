@@ -36,6 +36,24 @@ class MapStorage {
     return db.insert('pending_points', point.toMap());
   }
 
+  Future<void> insertPendingPointsBatch(
+    List<PendingPoint> points, {
+    int chunkSize = 2000,
+  }) async {
+    final db = await database;
+    for (int i = 0; i < points.length; i += chunkSize) {
+      final end = (i + chunkSize < points.length)
+          ? i + chunkSize
+          : points.length;
+      final chunk = points.sublist(i, end);
+      final batch = db.batch();
+      for (final point in chunk) {
+        batch.insert('pending_points', point.toMap());
+      }
+      await batch.commit(noResult: true);
+    }
+  }
+
   Future<List<PendingPoint>> getPendingPoints() async {
     final db = await database;
     final result = await db.query('pending_points', orderBy: 'timestamp ASC');

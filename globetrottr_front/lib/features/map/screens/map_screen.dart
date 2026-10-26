@@ -1,7 +1,9 @@
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
+import 'package:globetrottr_front/debug/widgets/dev_floating_button.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
@@ -95,6 +97,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 },
               ),
             ),
+
+            if (DevConfig.isDevMode)
+              Positioned(
+                top: topSafeInset + 76.0,
+                left: 16.0,
+                child: const DevFloatingButton(heroTag: 'map_dev_fab'),
+              ),
 
             Positioned(
               top: topSafeInset + 16.0,
