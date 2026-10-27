@@ -219,6 +219,76 @@ class QuestServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    @Test
+    void shouldIncludeDescriptionInSidebarResponse() {
+        Quest quest =
+                Quest.builder()
+                        .id(1L)
+                        .title("Old Town")
+                        .description("Visit the Main Square and St. Mary's Basilica.")
+                        .type(QuestType.VISIT_POINTS)
+                        .rewardPoints(100)
+                        .questGeometry(createGeometry("MULTIPOINT(19.937222 50.061389)"))
+                        .build();
+        stubSidebarFor(quest);
+
+        QuestResponseDto response = questService.getAllQuestsForSidebar(username).getFirst();
+
+        assertThat(response.description())
+                .isEqualTo("Visit the Main Square and St. Mary's Basilica.");
+    }
+
+    @Test
+    void shouldAnchorRouteQuestAtItsStartingPoint() {
+        Geometry route = createGeometry("LINESTRING(19.934 50.054, 19.937 50.053, 19.940 50.052)");
+        Quest quest = createQuest(1L, "Route", QuestType.FOLLOW_ROUTE, 250, route);
+        stubSidebarFor(quest);
+
+        QuestResponseDto response = questService.getAllQuestsForSidebar(username).getFirst();
+
+        assertThat(response.location()).isEqualTo(new QuestCoordinateDto(50.054, 19.934));
+        assertThat(response.waypoints())
+                .containsExactly(
+                        new QuestCoordinateDto(50.054, 19.934),
+                        new QuestCoordinateDto(50.053, 19.937),
+                        new QuestCoordinateDto(50.052, 19.940));
+    }
+
+    @Test
+    void shouldAnchorVisitPointsQuestAtOneOfItsPoints() {
+        Geometry points =
+                createGeometry("MULTIPOINT(19.937222 50.061389, 19.938333 50.061667, 19.94 50.07)");
+        Quest quest = createQuest(1L, "Points", QuestType.VISIT_POINTS, 100, points);
+        stubSidebarFor(quest);
+
+        QuestResponseDto response = questService.getAllQuestsForSidebar(username).getFirst();
+
+        assertThat(response.waypoints())
+                .containsExactly(
+                        new QuestCoordinateDto(50.061389, 19.937222),
+                        new QuestCoordinateDto(50.061667, 19.938333),
+                        new QuestCoordinateDto(50.07, 19.94));
+        assertThat(response.location()).isIn(response.waypoints());
+    }
+
+    @Test
+    void shouldReturnNoLocationWhenQuestHasNoGeometry() {
+        Quest quest = createQuest(1L, "Broken", QuestType.FOLLOW_ROUTE, 10, null);
+        stubSidebarFor(quest);
+
+        QuestResponseDto response = questService.getAllQuestsForSidebar(username).getFirst();
+
+        assertThat(response.location()).isNull();
+        assertThat(response.waypoints()).isEmpty();
+    }
+
+    private void stubSidebarFor(Quest quest) {
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userFogRepository.findByUser_UserId(userId)).thenReturn(Optional.empty());
+        when(questRepository.findAll()).thenReturn(List.of(quest));
+        when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of());
+    }
+
     private Geometry createGeometry(String wkt) {
         try {
             return wktReader.read(wkt);

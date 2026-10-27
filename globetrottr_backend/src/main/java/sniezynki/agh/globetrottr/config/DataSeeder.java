@@ -88,6 +88,8 @@ public class DataSeeder implements CommandLineRunner {
             Quest quest1 =
                     Quest.builder()
                             .title("Zwiedzanie Starego Miasta")
+                            .description(
+                                    "Odwiedź Rynek Główny i Kościół Mariacki w sercu Starego Miasta.")
                             .type(QuestType.VISIT_POINTS)
                             .questGeometry(
                                     createGeometry(
@@ -98,6 +100,7 @@ public class DataSeeder implements CommandLineRunner {
             Quest quest2 =
                     Quest.builder()
                             .title("Spacer Bulwarami Wiślanymi")
+                            .description("Przejdź bulwarami wzdłuż Wisły pod Wawelem.")
                             .type(QuestType.FOLLOW_ROUTE)
                             .questGeometry(
                                     createGeometry(

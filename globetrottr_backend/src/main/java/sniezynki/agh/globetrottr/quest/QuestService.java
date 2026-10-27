@@ -54,11 +54,14 @@ public class QuestService {
                             return new QuestResponseDto(
                                     quest.getId(),
                                     quest.getTitle(),
+                                    quest.getDescription(),
                                     quest.getType(),
                                     quest.getRewardPoints(),
                                     progress,
                                     isStarted,
-                                    isCompleted);
+                                    isCompleted,
+                                    QuestGeometryMapper.anchorOf(quest),
+                                    QuestGeometryMapper.waypointsOf(quest));
                         })
                 .toList();
     }
