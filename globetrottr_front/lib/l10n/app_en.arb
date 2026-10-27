@@ -108,6 +108,9 @@
     }
   },
   "questsStartQuest": "Start Quest",
+  "questsTypeFollowRoute": "Follow the route",
+  "questsTypeVisitPoints": "Visit the points",
+  "questsNoDescription": "No description yet.",
 
   "settingsTitle": "Settings",
   "settingsLanguage": "Language",

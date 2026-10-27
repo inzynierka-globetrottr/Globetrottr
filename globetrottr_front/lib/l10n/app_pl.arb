@@ -45,6 +45,9 @@
   "questsCompletedStatus": "Ukończone",
   "questsRewardXp": "{points} XP",
   "questsStartQuest": "Rozpocznij zadanie",
+  "questsTypeFollowRoute": "Przejdź trasą",
+  "questsTypeVisitPoints": "Odwiedź punkty",
+  "questsNoDescription": "Brak opisu.",
 
   "settingsTitle": "Ustawienia",
   "settingsLanguage": "Język",

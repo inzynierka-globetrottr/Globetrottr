@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
@@ -23,7 +24,9 @@ class QuestDetailsHeader extends StatelessWidget {
               Text(quest.title, style: AppTextStyles.screenHeaderLarge),
               const SizedBox(height: 4),
               Text(
-                quest.isRoute ? 'Follow the route' : 'Visit the points',
+                quest.isRoute
+                    ? context.l10n.questsTypeFollowRoute
+                    : context.l10n.questsTypeVisitPoints,
                 style: AppTextStyles.descriptiveStatusAction,
               ),
             ],
@@ -38,7 +41,7 @@ class QuestDetailsHeader extends StatelessWidget {
               size: 24,
             ),
             Text(
-              '${quest.rewardPoints} XP',
+              context.l10n.questsRewardXp(quest.rewardPoints),
               style: AppTextStyles.inputLabel.copyWith(
                 color: AppColors.accentGold,
               ),

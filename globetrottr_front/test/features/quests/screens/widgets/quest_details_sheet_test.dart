@@ -6,6 +6,7 @@ import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/data/quest_service.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_details_sheet.dart';
+import 'package:globetrottr_front/l10n/app_localizations.dart';
 
 class _FakeQuestService implements QuestService {
   _FakeQuestService(this.quests, {this.startError});
@@ -60,6 +61,9 @@ Future<_FakeQuestService> _pumpSheet(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: NeumorphicTheme(
           child: const Scaffold(body: QuestDetailsSheet(questId: 1)),
         ),
@@ -106,7 +110,7 @@ void main() {
     await tester.tap(find.text('Start Quest'));
     await tester.pumpAndSettle();
 
-    expect(find.text(const UnknownException().message), findsOneWidget);
+    expect(find.text('Something went wrong.'), findsOneWidget);
   });
 
   testWidgets('shows completed state without a start button', (tester) async {

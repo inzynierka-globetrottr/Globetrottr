@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
@@ -19,6 +20,7 @@ class QuestDetailsAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return switch (quest.zone) {
       QuestZone.unstarted => NeuPrimaryButton(
         onPressed: isStarting ? null : onStart,
@@ -30,19 +32,19 @@ class QuestDetailsAction extends StatelessWidget {
                   strokeWidth: 2,
                 ),
               )
-            : const Text(
-                'Start Quest',
+            : Text(
+                l10n.questsStartQuest,
                 style: AppTextStyles.submitButtonText,
               ),
       ),
       QuestZone.inProgress => Text(
-        '${(quest.progress * 100).toInt()}% progress',
+        l10n.questsProgressPercent((quest.progress * 100).toInt()),
         style: AppTextStyles.rulesetTitle.copyWith(
           color: AppColors.accentBlue,
         ),
       ),
       QuestZone.completed => Text(
-        'Completed',
+        l10n.questsCompletedStatus,
         style: AppTextStyles.rulesetTitle.copyWith(
           color: AppColors.accentGreen,
         ),

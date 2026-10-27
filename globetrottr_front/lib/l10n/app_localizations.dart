@@ -344,6 +344,24 @@ abstract class AppLocalizations {
   /// **'Start Quest'**
   String get questsStartQuest;
 
+  /// No description provided for @questsTypeFollowRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the route'**
+  String get questsTypeFollowRoute;
+
+  /// No description provided for @questsTypeVisitPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit the points'**
+  String get questsTypeVisitPoints;
+
+  /// No description provided for @questsNoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description yet.'**
+  String get questsNoDescription;
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:

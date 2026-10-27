@@ -1,6 +1,8 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
@@ -76,7 +78,7 @@ class _QuestDetailsSheetState extends ConsumerState<QuestDetailsSheet> {
             const SizedBox(height: 16),
             Text(
               description == null || description.isEmpty
-                  ? 'No description yet.'
+                  ? context.l10n.questsNoDescription
                   : description,
               style: AppTextStyles.bodyText,
             ),
@@ -89,7 +91,7 @@ class _QuestDetailsSheetState extends ConsumerState<QuestDetailsSheet> {
             if (_errorMessage case final String message) ...[
               const SizedBox(height: 12),
               Text(
-                message,
+                context.localizeErrorMessage(message),
                 style: AppTextStyles.descriptiveStatusAction.copyWith(
                   color: AppColors.accentRed,
                 ),

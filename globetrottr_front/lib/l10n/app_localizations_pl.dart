@@ -151,6 +151,15 @@ class AppLocalizationsPl extends AppLocalizations {
   String get questsStartQuest => 'Rozpocznij zadanie';
 
   @override
+  String get questsTypeFollowRoute => 'Przejdź trasą';
+
+  @override
+  String get questsTypeVisitPoints => 'Odwiedź punkty';
+
+  @override
+  String get questsNoDescription => 'Brak opisu.';
+
+  @override
   String get settingsTitle => 'Ustawienia';
 
   @override
