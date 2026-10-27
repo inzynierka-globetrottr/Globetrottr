@@ -53,6 +53,7 @@ class LocationService {
     _isRecording = value;
     if (!value) {
       _sessionId = null;
+      unawaited(_compactLog());
     } else {
       _sessionId ??= DateTime.now().millisecondsSinceEpoch.toString();
     }
@@ -138,6 +139,15 @@ class LocationService {
     });
   }
 
+  /// Packs the newest points of the track log when a recording ends.
+  Future<void> _compactLog() async {
+    try {
+      await _trackLog.compact();
+    } on Object catch (error) {
+      debugPrint('Track log compaction failed: $error');
+    }
+  }
+
   Future<void> _logPosition(String sessionId, Position position) async {
     try {
       final stored = await _trackLog.append(
@@ -162,6 +172,7 @@ class LocationService {
     _broadcastStream = null;
     _sessionId = null;
     _isRecording = false;
+    unawaited(_compactLog());
   }
 
   Future<void> dispose() async {

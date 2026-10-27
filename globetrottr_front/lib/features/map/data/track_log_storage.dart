@@ -1,11 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/map/data/sqflite_track_log_storage.dart';
+import 'package:globetrottr_front/features/map/data/track_block_codec.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 
 abstract class TrackLogStorage {
+  /// Stores a fix and returns it as it is stored: with its number and with
+  /// the position, accuracy and speed rounded the way the log keeps them.
   Future<TrackLogEntry> append(TrackLogEntry entry);
 
+  /// Stores fixes in order. A position that is not a real number makes the
+  /// whole batch fail before anything is written.
   Future<List<TrackLogEntry>> appendAll(List<TrackLogEntry> entries);
+
+  /// Packs the newest points into their final, compact form. Safe to call
+  /// at any time; nothing readable changes.
+  Future<void> compact();
 
   /// Entries with an id greater than [afterId], oldest first.
   Future<List<TrackLogEntry>> entriesAfter(int afterId, {int limit = 5000});
@@ -49,15 +58,28 @@ class InMemoryTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<TrackLogEntry> append(TrackLogEntry entry) async {
-    final stored = entry.withId(_nextId++);
+    final stored = TrackBlockCodec.quantize(entry).withId(_nextId++);
     _entries.add(stored);
     return stored;
   }
 
   @override
   Future<List<TrackLogEntry>> appendAll(List<TrackLogEntry> entries) async {
-    return [for (final entry in entries) await append(entry)];
+    final rounded = [
+      for (final entry in entries) TrackBlockCodec.quantize(entry),
+    ];
+    return [
+      for (final entry in rounded)
+        () {
+          final stored = entry.withId(_nextId++);
+          _entries.add(stored);
+          return stored;
+        }(),
+    ];
   }
+
+  @override
+  Future<void> compact() async {}
 
   @override
   Future<List<TrackLogEntry>> entriesAfter(

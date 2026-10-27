@@ -17,7 +17,10 @@ import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
+import 'package:globetrottr_front/features/map/data/sqflite_track_log_storage.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../support/fog_render_helpers.dart';
 
@@ -153,15 +156,16 @@ void main() {
       timer.stop();
 
       final stats = await storage.stats();
-      final baseTiles = stats.tilesPerLevel[17] ?? 0;
+      final baseTiles = stats.tilesPerLevel[FogConfig.baseZoom] ?? 0;
       final flagOnly = (await storage.changedSince(
         0,
         limit: 1 << 30,
-      )).where((t) => t.id.z == 17 && t.bytes == null).length;
+      )).where((t) => t.id.z == FogConfig.baseZoom && t.bytes == null).length;
       final payloadTiles = baseTiles - flagOnly;
       var baseBytes = 0;
       for (final tile in await storage.changedSince(0, limit: 1 << 30)) {
-        if (tile.id.z == 17) baseBytes += tile.bytes?.length ?? 0;
+        if (tile.id.z == FogConfig.baseZoom)
+          baseBytes += tile.bytes?.length ?? 0;
       }
       _say(
         'P3 journey ${_journeyKm.round()} km, ${entries.length} points imported in '
@@ -217,6 +221,85 @@ void main() {
         '${(cold.diagnostics.cachedTiles * FogMask.pixels / 1048576).toStringAsFixed(1)} MB',
       );
       await cold.dispose();
+    });
+
+    test('track log: size, writing, listing and reading', () async {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+      final dir = await Directory.systemTemp.createTemp('bench_tracks');
+      addTearDown(() => dir.delete(recursive: true));
+      const start = LatLng(50.0614, 19.9383);
+      final entries = ExplorerRouteGenerator.generate(
+        start: start,
+        totalKm: _journeyKm,
+      );
+      final log = SqfliteTrackLogStorage(path: '${dir.path}/tracks.db');
+
+      final timer = Stopwatch()..start();
+      for (var i = 0; i < entries.length; i += 20000) {
+        await log.appendAll(
+          entries.sublist(i, (i + 20000).clamp(0, entries.length)),
+        );
+      }
+      await log.compact();
+      final writeMs = timer.elapsedMilliseconds;
+      final bytes = await log.fileBytes();
+      _say(
+        'TRACKS ${entries.length} points: ${(bytes / 1048576).toStringAsFixed(2)} MB '
+        '(${(bytes / entries.length).toStringAsFixed(1)} B/point), written in $writeMs ms',
+      );
+
+      timer
+        ..reset()
+        ..start();
+      final sessions = await log.sessionSummaries();
+      _say(
+        'TRACKS list of ${sessions.length} trips: ${timer.elapsedMicroseconds} us',
+      );
+
+      timer
+        ..reset()
+        ..start();
+      var read = 0;
+      var after = 0;
+      while (true) {
+        final batch = await log.entriesAfter(after);
+        if (batch.isEmpty) break;
+        read += batch.length;
+        after = batch.last.id!;
+      }
+      _say(
+        'TRACKS read all $read points in ${timer.elapsedMilliseconds} ms '
+        '(batches of 5000)',
+      );
+
+      final middle = entries[entries.length ~/ 2];
+      timer
+        ..reset()
+        ..start();
+      final inView = await log.entriesInBounds(
+        south: middle.latitude - 0.004,
+        west: middle.longitude - 0.006,
+        north: middle.latitude + 0.004,
+        east: middle.longitude + 0.006,
+      );
+      _say(
+        'TRACKS ${inView.length} points of one map view in '
+        '${timer.elapsedMilliseconds} ms',
+      );
+
+      timer
+        ..reset()
+        ..start();
+      final live = SqfliteTrackLogStorage(path: '${dir.path}/live.db');
+      for (final e in entries.take(2000)) {
+        await live.append(e);
+      }
+      _say(
+        'TRACKS live append: ${timer.elapsedMicroseconds ~/ 2000} us/point',
+      );
+      await live.close();
+      await log.close();
     });
 
     test('P3 detail: zoom 16 / 17 / 18 storage and speed', () async {

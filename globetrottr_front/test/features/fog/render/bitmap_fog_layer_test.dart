@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_layer.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
@@ -44,9 +45,9 @@ Widget _app(GlobalKey key, MapController controller, FogTileSource? source) {
           key: key,
           child: FlutterMap(
             mapController: controller,
-            options: const MapOptions(
-              initialCenter: LatLng(krakowLat, krakowLng),
-              initialZoom: 17,
+            options: MapOptions(
+              initialCenter: const LatLng(krakowLat, krakowLng),
+              initialZoom: FogConfig.baseZoom.toDouble(),
             ),
             children: [BitmapFogLayer(source: source)],
           ),
@@ -98,14 +99,20 @@ void main() {
       expect(onTrail(200, 400 + 120), closeTo(191, 1));
 
       final away = offsetMeters(krakowLat, krakowLng, north: 3000);
-      controller.move(LatLng(away.lat, away.lng), 17);
+      controller.move(
+        LatLng(away.lat, away.lng),
+        FogConfig.baseZoom.toDouble(),
+      );
       await tester.pump();
       await _settle(tester, source);
 
       final awayFromTrail = await _capture(key);
       expect(awayFromTrail(200, 400), closeTo(191, 1));
 
-      controller.move(const LatLng(krakowLat, krakowLng), 17);
+      controller.move(
+        const LatLng(krakowLat, krakowLng),
+        FogConfig.baseZoom.toDouble(),
+      );
       await tester.pump();
       await _settle(tester, source);
 

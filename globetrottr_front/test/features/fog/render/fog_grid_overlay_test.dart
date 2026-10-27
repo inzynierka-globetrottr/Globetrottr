@@ -6,6 +6,7 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
@@ -71,7 +72,7 @@ void main() {
   group('tile grid overlay', () {
     test('draws bright lines on the tile borders only when enabled', () async {
       final camera = cameraAt();
-      final tile = tileOf(krakowLat, krakowLng, 17);
+      final tile = tileOf(krakowLat, krakowLng, FogConfig.baseZoom);
       final cornerX = (tile.x + 1) * 256.0;
       final cornerY = (tile.y + 1) * 256.0;
 
@@ -79,18 +80,18 @@ void main() {
       final on = await renderAlpha(_painter(camera, grid: true));
 
       expect(
-        _alphaAtCorner(off, camera, 17, cornerX, cornerY),
+        _alphaAtCorner(off, camera, FogConfig.baseZoom, cornerX, cornerY),
         closeTo(191, 1),
       );
       expect(
-        _alphaAtCorner(on, camera, 17, cornerX, cornerY),
+        _alphaAtCorner(on, camera, FogConfig.baseZoom, cornerX, cornerY),
         greaterThan(240),
       );
     });
 
     test('leaves the inside of a tile untouched', () async {
       final camera = cameraAt();
-      final tile = tileOf(krakowLat, krakowLng, 17);
+      final tile = tileOf(krakowLat, krakowLng, FogConfig.baseZoom);
       final centerX = (tile.x + 0.5) * 256.0;
       final centerY = (tile.y + 0.5) * 256.0;
 
@@ -98,8 +99,8 @@ void main() {
 
       final at = screenOf(
         camera,
-        FogMercator.yToLat(centerY, 17),
-        FogMercator.xToLng(centerX, 17),
+        FogMercator.yToLat(centerY, FogConfig.baseZoom),
+        FogMercator.xToLng(centerX, FogConfig.baseZoom),
       );
       expect(
         on(at.dx.round() + 60, at.dy.round() + 70),
@@ -110,7 +111,7 @@ void main() {
 
     test('follows the tile borders on a rotated map', () async {
       final camera = cameraAt(rotation: 37);
-      final tile = tileOf(krakowLat, krakowLng, 17);
+      final tile = tileOf(krakowLat, krakowLng, FogConfig.baseZoom);
 
       final on = await renderAlpha(_painter(camera, grid: true));
 
@@ -120,7 +121,7 @@ void main() {
             _alphaAtCorner(
               on,
               camera,
-              17,
+              FogConfig.baseZoom,
               (tile.x + dx) * 256.0,
               (tile.y + dy) * 256.0,
             ),
@@ -154,11 +155,11 @@ void main() {
         _painter(camera, grid: true, source: source),
       );
 
-      final tile = tileOf(krakowLat, krakowLng, 17);
+      final tile = tileOf(krakowLat, krakowLng, FogConfig.baseZoom);
       final corner = _alphaAtCorner(
         on,
         camera,
-        17,
+        FogConfig.baseZoom,
         (tile.x + 1) * 256.0,
         (tile.y + 1) * 256.0,
       );

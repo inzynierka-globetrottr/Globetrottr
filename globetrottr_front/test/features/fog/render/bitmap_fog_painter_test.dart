@@ -4,6 +4,7 @@ import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
@@ -36,8 +37,9 @@ void main() {
         final alpha = await renderAlpha(painterFor(camera, source: source));
 
         expect(alpha(200, 400), 0);
-        expect(alpha(215, 400), 0);
-        expect(alpha(200, 370), 0);
+        final reach = (baseRadiusPixels * 0.7).round();
+        expect(alpha(200 + reach, 400), 0);
+        expect(alpha(200, 400 - reach), 0);
         expect(alpha(200, 400 + 70), closeTo(191, 1));
         expect(alpha(20, 20), closeTo(191, 1));
         source.dispose();
@@ -110,7 +112,8 @@ void main() {
         final end = offsetMeters(krakowLat, krakowLng, east: 390);
         final stop = screenOf(camera, end.lat, end.lng);
 
-        for (var dy = -25; dy <= 25; dy += 5) {
+        final reach = baseRadiusPixels.floor() - 3;
+        for (var dy = -reach; dy <= reach; dy += 3) {
           for (var x = start.dx.round() + 3; x < stop.dx.round() - 3; x++) {
             if (x < 0 || x >= 400) continue;
             expect(
@@ -150,7 +153,8 @@ void main() {
           var checked = 0;
           var worst = 0;
           for (var t = 0.0; t <= (b - a).distance; t += 2) {
-            for (var offset = -28.0; offset <= 28; offset += 4) {
+            final reach = baseRadiusPixels - 3;
+            for (var offset = -reach; offset <= reach; offset += 3) {
               final p = a + direction * t + normal * offset;
               final x = p.dx.round();
               final y = p.dy.round();
@@ -179,7 +183,7 @@ void main() {
       final alpha = await renderAlpha(painterFor(camera, source: source));
       final start = screenOf(camera, krakowLat, krakowLng);
 
-      final rimY = start.dy.round() + 41;
+      final rimY = start.dy.round() + baseRadiusPixels.round();
       var worstStep = 0;
       for (var x = start.dx.round() + 10; x < 390; x++) {
         worstStep = worstStep < (alpha(x + 1, rimY) - alpha(x, rimY)).abs()
@@ -207,7 +211,11 @@ void main() {
       for (var y = upper.dy.round() + 3; y < bottom.dy.round() - 3; y++) {
         if (y < 0 || y >= 800) continue;
         expect(alpha(200, y), 0, reason: 'y=$y');
-        expect(alpha(215, y), 0, reason: 'y=$y');
+        expect(
+          alpha(200 + (baseRadiusPixels * 0.7).round(), y),
+          0,
+          reason: 'y=$y',
+        );
       }
       source.dispose();
       await store.dispose();
@@ -217,12 +225,18 @@ void main() {
       final store = await openStore();
       await walk(store, 'a', points: 30);
       await store.flush();
-      final below = cameraAt(zoom: 16.49);
-      final above = cameraAt(zoom: 16.51);
+      final below = cameraAt(zoom: FogConfig.baseZoom - 0.51);
+      final above = cameraAt(zoom: FogConfig.baseZoom - 0.49);
       final sourceBelow = await readySource(store, below);
       final sourceAbove = await readySource(store, above);
-      expect(sourceBelow.levelFor(16.49), 16);
-      expect(sourceAbove.levelFor(16.51), 17);
+      expect(
+        sourceBelow.levelFor(FogConfig.baseZoom - 0.51),
+        FogConfig.baseZoom - 1,
+      );
+      expect(
+        sourceAbove.levelFor(FogConfig.baseZoom - 0.49),
+        FogConfig.baseZoom,
+      );
 
       final lower = await renderAlpha(painterFor(below, source: sourceBelow));
       final upper = await renderAlpha(painterFor(above, source: sourceAbove));
@@ -254,10 +268,12 @@ void main() {
         final store = await openStore();
         await walk(store, 'a', points: 30);
         await store.flush();
-        final coarse = cameraAt(zoom: 16);
+        final coarse = cameraAt(zoom: FogConfig.baseZoom - 1);
         final fine = cameraAt();
         final source = FogTileSource(store);
-        source.ensureRange(FogTileRange.visible(coarse, 16));
+        source.ensureRange(
+          FogTileRange.visible(coarse, FogConfig.baseZoom - 1),
+        );
         await source.whenIdle();
 
         final alpha = await renderAlpha(painterFor(fine, source: source));
@@ -276,9 +292,9 @@ void main() {
         await walk(store, 'a', points: 30);
         await store.flush();
         final fine = cameraAt();
-        final coarse = cameraAt(zoom: 16);
+        final coarse = cameraAt(zoom: FogConfig.baseZoom - 1);
         final source = FogTileSource(store);
-        source.ensureRange(FogTileRange.visible(fine, 17));
+        source.ensureRange(FogTileRange.visible(fine, FogConfig.baseZoom));
         await source.whenIdle();
 
         final alpha = await renderAlpha(painterFor(coarse, source: source));
@@ -300,7 +316,7 @@ void main() {
       );
 
       expect(alpha(200, 400), 0);
-      expect(alpha(215, 400), lessThan(5));
+      expect(alpha(200 + (baseRadiusPixels * 0.7).round(), 400), lessThan(5));
       expect(alpha(200, 400 + 70), closeTo(191, 1));
     });
 
@@ -395,7 +411,12 @@ void main() {
       final base = painterFor(camera);
 
       expect(base.shouldRepaint(painterFor(camera)), isFalse);
-      expect(base.shouldRepaint(painterFor(cameraAt(zoom: 16))), isTrue);
+      expect(
+        base.shouldRepaint(
+          painterFor(cameraAt(zoom: FogConfig.baseZoom - 1.0)),
+        ),
+        isTrue,
+      );
       expect(base.shouldRepaint(painterFor(cameraAt(rotation: 5))), isTrue);
       expect(
         base.shouldRepaint(

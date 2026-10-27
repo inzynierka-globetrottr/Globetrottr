@@ -10,6 +10,7 @@ import 'package:globetrottr_front/features/fog/data/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_test_helpers.dart';
 
@@ -17,7 +18,7 @@ Future<FogStore> _open(
   FogTileStorage storage, {
   int maxCachedTiles = 256,
   int maxDirtyTiles = 96,
-  int baseZoom = 17,
+  int baseZoom = FogConfig.baseZoom,
 }) {
   return FogStore.open(
     storage,
@@ -29,7 +30,7 @@ Future<FogStore> _open(
 }
 
 int _rowOf(double lat) =>
-    (FogMercator.latToY(lat, 17) % FogTileId.size).floor();
+    (FogMercator.latToY(lat, FogConfig.baseZoom) % FogTileId.size).floor();
 
 Future<void> _apply(FogStore store, String session, double lat, double lng) {
   return store.applyPoint(sessionId: session, latitude: lat, longitude: lng);
@@ -85,13 +86,16 @@ void main() {
       await _apply(store, 'a', krakowLat, krakowLng);
       await store.flush();
       final area = store.totalAreaM2;
-      final before = await decodeAllTiles(storage, 17);
+      final before = await decodeAllTiles(storage, FogConfig.baseZoom);
 
       await _apply(store, 'b', krakowLat, krakowLng);
       await store.flush();
 
       expect(store.totalAreaM2, closeTo(area, 1e-6));
-      expect(sameMasks(before, await decodeAllTiles(storage, 17)), isTrue);
+      expect(
+        sameMasks(before, await decodeAllTiles(storage, FogConfig.baseZoom)),
+        isTrue,
+      );
     });
 
     test('calls made without awaiting are applied in order', () async {
@@ -124,18 +128,23 @@ void main() {
         final radius = metersToPixels(
           meters: 30,
           latitude: krakowLat,
-          zoom: 17,
+          zoom: FogConfig.baseZoom.toDouble(),
         );
-        final border = (FogMercator.lngToX(krakowLng, 17) / 256).ceil() * 256;
-        final lng = FogMercator.xToLng(border - radius - 0.1, 17);
+        final border =
+            (FogMercator.lngToX(krakowLng, FogConfig.baseZoom) / 256).ceil() *
+            256;
+        final lng = FogMercator.xToLng(
+          border - radius - 0.1,
+          FogConfig.baseZoom,
+        );
 
         await _apply(store, 'a', krakowLat, lng);
         await store.flush();
 
         final right = tileOf(
           krakowLat,
-          FogMercator.xToLng(border + 0.5, 17),
-          17,
+          FogMercator.xToLng(border + 0.5, FogConfig.baseZoom),
+          FogConfig.baseZoom,
         );
         final mask = await store.maskFor(right);
         expect(mask, isNotNull);
@@ -169,14 +178,14 @@ void main() {
       await store.flush();
 
       final stats = await storage.stats();
-      expect(stats.tilesPerLevel[17], greaterThanOrEqualTo(1));
-      for (var z = 4; z <= 17; z++) {
+      expect(stats.tilesPerLevel[FogConfig.baseZoom], greaterThanOrEqualTo(1));
+      for (var z = 4; z <= FogConfig.baseZoom; z++) {
         expect(stats.tilesPerLevel[z], isNotNull, reason: 'level $z');
       }
       expect(stats.tilesPerLevel[3], isNull);
       final meta = await storage.loadMeta();
       expect(meta['rev'], 1);
-      expect(meta['baseZoom'], 17);
+      expect(meta['baseZoom'], FogConfig.baseZoom);
       expect(meta['totalAreaM2'], closeTo(store.totalAreaM2, 1e-6));
       expect(store.revision, 1);
     });
@@ -203,7 +212,7 @@ void main() {
 
         expect(store.revision, 2);
         expect(changed.every((t) => t.rev == 2), isTrue);
-        expect(changed.any((t) => t.id.z == 17), isTrue);
+        expect(changed.any((t) => t.id.z == FogConfig.baseZoom), isTrue);
       },
     );
 
@@ -239,10 +248,10 @@ void main() {
         expect(small.totalAreaM2, closeTo(reference.totalAreaM2, 1e-3));
         expect(
           sameMasks(
-            await decodeAllTiles(tiny, 17),
+            await decodeAllTiles(tiny, FogConfig.baseZoom),
             await decodeAllTiles(
               await _storageOf(reference),
-              17,
+              FogConfig.baseZoom,
             ),
           ),
           isTrue,
@@ -263,10 +272,13 @@ void main() {
       await pumpEventQueue();
       await sub.cancel();
 
-      expect(afterApply.single.tiles.every((t) => t.z == 17), isTrue);
+      expect(
+        afterApply.single.tiles.every((t) => t.z == FogConfig.baseZoom),
+        isTrue,
+      );
       expect(
         changes.last.tiles.map((t) => t.z).toSet(),
-        containsAll([4, 10, 17]),
+        containsAll([4, 10, FogConfig.baseZoom]),
       );
     });
   });
@@ -282,7 +294,7 @@ void main() {
       var checked = 0;
       for (final tile in tiles) {
         final mask = FogTileCodec.decode(tile.flag, tile.bytes);
-        final step = tile.id.z == 17 ? 16 : 32;
+        final step = tile.id.z == FogConfig.baseZoom ? 16 : 32;
         for (final value in mask.data) {
           if (value == 255) continue;
           expect(value % step, 0, reason: 'level ${tile.id.z}');
@@ -366,7 +378,7 @@ void main() {
       await _apply(store, 'a', krakowLat, krakowLng);
       await store.flush();
 
-      final other = await _open(storage, baseZoom: 16);
+      final other = await _open(storage, baseZoom: FogConfig.baseZoom - 1);
 
       expect(other.totalAreaM2, 0);
       expect((await storage.stats()).tileCount, 0);
@@ -400,10 +412,10 @@ void main() {
       await _apply(store, 'a', krakowLat, krakowLng);
       await store.flush();
       final reopened = await _open(storage);
-      final id = tileOf(krakowLat, krakowLng, 17);
+      final id = tileOf(krakowLat, krakowLng, FogConfig.baseZoom);
 
       expect(reopened.peek(id), isNull);
-      await reopened.prepare(17, id.x, id.x, id.y, id.y);
+      await reopened.prepare(FogConfig.baseZoom, id.x, id.x, id.y, id.y);
 
       expect(reopened.peek(id), isNotNull);
       expect(reopened.isKnownAbsent(id), isFalse);
@@ -435,8 +447,8 @@ void main() {
       expect(other.totalAreaM2, closeTo(store.totalAreaM2, 1e-6));
       expect(
         sameMasks(
-          await decodeAllTiles(storage, 17),
-          await decodeAllTiles(rebuilt, 17),
+          await decodeAllTiles(storage, FogConfig.baseZoom),
+          await decodeAllTiles(rebuilt, FogConfig.baseZoom),
         ),
         isTrue,
       );
@@ -478,8 +490,8 @@ void main() {
       expect(recovered.totalAreaM2, closeTo(expected.totalAreaM2, 1e-6));
       expect(
         sameMasks(
-          await decodeAllTiles(storage, 17),
-          await decodeAllTiles(reference, 17),
+          await decodeAllTiles(storage, FogConfig.baseZoom),
+          await decodeAllTiles(reference, FogConfig.baseZoom),
         ),
         isTrue,
       );
@@ -553,8 +565,8 @@ void main() {
       expect(imported.totalAreaM2, closeTo(store.totalAreaM2, 1e-3));
       expect(
         sameMasks(
-          await decodeAllTiles(storage, 17),
-          await decodeAllTiles(importedStorage, 17),
+          await decodeAllTiles(storage, FogConfig.baseZoom),
+          await decodeAllTiles(importedStorage, FogConfig.baseZoom),
         ),
         isTrue,
       );
@@ -672,8 +684,11 @@ void main() {
   });
 
   test('tile ids of a fresh store are not cached', () async {
-    expect(store.peek(const FogTileId(17, 1, 1)), isNull);
-    expect(store.isKnownAbsent(const FogTileId(17, 1, 1)), isFalse);
+    expect(store.peek(const FogTileId(FogConfig.baseZoom, 1, 1)), isNull);
+    expect(
+      store.isKnownAbsent(const FogTileId(FogConfig.baseZoom, 1, 1)),
+      isFalse,
+    );
     expect(store.diagnostics.cachedTiles, 0);
     expect(FogMask.pixels, 65536);
   });
@@ -763,7 +778,9 @@ void main() {
 
       expect(changes.single.tiles, isNotEmpty);
       expect(
-        changes.single.tiles.contains(tileOf(krakowLat, krakowLng, 17)),
+        changes.single.tiles.contains(
+          tileOf(krakowLat, krakowLng, FogConfig.baseZoom),
+        ),
         isFalse,
       );
     });

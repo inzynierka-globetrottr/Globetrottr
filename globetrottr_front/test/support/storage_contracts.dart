@@ -430,6 +430,76 @@ void runTrackLogStorageContract(
       );
     });
 
+    test('append returns the entry as it is stored: rounded', () async {
+      final stored = await storage.append(
+        _entry(
+          'a',
+          5,
+          lat: 50.123456789,
+          lng: 19.987654321,
+          accuracy: 4.5678,
+          speed: 1.2345,
+        ),
+      );
+
+      expect(stored.latitude, 50.1234568);
+      expect(stored.longitude, 19.9876543);
+      expect(stored.accuracy, 4.6);
+      expect(stored.speed, 1.23);
+      final read = (await storage.entriesAfter(0)).single;
+      expect(read.latitude, stored.latitude);
+      expect(read.longitude, stored.longitude);
+      expect(read.accuracy, stored.accuracy);
+      expect(read.speed, stored.speed);
+    });
+
+    test('a position that is not a real number is refused', () async {
+      await expectLater(
+        storage.append(_entry('a', 1, lat: double.nan)),
+        throwsArgumentError,
+      );
+      await expectLater(
+        storage.appendAll([
+          _entry('a', 1),
+          _entry('a', 2, lng: double.infinity),
+        ]),
+        throwsArgumentError,
+      );
+      expect(await storage.count(), 0);
+    });
+
+    test('compact changes nothing that can be read', () async {
+      await storage.appendAll([
+        for (var i = 0; i < 7; i++)
+          _entry(i.isEven ? 'a' : 'b', i, lat: 50 + i * 0.001),
+      ]);
+      final before = await storage.entriesAfter(0, limit: 100);
+
+      await storage.compact();
+      await storage.compact();
+
+      final after = await storage.entriesAfter(0, limit: 100);
+      expect(after.map((e) => e.id), before.map((e) => e.id));
+      expect(after.map((e) => e.latitude), before.map((e) => e.latitude));
+      expect(await storage.count(), 7);
+    });
+
+    test('compact on an empty log is harmless', () async {
+      await storage.compact();
+
+      expect(await storage.count(), 0);
+    });
+
+    test('ids keep growing after the log is cleared', () async {
+      final first = await storage.appendAll([_entry('a', 1), _entry('a', 2)]);
+
+      await storage.clear();
+      final next = await storage.append(_entry('b', 3));
+
+      expect(next.id, greaterThan(first.last.id!));
+      expect(await storage.lastId(), next.id);
+    });
+
     test('lastId is zero when empty and the newest id otherwise', () async {
       expect(await storage.lastId(), 0);
 

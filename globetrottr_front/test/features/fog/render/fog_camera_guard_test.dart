@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
@@ -72,7 +73,10 @@ void main() {
         final source = await readySource(store, cameraAt());
 
         expect(() => source.ensureVisible(entry.value), returnsNormally);
-        expect(source.levelFor(entry.value.zoom), inInclusiveRange(4, 17));
+        expect(
+          source.levelFor(entry.value.zoom),
+          inInclusiveRange(4, FogConfig.baseZoom),
+        );
         source.dispose();
         await store.dispose();
       });

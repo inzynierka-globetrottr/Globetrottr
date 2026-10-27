@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
@@ -65,14 +66,14 @@ void main() {
   });
 
   group('raw fog pixels', () {
-    // At zoom 19.4 one fog pixel is about 5.3 screen pixels wide: big enough
+    // Two and a half levels above the base zoom one fog pixel is about 5.3 screen pixels wide: big enough
     // to see the blocks, still too small for the lines between them.
     Future<(int Function(int, int), int Function(int, int))> bothViews() async {
       final store = await openStore();
       await walk(store, 'a', points: 30);
       await store.flush();
       final camera = cameraAt(
-        zoom: 19.4,
+        zoom: FogConfig.baseZoom + 2.4,
         lng: offsetMeters(krakowLat, krakowLng, east: 145).lng,
       );
       final source = await readySource(store, camera);
@@ -90,9 +91,9 @@ void main() {
     test('shows blocky pixels where the normal view is smooth', () async {
       final (raw, smooth) = await bothViews();
 
-      // The trail edge is about 41 fog pixels (216 rows) above the middle.
-      final rawChanges = _changesDown(raw, 200, 120, 260);
-      final smoothChanges = _changesDown(smooth, 200, 120, 260);
+      // The trail edge is about 20 fog pixels (108 rows) above the middle.
+      final rawChanges = _changesDown(raw, 200, 240, 340);
+      final smoothChanges = _changesDown(smooth, 200, 240, 340);
 
       expect(rawChanges, greaterThan(0));
       expect(rawChanges, lessThanOrEqualTo(6));
@@ -103,7 +104,7 @@ void main() {
       final (raw, _) = await bothViews();
 
       final changeRows = [
-        for (var y = 121; y <= 260; y++)
+        for (var y = 241; y <= 340; y++)
           if (raw(200, y) != raw(200, y - 1)) y,
       ];
       expect(changeRows.length, greaterThan(1));
@@ -120,7 +121,7 @@ void main() {
       final store = await openStore();
       await walk(store, 'a', points: 30);
       await store.flush();
-      final camera = cameraAt(zoom: 18.5);
+      final camera = cameraAt(zoom: FogConfig.baseZoom + 1.5);
       final source = await readySource(store, camera);
 
       final plain = await renderAlpha(
@@ -155,7 +156,7 @@ void main() {
     });
 
     test('draws lines between fog pixels once they are big enough', () async {
-      final camera = cameraAt(zoom: 20);
+      final camera = cameraAt(zoom: FogConfig.baseZoom + 3);
 
       final alpha = await renderAlpha(_painter(camera, raw: true));
 
@@ -180,7 +181,7 @@ void main() {
     });
 
     test('keeps the lines aligned with the pixels of a rotated map', () async {
-      final camera = cameraAt(zoom: 20, rotation: 33);
+      final camera = cameraAt(zoom: FogConfig.baseZoom + 3, rotation: 33);
 
       final alpha = await renderAlpha(_painter(camera, raw: true));
 

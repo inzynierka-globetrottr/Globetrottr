@@ -44,7 +44,8 @@ void main() {
     ]);
 
     final filled = await storage.fileBytes();
-    expect(filled, greaterThan(empty));
-    expect(filled, greaterThan(2000 * 20));
+    // 2000 packed points fit into pages the empty file already has.
+    expect(filled, greaterThanOrEqualTo(empty));
+    expect(filled, lessThan(empty + 2000 * 12));
   });
 }

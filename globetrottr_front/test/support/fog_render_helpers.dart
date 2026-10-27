@@ -3,18 +3,20 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import 'fog_test_helpers.dart';
 
 const Size viewSize = Size(400, 800);
 
 MapCamera cameraAt({
-  double zoom = 17,
+  double? zoom,
   double rotation = 0,
   double lat = krakowLat,
   double lng = krakowLng,
@@ -22,7 +24,7 @@ MapCamera cameraAt({
   return MapCamera(
     crs: const Epsg3857(),
     center: LatLng(lat, lng),
-    zoom: zoom,
+    zoom: zoom ?? FogConfig.baseZoom.toDouble(),
     rotation: rotation,
     nonRotatedSize: const math.Point<double>(400, 800),
   );
@@ -97,3 +99,10 @@ BitmapFogPainter painterFor(
     options: BitmapFogPainter.defaultOptions.copyWith(softEdge: softEdge),
   );
 }
+
+/// Radius of the vision disc in pixels of the base level, at Krakow.
+double get baseRadiusPixels => metersToPixels(
+  meters: FogConfig.visionRadiusMeters,
+  latitude: krakowLat,
+  zoom: FogConfig.baseZoom.toDouble(),
+);

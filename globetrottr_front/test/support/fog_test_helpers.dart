@@ -59,7 +59,9 @@ List<TrackLogEntry> walkEast(
 
 Future<Map<int, FogMask>> decodeAllTiles(FogTileStorage storage, int z) async {
   final stats = await storage.stats();
-  if ((stats.tilesPerLevel[z] ?? 0) == 0) return {};
+  if ((stats.tilesPerLevel[z] ?? 0) == 0) {
+    throw StateError('No tiles at level $z: nothing to compare');
+  }
   final result = <int, FogMask>{};
   final tiles = await storage.loadRange(
     z: z,

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
@@ -14,9 +15,9 @@ void main() {
       final store = await openStore();
       final source = FogTileSource(store);
 
-      expect(source.levelFor(16.4), 16);
-      expect(source.levelFor(16.6), 17);
-      expect(source.levelFor(20), 17);
+      expect(source.levelFor(FogConfig.baseZoom - 0.6), FogConfig.baseZoom - 1);
+      expect(source.levelFor(FogConfig.baseZoom - 0.4), FogConfig.baseZoom);
+      expect(source.levelFor(FogConfig.baseZoom + 3.0), FogConfig.baseZoom);
       expect(source.levelFor(2), 4);
       source.dispose();
       await store.dispose();
@@ -38,9 +39,9 @@ void main() {
         source.ensureVisible(camera);
         await source.whenIdle();
 
-        final here = tileOf(krakowLat, krakowLng, 17);
+        final here = tileOf(krakowLat, krakowLng, FogConfig.baseZoom);
         expect(source.imageFor(here), isNotNull);
-        final empty = FogTileId(17, here.x + 1, here.y + 1);
+        final empty = FogTileId(FogConfig.baseZoom, here.x + 1, here.y + 1);
         expect(source.imageFor(empty), isNull);
         expect(source.isAbsent(empty), isTrue);
         source.dispose();
@@ -78,7 +79,9 @@ void main() {
       await store.flush();
       final camera = cameraAt();
       final source = await readySource(store, camera);
-      final before = source.imageFor(tileOf(krakowLat, krakowLng, 17));
+      final before = source.imageFor(
+        tileOf(krakowLat, krakowLng, FogConfig.baseZoom),
+      );
 
       final east = offsetMeters(krakowLat, krakowLng, east: 40);
       await store.applyPoint(
@@ -89,7 +92,9 @@ void main() {
       await pumpEventQueue();
       await source.whenIdle();
 
-      final after = source.imageFor(tileOf(krakowLat, krakowLng, 17));
+      final after = source.imageFor(
+        tileOf(krakowLat, krakowLng, FogConfig.baseZoom),
+      );
       expect(after, isNotNull);
       expect(identical(before, after), isFalse);
       source.dispose();
@@ -102,7 +107,7 @@ void main() {
         final store = await openStore();
         final camera = cameraAt();
         final source = await readySource(store, camera);
-        final id = tileOf(krakowLat, krakowLng, 17);
+        final id = tileOf(krakowLat, krakowLng, FogConfig.baseZoom);
         expect(source.imageFor(id), isNull);
 
         await store.applyPoint(
@@ -133,7 +138,7 @@ void main() {
       }
 
       expect(source.imageCount, lessThanOrEqualTo(9));
-      expect(camera.zoom, 17);
+      expect(camera.zoom, FogConfig.baseZoom);
       source.dispose();
       await store.dispose();
     });
@@ -154,7 +159,10 @@ void main() {
       await pumpEventQueue();
       await source.whenIdle();
 
-      expect(source.imageFor(tileOf(krakowLat, krakowLng, 17)), isNull);
+      expect(
+        source.imageFor(tileOf(krakowLat, krakowLng, FogConfig.baseZoom)),
+        isNull,
+      );
       source.dispose();
       await store.dispose();
     });
@@ -171,7 +179,9 @@ void main() {
       source.ensureRange(FogTileRange.visible(cameraAt(zoom: 15), 15));
       await source.whenIdle();
 
-      final fallback = source.fallbackFor(tileOf(krakowLat, krakowLng, 17));
+      final fallback = source.fallbackFor(
+        tileOf(krakowLat, krakowLng, FogConfig.baseZoom),
+      );
 
       expect(fallback, isNotNull);
       expect(fallback!.id, tileOf(krakowLat, krakowLng, 15));
