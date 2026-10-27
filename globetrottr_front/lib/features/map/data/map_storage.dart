@@ -40,18 +40,21 @@ class MapStorage {
     List<PendingPoint> points, {
     int chunkSize = 2000,
   }) async {
+    if (points.isEmpty) return;
     final db = await database;
-    for (int i = 0; i < points.length; i += chunkSize) {
-      final end = (i + chunkSize < points.length)
-          ? i + chunkSize
-          : points.length;
-      final chunk = points.sublist(i, end);
-      final batch = db.batch();
-      for (final point in chunk) {
-        batch.insert('pending_points', point.toMap());
+    await db.transaction((txn) async {
+      for (int i = 0; i < points.length; i += chunkSize) {
+        final end = (i + chunkSize < points.length)
+            ? i + chunkSize
+            : points.length;
+        final chunk = points.sublist(i, end);
+        final batch = txn.batch();
+        for (final point in chunk) {
+          batch.insert('pending_points', point.toMap());
+        }
+        await batch.commit(noResult: true);
       }
-      await batch.commit(noResult: true);
-    }
+    });
   }
 
   Future<List<PendingPoint>> getPendingPoints() async {
@@ -59,6 +62,14 @@ class MapStorage {
     final result = await db.query('pending_points', orderBy: 'timestamp ASC');
 
     return result.map(PendingPoint.fromMap).toList();
+  }
+
+  Future<int> getPendingPointsCount() async {
+    final db = await database;
+    final count = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM pending_points'),
+    );
+    return count ?? 0;
   }
 
   Future<void> clearPendingPoints() async {

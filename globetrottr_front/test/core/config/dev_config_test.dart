@@ -27,5 +27,16 @@ void main() {
       dotenv.loadFromString(envString: 'DEV_MODE=false');
       expect(DevConfig.isDevMode, isFalse);
     });
+
+    test(
+      'isDevMode returns false when DEV_MODE is 1 or any non-true string',
+      () {
+        dotenv.loadFromString(envString: 'DEV_MODE=1');
+        expect(DevConfig.isDevMode, isFalse);
+
+        dotenv.loadFromString(envString: 'DEV_MODE=yes');
+        expect(DevConfig.isDevMode, isFalse);
+      },
+    );
   });
 }

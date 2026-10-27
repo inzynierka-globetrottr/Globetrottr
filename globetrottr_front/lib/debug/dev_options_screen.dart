@@ -27,10 +27,10 @@ class _DevOptionsScreenState extends ConsumerState<DevOptionsScreen> {
   Future<void> _loadPointsCount() async {
     setState(() => _isLoading = true);
     try {
-      final points = await ref.read(mapStorageProvider).getPendingPoints();
+      final count = await ref.read(mapStorageProvider).getPendingPointsCount();
       if (!mounted) return;
       setState(() {
-        _pendingPointsCount = points.length;
+        _pendingPointsCount = count;
         _isLoading = false;
       });
     } catch (e) {
@@ -52,7 +52,7 @@ class _DevOptionsScreenState extends ConsumerState<DevOptionsScreen> {
     });
 
     try {
-      final points = OfflineSimulationHelper.generatePoints(
+      final points = await OfflineSimulationHelper.generatePoints(
         startCenter: MapConfig.initialCenter,
         count: count,
         totalDays: days,

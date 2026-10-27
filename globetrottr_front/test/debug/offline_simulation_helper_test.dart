@@ -4,35 +4,38 @@ import 'package:latlong2/latlong.dart';
 
 void main() {
   group('OfflineSimulationHelper', () {
-    test('generatePoints returns requested count with valid properties', () {
-      const count = 1000;
-      const center = LatLng(50.0614, 19.9383);
+    test(
+      'generatePoints returns requested count with valid properties',
+      () async {
+        const count = 1000;
+        const center = LatLng(50.0614, 19.9383);
 
-      final points = OfflineSimulationHelper.generatePoints(
-        startCenter: center,
-        count: count,
-        totalDays: 7,
-      );
+        final points = await OfflineSimulationHelper.generatePoints(
+          startCenter: center,
+          count: count,
+          totalDays: 7,
+        );
 
-      expect(points.length, equals(count));
+        expect(points.length, equals(count));
 
-      for (int i = 0; i < points.length; i++) {
-        final point = points[i];
-        expect(point.sessionId, isNotEmpty);
-        expect(point.latitude, inInclusiveRange(-90.0, 90.0));
-        expect(point.longitude, inInclusiveRange(-180.0, 180.0));
+        for (int i = 0; i < points.length; i++) {
+          final point = points[i];
+          expect(point.sessionId, isNotEmpty);
+          expect(point.latitude, inInclusiveRange(-90.0, 90.0));
+          expect(point.longitude, inInclusiveRange(-180.0, 180.0));
 
-        if (i > 0) {
-          expect(
-            point.timestamp,
-            greaterThanOrEqualTo(points[i - 1].timestamp),
-          );
+          if (i > 0) {
+            expect(
+              point.timestamp,
+              greaterThanOrEqualTo(points[i - 1].timestamp),
+            );
+          }
         }
-      }
-    });
+      },
+    );
 
-    test('generatePoints groups points into multiple session IDs', () {
-      final points = OfflineSimulationHelper.generatePoints(
+    test('generatePoints groups points into multiple session IDs', () async {
+      final points = await OfflineSimulationHelper.generatePoints(
         startCenter: const LatLng(50.0614, 19.9383),
         count: 5000,
         totalDays: 14,

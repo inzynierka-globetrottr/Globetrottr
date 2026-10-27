@@ -1,12 +1,29 @@
+import 'dart:isolate';
 import 'dart:math' as math;
 import 'package:globetrottr_front/features/map/data/pending_point.dart';
 import 'package:latlong2/latlong.dart';
 
-class OfflineSimulationHelper {
-  static List<PendingPoint> generatePoints({
+abstract final class OfflineSimulationHelper {
+  static Future<List<PendingPoint>> generatePoints({
     required LatLng startCenter,
     int count = 50000,
     int totalDays = 21,
+  }) {
+    return Isolate.run(
+      () => _generatePointsSync(
+        startLat: startCenter.latitude,
+        startLng: startCenter.longitude,
+        count: count,
+        totalDays: totalDays,
+      ),
+    );
+  }
+
+  static List<PendingPoint> _generatePointsSync({
+    required double startLat,
+    required double startLng,
+    required int count,
+    required int totalDays,
   }) {
     if (count <= 0) return [];
 
@@ -18,8 +35,8 @@ class OfflineSimulationHelper {
     final intervalMs = math.max(1000, totalDurationMs ~/ count);
     int currentTimestamp = now - totalDurationMs;
 
-    double currentLat = startCenter.latitude;
-    double currentLng = startCenter.longitude;
+    double currentLat = startLat;
+    double currentLng = startLng;
     double heading = random.nextDouble() * 2 * math.pi;
 
     final pointsPerSession = math.max(200, count ~/ (totalDays * 2));
