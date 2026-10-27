@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_container.dart';
@@ -70,6 +71,8 @@ class _ProfileBioState extends State<ProfileBio> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -86,7 +89,7 @@ class _ProfileBioState extends State<ProfileBio> {
               onChanged: _onChanged,
               style: AppTextStyles.actionButtonText,
               decoration: InputDecoration(
-                hintText: 'Tell others about your journeys...',
+                hintText: l10n.profileBioPlaceholder,
                 hintStyle: AppTextStyles.inputLabel.copyWith(
                   color: AppColors.textLight.withValues(alpha: 0.6),
                 ),
@@ -109,11 +112,11 @@ class _ProfileBioState extends State<ProfileBio> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                child: const Text('Cancel'),
+                child: Text(l10n.profileCancel),
               ),
               const SizedBox(width: 12),
               NeuPrimaryButton(
-                label: widget.isUpdatingBio ? '' : 'Save',
+                label: widget.isUpdatingBio ? '' : l10n.profileSave,
                 width: 90,
                 height: 38,
                 onPressed: widget.isUpdatingBio ? null : _save,

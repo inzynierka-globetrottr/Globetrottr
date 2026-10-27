@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
@@ -29,8 +30,11 @@ class InviteHubBanner extends StatelessWidget {
               size: 20,
             ),
             const SizedBox(width: 12),
-            const Expanded(
-              child: Text('Friend requests', style: AppTextStyles.rulesetTitle),
+            Expanded(
+              child: Text(
+                context.l10n.friendsRequestsBanner,
+                style: AppTextStyles.rulesetTitle,
+              ),
             ),
             if (receivedCount > 0)
               Container(
