@@ -41,5 +41,21 @@ void main() {
       final uniqueSessions = points.map((p) => p.sessionId).toSet();
       expect(uniqueSessions.length, greaterThan(1));
     });
+
+    test('toTrackLog keeps sessions, times and positions', () {
+      final points = OfflineSimulationHelper.generatePoints(
+        startCenter: const LatLng(50.0614, 19.9383),
+        count: 300,
+        totalDays: 2,
+      );
+
+      final log = OfflineSimulationHelper.toTrackLog(points);
+
+      expect(log.length, points.length);
+      expect(log.first.sessionId, points.first.sessionId);
+      expect(log.last.timestampMs, points.last.timestamp);
+      expect(log.last.latitude, points.last.latitude);
+      expect(log.last.longitude, points.last.longitude);
+    });
   });
 }

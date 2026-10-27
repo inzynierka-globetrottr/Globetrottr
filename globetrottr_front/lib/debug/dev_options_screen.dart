@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/debug/offline_simulation_helper.dart';
+import 'package:globetrottr_front/debug/widgets/fog_dev_panel.dart';
+import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
+import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 
 class DevOptionsScreen extends ConsumerStatefulWidget {
   const DevOptionsScreen({super.key});
@@ -52,13 +55,19 @@ class _DevOptionsScreenState extends ConsumerState<DevOptionsScreen> {
     });
 
     try {
+      final center =
+          ref.read(locationProvider).currentPosition ?? MapConfig.initialCenter;
       final points = OfflineSimulationHelper.generatePoints(
-        startCenter: MapConfig.initialCenter,
+        startCenter: center,
         count: count,
         totalDays: days,
       );
 
       await ref.read(mapStorageProvider).insertPendingPointsBatch(points);
+      await ref.read(fogProvider.future);
+      await ref
+          .read(fogProvider.notifier)
+          .importEntries(OfflineSimulationHelper.toTrackLog(points));
       await _loadPointsCount();
 
       if (!mounted) return;
@@ -157,6 +166,8 @@ class _DevOptionsScreenState extends ConsumerState<DevOptionsScreen> {
             const SizedBox(height: 16),
             const LinearProgressIndicator(),
           ],
+          const Divider(height: 32),
+          const FogDevPanel(),
           if (_statusMessage != null) ...[
             const SizedBox(height: 12),
             Text(

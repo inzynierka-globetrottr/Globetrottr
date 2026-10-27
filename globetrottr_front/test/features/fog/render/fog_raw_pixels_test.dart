@@ -1,0 +1,211 @@
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
+import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../../support/fog_render_helpers.dart';
+import '../../../support/fog_test_helpers.dart';
+
+BitmapFogPainter _painter(
+  MapCamera camera, {
+  required bool raw,
+  bool softEdge = false,
+  dynamic source,
+  LatLng? liveCenter,
+}) {
+  return BitmapFogPainter(
+    camera: camera,
+    source: source,
+    liveCenter: liveCenter,
+    options: FogRenderOptions(softEdge: softEdge, rawPixels: raw),
+  );
+}
+
+/// Number of times the alpha changes between consecutive rows of column [x].
+int _changesDown(int Function(int x, int y) alpha, int x, int from, int to) {
+  var changes = 0;
+  for (var y = from + 1; y <= to; y++) {
+    if (alpha(x, y) != alpha(x, y - 1)) changes++;
+  }
+  return changes;
+}
+
+/// Number of separate groups of consecutive pixels brighter than the fog.
+int _brightRuns(List<int> row) {
+  var runs = 0;
+  var inside = false;
+  for (final value in row) {
+    final bright = value > 195;
+    if (bright && !inside) runs++;
+    inside = bright;
+  }
+  return runs;
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('FogRenderOptions.rawPixels', () {
+    test('is off by default and part of the value', () {
+      const base = FogRenderOptions();
+
+      expect(base.rawPixels, isFalse);
+      expect(base.copyWith(rawPixels: true).rawPixels, isTrue);
+      expect(base.copyWith(rawPixels: true), isNot(base));
+      expect(
+        base.copyWith(rawPixels: true).hashCode,
+        isNot(base.hashCode),
+      );
+      expect(
+        base.copyWith(rawPixels: true).copyWith(showGrid: true).rawPixels,
+        isTrue,
+      );
+    });
+  });
+
+  group('raw fog pixels', () {
+    // At zoom 19.4 one fog pixel is about 5.3 screen pixels wide: big enough
+    // to see the blocks, still too small for the lines between them.
+    Future<(int Function(int, int), int Function(int, int))> bothViews() async {
+      final store = await openStore();
+      await walk(store, 'a', points: 30);
+      await store.flush();
+      final camera = cameraAt(
+        zoom: 19.4,
+        lng: offsetMeters(krakowLat, krakowLng, east: 145).lng,
+      );
+      final source = await readySource(store, camera);
+      final raw = await renderAlpha(
+        _painter(camera, raw: true, source: source),
+      );
+      final smooth = await renderAlpha(
+        _painter(camera, raw: false, source: source),
+      );
+      source.dispose();
+      await store.dispose();
+      return (raw, smooth);
+    }
+
+    test('shows blocky pixels where the normal view is smooth', () async {
+      final (raw, smooth) = await bothViews();
+
+      // The trail edge is about 41 fog pixels (216 rows) above the middle.
+      final rawChanges = _changesDown(raw, 200, 120, 260);
+      final smoothChanges = _changesDown(smooth, 200, 120, 260);
+
+      expect(rawChanges, greaterThan(0));
+      expect(rawChanges, lessThanOrEqualTo(6));
+      expect(smoothChanges, greaterThan(rawChanges * 2));
+    });
+
+    test('keeps every fog pixel one flat colour', () async {
+      final (raw, _) = await bothViews();
+
+      final changeRows = [
+        for (var y = 121; y <= 260; y++)
+          if (raw(200, y) != raw(200, y - 1)) y,
+      ];
+      expect(changeRows.length, greaterThan(1));
+      for (var i = 1; i < changeRows.length; i++) {
+        expect(
+          changeRows[i] - changeRows[i - 1],
+          greaterThanOrEqualTo(5),
+          reason: 'a fog pixel is at least 5 screen pixels tall',
+        );
+      }
+    });
+
+    test('ignores the soft edge blur', () async {
+      final store = await openStore();
+      await walk(store, 'a', points: 30);
+      await store.flush();
+      final camera = cameraAt(zoom: 18.5);
+      final source = await readySource(store, camera);
+
+      final plain = await renderAlpha(
+        _painter(camera, raw: true, source: source),
+      );
+      final blurred = await renderAlpha(
+        _painter(camera, raw: true, softEdge: true, source: source),
+      );
+
+      for (var y = 0; y < 800; y += 7) {
+        for (var x = 0; x < 400; x += 7) {
+          expect(blurred(x, y), plain(x, y), reason: '($x, $y)');
+        }
+      }
+      source.dispose();
+      await store.dispose();
+    });
+
+    test('does not draw the vector disc around the player', () async {
+      final camera = cameraAt();
+      const player = LatLng(krakowLat, krakowLng);
+
+      final normal = await renderAlpha(
+        _painter(camera, raw: false, liveCenter: player),
+      );
+      final raw = await renderAlpha(
+        _painter(camera, raw: true, liveCenter: player),
+      );
+
+      expect(normal(200, 400), 0);
+      expect(raw(200, 400), closeTo(191, 1));
+    });
+
+    test('draws lines between fog pixels once they are big enough', () async {
+      final camera = cameraAt(zoom: 20);
+
+      final alpha = await renderAlpha(_painter(camera, raw: true));
+
+      // A line is a run of bright pixels (anti-aliasing can make it two wide).
+      // Rows between the horizontal lines only cross the vertical ones: one
+      // line per 8 screen pixels along 80 pixels.
+      final runs = [
+        for (var y = 300; y < 308; y++)
+          _brightRuns([for (var x = 0; x < 80; x++) alpha(x, y)]),
+      ];
+      expect(runs.reduce((a, b) => a > b ? a : b), inInclusiveRange(9, 11));
+    });
+
+    test('draws no pixel lines when the pixels are small', () async {
+      final camera = cameraAt();
+
+      final alpha = await renderAlpha(_painter(camera, raw: true));
+
+      for (var x = 0; x < 80; x++) {
+        expect(alpha(x, 300), closeTo(191, 1));
+      }
+    });
+
+    test('keeps the lines aligned with the pixels of a rotated map', () async {
+      final camera = cameraAt(zoom: 20, rotation: 33);
+
+      final alpha = await renderAlpha(_painter(camera, raw: true));
+
+      var bright = 0;
+      for (var x = 0; x < 400; x++) {
+        if (alpha(x, 300) > 200) bright++;
+      }
+      expect(bright, greaterThan(20));
+    });
+
+    test('survives a broken camera', () async {
+      final alpha = await renderAlpha(
+        _painter(cameraAt(zoom: double.nan), raw: true),
+      );
+
+      expect(alpha(200, 400), closeTo(191, 1));
+    });
+
+    test('repaints when the option changes', () {
+      final camera = cameraAt();
+
+      expect(
+        _painter(camera, raw: true).shouldRepaint(_painter(camera, raw: false)),
+        isTrue,
+      );
+    });
+  });
+}

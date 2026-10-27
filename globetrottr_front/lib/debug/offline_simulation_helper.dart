@@ -1,8 +1,21 @@
 import 'dart:math' as math;
 import 'package:globetrottr_front/features/map/data/pending_point.dart';
+import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:latlong2/latlong.dart';
 
 class OfflineSimulationHelper {
+  static List<TrackLogEntry> toTrackLog(List<PendingPoint> points) {
+    return [
+      for (final p in points)
+        TrackLogEntry(
+          sessionId: p.sessionId,
+          timestampMs: p.timestamp,
+          latitude: p.latitude,
+          longitude: p.longitude,
+        ),
+    ];
+  }
+
   static List<PendingPoint> generatePoints({
     required LatLng startCenter,
     int count = 50000,
