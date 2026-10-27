@@ -10,7 +10,12 @@ import 'package:globetrottr_front/features/fog/fog_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
+import 'package:globetrottr_front/features/quests/data/quest.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_details_sheet.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_drawer.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_marker_layer.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_path_layer.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
@@ -24,17 +29,25 @@ class MapScreen extends ConsumerStatefulWidget {
 
 class _MapScreenState extends ConsumerState<MapScreen> {
   final MapController _mapController = MapController();
+  int? _selectedQuestId;
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(locationProvider.notifier).startTracking());
+    Future.microtask(() => ref.read(questsProvider.notifier).loadQuests());
   }
 
   @override
   void dispose() {
     _mapController.dispose();
     super.dispose();
+  }
+
+  Future<void> _openQuestDetails(Quest quest) async {
+    setState(() => _selectedQuestId = quest.id);
+    await showQuestDetailsSheet(context, questId: quest.id);
+    if (mounted) setState(() => _selectedQuestId = null);
   }
 
   @override
@@ -47,6 +60,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     final locationState = ref.watch(locationProvider);
     final position = locationState.currentPosition;
+    final quests = ref.watch(questsProvider.select((state) => state.quests));
+    final selectedQuest = quests
+        .where((quest) => quest.id == _selectedQuestId)
+        .firstOrNull;
     final topSafeInset = MediaQuery.paddingOf(context).top;
 
     return NeumorphicTheme(
@@ -72,6 +89,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 FogLayer(
                   readyHoles: locationState.allHoles,
                   holesRevision: locationState.holesRevision,
+                ),
+                if (selectedQuest != null) QuestPathLayer(quest: selectedQuest),
+                QuestMarkerLayer(
+                  quests: quests,
+                  selectedQuestId: _selectedQuestId,
+                  onQuestTap: _openQuestDetails,
                 ),
                 if (position != null) PlayerMarkerLayer(position: position),
               ],

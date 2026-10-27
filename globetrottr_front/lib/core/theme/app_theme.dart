@@ -12,6 +12,13 @@ class AppTheme {
       primary: AppColors.accentBlue,
       error: AppColors.accentRed,
     ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppColors.background,
+      showDragHandle: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+    ),
     fontFamily: 'SF Pro Display',
     useMaterial3: true,
   );
@@ -102,6 +109,14 @@ class AppTextStyles {
   static const TextStyle rulesetTitle = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w700,
+    color: AppColors.text,
+  );
+
+  /// Longer body copy, e.g. a quest description
+  static const TextStyle bodyText = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 1.4,
     color: AppColors.text,
   );
 
