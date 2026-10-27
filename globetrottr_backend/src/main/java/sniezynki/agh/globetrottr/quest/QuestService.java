@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sniezynki.agh.globetrottr.exception.ResourceNotFoundException;
 import sniezynki.agh.globetrottr.location.UserFog;
 import sniezynki.agh.globetrottr.location.UserFogRepository;
 import sniezynki.agh.globetrottr.user.User;
@@ -168,7 +169,7 @@ public class QuestService {
         Quest quest =
                 questRepository
                         .findById(questId)
-                        .orElseThrow(() -> new RuntimeException("Quest not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Quest not found"));
 
         UserQuest newUserQuest =
                 UserQuest.builder().user(user).quest(quest).isCompleted(false).build();

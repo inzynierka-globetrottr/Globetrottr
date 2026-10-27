@@ -1,6 +1,7 @@
 package sniezynki.agh.globetrottr.quest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.Offset.offset;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -17,6 +18,7 @@ import org.locationtech.jts.io.WKTReader;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sniezynki.agh.globetrottr.exception.ResourceNotFoundException;
 import sniezynki.agh.globetrottr.location.UserFog;
 import sniezynki.agh.globetrottr.location.UserFogRepository;
 import sniezynki.agh.globetrottr.user.User;
@@ -280,6 +282,18 @@ class QuestServiceTest {
 
         assertThat(response.location()).isNull();
         assertThat(response.waypoints()).isEmpty();
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenStartingNonExistentQuest() {
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of());
+        when(questRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> questService.startQuest(username, 99L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Quest not found");
+        verify(userQuestRepository, never()).save(any());
     }
 
     private void stubSidebarFor(Quest quest) {
