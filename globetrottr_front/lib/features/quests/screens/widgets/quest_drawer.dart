@@ -5,7 +5,7 @@ import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_state.dart';
-import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
+import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_accordion_section.dart';
 
 class QuestDrawer extends ConsumerStatefulWidget {

@@ -4,8 +4,7 @@ import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
-
-enum QuestZone { unstarted, inProgress, completed }
+import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
 
 class QuestCard extends StatelessWidget {
   final Quest quest;
