@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
@@ -73,10 +74,10 @@ class QuestAccordionSection extends StatelessWidget {
           curve: Curves.easeInOut,
           child: isExpanded
               ? (quests.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
                         child: Text(
-                          'No quests in this category.',
+                          context.l10n.questsNoQuestsInCategory,
                           style: AppTextStyles.descriptiveStatusAction,
                         ),
                       )

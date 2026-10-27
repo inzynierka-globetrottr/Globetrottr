@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 
@@ -14,12 +15,14 @@ class AuthModeSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return NeuSegmentedControl<AuthMode>(
       selected: currentMode,
       onChanged: onModeChanged,
-      segments: const [
-        NeuSegment(label: 'Sign in', value: AuthMode.login),
-        NeuSegment(label: 'Sign up', value: AuthMode.register),
+      segments: [
+        NeuSegment(label: l10n.authSignIn, value: AuthMode.login),
+        NeuSegment(label: l10n.authSignUp, value: AuthMode.register),
       ],
     );
   }

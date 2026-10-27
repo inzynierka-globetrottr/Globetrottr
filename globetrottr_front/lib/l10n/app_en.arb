@@ -1,0 +1,151 @@
+{
+  "@@locale": "en",
+  "appTitle": "Globetrottr",
+  "appLogo": "globetrottr",
+
+  "authSignIn": "Sign in",
+  "authSignUp": "Sign up",
+  "authUsernamePlaceholder": "Username",
+  "authEmailPlaceholder": "Email",
+  "authPasswordPlaceholder": "Password",
+  "authLoading": "Loading...",
+  "authOrContinueWith": "OR CONTINUE WITH",
+  "authGoogleAccount": "Google Account",
+
+  "profileDefaultUsername": "Traveler",
+  "profileBioPlaceholder": "Tell others about your journeys...",
+  "profileCancel": "Cancel",
+  "profileSave": "Save",
+  "profileTotalPoints": "Total Points",
+  "profileStatistics": "Statistics",
+  "profileAchievements": "Achievements",
+  "profileSettings": "Settings",
+  "profileLogOut": "Log Out",
+  "profileUnsyncedTripsTitle": "Unsynced trips",
+  "profileUnsyncedTripsMessage": "Some of your recorded points could not be uploaded. If you log out now, they will be lost.",
+  "profileLogOutAnyway": "Log out anyway",
+  "profileImageSelectError": "Failed to select image: {error}",
+  "@profileImageSelectError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "friendsTitle": "Friends",
+  "friendsSearchPlaceholder": "Enter friend's username...",
+  "friendsRequestsBanner": "Friend requests",
+  "friendsYourFriendsHeader": "YOUR FRIENDS ({count})",
+  "@friendsYourFriendsHeader": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "friendsInviteSent": "Invite sent to {username}!",
+  "@friendsInviteSent": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsRequestsTitle": "Friend Requests",
+  "friendsTabReceived": "Received",
+  "friendsTabSent": "Sent",
+  "friendsPlayerFog": "Player fog: {username}",
+  "@friendsPlayerFog": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+
+  "questsBoardTitle": "Quest Board",
+  "questsAvailableSection": "Available Quests ({count})",
+  "@questsAvailableSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "questsInProgressSection": "In Progress ({count})",
+  "@questsInProgressSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "questsCompletedSection": "Completed ({count})",
+  "@questsCompletedSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "questsNoQuestsInCategory": "No quests in this category.",
+  "questsProgressPercent": "{percent}% progress",
+  "@questsProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "questsCompletedStatus": "Completed",
+  "questsRewardXp": "{points} XP",
+  "@questsRewardXp": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "questsStartQuest": "Start Quest",
+
+  "settingsTitle": "Settings",
+  "settingsLanguage": "Language",
+  "settingsEnglish": "English",
+  "settingsPolish": "Polski",
+  "settingsSystemDefault": "System default",
+
+  "validationUsernameRequired": "Login is required",
+  "validationUsernameLength": "Login must be between 3 and 50 characters",
+  "validationEmailRequired": "Email is required",
+  "validationEmailInvalid": "Email should be valid",
+  "validationPasswordRequired": "Password is required",
+  "validationPasswordLength": "Password must be between 6 and 50 characters",
+  "validationPasswordComplexity": "Password must contain an uppercase letter, a lowercase letter, a digit and a special character",
+
+  "errorNetwork": "Network error. Please check your connection.",
+  "errorNetworkShort": "Network error.",
+  "errorSessionExpired": "Session expired. Please log in again.",
+  "errorForbidden": "You don't have permission to do that.",
+  "errorNotFound": "Not found.",
+  "errorTimeout": "Request timed out. Please try again.",
+  "errorBackendNotConfigured": "Backend URL is not configured.",
+  "errorServer": "Server error ({statusCode})",
+  "@errorServer": {
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      }
+    }
+  },
+  "errorSomethingWentWrong": "Something went wrong.",
+  "errorSomethingWentWrongTryAgain": "Something went wrong. Please try again.",
+  "errorFailedToLoadProfile": "Something went wrong. Failed to load profile.",
+  "errorFailedToUpdateBio": "Failed to update bio.",
+  "errorFailedToUploadAvatar": "Failed to upload avatar.",
+  "errorFailedToLoadQuests": "Something went wrong. Failed to load quests.",
+  "errorLocationDisabled": "Location services are disabled. Please enable them in your device settings.",
+  "errorLocationPermissionRequired": "Location permission is required to track your trips.",
+  "errorGoogleAuthFailed": "Google authentication failed.",
+  "locationNotificationText": "Recording your route in the background..."
+}

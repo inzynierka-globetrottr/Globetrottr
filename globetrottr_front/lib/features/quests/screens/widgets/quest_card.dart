@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_container.dart';
@@ -20,6 +21,8 @@ class QuestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: NeuContainer(
@@ -46,13 +49,15 @@ class QuestCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         if (zone == QuestZone.inProgress)
                           Text(
-                            '${(quest.progress * 100).toInt()}% progress',
+                            l10n.questsProgressPercent(
+                              (quest.progress * 100).toInt(),
+                            ),
                             style: AppTextStyles.descriptiveStatusAction
                                 .copyWith(color: AppColors.accentBlue),
                           ),
                         if (zone == QuestZone.completed)
                           Text(
-                            'Completed',
+                            l10n.questsCompletedStatus,
                             style: AppTextStyles.descriptiveStatusAction
                                 .copyWith(color: AppColors.accentGreen),
                           ),
@@ -67,7 +72,7 @@ class QuestCard extends StatelessWidget {
                         size: 24,
                       ),
                       Text(
-                        '${quest.rewardPoints} XP',
+                        l10n.questsRewardXp(quest.rewardPoints),
                         style: AppTextStyles.inputLabel.copyWith(
                           color: AppColors.accentGold,
                         ),
@@ -80,7 +85,7 @@ class QuestCard extends StatelessWidget {
                 const Spacer(),
                 NeuPrimaryButton(
                   height: 36,
-                  label: 'Start Quest',
+                  label: l10n.questsStartQuest,
                   labelStyle: AppTextStyles.tabButtonText.copyWith(
                     color: AppColors.accentBlue,
                   ),

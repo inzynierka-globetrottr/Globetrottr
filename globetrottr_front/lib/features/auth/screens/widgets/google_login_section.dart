@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
@@ -29,7 +30,10 @@ class GoogleLoginSection extends StatelessWidget {
             child: const Text('G', style: AppTextStyles.rulesetTitle),
           ),
           const SizedBox(width: 14),
-          const Text('Google Account', style: AppTextStyles.actionButtonText),
+          Text(
+            context.l10n.authGoogleAccount,
+            style: AppTextStyles.actionButtonText,
+          ),
         ],
       ),
     );

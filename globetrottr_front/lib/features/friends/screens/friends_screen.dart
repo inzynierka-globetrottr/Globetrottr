@@ -1,5 +1,6 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
@@ -25,6 +26,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final state = ref.watch(friendsProvider);
 
     return NeumorphicTheme(
@@ -36,11 +38,11 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 16, 24, 24),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                 child: Center(
                   child: Text(
-                    'Friends',
+                    l10n.friendsTitle,
                     style: AppTextStyles.screenHeaderLarge,
                   ),
                 ),
@@ -59,7 +61,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
 
                     const SizedBox(height: 24),
                     Text(
-                      'YOUR FRIENDS (${state.friends.length})',
+                      l10n.friendsYourFriendsHeader(state.friends.length),
                       style: AppTextStyles.sectionTitle,
                     ),
                     const SizedBox(height: 14),

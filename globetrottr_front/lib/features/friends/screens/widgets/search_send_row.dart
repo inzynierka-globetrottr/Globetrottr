@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_container.dart';
@@ -40,23 +42,32 @@ class _SearchSendRowState extends ConsumerState<SearchSendRow> {
     final username = _controller.text.trim();
     if (username.isEmpty) return;
 
+    final l10n = context.l10n;
     setState(() => _isSending = true);
 
     try {
       await ref.read(friendsProvider.notifier).sendInvite(username);
       _controller.clear();
-      _showFeedback('Invite sent to $username!', true);
+      _showFeedback(l10n.friendsInviteSent(username), true);
     } on AppException catch (e) {
-      _showFeedback(e.message, false);
+      if (mounted) {
+        _showFeedback(context.localizeErrorMessage(e.message), false);
+      }
     } catch (_) {
-      _showFeedback('Network error.', false);
+      if (mounted) {
+        _showFeedback(l10n.errorNetworkShort, false);
+      }
     } finally {
-      setState(() => _isSending = false);
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -74,9 +85,9 @@ class _SearchSendRowState extends ConsumerState<SearchSendRow> {
                     child: TextField(
                       controller: _controller,
                       style: AppTextStyles.actionButtonText,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: "Enter friend's username...",
+                        hintText: l10n.friendsSearchPlaceholder,
                         hintStyle: AppTextStyles.inputLabel,
                       ),
                     ),
