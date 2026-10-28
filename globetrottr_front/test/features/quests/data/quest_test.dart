@@ -6,6 +6,8 @@ import 'package:latlong2/latlong.dart';
 Map<String, dynamic> _questJson({
   bool isStarted = false,
   bool isCompleted = false,
+  Object? rewardPoints = 250,
+  Object? progress = 0,
   Object? description = 'Walk along the river.',
   Object? location = const {'latitude': 50.054, 'longitude': 19.934},
   Object? waypoints = const [
@@ -17,8 +19,8 @@ Map<String, dynamic> _questJson({
   'title': 'River walk',
   'description': description,
   'type': 'FOLLOW_ROUTE',
-  'rewardPoints': 250,
-  'progress': 0,
+  'rewardPoints': rewardPoints,
+  'progress': progress,
   'isStarted': isStarted,
   'isCompleted': isCompleted,
   'location': location,
@@ -49,6 +51,15 @@ void main() {
       expect(quest.description, isNull);
       expect(quest.location, isNull);
       expect(quest.waypoints, isEmpty);
+    });
+
+    test('defaults missing reward points and progress to zero', () {
+      final quest = Quest.fromJson(
+        _questJson(rewardPoints: null, progress: null),
+      );
+
+      expect(quest.rewardPoints, 0);
+      expect(quest.progress, 0.0);
     });
   });
 

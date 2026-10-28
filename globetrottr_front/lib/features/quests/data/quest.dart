@@ -44,8 +44,8 @@ class Quest {
       title: json['title'],
       description: json['description'],
       type: json['type'],
-      rewardPoints: json['rewardPoints'],
-      progress: (json['progress'] as num).toDouble(),
+      rewardPoints: (json['rewardPoints'] as num?)?.toInt() ?? 0,
+      progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
       isStarted: json['isStarted'] ?? false,
       isCompleted: json['isCompleted'] ?? false,
       location: location is Map<String, dynamic>
