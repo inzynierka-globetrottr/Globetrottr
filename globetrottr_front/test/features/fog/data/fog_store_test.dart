@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ import 'package:globetrottr_front/features/fog/data/fog_query.dart';
 import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
+import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
@@ -34,6 +36,49 @@ int _rowOf(double lat) =>
 
 Future<void> _apply(FogStore store, String session, double lat, double lng) {
   return store.applyPoint(sessionId: session, latitude: lat, longitude: lng);
+}
+
+enum _LogCall { count, entriesAfter }
+
+/// A track log that can hold a replay at its next [count] or [entriesAfter]
+/// call, so a test can log a new position in the middle of the replay.
+class _PausingTrackLog extends InMemoryTrackLogStorage {
+  final Completer<void> paused = Completer<void>();
+  final Completer<void> _resume = Completer<void>();
+  _LogCall? pauseAt;
+
+  void resume() => _resume.complete();
+
+  Future<void> _maybePause(_LogCall call) async {
+    if (pauseAt != call) return;
+    pauseAt = null;
+    paused.complete();
+    await _resume.future;
+  }
+
+  @override
+  Future<int> count() async {
+    await _maybePause(_LogCall.count);
+    return super.count();
+  }
+
+  @override
+  Future<List<TrackLogEntry>> entriesAfter(
+    int afterId, {
+    int limit = 5000,
+  }) async {
+    await _maybePause(_LogCall.entriesAfter);
+    return super.entriesAfter(afterId, limit: limit);
+  }
+}
+
+Future<void> _applyLogged(FogStore store, TrackLogEntry entry) {
+  return store.applyPoint(
+    sessionId: entry.sessionId,
+    latitude: entry.latitude,
+    longitude: entry.longitude,
+    logId: entry.id,
+  );
 }
 
 void main() {
@@ -543,6 +588,93 @@ void main() {
 
       expect(store.revision, revision);
       expect(store.lastAppliedLogId, ids.last);
+    });
+  });
+
+  group('positions logged during a replay', () {
+    final far = offsetMeters(krakowLat, krakowLng, north: 2000);
+
+    test('a crash during the replay loses no log entries', () async {
+      final log = _PausingTrackLog();
+      await log.appendAll(walkEast('a', points: 30));
+      log.pauseAt = _LogCall.entriesAfter;
+
+      final replay = store.replayFrom(log, useIsolate: false);
+      await log.paused.future;
+      final live = await log.append(logEntry('a', 30, far));
+      final applied = _applyLogged(store, live);
+      await store.flush();
+
+      // The process dies here; the next start replays from what was stored.
+      final recovered = await _open(storage);
+      await recovered.replayFrom(log, useIsolate: false);
+      final walked = offsetMeters(krakowLat, krakowLng, east: 150);
+      expect(await FogQuery(recovered).coverageAt(walked.lat, walked.lng), 1);
+      await recovered.dispose();
+
+      log.resume();
+      await replay;
+      await applied;
+      expect(store.lastAppliedLogId, live.id);
+    });
+
+    test(
+      'a new position does not connect to the start of the replay',
+      () async {
+        final log = _PausingTrackLog();
+        await log.appendAll([
+          for (var i = 0; i <= 3; i++)
+            logEntry(
+              'a',
+              i,
+              offsetMeters(krakowLat, krakowLng, north: i * 100),
+            ),
+        ]);
+        log.pauseAt = _LogCall.entriesAfter;
+
+        final replay = store.replayFrom(log, useIsolate: false);
+        await log.paused.future;
+        final east = offsetMeters(krakowLat, krakowLng, east: 600);
+        final applied = _applyLogged(
+          store,
+          await log.append(logEntry('a', 4, east)),
+        );
+        log.resume();
+        await replay;
+        await applied;
+
+        final query = FogQuery(store);
+        final backToStart = offsetMeters(krakowLat, krakowLng, east: 300);
+        final lastLeg = offsetMeters(
+          krakowLat,
+          krakowLng,
+          north: 150,
+          east: 300,
+        );
+        expect(await query.coverageAt(backToStart.lat, backToStart.lng), 0);
+        expect(await query.coverageAt(lastLeg.lat, lastLeg.lng), 1);
+      },
+    );
+
+    test('a rebuild draws the whole log when a position is logged right after '
+        'the tiles were cleared', () async {
+      final log = _PausingTrackLog();
+      await log.appendAll(walkEast('a', points: 30));
+      log.pauseAt = _LogCall.count;
+
+      final rebuild = store.rebuildFrom(log, useIsolate: false);
+      await log.paused.future;
+      final applied = _applyLogged(
+        store,
+        await log.append(logEntry('a', 30, far)),
+      );
+      await store.flush();
+      log.resume();
+      await rebuild;
+      await applied;
+
+      final walked = offsetMeters(krakowLat, krakowLng, east: 150);
+      expect(await FogQuery(store).coverageAt(walked.lat, walked.lng), 1);
     });
   });
 

@@ -79,6 +79,16 @@ class _PathJob {
   final bool continues;
 }
 
+class _DeferredPoint {
+  _DeferredPoint(this.sessionId, this.latitude, this.longitude, this.logId);
+
+  final String sessionId;
+  final double latitude;
+  final double longitude;
+  final int? logId;
+  final Completer<void> done = Completer<void>();
+}
+
 class _ChunkJob {
   _ChunkJob(this.zoom, this.edgeWidth, this.quantStep, this.paths);
 
@@ -220,6 +230,7 @@ class FogStore {
   final Set<FogTileId> _dirty = {};
   final Set<FogTileId> _pinned = {};
   final Map<String, _Anchor> _lastPoint = {};
+  final List<_DeferredPoint> _deferred = [];
   final StreamController<FogChange> _changes =
       StreamController<FogChange>.broadcast();
 
@@ -227,6 +238,9 @@ class FogStore {
   Timer? _flushTimer;
   bool _metaDirty = false;
   bool _disposed = false;
+
+  /// Replays and rebuilds in progress; while any runs, new points wait.
+  int _catchUps = 0;
 
   int _revision;
   double _totalAreaM2;
@@ -272,13 +286,37 @@ class FogStore {
   /// Draws the segment from the previous point of [sessionId] to this one.
   /// A session's first point is drawn as a disc. [logId] is the track log id
   /// of the point, used to resume after a crash.
+  ///
+  /// During a replay or rebuild the point is drawn only after it finished,
+  /// so log entries always reach the tiles in log order.
   Future<void> applyPoint({
     required String sessionId,
     required double latitude,
     required double longitude,
     int? logId,
   }) {
+    if (_catchUps > 0) {
+      final point = _DeferredPoint(sessionId, latitude, longitude, logId);
+      _deferred.add(point);
+      return point.done.future;
+    }
     return _enqueue(() => _apply(sessionId, latitude, longitude, logId));
+  }
+
+  /// Draws the points that waited for a replay. Those the replay already
+  /// read from the log are skipped.
+  void _applyDeferred() {
+    final points = List.of(_deferred);
+    _deferred.clear();
+    for (final point in points) {
+      point.done.complete(
+        _enqueue(() async {
+          final logId = point.logId;
+          if (logId != null && logId <= _lastAppliedLogId) return;
+          await _apply(point.sessionId, point.latitude, point.longitude, logId);
+        }),
+      );
+    }
   }
 
   Future<void> _apply(
@@ -742,7 +780,50 @@ class FogStore {
     TrackLogStorage log, {
     bool useIsolate = true,
     void Function(double progress)? onProgress,
+  }) {
+    return _catchUp(
+      log,
+      fromScratch: false,
+      useIsolate: useIsolate,
+      onProgress: onProgress,
+    );
+  }
+
+  /// Throws the tiles away and draws the whole track log again.
+  Future<void> rebuildFrom(
+    TrackLogStorage log, {
+    bool useIsolate = true,
+    void Function(double progress)? onProgress,
+  }) {
+    return _catchUp(
+      log,
+      fromScratch: true,
+      useIsolate: useIsolate,
+      onProgress: onProgress,
+    );
+  }
+
+  Future<void> _catchUp(
+    TrackLogStorage log, {
+    required bool fromScratch,
+    required bool useIsolate,
+    void Function(double progress)? onProgress,
   }) async {
+    _catchUps++;
+    try {
+      if (fromScratch) await clear();
+      await _replay(log, useIsolate, onProgress);
+    } finally {
+      _catchUps--;
+      if (_catchUps == 0) _applyDeferred();
+    }
+  }
+
+  Future<void> _replay(
+    TrackLogStorage log,
+    bool useIsolate,
+    void Function(double progress)? onProgress,
+  ) async {
     final total = await log.count();
     var after = _lastAppliedLogId;
     var done = after;
@@ -761,16 +842,6 @@ class FogStore {
       if (total > 0) onProgress?.call(math.min(1, done / total));
     }
     await flush();
-  }
-
-  /// Throws the tiles away and draws the whole track log again.
-  Future<void> rebuildFrom(
-    TrackLogStorage log, {
-    bool useIsolate = true,
-    void Function(double progress)? onProgress,
-  }) async {
-    await clear();
-    await replayFrom(log, useIsolate: useIsolate, onProgress: onProgress);
   }
 
   /// Declares every log entry up to [id] as handled, without drawing it.
