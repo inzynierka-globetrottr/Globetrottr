@@ -2,7 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/data/fog_query.dart';
+import 'package:globetrottr_front/features/fog/data/fog_store.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
+import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
+import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 
 import '../../../support/fake_location_service.dart';
@@ -146,5 +149,34 @@ void main() {
 
       expect(source.store.totalAreaM2, closeTo(area, 1e-6));
     });
+
+    test('a failed replay still shows the stored fog', () async {
+      final seen = offsetMeters(krakowLat, krakowLng);
+      final stored = await FogStore.open(env.tiles);
+      await stored.applyPoint(
+        sessionId: 'old',
+        latitude: seen.lat,
+        longitude: seen.lng,
+      );
+      await stored.flush();
+      await stored.dispose();
+      env = FogTestEnvironment(log: _FailingTrackLog(), tiles: env.tiles);
+      final container = env.createContainer();
+      addTearDown(container.dispose);
+
+      final source = await container.read(fogProvider.future);
+
+      expect(await FogQuery(source.store).coverageAt(seen.lat, seen.lng), 1);
+    });
   });
+}
+
+class _FailingTrackLog extends InMemoryTrackLogStorage {
+  @override
+  Future<List<TrackLogEntry>> entriesAfter(
+    int afterId, {
+    int limit = 5000,
+  }) async {
+    throw StateError('damaged track block');
+  }
 }

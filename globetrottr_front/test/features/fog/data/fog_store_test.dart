@@ -72,6 +72,23 @@ class _PausingTrackLog extends InMemoryTrackLogStorage {
   }
 }
 
+/// A track log whose first [entriesAfter] call fails, like a damaged block.
+class _FailingOnceTrackLog extends InMemoryTrackLogStorage {
+  bool _failed = false;
+
+  @override
+  Future<List<TrackLogEntry>> entriesAfter(
+    int afterId, {
+    int limit = 5000,
+  }) async {
+    if (!_failed) {
+      _failed = true;
+      throw StateError('damaged track block');
+    }
+    return super.entriesAfter(afterId, limit: limit);
+  }
+}
+
 Future<void> _applyLogged(FogStore store, TrackLogEntry entry) {
   return store.applyPoint(
     sessionId: entry.sessionId,
@@ -675,6 +692,45 @@ void main() {
 
       final walked = offsetMeters(krakowLat, krakowLng, east: 150);
       expect(await FogQuery(store).coverageAt(walked.lat, walked.lng), 1);
+    });
+  });
+
+  group('a failed replay', () {
+    final far = offsetMeters(krakowLat, krakowLng, north: 2000);
+    final walked = offsetMeters(krakowLat, krakowLng, east: 150);
+
+    test('new positions do not move the replay position', () async {
+      final log = _FailingOnceTrackLog();
+      await log.appendAll(walkEast('a', points: 30));
+      await expectLater(
+        store.replayFrom(log, useIsolate: false),
+        throwsStateError,
+      );
+
+      final live = await log.append(logEntry('b', 0, far));
+      await _applyLogged(store, live);
+      await store.flush();
+
+      expect(store.lastAppliedLogId, 0);
+      final restarted = await _open(storage);
+      await restarted.replayFrom(log, useIsolate: false);
+      expect(await FogQuery(restarted).coverageAt(walked.lat, walked.lng), 1);
+      await restarted.dispose();
+    });
+
+    test('a later successful replay moves the replay position again', () async {
+      final log = _FailingOnceTrackLog();
+      await log.appendAll(walkEast('a', points: 30));
+      await expectLater(
+        store.replayFrom(log, useIsolate: false),
+        throwsStateError,
+      );
+
+      await store.replayFrom(log, useIsolate: false);
+      final live = await log.append(logEntry('b', 0, far));
+      await _applyLogged(store, live);
+
+      expect(store.lastAppliedLogId, live.id);
     });
   });
 

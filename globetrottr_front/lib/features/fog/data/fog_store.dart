@@ -242,6 +242,10 @@ class FogStore {
   /// Replays and rebuilds in progress; while any runs, new points wait.
   int _catchUps = 0;
 
+  /// True after a replay failed: the log holds entries that are not drawn,
+  /// so new points must not move [lastAppliedLogId] past them.
+  bool _behindLog = false;
+
   int _revision;
   double _totalAreaM2;
   int _lastAppliedLogId;
@@ -380,6 +384,7 @@ class FogStore {
   }
 
   void _noteApplied(int? logId) {
+    if (_behindLog) return;
     if (logId != null && logId > _lastAppliedLogId) {
       _lastAppliedLogId = logId;
       _metaDirty = true;
@@ -812,7 +817,11 @@ class FogStore {
     _catchUps++;
     try {
       if (fromScratch) await clear();
+      _behindLog = false;
       await _replay(log, useIsolate, onProgress);
+    } on Object {
+      _behindLog = true;
+      rethrow;
     } finally {
       _catchUps--;
       if (_catchUps == 0) _applyDeferred();
@@ -848,6 +857,7 @@ class FogStore {
   /// Used after clearing the fog on purpose so a restart does not redraw it.
   Future<void> markLogApplied(int id) {
     return _enqueue(() async {
+      _behindLog = false;
       if (id > _lastAppliedLogId) _lastAppliedLogId = id;
       _metaDirty = true;
       await _flush();

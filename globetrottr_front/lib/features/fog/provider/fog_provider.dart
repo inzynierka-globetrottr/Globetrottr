@@ -70,7 +70,12 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       unawaited(store.dispose());
     });
 
-    await store.replayFrom(ref.read(trackLogStorageProvider));
+    try {
+      await store.replayFrom(ref.read(trackLogStorageProvider));
+    } on Object catch (error) {
+      // The stored tiles are still valid; the next start retries the replay.
+      debugPrint('Replaying the track log into the fog failed: $error');
+    }
     return source;
   }
 
