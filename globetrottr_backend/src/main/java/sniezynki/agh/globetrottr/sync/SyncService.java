@@ -49,6 +49,9 @@ public class SyncService {
         Geometry currentFog = userFog.getFogArea();
         Geometry batchNewArea = null;
 
+        // TODO(fog): legacy server-side fog. A 0.0002 deg buffer is an ellipse of
+        // about 22 x 14 m in Krakow, while the app reveals a 30 m circle. Target: keep
+        // the raw points for statistics and merge fog tiles uploaded by the client.
         double distance = 0.0002;
 
         Map<String, List<PointDto>> groupedPoints =

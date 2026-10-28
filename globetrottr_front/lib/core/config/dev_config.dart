@@ -12,8 +12,10 @@ class DevConfig {
       final devMode = dotenv.maybeGet('DEV_MODE')?.trim().toLowerCase();
       if (devMode == 'true' || devMode == '1') return true;
 
-      final enableDev =
-          dotenv.maybeGet('ENABLE_DEV_SCREEN')?.trim().toLowerCase();
+      final enableDev = dotenv
+          .maybeGet('ENABLE_DEV_SCREEN')
+          ?.trim()
+          .toLowerCase();
       if (enableDev == 'true' || enableDev == '1') return true;
     }
 

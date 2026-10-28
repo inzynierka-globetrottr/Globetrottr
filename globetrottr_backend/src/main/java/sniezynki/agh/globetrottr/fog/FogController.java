@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/fog")
 @RequiredArgsConstructor
+// TODO(fog): serve fog tiles (levels up to z15, batched, with rev/ETag) instead of
+// one GeoJSON polygon; the app draws its own fog from local bitmap tiles.
 public class FogController {
     private final FogService fogService;
 

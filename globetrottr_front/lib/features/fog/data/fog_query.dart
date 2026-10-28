@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 
 /// Questions about the discovered area, answered from the base level tiles.
 /// These replace the PostGIS queries quests and statistics use today.
+// TODO(fog): not wired yet; quests and statistics still use the backend.
 class FogQuery {
   FogQuery(this._store);
 

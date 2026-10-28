@@ -63,6 +63,8 @@ class _DevOptionsScreenState extends ConsumerState<DevOptionsScreen> {
         totalDays: days,
       );
 
+      // TODO(fog): simulated points also reach the backend on the next sync
+      // and grow the account's server fog and quest progress.
       await ref.read(mapStorageProvider).insertPendingPointsBatch(points);
       await ref.read(fogProvider.future);
       await ref

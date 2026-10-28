@@ -24,9 +24,9 @@ Globetrottr/
 │   │   ├── core/               # Shared theme, routing, config, network, exceptions, widgets
 │   │   ├── features/           # Feature-first modularized code
 │   │   │   ├── auth/           # Login, registration, token handling
-│   │   │   ├── fog/            # Fog of war exploration & spatial polygons
+│   │   │   ├── fog/            # Fog of war: own fog as local bitmap tiles, friends' fog
 │   │   │   ├── friends/        # Social, friends lists, friend GeoJSON
-│   │   │   ├── map/            # Map UI, location tracking, pending GPS points storage
+│   │   │   ├── map/            # Map UI, location tracking, track log, pending GPS points outbox
 │   │   │   ├── profile/        # User stats, avatar, settings
 │   │   │   └── quests/         # Gamification quests, exp, achievements
 │   │   └── main.dart
@@ -144,6 +144,16 @@ Run all commands from within the `globetrottr_backend` directory:
 * **Routing:** Use `go_router` for declarative navigation and deep linking.
 * **Immutability:** Use immutable state models.
 * **Offline-first:** Respect offline storage layers (`sqflite` for offline GPS tracks / local data, `flutter_secure_storage` for credentials).
+
+### Fog of War (frontend)
+The user's own fog is computed, stored and drawn on the device only; the network never affects discovering or showing it.
+* **Track log is the source of truth:** every usable GPS fix goes to `track_log` (`tracks.db`, sessions + zlib delta blocks, see `track_block_codec.dart`) and to `pending_points` (`globetrottr.db`), which is only the outbox for `/api/map/sync` and is emptied after a sync.
+* **Fog is a derived cache:** Web Mercator tiles of 256x256 8-bit coverage in `fog.db`. Base level `FogConfig.baseZoom` (z16) plus a pyramid down to z4 for zoomed-out views. Each pair of consecutive points of one session is rasterized as a stadium with the vision radius (`MapConfig.defaultVisionRadius`, 30 m) and merged with `max`. The fog can always be rebuilt from the track log.
+* **Flow:** `LocationService` → `loggedPoints` → `FogNotifier` → `FogStore` (queue, LRU cache, batched writes, isolates for large work) → `FogTileSource` → `BitmapFogPainter`. `LocationNotifier` knows nothing about the fog.
+* **Tile format:** codec v2 in `fog/bitmap/fog_tile_codec.dart` (documented to be readable from Java); each written tile gets a revision for future differential upload.
+* **Queries:** `FogQuery` and `TrackAnalytics` answer quest and statistics questions locally; not wired yet.
+* **Legacy still in place:** friends' fog is drawn from backend GeoJSON polygons (`FogLayer`, `FogPainter`, `friendFogProvider`), and the backend still builds its own fog polygon from synced points for quests and statistics. Every place that still has to be switched to the bitmap fog is marked with `TODO(fog)`. Do not extend these paths.
+* **Benchmarks:** `FOG_BENCH=1 flutter test test/benchmark/fog_benchmark_test.dart` (skipped by default).
 
 ### Backend (Java / Spring Boot)
 * **Architecture:** Adhere strictly to the Controller → Service → Repository layering.
