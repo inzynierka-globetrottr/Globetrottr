@@ -7,12 +7,18 @@ import 'package:globetrottr_front/features/quests/screens/widgets/quest_zone_sty
 class QuestMarker extends StatelessWidget {
   final QuestZone zone;
   final bool isSelected;
+  final bool isVisited;
 
-  const QuestMarker({super.key, required this.zone, this.isSelected = false});
+  const QuestMarker({
+    super.key,
+    required this.zone,
+    this.isSelected = false,
+    this.isVisited = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final color = zone.color;
+    final color = isVisited ? QuestZone.completed.color : zone.color;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.background,
@@ -33,7 +39,7 @@ class QuestMarker extends StatelessWidget {
       ),
       child: Center(
         child: Icon(
-          zone.icon,
+          isVisited ? Icons.check_rounded : zone.icon,
           color: color,
           size: QuestMarkerConfig.markerIconSize,
         ),

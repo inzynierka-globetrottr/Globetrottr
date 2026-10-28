@@ -14,11 +14,14 @@ import 'package:latlong2/latlong.dart';
 class QuestMapLayers extends ConsumerWidget {
   const QuestMapLayers({super.key});
 
-  void _openQuest(BuildContext context, WidgetRef ref, Quest quest) {
+  void _openQuest(
+    BuildContext context,
+    WidgetRef ref,
+    Quest quest,
+    LatLng point,
+  ) {
     ref.read(selectedQuestIdProvider.notifier).select(quest);
-    if (quest.location case final LatLng location) {
-      MapController.of(context).move(location, MapCamera.of(context).zoom);
-    }
+    MapController.of(context).move(point, MapCamera.of(context).zoom);
     showQuestDetailsSheet(context, questId: quest.id);
   }
 
@@ -37,7 +40,7 @@ class QuestMapLayers extends ConsumerWidget {
         QuestMarkerLayer(
           quests: quests,
           selectedQuestId: selectedQuestId,
-          onQuestTap: (quest) => _openQuest(context, ref, quest),
+          onQuestTap: (quest, point) => _openQuest(context, ref, quest, point),
         ),
       ],
     );

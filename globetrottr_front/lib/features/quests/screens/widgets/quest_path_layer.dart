@@ -17,7 +17,7 @@ class QuestPathLayer extends StatelessWidget {
       return PolylineLayer(
         polylines: [
           Polyline(
-            points: quest.waypoints,
+            points: [for (final waypoint in quest.waypoints) waypoint.point],
             color: color,
             strokeWidth: QuestMarkerConfig.routeStrokeWidth,
           ),
@@ -27,9 +27,9 @@ class QuestPathLayer extends StatelessWidget {
 
     return CircleLayer(
       circles: [
-        for (final point in quest.waypoints)
+        for (final waypoint in quest.waypoints)
           CircleMarker(
-            point: point,
+            point: waypoint.point,
             radius: QuestMarkerConfig.pointRadius,
             color: color.withValues(alpha: QuestMarkerConfig.pointFillAlpha),
             borderColor: color,

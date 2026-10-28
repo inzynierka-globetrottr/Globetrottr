@@ -1,3 +1,4 @@
+import 'package:globetrottr_front/features/quests/data/quest_waypoint.dart';
 import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -13,7 +14,7 @@ class Quest {
   final bool isStarted;
   final bool isCompleted;
   final LatLng? location;
-  final List<LatLng> waypoints;
+  final List<QuestWaypoint> waypoints;
 
   const Quest({
     required this.id,
@@ -54,7 +55,7 @@ class Quest {
       waypoints: waypoints is List
           ? waypoints
                 .whereType<Map<String, dynamic>>()
-                .map(_latLngFromJson)
+                .map(QuestWaypoint.fromJson)
                 .toList()
           : const [],
     );

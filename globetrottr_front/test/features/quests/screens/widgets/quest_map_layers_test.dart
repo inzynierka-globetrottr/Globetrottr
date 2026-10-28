@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/data/quest_service.dart';
+import 'package:globetrottr_front/features/quests/data/quest_waypoint.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/selected_quest_provider.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_details_sheet.dart';
@@ -37,7 +38,9 @@ Quest _quest(int id, {bool isStarted = false, LatLng? location}) => Quest(
   isStarted: isStarted,
   isCompleted: false,
   location: location,
-  waypoints: [?location],
+  waypoints: [
+    if (location != null) QuestWaypoint(point: location, visited: false),
+  ],
 );
 
 Future<(ProviderContainer, MapController)> _pumpLayers(

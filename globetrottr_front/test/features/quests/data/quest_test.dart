@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
+import 'package:globetrottr_front/features/quests/data/quest_waypoint.dart';
 import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -11,7 +12,7 @@ Map<String, dynamic> _questJson({
   Object? description = 'Walk along the river.',
   Object? location = const {'latitude': 50.054, 'longitude': 19.934},
   Object? waypoints = const [
-    {'latitude': 50.054, 'longitude': 19.934},
+    {'latitude': 50.054, 'longitude': 19.934, 'visited': true},
     {'latitude': 50.053, 'longitude': 19.937},
   ],
 }) => {
@@ -36,8 +37,8 @@ void main() {
       expect(quest.description, 'Walk along the river.');
       expect(quest.location, const LatLng(50.054, 19.934));
       const expectedWaypoints = [
-        LatLng(50.054, 19.934),
-        LatLng(50.053, 19.937),
+        QuestWaypoint(point: LatLng(50.054, 19.934), visited: true),
+        QuestWaypoint(point: LatLng(50.053, 19.937), visited: false),
       ];
       expect(quest.waypoints, expectedWaypoints);
       expect(quest.isRoute, isTrue);
