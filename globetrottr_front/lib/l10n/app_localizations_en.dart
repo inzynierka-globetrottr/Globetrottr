@@ -151,6 +151,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get questsStartQuest => 'Start Quest';
 
   @override
+  String get questsTypeFollowRoute => 'Follow the route';
+
+  @override
+  String get questsTypeVisitPoints => 'Visit the points';
+
+  @override
+  String get questsNoDescription => 'No description yet.';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

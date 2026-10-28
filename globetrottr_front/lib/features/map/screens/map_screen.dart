@@ -10,7 +10,10 @@ import 'package:globetrottr_front/features/fog/fog_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
+import 'package:globetrottr_front/features/quests/provider/selected_quest_provider.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_drawer.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_map_layers.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
@@ -29,6 +32,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(locationProvider.notifier).startTracking());
+    Future.microtask(() => ref.read(questsProvider.notifier).loadQuests());
   }
 
   @override
@@ -59,10 +63,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           children: [
             FlutterMap(
               mapController: _mapController,
-              options: const MapOptions(
+              options: MapOptions(
                 initialCenter: MapConfig.initialCenter,
                 initialZoom: MapConfig.defaultZoom,
-                interactionOptions: InteractionOptions(
+                onTap: (_, _) =>
+                    ref.read(selectedQuestIdProvider.notifier).clear(),
+                interactionOptions: const InteractionOptions(
                   enableMultiFingerGestureRace: true,
                   rotationThreshold: 10.0,
                 ),
@@ -73,6 +79,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   readyHoles: locationState.allHoles,
                   holesRevision: locationState.holesRevision,
                 ),
+                const QuestMapLayers(),
                 if (position != null) PlayerMarkerLayer(position: position),
               ],
             ),

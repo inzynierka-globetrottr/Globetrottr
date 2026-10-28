@@ -3,7 +3,9 @@ import 'package:globetrottr_front/core/localization/localization_extensions.dart
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
+import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_details_sheet.dart';
 
 class QuestAccordionSection extends StatelessWidget {
   final String title;
@@ -87,6 +89,10 @@ class QuestAccordionSection extends StatelessWidget {
                                 quest: q,
                                 zone: zone,
                                 onStart: () => onStartQuest(q.id),
+                                onTap: () => showQuestDetailsSheet(
+                                  context,
+                                  questId: q.id,
+                                ),
                               ),
                             )
                             .toList(),

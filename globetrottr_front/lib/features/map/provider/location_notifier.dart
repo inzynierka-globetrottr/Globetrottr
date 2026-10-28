@@ -11,6 +11,7 @@ import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/fog/fog_holepuncher.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 
 class LocationNotifier extends Notifier<TrackingState> {
   late LocationService _locationService;
@@ -92,6 +93,11 @@ class LocationNotifier extends Notifier<TrackingState> {
 
     if (!value) {
       final synced = await ref.read(syncServiceProvider).syncPendingPoints();
+
+      // Sync is when the backend completes quests, so refresh their status.
+      if (synced) {
+        unawaited(ref.read(questsProvider.notifier).loadQuests());
+      }
 
       try {
         final updatedHoles = await ref.read(fogServiceProvider).getMyFog();
