@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/core/config/quest_marker_config.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_zone_style.dart';
 
@@ -19,7 +19,7 @@ class QuestPathLayer extends StatelessWidget {
           Polyline(
             points: quest.waypoints,
             color: color,
-            strokeWidth: MapConfig.questRouteStrokeWidth,
+            strokeWidth: QuestMarkerConfig.routeStrokeWidth,
           ),
         ],
       );
@@ -30,10 +30,10 @@ class QuestPathLayer extends StatelessWidget {
         for (final point in quest.waypoints)
           CircleMarker(
             point: point,
-            radius: MapConfig.questPointRadius,
-            color: color.withValues(alpha: MapConfig.questPointFillAlpha),
+            radius: QuestMarkerConfig.pointRadius,
+            color: color.withValues(alpha: QuestMarkerConfig.pointFillAlpha),
             borderColor: color,
-            borderStrokeWidth: MapConfig.questPointBorderWidth,
+            borderStrokeWidth: QuestMarkerConfig.pointBorderWidth,
           ),
       ],
     );

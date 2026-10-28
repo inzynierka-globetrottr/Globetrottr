@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/core/config/quest_marker_config.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_marker.dart';
 import 'package:latlong2/latlong.dart';
@@ -25,8 +25,8 @@ class QuestMarkerLayer extends StatelessWidget {
           if (quest.location case final LatLng location)
             Marker(
               point: location,
-              width: MapConfig.questMarkerSize,
-              height: MapConfig.questMarkerSize,
+              width: QuestMarkerConfig.markerSize,
+              height: QuestMarkerConfig.markerSize,
               child: GestureDetector(
                 onTap: () => onQuestTap(quest),
                 child: QuestMarker(

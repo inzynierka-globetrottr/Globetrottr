@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/core/config/quest_marker_config.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_zone_style.dart';
@@ -20,14 +20,14 @@ class QuestMarker extends StatelessWidget {
         border: Border.all(
           color: color,
           width: isSelected
-              ? MapConfig.questMarkerSelectedBorderWidth
-              : MapConfig.questMarkerBorderWidth,
+              ? QuestMarkerConfig.markerSelectedBorderWidth
+              : QuestMarkerConfig.markerBorderWidth,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: MapConfig.questMarkerShadowAlpha),
-            blurRadius: MapConfig.questMarkerShadowBlur,
-            spreadRadius: MapConfig.questMarkerShadowSpread,
+            color: color.withValues(alpha: QuestMarkerConfig.markerShadowAlpha),
+            blurRadius: QuestMarkerConfig.markerShadowBlur,
+            spreadRadius: QuestMarkerConfig.markerShadowSpread,
           ),
         ],
       ),
@@ -35,7 +35,7 @@ class QuestMarker extends StatelessWidget {
         child: Icon(
           zone.icon,
           color: color,
-          size: MapConfig.questMarkerIconSize,
+          size: QuestMarkerConfig.markerIconSize,
         ),
       ),
     );
