@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:go_router/go_router.dart';
 
 class DevFloatingButton extends StatelessWidget {
@@ -18,18 +19,22 @@ class DevFloatingButton extends StatelessWidget {
 
     return FloatingActionButton.extended(
       heroTag: heroTag,
-      backgroundColor: const Color(0xFFFFD600),
-      foregroundColor: Colors.black,
+      backgroundColor: AppColors.devButton,
+      foregroundColor: AppColors.devButtonText,
       elevation: 6,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: const BorderSide(width: 2),
       ),
-      icon: const Icon(Icons.bug_report, size: 20, color: Colors.black),
+      icon: const Icon(
+        Icons.bug_report,
+        size: 20,
+        color: AppColors.devButtonText,
+      ),
       label: const Text(
         'DEV MODE',
         style: TextStyle(
-          color: Colors.black,
+          color: AppColors.devButtonText,
           fontWeight: FontWeight.w900,
           letterSpacing: 1.0,
           fontSize: 12,

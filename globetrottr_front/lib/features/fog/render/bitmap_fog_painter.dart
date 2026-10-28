@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
@@ -32,10 +33,6 @@ class BitmapFogPainter extends CustomPainter {
   static const int _maxDrawnTiles = 96;
   static const double _tile = 256;
   static const double _minPixelLineSize = 6;
-  static const Color _gridReady = Color(0xFF3DDC84);
-  static const Color _gridEmpty = Color(0xFF9AA0A6);
-  static const Color _gridLoading = Color(0xFFFFB300);
-  static const Color _gridUnknown = Color(0xFF4FC3F7);
 
   final MapCamera camera;
   final FogTileSource? source;
@@ -63,7 +60,7 @@ class BitmapFogPainter extends CustomPainter {
               ),
     );
     canvas.drawColor(
-      Colors.black.withValues(alpha: options.opacity),
+      AppColors.fog.withValues(alpha: options.opacity),
       BlendMode.srcOver,
     );
     // Coverage is first summed in its own layer and only then subtracted
@@ -116,7 +113,7 @@ class BitmapFogPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1 / pixelSize
-      ..color = Colors.white.withValues(alpha: 0.35);
+      ..color = AppColors.devPixelLines;
     for (final id in range.ids) {
       canvas
         ..save()
@@ -143,10 +140,10 @@ class BitmapFogPainter extends CustomPainter {
       ..strokeWidth = 2;
     for (final id in range.ids) {
       final color = switch (source) {
-        null => _gridUnknown,
-        final s when s.imageFor(id) != null => _gridReady,
-        final s when s.isAbsent(id) => _gridEmpty,
-        _ => _gridLoading,
+        null => AppColors.devGridUnknown,
+        final s when s.imageFor(id) != null => AppColors.devGridReady,
+        final s when s.isAbsent(id) => AppColors.devGridEmpty,
+        _ => AppColors.devGridLoading,
       };
       line.color = color;
       final origin = _screen(id.x * _tile, id.y * _tile, id.z);
@@ -174,7 +171,7 @@ class BitmapFogPainter extends CustomPainter {
           color: color,
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          backgroundColor: const Color(0x99000000),
+          backgroundColor: AppColors.devGridLabelBackground,
         ),
       ),
       textDirection: TextDirection.ltr,
