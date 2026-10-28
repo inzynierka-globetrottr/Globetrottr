@@ -12,4 +12,4 @@ public record QuestResponseDto(
         boolean isStarted,
         boolean isCompleted,
         QuestCoordinateDto location,
-        List<QuestCoordinateDto> waypoints) {}
+        List<QuestWaypointDto> waypoints) {}

@@ -2,8 +2,11 @@ package sniezynki.agh.globetrottr.quest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 final class QuestGeometryMapper {
 
@@ -25,12 +28,20 @@ final class QuestGeometryMapper {
         return toDto(anchor);
     }
 
-    static List<QuestCoordinateDto> waypointsOf(Quest quest) {
+    static List<QuestWaypointDto> waypointsOf(Quest quest, Predicate<Point> isVisited) {
         Geometry geometry = quest.getQuestGeometry();
         if (geometry == null) {
             return List.of();
         }
-        return Arrays.stream(geometry.getCoordinates()).map(QuestGeometryMapper::toDto).toList();
+        GeometryFactory factory = geometry.getFactory();
+        return Arrays.stream(geometry.getCoordinates())
+                .map(
+                        coordinate ->
+                                new QuestWaypointDto(
+                                        coordinate.getY(),
+                                        coordinate.getX(),
+                                        isVisited.test(factory.createPoint(coordinate))))
+                .toList();
     }
 
     private static QuestCoordinateDto toDto(Coordinate coordinate) {

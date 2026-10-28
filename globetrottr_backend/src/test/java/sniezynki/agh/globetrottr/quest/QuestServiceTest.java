@@ -251,9 +251,9 @@ class QuestServiceTest {
         assertThat(response.location()).isEqualTo(new QuestCoordinateDto(50.054, 19.934));
         assertThat(response.waypoints())
                 .containsExactly(
-                        new QuestCoordinateDto(50.054, 19.934),
-                        new QuestCoordinateDto(50.053, 19.937),
-                        new QuestCoordinateDto(50.052, 19.940));
+                        new QuestWaypointDto(50.054, 19.934, false),
+                        new QuestWaypointDto(50.053, 19.937, false),
+                        new QuestWaypointDto(50.052, 19.940, false));
     }
 
     @Test
@@ -267,10 +267,72 @@ class QuestServiceTest {
 
         assertThat(response.waypoints())
                 .containsExactly(
-                        new QuestCoordinateDto(50.061389, 19.937222),
-                        new QuestCoordinateDto(50.061667, 19.938333),
-                        new QuestCoordinateDto(50.07, 19.94));
-        assertThat(response.location()).isIn(response.waypoints());
+                        new QuestWaypointDto(50.061389, 19.937222, false),
+                        new QuestWaypointDto(50.061667, 19.938333, false),
+                        new QuestWaypointDto(50.07, 19.94, false));
+        assertThat(response.waypoints())
+                .extracting(w -> new QuestCoordinateDto(w.latitude(), w.longitude()))
+                .contains(response.location());
+    }
+
+    @Test
+    void shouldMarkWaypointsCoveredByFogAsVisitedForQuestInProgress() {
+        userFog.setFogArea(createGeometry("POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))"));
+        Quest quest =
+                createQuest(
+                        1L,
+                        "Points",
+                        QuestType.VISIT_POINTS,
+                        100,
+                        createGeometry("MULTIPOINT(1 1, 5 5)"));
+        stubWaypointProgressFor(quest, createUserQuest(quest, false));
+
+        QuestResponseDto response = questService.getAllUserQuests(username).getFirst();
+
+        assertThat(response.waypoints())
+                .extracting(QuestWaypointDto::visited)
+                .containsExactly(true, false);
+    }
+
+    @Test
+    void shouldMarkAllWaypointsAsVisitedForCompletedQuest() {
+        userFog.setFogArea(createGeometry("POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))"));
+        Quest quest =
+                createQuest(
+                        1L,
+                        "Route",
+                        QuestType.FOLLOW_ROUTE,
+                        100,
+                        createGeometry("LINESTRING(1 1, 5 5)"));
+        stubWaypointProgressFor(quest, createUserQuest(quest, true));
+
+        QuestResponseDto response = questService.getAllUserQuests(username).getFirst();
+
+        assertThat(response.waypoints())
+                .extracting(QuestWaypointDto::visited)
+                .containsExactly(true, true);
+    }
+
+    @Test
+    void shouldNotMarkWaypointsAsVisitedForUnstartedQuest() {
+        userFog.setFogArea(createGeometry("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))"));
+        Quest quest =
+                createQuest(
+                        1L,
+                        "Points",
+                        QuestType.VISIT_POINTS,
+                        100,
+                        createGeometry("MULTIPOINT(1 1, 5 5)"));
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userFogRepository.findByUser_UserId(userId)).thenReturn(Optional.of(userFog));
+        when(questRepository.findAll()).thenReturn(List.of(quest));
+        when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of());
+
+        QuestResponseDto response = questService.getAllUserQuests(username).getFirst();
+
+        assertThat(response.waypoints())
+                .extracting(QuestWaypointDto::visited)
+                .containsExactly(false, false);
     }
 
     @Test
@@ -301,6 +363,13 @@ class QuestServiceTest {
         when(userFogRepository.findByUser_UserId(userId)).thenReturn(Optional.empty());
         when(questRepository.findAll()).thenReturn(List.of(quest));
         when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of());
+    }
+
+    private void stubWaypointProgressFor(Quest quest, UserQuest userQuest) {
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userFogRepository.findByUser_UserId(userId)).thenReturn(Optional.of(userFog));
+        when(questRepository.findAll()).thenReturn(List.of(quest));
+        when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(userQuest));
     }
 
     private Geometry createGeometry(String wkt) {
