@@ -198,8 +198,10 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
     );
   }
 
-  /// Runs writes one after another. Several fixes can arrive while an earlier
-  /// one is still being stored, and they must not share a point number.
+  /// Runs every operation, reads included, one after another. Several fixes
+  /// can arrive while an earlier one is still being stored, and they must not
+  /// share a point number; a read must not see half of a write nor load the
+  /// cached state while a write is changing it.
   Future<T> _serial<T>(Future<T> Function() task) {
     final completer = Completer<T>();
     _tail = _tail.then((_) async {
@@ -419,10 +421,11 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
   }
 
   @override
-  Future<List<TrackLogEntry>> entriesAfter(
-    int afterId, {
-    int limit = 5000,
-  }) async {
+  Future<List<TrackLogEntry>> entriesAfter(int afterId, {int limit = 5000}) {
+    return _serial(() => _entriesAfter(afterId, limit));
+  }
+
+  Future<List<TrackLogEntry>> _entriesAfter(int afterId, int limit) async {
     final db = await _db;
     final state = await _loadState(db);
     final result = <TrackLogEntry>[];
@@ -463,7 +466,11 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
   }
 
   @override
-  Future<List<TrackLogEntry>> entriesBetween(int fromMs, int toMs) async {
+  Future<List<TrackLogEntry>> entriesBetween(int fromMs, int toMs) {
+    return _serial(() => _entriesBetween(fromMs, toMs));
+  }
+
+  Future<List<TrackLogEntry>> _entriesBetween(int fromMs, int toMs) async {
     final db = await _db;
     final state = await _loadState(db);
     final blocks = await db.query(
@@ -494,7 +501,17 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
     required double north,
     required double east,
     int limit = 20000,
-  }) async {
+  }) {
+    return _serial(() => _entriesInBounds(south, west, north, east, limit));
+  }
+
+  Future<List<TrackLogEntry>> _entriesInBounds(
+    double south,
+    double west,
+    double north,
+    double east,
+    int limit,
+  ) async {
     final db = await _db;
     final state = await _loadState(db);
     bool inside(TrackLogEntry e) =>
@@ -531,7 +548,14 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
   Future<TrackLogEntry?> lastEntryOfSession(
     String sessionId, {
     required int atOrBeforeId,
-  }) async {
+  }) {
+    return _serial(() => _lastEntryOfSession(sessionId, atOrBeforeId));
+  }
+
+  Future<TrackLogEntry?> _lastEntryOfSession(
+    String sessionId,
+    int atOrBeforeId,
+  ) async {
     final db = await _db;
     final state = await _loadState(db);
     final session = state.sessions[sessionId];
@@ -562,34 +586,43 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
   }
 
   @override
-  Future<List<TrackSessionSummary>> sessionSummaries() async {
-    final state = await _loadState(await _db);
-    final sessions = state.sessions.values.toList()
-      ..sort((a, b) {
-        final byStart = a.startTs.compareTo(b.startTs);
-        return byStart != 0 ? byStart : a.firstId.compareTo(b.firstId);
-      });
-    return [
-      for (final s in sessions)
-        TrackSessionSummary(
-          sessionId: s.sessionId,
-          startMs: s.startTs,
-          endMs: s.endTs,
-          pointCount: s.count,
-        ),
-    ];
+  Future<List<TrackSessionSummary>> sessionSummaries() {
+    return _serial(() async {
+      final state = await _loadState(await _db);
+      final sessions = state.sessions.values.toList()
+        ..sort((a, b) {
+          final byStart = a.startTs.compareTo(b.startTs);
+          return byStart != 0 ? byStart : a.firstId.compareTo(b.firstId);
+        });
+      return [
+        for (final s in sessions)
+          TrackSessionSummary(
+            sessionId: s.sessionId,
+            startMs: s.startTs,
+            endMs: s.endTs,
+            pointCount: s.count,
+          ),
+      ];
+    });
   }
 
   @override
-  Future<int> count() async {
-    final state = await _loadState(await _db);
-    return state.sessions.values.fold<int>(0, (sum, s) => sum + s.count);
+  Future<int> count() {
+    return _serial(() async {
+      final state = await _loadState(await _db);
+      return state.sessions.values.fold<int>(0, (sum, s) => sum + s.count);
+    });
   }
 
   @override
-  Future<int> lastId() async {
-    final state = await _loadState(await _db);
-    return state.sessions.values.fold<int>(0, (m, s) => math.max(m, s.lastId));
+  Future<int> lastId() {
+    return _serial(() async {
+      final state = await _loadState(await _db);
+      return state.sessions.values.fold<int>(
+        0,
+        (m, s) => math.max(m, s.lastId),
+      );
+    });
   }
 
   @override
@@ -614,28 +647,31 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   /// How the points are stored right now. Only for tests.
   @visibleForTesting
-  Future<({int blocks, int tailRows})> debugLayout() async {
-    final db = await _db;
-    await _loadState(db);
-    return (
-      blocks:
-          Sqflite.firstIntValue(
-            await db.rawQuery('SELECT COUNT(*) FROM track_blocks'),
-          ) ??
-          0,
-      tailRows:
-          Sqflite.firstIntValue(
-            await db.rawQuery('SELECT COUNT(*) FROM track_tail'),
-          ) ??
-          0,
-    );
+  Future<({int blocks, int tailRows})> debugLayout() {
+    return _serial(() async {
+      final db = await _db;
+      await _loadState(db);
+      return (
+        blocks:
+            Sqflite.firstIntValue(
+              await db.rawQuery('SELECT COUNT(*) FROM track_blocks'),
+            ) ??
+            0,
+        tailRows:
+            Sqflite.firstIntValue(
+              await db.rawQuery('SELECT COUNT(*) FROM track_tail'),
+            ) ??
+            0,
+      );
+    });
   }
 
   @override
-  Future<void> close() async {
-    await _tail;
-    await _database?.close();
-    _database = null;
-    _state = null;
+  Future<void> close() {
+    return _serial(() async {
+      await _database?.close();
+      _database = null;
+      _state = null;
+    });
   }
 }

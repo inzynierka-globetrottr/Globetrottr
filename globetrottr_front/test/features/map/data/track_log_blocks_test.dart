@@ -324,6 +324,41 @@ void main() {
     });
   });
 
+  group('concurrent access', () {
+    test('a read during the first append keeps point numbers unique', () async {
+      final seed = open();
+      await seed.appendAll(_walk('a', 6));
+      await seed.close();
+
+      for (var delay = 0; delay < 12; delay++) {
+        final log = open();
+        try {
+          final appended = log.append(_entry('b', 1000 * (100 + delay)));
+          for (var i = 0; i < delay; i++) {
+            await Future<void>.delayed(Duration.zero);
+          }
+          await Future.wait([appended, log.sessionSummaries()]);
+
+          final next = await log.append(_entry('b', 1000 * (200 + delay)));
+
+          expect(next.id, (await appended).id! + 1, reason: 'delay $delay');
+        } finally {
+          await log.close();
+        }
+      }
+    });
+
+    test('closing waits for a read in progress', () async {
+      final log = open();
+      await log.appendAll(_walk('a', 10));
+
+      final reading = log.entriesAfter(0);
+      await log.close();
+
+      expect(await reading, hasLength(10));
+    });
+  });
+
   group('size', () {
     test('a journey takes only a few bytes per point on disk', () async {
       final journey = ExplorerRouteGenerator.generate(
