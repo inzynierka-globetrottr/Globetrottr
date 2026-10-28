@@ -121,22 +121,30 @@ class LocationService {
       locationSettings: _locationSettings,
     ).where(isUsablePosition).asBroadcastStream();
 
-    _dbSubscription = _broadcastStream!.listen((Position position) async {
-      if (_isRecording && _sessionId != null) {
-        final point = PendingPoint(
-          sessionId: _sessionId!,
-          latitude: position.latitude,
-          longitude: position.longitude,
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-        );
+    _dbSubscription = _broadcastStream!.listen(recordPosition);
+  }
 
-        await _mapStorage.insertPendingPoint(point);
-        await _logPosition(_sessionId!, position);
-        debugPrint(
-          'Location saved locally: ${point.latitude}, ${point.longitude}',
-        );
-      }
-    });
+  /// Stores a fix in the session that was recording when it arrived, even if
+  /// recording stops while it is being written.
+  ///
+  /// Method is public for testing purposes, but should not be called from outside the service. (debatable decision)
+  @visibleForTesting
+  Future<void> recordPosition(Position position) async {
+    final sessionId = _sessionId;
+    if (!_isRecording || sessionId == null) return;
+
+    final point = PendingPoint(
+      sessionId: sessionId,
+      latitude: position.latitude,
+      longitude: position.longitude,
+      timestamp: DateTime.now().millisecondsSinceEpoch,
+    );
+    try {
+      await _mapStorage.insertPendingPoint(point);
+    } on Object catch (error) {
+      debugPrint('Pending point write failed: $error');
+    }
+    await _logPosition(sessionId, position);
   }
 
   /// Packs the newest points of the track log when a recording ends.
