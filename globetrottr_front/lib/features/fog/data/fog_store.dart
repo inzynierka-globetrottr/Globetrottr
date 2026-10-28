@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
@@ -234,7 +235,7 @@ class FogStore {
   final StreamController<FogChange> _changes =
       StreamController<FogChange>.broadcast();
 
-  Future<void> _tail = Future.value();
+  final SerialQueue _queue = SerialQueue();
   Timer? _flushTimer;
   bool _metaDirty = false;
   bool _disposed = false;
@@ -275,18 +276,6 @@ class FogStore {
     lastFlushTiles: _lastFlushTiles,
   );
 
-  Future<T> _enqueue<T>(Future<T> Function() task) {
-    final completer = Completer<T>();
-    _tail = _tail.then((_) async {
-      try {
-        completer.complete(await task());
-      } on Object catch (error, stack) {
-        completer.completeError(error, stack);
-      }
-    });
-    return completer.future;
-  }
-
   /// Draws the segment from the previous point of [sessionId] to this one.
   /// A session's first point is drawn as a disc. [logId] is the track log id
   /// of the point, used to resume after a crash.
@@ -304,7 +293,7 @@ class FogStore {
       _deferred.add(point);
       return point.done.future;
     }
-    return _enqueue(() => _apply(sessionId, latitude, longitude, logId));
+    return _queue.run(() => _apply(sessionId, latitude, longitude, logId));
   }
 
   /// Draws the points that waited for a replay. Those the replay already
@@ -314,7 +303,7 @@ class FogStore {
     _deferred.clear();
     for (final point in points) {
       point.done.complete(
-        _enqueue(() async {
+        _queue.run(() async {
           final logId = point.logId;
           if (logId != null && logId <= _lastAppliedLogId) return;
           await _apply(point.sessionId, point.latitude, point.longitude, logId);
@@ -482,7 +471,7 @@ class FogStore {
   }
 
   /// Writes every modified tile and refreshes the pyramid above it.
-  Future<void> flush() => _enqueue(_flush);
+  Future<void> flush() => _queue.run(_flush);
 
   Future<void> _flush() async {
     _flushTimer?.cancel();
@@ -646,7 +635,7 @@ class FogStore {
     int chunkSize = 2000,
     void Function(double progress)? onProgress,
   }) {
-    return _enqueue(
+    return _queue.run(
       () => _import(entries, useIsolate, chunkSize, onProgress),
     );
   }
@@ -856,7 +845,7 @@ class FogStore {
   /// Declares every log entry up to [id] as handled, without drawing it.
   /// Used after clearing the fog on purpose so a restart does not redraw it.
   Future<void> markLogApplied(int id) {
-    return _enqueue(() async {
+    return _queue.run(() async {
       _behindLog = false;
       if (id > _lastAppliedLogId) _lastAppliedLogId = id;
       _metaDirty = true;
@@ -865,7 +854,7 @@ class FogStore {
   }
 
   Future<void> clear() {
-    return _enqueue(() async {
+    return _queue.run(() async {
       _flushTimer?.cancel();
       _flushTimer = null;
       await storage.clear();

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/core/storage/database_files.dart';
 import 'package:globetrottr_front/features/map/data/track_block_codec.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
@@ -95,7 +96,12 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   Database? _database;
   _State? _state;
-  Future<void> _tail = Future.value();
+
+  /// Runs every operation, reads included, one after another. Several fixes
+  /// can arrive while an earlier one is still being stored, and they must not
+  /// share a point number; a read must not see half of a write nor load the
+  /// cached state while a write is changing it.
+  final SerialQueue _queue = SerialQueue();
 
   Future<Database> get _db async => _database ??= await _open();
 
@@ -198,22 +204,6 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
     );
   }
 
-  /// Runs every operation, reads included, one after another. Several fixes
-  /// can arrive while an earlier one is still being stored, and they must not
-  /// share a point number; a read must not see half of a write nor load the
-  /// cached state while a write is changing it.
-  Future<T> _serial<T>(Future<T> Function() task) {
-    final completer = Completer<T>();
-    _tail = _tail.then((_) async {
-      try {
-        completer.complete(await task());
-      } on Object catch (error, stack) {
-        completer.completeError(error, stack);
-      }
-    });
-    return completer.future;
-  }
-
   @override
   Future<TrackLogEntry> append(TrackLogEntry entry) async {
     return (await appendAll([entry])).single;
@@ -222,7 +212,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
   @override
   Future<List<TrackLogEntry>> appendAll(List<TrackLogEntry> entries) {
     if (entries.isEmpty) return Future.value(const []);
-    return _serial(() => _appendAll(entries));
+    return _queue.run(() => _appendAll(entries));
   }
 
   Future<List<TrackLogEntry>> _appendAll(List<TrackLogEntry> entries) async {
@@ -390,7 +380,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<void> compact() {
-    return _serial(() async {
+    return _queue.run(() async {
       final db = await _db;
       final state = await _loadState(db);
       if (state.tailCount == 0) return;
@@ -422,7 +412,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<List<TrackLogEntry>> entriesAfter(int afterId, {int limit = 5000}) {
-    return _serial(() => _entriesAfter(afterId, limit));
+    return _queue.run(() => _entriesAfter(afterId, limit));
   }
 
   Future<List<TrackLogEntry>> _entriesAfter(int afterId, int limit) async {
@@ -467,7 +457,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<List<TrackLogEntry>> entriesBetween(int fromMs, int toMs) {
-    return _serial(() => _entriesBetween(fromMs, toMs));
+    return _queue.run(() => _entriesBetween(fromMs, toMs));
   }
 
   Future<List<TrackLogEntry>> _entriesBetween(int fromMs, int toMs) async {
@@ -502,7 +492,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
     required double east,
     int limit = 20000,
   }) {
-    return _serial(() => _entriesInBounds(south, west, north, east, limit));
+    return _queue.run(() => _entriesInBounds(south, west, north, east, limit));
   }
 
   Future<List<TrackLogEntry>> _entriesInBounds(
@@ -549,7 +539,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
     String sessionId, {
     required int atOrBeforeId,
   }) {
-    return _serial(() => _lastEntryOfSession(sessionId, atOrBeforeId));
+    return _queue.run(() => _lastEntryOfSession(sessionId, atOrBeforeId));
   }
 
   Future<TrackLogEntry?> _lastEntryOfSession(
@@ -587,7 +577,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<List<TrackSessionSummary>> sessionSummaries() {
-    return _serial(() async {
+    return _queue.run(() async {
       final state = await _loadState(await _db);
       final sessions = state.sessions.values.toList()
         ..sort((a, b) {
@@ -608,7 +598,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<int> count() {
-    return _serial(() async {
+    return _queue.run(() async {
       final state = await _loadState(await _db);
       return state.sessions.values.fold<int>(0, (sum, s) => sum + s.count);
     });
@@ -616,7 +606,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<int> lastId() {
-    return _serial(() async {
+    return _queue.run(() async {
       final state = await _loadState(await _db);
       return state.sessions.values.fold<int>(
         0,
@@ -627,7 +617,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<void> clear() {
-    return _serial(() async {
+    return _queue.run(() async {
       final db = await _db;
       final state = await _loadState(db);
       await db.transaction((txn) async {
@@ -648,7 +638,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
   /// How the points are stored right now. Only for tests.
   @visibleForTesting
   Future<({int blocks, int tailRows})> debugLayout() {
-    return _serial(() async {
+    return _queue.run(() async {
       final db = await _db;
       await _loadState(db);
       return (
@@ -668,7 +658,7 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<void> close() {
-    return _serial(() async {
+    return _queue.run(() async {
       await _database?.close();
       _database = null;
       _state = null;
