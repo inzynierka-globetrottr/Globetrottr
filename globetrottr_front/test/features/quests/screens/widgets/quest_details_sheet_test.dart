@@ -12,7 +12,7 @@ class _FakeQuestService implements QuestService {
   _FakeQuestService(this.quests, {this.startError});
 
   List<Quest> quests;
-  final AppException? startError;
+  final Exception? startError;
   final List<int> startedIds = [];
 
   @override
@@ -20,7 +20,7 @@ class _FakeQuestService implements QuestService {
 
   @override
   Future<void> startQuest(int questId) async {
-    if (startError case final AppException error) throw error;
+    if (startError case final Exception error) throw error;
     startedIds.add(questId);
     quests = [
       for (final quest in quests)
@@ -111,6 +111,22 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Something went wrong.'), findsOneWidget);
+  });
+
+  testWidgets('recovers from an unexpected error while starting', (
+    tester,
+  ) async {
+    await _pumpSheet(
+      tester,
+      _FakeQuestService([_quest()], startError: const FormatException('boom')),
+    );
+
+    await tester.tap(find.text('Start Quest'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Something went wrong.'), findsOneWidget);
+    expect(find.text('Start Quest'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('shows completed state without a start button', (tester) async {
