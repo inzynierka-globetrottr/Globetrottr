@@ -24,7 +24,7 @@ public class QuestService {
     private final UserRepository userRepository;
     private final UserFogRepository userFogRepository;
 
-    public List<QuestResponseDto> getAllQuestsForSidebar(String username) {
+    public List<QuestResponseDto> getAllUserQuests(String username) {
         User user =
                 userRepository
                         .findByUsername(username)

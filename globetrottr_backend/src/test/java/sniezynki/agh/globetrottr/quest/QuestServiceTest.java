@@ -71,7 +71,7 @@ class QuestServiceTest {
         when(questRepository.findAll()).thenReturn(List.of(quest));
         when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(userQuest));
 
-        List<QuestResponseDto> result = questService.getAllQuestsForSidebar(username);
+        List<QuestResponseDto> result = questService.getAllUserQuests(username);
 
         assertThat(result).hasSize(1);
 
@@ -98,7 +98,7 @@ class QuestServiceTest {
         when(questRepository.findAll()).thenReturn(List.of(quest));
         when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(userQuest));
 
-        List<QuestResponseDto> result = questService.getAllQuestsForSidebar(username);
+        List<QuestResponseDto> result = questService.getAllUserQuests(username);
 
         assertThat(result).hasSize(1);
 
@@ -127,7 +127,7 @@ class QuestServiceTest {
         when(questRepository.findAll()).thenReturn(List.of(quest));
         when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(userQuest));
 
-        List<QuestResponseDto> result = questService.getAllQuestsForSidebar(username);
+        List<QuestResponseDto> result = questService.getAllUserQuests(username);
 
         assertThat(result).hasSize(1);
 
@@ -234,7 +234,7 @@ class QuestServiceTest {
                         .build();
         stubSidebarFor(quest);
 
-        QuestResponseDto response = questService.getAllQuestsForSidebar(username).getFirst();
+        QuestResponseDto response = questService.getAllUserQuests(username).getFirst();
 
         assertThat(response.description())
                 .isEqualTo("Visit the Main Square and St. Mary's Basilica.");
@@ -246,7 +246,7 @@ class QuestServiceTest {
         Quest quest = createQuest(1L, "Route", QuestType.FOLLOW_ROUTE, 250, route);
         stubSidebarFor(quest);
 
-        QuestResponseDto response = questService.getAllQuestsForSidebar(username).getFirst();
+        QuestResponseDto response = questService.getAllUserQuests(username).getFirst();
 
         assertThat(response.location()).isEqualTo(new QuestCoordinateDto(50.054, 19.934));
         assertThat(response.waypoints())
@@ -263,7 +263,7 @@ class QuestServiceTest {
         Quest quest = createQuest(1L, "Points", QuestType.VISIT_POINTS, 100, points);
         stubSidebarFor(quest);
 
-        QuestResponseDto response = questService.getAllQuestsForSidebar(username).getFirst();
+        QuestResponseDto response = questService.getAllUserQuests(username).getFirst();
 
         assertThat(response.waypoints())
                 .containsExactly(
@@ -278,7 +278,7 @@ class QuestServiceTest {
         Quest quest = createQuest(1L, "Broken", QuestType.FOLLOW_ROUTE, 10, null);
         stubSidebarFor(quest);
 
-        QuestResponseDto response = questService.getAllQuestsForSidebar(username).getFirst();
+        QuestResponseDto response = questService.getAllUserQuests(username).getFirst();
 
         assertThat(response.location()).isNull();
         assertThat(response.waypoints()).isEmpty();
