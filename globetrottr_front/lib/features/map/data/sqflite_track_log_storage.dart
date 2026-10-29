@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
 import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/core/storage/database_files.dart';
 import 'package:globetrottr_front/features/map/data/track_block_codec.dart';
@@ -389,13 +389,26 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
     });
   }
 
+  /// The points of a block. A damaged block is skipped and logged, so it
+  /// never stops the rest of the history from being read.
   List<TrackLogEntry> _decodeBlock(Map<String, Object?> row, _State state) {
+    final firstId = row['first_id']! as int;
+    final sessionId = state.names[row['session_ref']! as int];
+    if (sessionId == null) {
+      debugPrint('Skipping track block $firstId: its session is missing');
+      return const [];
+    }
     final data = row['data']! as List<int>;
-    return TrackBlockCodec.decode(
-      data is Uint8List ? data : Uint8List.fromList(data),
-      sessionId: state.names[row['session_ref']! as int]!,
-      firstId: row['first_id']! as int,
-    );
+    try {
+      return TrackBlockCodec.decode(
+        data is Uint8List ? data : Uint8List.fromList(data),
+        sessionId: sessionId,
+        firstId: firstId,
+      );
+    } on FormatException catch (error) {
+      debugPrint('Skipping unreadable track block $firstId: $error');
+      return const [];
+    }
   }
 
   TrackLogEntry _tailEntry(Map<String, Object?> row, _State state) {

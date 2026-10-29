@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/explorer_route_generator.dart';
@@ -357,6 +358,40 @@ void main() {
 
       expect(await reading, hasLength(10));
     });
+  });
+
+  group('damaged blocks', () {
+    test(
+      'an unreadable block is skipped and the rest stays readable',
+      () async {
+        final seed = open();
+        await seed.appendAll(_walk('a', 4));
+        await seed.appendAll(_walk('a', 4, from: 4));
+        await seed.appendAll(_walk('b', 4, from: 8));
+        await seed.close();
+        final db = await databaseFactoryFfi.openDatabase(path);
+        await db.update(
+          'track_blocks',
+          {
+            'data': Uint8List.fromList([1, 0xff, 0xff, 0xff]),
+          },
+          where: 'first_id = ?',
+          whereArgs: [5],
+        );
+        await db.close();
+
+        final log = open();
+        addTearDown(log.close);
+
+        final after = await log.entriesAfter(0);
+        expect([for (final e in after) e.id], [1, 2, 3, 4, 9, 10, 11, 12]);
+        expect(await log.entriesBetween(0, 1 << 40), hasLength(8));
+        expect(
+          await log.entriesInBounds(south: 0, west: 0, north: 90, east: 90),
+          hasLength(8),
+        );
+      },
+    );
   });
 
   group('size', () {
