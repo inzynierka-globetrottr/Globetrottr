@@ -426,7 +426,15 @@ class FogStore {
   Future<void> _ensureLoaded(Iterable<FogTileId> ids) async {
     final missing = ids.where((id) => !_cache.containsKey(id)).toList();
     if (missing.isEmpty) return;
-    final stored = await storage.loadTiles(missing);
+    _addToCache(await storage.loadTiles(missing), missing);
+  }
+
+  /// Caches the tiles read from [storage] and marks the rest of [requested]
+  /// as known to have no fog data, so they are not read again.
+  void _addToCache(
+    Iterable<StoredFogTile> stored,
+    Iterable<FogTileId> requested,
+  ) {
     for (final tile in stored) {
       _cache.putIfAbsent(
         tile.id,
@@ -436,7 +444,7 @@ class FogStore {
         ),
       );
     }
-    for (final id in missing) {
+    for (final id in requested) {
       _cache.putIfAbsent(id, () => _CacheEntry(null));
     }
     _evict();
@@ -889,19 +897,7 @@ class FogStore {
       yMin: yMin,
       yMax: yMax,
     );
-    for (final tile in stored) {
-      _cache.putIfAbsent(
-        tile.id,
-        () => _CacheEntry(
-          FogTileCodec.decode(tile.flag, tile.bytes),
-          areaM2: tile.areaM2,
-        ),
-      );
-    }
-    for (final id in wanted) {
-      _cache.putIfAbsent(id, () => _CacheEntry(null));
-    }
-    _evict();
+    _addToCache(stored, wanted);
   }
 
   /// The decoded tile if it is cached, without any I/O.

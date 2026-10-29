@@ -50,6 +50,8 @@ class LocationNotifier extends Notifier<TrackingState> {
   }
 
   void _onPosition(Position position) {
+    // LocationService already drops such fixes; checking again keeps a bad
+    // value away from the map camera whatever stream feeds this notifier.
     if (!LocationService.isUsablePosition(position)) return;
     state = state.copyWith(
       currentPosition: LatLng(position.latitude, position.longitude),
