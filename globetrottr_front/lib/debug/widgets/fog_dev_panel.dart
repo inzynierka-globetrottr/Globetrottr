@@ -2,15 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/core/config/map_config.dart';
-import 'package:globetrottr_front/debug/explorer_route_generator.dart';
 import 'package:globetrottr_front/debug/format_bytes.dart';
 import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
-import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 
 /// Diagnostics and test tools of the bitmap fog, for the developer options.
 class FogDevPanel extends ConsumerStatefulWidget {
@@ -27,7 +24,6 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
   int _trackFileBytes = 0;
   int _logPoints = 0;
   int _ticks = 0;
-  double _explorerKm = 200;
   bool _busy = false;
   double? _progress;
   String? _message;
@@ -88,24 +84,6 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
     });
   }
 
-  Future<void> _generateExplorer() async {
-    final center =
-        ref.read(locationProvider).currentPosition ?? MapConfig.initialCenter;
-    final entries = ExplorerRouteGenerator.generate(
-      start: center,
-      totalKm: _explorerKm,
-    );
-    await ref.read(fogProvider.future);
-    await ref
-        .read(fogProvider.notifier)
-        .importEntries(
-          entries,
-          onProgress: (value) {
-            if (mounted) setState(() => _progress = value);
-          },
-        );
-  }
-
   /// What the two databases really take on the phone, journals included.
   String _filesLine() {
     final total = _fogFileBytes + _trackFileBytes;
@@ -157,8 +135,7 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
       children: [
         Text('Bitmap fog', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
-        for (final line in lines)
-          Text(line, style: const TextStyle(fontFamily: 'monospace')),
+        for (final line in lines) Text(line),
         const SizedBox(height: 8),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
@@ -213,21 +190,6 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
               ref.read(fogRenderOptionsProvider.notifier).options = options
                   .copyWith(softEdgeMeters: value),
         ),
-        Text('Explorer journey: ${_explorerKm.round()} km'),
-        Slider(
-          min: 10,
-          max: 2000,
-          divisions: 199,
-          value: _explorerKm,
-          onChanged: _busy ? null : (v) => setState(() => _explorerKm = v),
-        ),
-        ElevatedButton(
-          onPressed: _busy
-              ? null
-              : () => _run('Generating explorer journey', _generateExplorer),
-          child: Text('Generate ${_explorerKm.round()} km journey'),
-        ),
-        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
@@ -276,7 +238,7 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
         ],
         if (_message != null) ...[
           const SizedBox(height: 8),
-          Text(_message!, style: const TextStyle(color: Colors.blueGrey)),
+          Text(_message!),
         ],
       ],
     );

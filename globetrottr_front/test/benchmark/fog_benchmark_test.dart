@@ -9,7 +9,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/explorer_route_generator.dart';
-import 'package:globetrottr_front/debug/offline_simulation_helper.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/data/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
@@ -116,12 +115,12 @@ void main() {
       await store.dispose();
     });
 
-    test('P6 + comparison data: 50k random walk points', () async {
+    test('P6 + comparison data: 50k explorer points', () async {
       const center = LatLng(50.0614, 19.9383);
-      final points = OfflineSimulationHelper.generatePoints(
-        startCenter: center,
+      final entries = ExplorerRouteGenerator.generate(
+        start: center,
+        totalKm: 500,
       );
-      final entries = OfflineSimulationHelper.toTrackLog(points);
       final storage = InMemoryFogTileStorage();
       final store = await openStore(storage: storage);
 
