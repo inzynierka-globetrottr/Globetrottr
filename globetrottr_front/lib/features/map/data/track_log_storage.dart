@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/features/map/data/sqflite_track_log_storage.dart';
+import 'package:globetrottr_front/features/map/data/track_log/sqflite_track_log_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_block_codec.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 

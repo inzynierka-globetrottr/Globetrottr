@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
-import 'package:globetrottr_front/features/fog/data/fog_store.dart';
+import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Questions about the discovered area, answered from the base level tiles.

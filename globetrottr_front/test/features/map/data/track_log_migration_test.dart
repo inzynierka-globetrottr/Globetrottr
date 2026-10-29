@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/features/map/data/sqflite_track_log_storage.dart';
+import 'package:globetrottr_front/features/map/data/track_log/sqflite_track_log_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 

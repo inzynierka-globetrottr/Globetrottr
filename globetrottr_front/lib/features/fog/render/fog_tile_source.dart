@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/data/fog_store.dart';
+import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_stats.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_pixels.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
