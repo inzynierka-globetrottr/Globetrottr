@@ -14,7 +14,6 @@ import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.da
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_layer.dart';
-import 'package:globetrottr_front/features/fog/render/fog_catch_up_indicator.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
@@ -105,16 +104,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 if (position != null) PlayerMarkerLayer(position: position),
               ],
             ),
-
-            if (fog.value != null)
-              Positioned(
-                top: topSafeInset,
-                left: 0,
-                right: 0,
-                child: FogCatchUpIndicator(
-                  progress: fog.value!.store.catchUpProgress,
-                ),
-              ),
 
             Positioned(
               top: topSafeInset + 16.0,

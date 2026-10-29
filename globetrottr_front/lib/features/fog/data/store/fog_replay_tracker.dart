@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
-
 /// A point logged while the store catches up with the track log.
 class FogDeferredPoint {
   FogDeferredPoint(this.sessionId, this.latitude, this.longitude, this.logId);
@@ -22,9 +20,6 @@ class FogReplayTracker {
   final List<FogDeferredPoint> _deferred = [];
   final List<Completer<void>> _idleWaiters = [];
 
-  /// Progress of the running catch-up, from 0 to 1; null when none runs.
-  final ValueNotifier<double?> progress = ValueNotifier(null);
-
   bool get isRunning => _running > 0;
 
   /// Holds [point] until the catch-up ends; the future completes when the
@@ -36,7 +31,6 @@ class FogReplayTracker {
 
   void begin() {
     _running++;
-    progress.value = 0;
   }
 
   /// Ends one catch-up. When none is left it wakes the [whenIdle] callers
@@ -44,7 +38,6 @@ class FogReplayTracker {
   List<FogDeferredPoint> end() {
     _running--;
     if (_running > 0) return const [];
-    progress.value = null;
     final waiters = List.of(_idleWaiters);
     _idleWaiters.clear();
     for (final waiter in waiters) {

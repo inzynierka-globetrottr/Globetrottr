@@ -151,7 +151,6 @@ The user's own fog is computed, stored and drawn on the device only; the network
 * **Fog is a derived cache:** Web Mercator tiles of 256x256 8-bit coverage in `fog.db`. Base level `FogConfig.baseZoom` (z16) plus a pyramid down to z4 for zoomed-out views. Each pair of consecutive points of one session is rasterized as a stadium with the vision radius (`MapConfig.defaultVisionRadius`, 30 m) and merged with `max`. The fog can always be rebuilt from the track log.
 * **Flow:** `LocationService` → `loggedPoints` → `FogNotifier` → `FogStore` (queue, LRU cache, batched writes, isolates for large work) → `FogTileSource` → `BitmapFogPainter`. `LocationNotifier` knows nothing about the fog.
 * **Tile format:** codec v2 in `fog/bitmap/fog_tile_codec.dart` (documented to be readable from Java); each written tile gets a revision for future differential upload.
-* **Queries:** `FogQuery` and `TrackAnalytics` answer quest and statistics questions locally; not wired yet.
 * **Legacy still in place:** friends' fog is drawn from backend GeoJSON polygons (`FogLayer`, `FogPainter`, `friendFogProvider`), and the backend still builds its own fog polygon from synced points for quests and statistics. Every place that still has to be switched to the bitmap fog is marked with `TODO(fog)`. Do not extend these paths.
 * **Benchmarks:** `FOG_BENCH=1 flutter test test/benchmark/fog_benchmark_test.dart` (skipped by default).
 

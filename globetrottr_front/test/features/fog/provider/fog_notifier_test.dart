@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/features/fog/data/fog_query.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
@@ -32,7 +31,7 @@ void main() {
 
       final middle = offsetMeters(krakowLat, krakowLng, east: 100);
       expect(
-        await FogQuery(source.store).coverageAt(middle.lat, middle.lng),
+        await coverageAt(source.store, middle.lat, middle.lng),
         1,
       );
     });
@@ -177,7 +176,7 @@ void main() {
 
       await source.store.whenCaughtUp();
 
-      expect(await FogQuery(source.store).coverageAt(seen.lat, seen.lng), 1);
+      expect(await coverageAt(source.store, seen.lat, seen.lng), 1);
     });
   });
 }

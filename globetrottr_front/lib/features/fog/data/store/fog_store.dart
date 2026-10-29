@@ -166,10 +166,6 @@ class FogStore {
 
   Stream<FogChange> get changes => _changes.stream;
 
-  /// Progress of the running replay or rebuild, from 0 to 1; null when none
-  /// runs.
-  ValueListenable<double?> get catchUpProgress => _replayTracker.progress;
-
   /// Completes when no replay or rebuild is running.
   Future<void> whenCaughtUp() => _replayTracker.whenIdle();
 
@@ -447,10 +443,7 @@ class FogStore {
     try {
       if (fromScratch) await clear();
       _behindLog = false;
-      await _replay(log, useIsolate, (progress) {
-        _replayTracker.progress.value = progress;
-        onProgress?.call(progress);
-      });
+      await _replay(log, useIsolate, onProgress);
     } on Object {
       _behindLog = true;
       rethrow;

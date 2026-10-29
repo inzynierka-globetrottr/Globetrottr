@@ -38,7 +38,7 @@ Source of truth for the plan and the key design decisions of every part of the a
 ## Fog follow-ups (Planned)
 
 - **Friends' fog as tiles:** the client uploads tiles up to z15 changed since the last synced revision; the server stores them per user and serves them on demand to accepted friends. z16 never leaves the phone (privacy, less data). The friend's map uses the same renderer with a network tile source. Then the polygon friends' fog is removed.
-- **Backend stops computing the fog:** raw routes are still uploaded and persisted for statistics; quests and statistics move to the bitmap fog (client-side `FogQuery` / `TrackAnalytics`, or the same rasterization on the server; to be decided).
+- **Backend stops computing the fog:** raw routes are still uploaded and persisted for statistics; quests and statistics move to the bitmap fog (computed on the device, or the same rasterization on the server; to be decided).
 - **Restore on a new device:** from server tiles (lower resolution) or by syncing the track log and rebuilding locally; to be decided with the backend work.
 - **Verify on phones:** smoothness while panning, zooming and rotating; import time of very long journeys; recording and crash recovery.
 

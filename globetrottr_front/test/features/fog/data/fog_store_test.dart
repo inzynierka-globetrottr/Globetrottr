@@ -5,13 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/data/fog_query.dart';
 import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_test_helpers.dart';
@@ -112,36 +110,36 @@ void main() {
   group('applying points', () {
     test('a point reveals a disc of the vision radius', () async {
       await _apply(store, 'a', krakowLat, krakowLng);
-      final query = FogQuery(store);
 
       final inside = offsetMeters(krakowLat, krakowLng, north: 25);
       final outside = offsetMeters(krakowLat, krakowLng, north: 36);
 
-      expect(await query.coverageAt(krakowLat, krakowLng), 1);
-      expect(await query.coverageAt(inside.lat, inside.lng), greaterThan(0.99));
-      expect(await query.coverageAt(outside.lat, outside.lng), 0);
+      expect(await coverageAt(store, krakowLat, krakowLng), 1);
+      expect(
+        await coverageAt(store, inside.lat, inside.lng),
+        greaterThan(0.99),
+      );
+      expect(await coverageAt(store, outside.lat, outside.lng), 0);
     });
 
     test('consecutive points of a session are connected', () async {
-      final query = FogQuery(store);
       final end = offsetMeters(krakowLat, krakowLng, east: 200);
       final middle = offsetMeters(krakowLat, krakowLng, east: 100);
 
       await _apply(store, 'a', krakowLat, krakowLng);
       await _apply(store, 'a', end.lat, end.lng);
 
-      expect(await query.coverageAt(middle.lat, middle.lng), 1);
+      expect(await coverageAt(store, middle.lat, middle.lng), 1);
     });
 
     test('different sessions are never connected', () async {
-      final query = FogQuery(store);
       final end = offsetMeters(krakowLat, krakowLng, east: 200);
       final middle = offsetMeters(krakowLat, krakowLng, east: 100);
 
       await _apply(store, 'a', krakowLat, krakowLng);
       await _apply(store, 'b', end.lat, end.lng);
 
-      expect(await query.coverageAt(middle.lat, middle.lng), 0);
+      expect(await coverageAt(store, middle.lat, middle.lng), 0);
     });
 
     test('applying the same point twice changes nothing', () async {
@@ -427,12 +425,11 @@ void main() {
       final area = store.totalAreaM2;
 
       final reopened = await _open(storage);
-      final query = FogQuery(reopened);
       final point = offsetMeters(krakowLat, krakowLng, east: 150);
 
       expect(reopened.totalAreaM2, closeTo(area, 1e-6));
       expect(reopened.revision, store.revision);
-      expect(await query.coverageAt(point.lat, point.lng), 1);
+      expect(await coverageAt(reopened, point.lat, point.lng), 1);
       await reopened.dispose();
     });
 
@@ -456,7 +453,7 @@ void main() {
       expect((await storage.stats()).tileCount, 0);
       expect(store.totalAreaM2, 0);
       expect(store.revision, 0);
-      expect(await FogQuery(store).coverageAt(krakowLat, krakowLng), 0);
+      expect(await coverageAt(store, krakowLat, krakowLng), 0);
     });
   });
 
@@ -583,7 +580,7 @@ void main() {
         await recovered.replayFrom(log, useIsolate: false);
         final middle = offsetMeters(krakowLat, krakowLng, east: 150);
 
-        expect(await FogQuery(recovered).coverageAt(middle.lat, middle.lng), 1);
+        expect(await coverageAt(recovered, middle.lat, middle.lng), 1);
         await recovered.dispose();
       },
     );
@@ -626,7 +623,7 @@ void main() {
       final recovered = await _open(storage);
       await recovered.replayFrom(log, useIsolate: false);
       final walked = offsetMeters(krakowLat, krakowLng, east: 150);
-      expect(await FogQuery(recovered).coverageAt(walked.lat, walked.lng), 1);
+      expect(await coverageAt(recovered, walked.lat, walked.lng), 1);
       await recovered.dispose();
 
       log.resume();
@@ -659,8 +656,6 @@ void main() {
         log.resume();
         await replay;
         await applied;
-
-        final query = FogQuery(store);
         final backToStart = offsetMeters(krakowLat, krakowLng, east: 300);
         final lastLeg = offsetMeters(
           krakowLat,
@@ -668,8 +663,8 @@ void main() {
           north: 150,
           east: 300,
         );
-        expect(await query.coverageAt(backToStart.lat, backToStart.lng), 0);
-        expect(await query.coverageAt(lastLeg.lat, lastLeg.lng), 1);
+        expect(await coverageAt(store, backToStart.lat, backToStart.lng), 0);
+        expect(await coverageAt(store, lastLeg.lat, lastLeg.lng), 1);
       },
     );
 
@@ -691,7 +686,7 @@ void main() {
       await applied;
 
       final walked = offsetMeters(krakowLat, krakowLng, east: 150);
-      expect(await FogQuery(store).coverageAt(walked.lat, walked.lng), 1);
+      expect(await coverageAt(store, walked.lat, walked.lng), 1);
     });
   });
 
@@ -714,7 +709,7 @@ void main() {
       expect(store.lastAppliedLogId, 0);
       final restarted = await _open(storage);
       await restarted.replayFrom(log, useIsolate: false);
-      expect(await FogQuery(restarted).coverageAt(walked.lat, walked.lng), 1);
+      expect(await coverageAt(restarted, walked.lat, walked.lng), 1);
       await restarted.dispose();
     });
 
@@ -786,88 +781,6 @@ void main() {
 
       expect(progress.last, 1);
       expect(progress.length, 3);
-    });
-  });
-
-  group('FogQuery', () {
-    test('coverage along a polyline is the covered share', () async {
-      for (final e in walkEast('a', points: 21)) {
-        await _apply(store, 'a', e.latitude, e.longitude);
-      }
-      final query = FogQuery(store);
-      final route = [
-        const LatLng(krakowLat, krakowLng),
-        LatLng(
-          offsetMeters(krakowLat, krakowLng, east: 400).lat,
-          offsetMeters(krakowLat, krakowLng, east: 400).lng,
-        ),
-      ];
-
-      final fraction = await query.coveredFractionAlong(route);
-
-      expect(fraction, closeTo(0.5, 0.1));
-    });
-
-    test('a route far from the fog has no coverage', () async {
-      await _apply(store, 'a', krakowLat, krakowLng);
-
-      final fraction = await FogQuery(store).coveredFractionAlong([
-        const LatLng(krakowLat + 1, krakowLng),
-        const LatLng(krakowLat + 1.01, krakowLng),
-      ]);
-
-      expect(fraction, 0);
-    });
-
-    test('an empty route has no coverage', () async {
-      expect(await FogQuery(store).coveredFractionAlong(const []), 0);
-    });
-
-    test('covered area inside bounds matches the total for a disc', () async {
-      await _apply(store, 'a', krakowLat, krakowLng);
-      final query = FogQuery(store);
-      final northEast = offsetMeters(krakowLat, krakowLng, north: 80, east: 80);
-      final southWest = offsetMeters(
-        krakowLat,
-        krakowLng,
-        north: -80,
-        east: -80,
-      );
-
-      final area = await query.coveredAreaM2(
-        south: southWest.lat,
-        west: southWest.lng,
-        north: northEast.lat,
-        east: northEast.lng,
-      );
-
-      expect(area, closeTo(math.pi * 30 * 30, math.pi * 30 * 30 * 0.03));
-    });
-
-    test('covered area of half the disc is about half', () async {
-      await _apply(store, 'a', krakowLat, krakowLng);
-      final query = FogQuery(store);
-      final northEast = offsetMeters(krakowLat, krakowLng, north: 80, east: 80);
-      final southWest = offsetMeters(krakowLat, krakowLng, east: -80);
-
-      final area = await query.coveredAreaM2(
-        south: southWest.lat,
-        west: southWest.lng,
-        north: northEast.lat,
-        east: northEast.lng,
-      );
-
-      expect(area, closeTo(math.pi * 30 * 30 / 2, math.pi * 30 * 30 * 0.04));
-    });
-
-    test('total discovered area is reported in square kilometers', () async {
-      await _apply(store, 'a', krakowLat, krakowLng);
-      await store.flush();
-
-      expect(
-        FogQuery(store).totalDiscoveredKm2,
-        closeTo(store.totalAreaM2 / 1e6, 1e-12),
-      );
     });
   });
 

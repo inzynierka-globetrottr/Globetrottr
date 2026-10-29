@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/explorer_route_generator.dart';
-import 'package:globetrottr_front/features/map/data/track_analytics.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:latlong2/latlong.dart';
+
+import '../support/fog_test_helpers.dart';
 
 Map<String, List<TrackLogEntry>> _bySession(List<TrackLogEntry> entries) {
   final map = <String, List<TrackLogEntry>>{};
@@ -24,7 +25,7 @@ void main() {
 
       var total = 0.0;
       for (final session in _bySession(entries).values) {
-        total += TrackAnalytics.distanceMeters(session);
+        total += pathMeters(session);
       }
       expect(total / 1000, closeTo(120, 6));
     });
@@ -37,7 +38,7 @@ void main() {
 
       for (final session in _bySession(entries).values) {
         for (var i = 1; i < session.length; i++) {
-          final gap = TrackAnalytics.distanceMeters([
+          final gap = pathMeters([
             session[i - 1],
             session[i],
           ]);
@@ -53,10 +54,13 @@ void main() {
       );
 
       final sessions = _bySession(entries);
-      final days = TrackAnalytics.dailySummaries(
-        entries,
-        utcOffset: Duration.zero,
-      );
+      final days = {
+        for (final e in entries)
+          DateTime.fromMillisecondsSinceEpoch(
+            e.timestampMs,
+            isUtc: true,
+          ).day,
+      };
       expect(sessions.length, greaterThan(2));
       expect(days.length, greaterThanOrEqualTo(sessions.length ~/ 2));
     });
@@ -74,11 +78,9 @@ void main() {
             greaterThan(session[i - 1].timestampMs),
           );
         }
-        final stats = TrackAnalytics.statsFor(
-          session,
-          maxGap: const Duration(hours: 1),
-        );
-        expect(stats.averageSpeedMps, inInclusiveRange(1.0, 40.0));
+        final seconds =
+            (session.last.timestampMs - session.first.timestampMs) / 1000;
+        expect(pathMeters(session) / seconds, inInclusiveRange(1.0, 40.0));
       }
     });
 

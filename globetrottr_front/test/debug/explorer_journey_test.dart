@@ -1,8 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/explorer_route_generator.dart';
-import 'package:globetrottr_front/features/map/data/track_analytics.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:latlong2/latlong.dart';
+
+import '../support/fog_test_helpers.dart';
 
 const _krakow = LatLng(50.0614, 19.9383);
 
@@ -74,7 +75,7 @@ void main() {
       expect(journey.travelledKm, closeTo(40, 0.1));
       var total = 0.0;
       for (final session in _bySession(entries).values) {
-        total += TrackAnalytics.distanceMeters(session);
+        total += pathMeters(session);
       }
       expect(total / 1000, closeTo(40, 2));
       expect(journey.next(), isEmpty);
@@ -143,7 +144,7 @@ void main() {
       var fast = 0;
       for (final session in _bySession(europe).values) {
         for (var i = 1; i < session.length; i++) {
-          final gap = TrackAnalytics.distanceMeters([
+          final gap = pathMeters([
             session[i - 1],
             session[i],
           ]);

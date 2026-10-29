@@ -8,7 +8,8 @@ class QuestService {
   QuestService(this._client);
 
   // TODO(fog): progress comes from the server fog polygon, not the fog shown
-  // on the device; compute it from FogQuery or from server-side tiles.
+  // on the device; compute it from the bitmap fog (on the device or from
+  // server-side tiles).
   Future<List<Quest>> fetchUserQuests() async {
     final response = await _client.get('/api/quests/me');
     final List<dynamic> data = jsonDecode(response.body);
