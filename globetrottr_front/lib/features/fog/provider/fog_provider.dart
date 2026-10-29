@@ -70,13 +70,20 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       unawaited(store.dispose());
     });
 
+    // The replay can take minutes after a long journey or a format change,
+    // so the stored fog is shown at once and the rest is drawn in the
+    // background (new positions wait for it inside the store).
+    unawaited(_catchUp(store, ref.read(trackLogStorageProvider)));
+    return source;
+  }
+
+  Future<void> _catchUp(FogStore store, TrackLogStorage log) async {
     try {
-      await store.replayFrom(ref.read(trackLogStorageProvider));
+      await store.replayFrom(log);
     } on Object catch (error) {
       // The stored tiles are still valid; the next start retries the replay.
       debugPrint('Replaying the track log into the fog failed: $error');
     }
-    return source;
   }
 
   Future<void> _flushQuietly() async {

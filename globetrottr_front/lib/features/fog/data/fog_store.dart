@@ -41,9 +41,13 @@ class FogStoreDiagnostics {
     required this.lastApplyMicros,
     required this.lastFlushMillis,
     required this.lastFlushTiles,
+    required this.peakCachedTiles,
   });
 
   final int cachedTiles;
+
+  /// Most tiles held in memory at once since the store was opened.
+  final int peakCachedTiles;
   final int dirtyTiles;
   final int revision;
   final double totalAreaM2;
@@ -158,6 +162,7 @@ class FogStore {
     required this.radiusMeters,
     required this.maxCachedTiles,
     required this.maxDirtyTiles,
+    required this.importTileBudget,
     required this.flushDelay,
     required this.overviewFloor,
     required this.encodeInIsolate,
@@ -175,6 +180,7 @@ class FogStore {
     double radiusMeters = FogConfig.visionRadiusMeters,
     int maxCachedTiles = FogConfig.maxCachedTiles,
     int maxDirtyTiles = FogConfig.maxDirtyTiles,
+    int importTileBudget = FogConfig.importTileBudget,
     Duration flushDelay = FogConfig.flushDelay,
     int overviewFloor = FogPyramid.defaultOverviewFloor,
     double edgeWidth = FogConfig.edgeWidthPixels,
@@ -198,6 +204,7 @@ class FogStore {
       radiusMeters: radiusMeters,
       maxCachedTiles: maxCachedTiles,
       maxDirtyTiles: maxDirtyTiles,
+      importTileBudget: importTileBudget,
       flushDelay: flushDelay,
       overviewFloor: overviewFloor,
       encodeInIsolate: encodeInIsolate,
@@ -219,6 +226,11 @@ class FogStore {
   final double radiusMeters;
   final int maxCachedTiles;
   final int maxDirtyTiles;
+
+  /// Base tiles one step of a batch import may touch. Each tile is 64 KB in
+  /// memory, so this bounds the memory of imports and rebuilds no matter how
+  /// long or fast the journey is.
+  final int importTileBudget;
   final Duration flushDelay;
   final int overviewFloor;
 
@@ -242,6 +254,8 @@ class FogStore {
 
   /// Replays and rebuilds in progress; while any runs, new points wait.
   int _catchUps = 0;
+  final ValueNotifier<double?> _catchUpProgress = ValueNotifier(null);
+  final List<Completer<void>> _caughtUpWaiters = [];
 
   /// True after a replay failed: the log holds entries that are not drawn,
   /// so new points must not move [lastAppliedLogId] past them.
@@ -254,6 +268,7 @@ class FogStore {
   int _lastApplyMicros = 0;
   int _lastFlushMillis = 0;
   int _lastFlushTiles = 0;
+  int _peakCachedTiles = 0;
 
   int get revision => _revision;
 
@@ -265,6 +280,28 @@ class FogStore {
 
   Stream<FogChange> get changes => _changes.stream;
 
+  /// Progress of the running replay or rebuild, from 0 to 1; null when none
+  /// runs.
+  ValueListenable<double?> get catchUpProgress => _catchUpProgress;
+
+  /// Completes when no replay or rebuild is running.
+  Future<void> whenCaughtUp() {
+    if (_catchUps == 0) return Future.value();
+    final waiter = Completer<void>();
+    _caughtUpWaiters.add(waiter);
+    return waiter.future;
+  }
+
+  void _caughtUp() {
+    _catchUpProgress.value = null;
+    final waiters = List.of(_caughtUpWaiters);
+    _caughtUpWaiters.clear();
+    for (final waiter in waiters) {
+      waiter.complete();
+    }
+    _applyDeferred();
+  }
+
   FogStoreDiagnostics get diagnostics => FogStoreDiagnostics(
     cachedTiles: _cache.length,
     dirtyTiles: _dirty.length,
@@ -274,6 +311,7 @@ class FogStore {
     lastApplyMicros: _lastApplyMicros,
     lastFlushMillis: _lastFlushMillis,
     lastFlushTiles: _lastFlushTiles,
+    peakCachedTiles: _peakCachedTiles,
   );
 
   /// Draws the segment from the previous point of [sessionId] to this one.
@@ -447,6 +485,7 @@ class FogStore {
     for (final id in requested) {
       _cache.putIfAbsent(id, () => _CacheEntry(null));
     }
+    if (_cache.length > _peakCachedTiles) _peakCachedTiles = _cache.length;
     _evict();
   }
 
@@ -657,19 +696,22 @@ class FogStore {
     final parallel = useIsolate
         ? math.max(1, math.min(Platform.numberOfProcessors, 4))
         : 1;
-    final groupSize = chunkSize * parallel;
+    // A path of this many base pixels touches at most about
+    // importTileBudget / parallel tiles, so a whole step stays in budget.
+    final pathBudget =
+        math.max(1, importTileBudget ~/ parallel - 2) * FogTileId.size / 2;
 
-    for (var start = 0; start < entries.length; start += groupSize) {
-      final groupEnd = math.min(start + groupSize, entries.length);
+    var start = 0;
+    while (start < entries.length) {
       final chunks = <List<TrackLogEntry>>[];
       final jobs = <_ChunkJob>[];
-      for (var from = start; from < groupEnd; from += chunkSize) {
-        final chunk = entries.sublist(
-          from,
-          math.min(from + chunkSize, groupEnd),
-        );
+      var from = start;
+      while (chunks.length < parallel && from < entries.length) {
+        final to = _chunkEnd(entries, from, chunkSize, pathBudget);
+        final chunk = entries.sublist(from, to);
         chunks.add(chunk);
         jobs.add(_buildJob(chunk));
+        from = to;
       }
 
       final results = useIsolate
@@ -677,13 +719,46 @@ class FogStore {
               for (final job in jobs) Isolate.run(() => _rasterizeChunk(job)),
             ])
           : [for (final job in jobs) _rasterizeChunk(job)];
-
       for (var i = 0; i < results.length; i++) {
         await _mergeChunk(chunks[i], results[i]);
       }
       await _flushIfNeeded();
-      onProgress?.call(groupEnd / entries.length);
+      start = from;
+      onProgress?.call(start / entries.length);
     }
+  }
+
+  /// End (exclusive) of the chunk starting at [from]: at most [maxPoints]
+  /// entries and a path of at most [maxPathPixels] base pixels, but always
+  /// at least one entry.
+  int _chunkEnd(
+    List<TrackLogEntry> entries,
+    int from,
+    int maxPoints,
+    double maxPathPixels,
+  ) {
+    final limit = math.min(entries.length, from + maxPoints);
+    var path = 0.0;
+    var previous = entries[from];
+    var px = FogMercator.lngToX(previous.longitude, baseZoom);
+    var py = FogMercator.latToY(previous.latitude, baseZoom);
+    for (var i = from + 1; i < limit; i++) {
+      final entry = entries[i];
+      final x = FogMercator.lngToX(entry.longitude, baseZoom);
+      final y = FogMercator.latToY(entry.latitude, baseZoom);
+      if (entry.sessionId == previous.sessionId) {
+        final dx = x - px;
+        final dy = y - py;
+        path += math.sqrt(dx * dx + dy * dy);
+      } else {
+        path += FogTileId.size;
+      }
+      if (path > maxPathPixels) return i;
+      previous = entry;
+      px = x;
+      py = y;
+    }
+    return limit;
   }
 
   /// Turns [chunk] into a job for [_rasterizeChunk] and remembers where each
@@ -812,16 +887,20 @@ class FogStore {
     void Function(double progress)? onProgress,
   }) async {
     _catchUps++;
+    _catchUpProgress.value = 0;
     try {
       if (fromScratch) await clear();
       _behindLog = false;
-      await _replay(log, useIsolate, onProgress);
+      await _replay(log, useIsolate, (progress) {
+        _catchUpProgress.value = progress;
+        onProgress?.call(progress);
+      });
     } on Object {
       _behindLog = true;
       rethrow;
     } finally {
       _catchUps--;
-      if (_catchUps == 0) _applyDeferred();
+      if (_catchUps == 0) _caughtUp();
     }
   }
 

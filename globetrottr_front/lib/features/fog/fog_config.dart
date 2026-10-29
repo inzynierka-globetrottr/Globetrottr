@@ -22,6 +22,9 @@ abstract final class FogConfig {
   /// Modified tiles are written once this many are waiting.
   static const int maxDirtyTiles = 96;
 
+  /// Base tiles one step of a batch import may touch (about 16 MB of masks).
+  static const int importTileBudget = 256;
+
   /// Modified tiles are written at the latest this long after the first one.
   static const Duration flushDelay = Duration(seconds: 4);
 

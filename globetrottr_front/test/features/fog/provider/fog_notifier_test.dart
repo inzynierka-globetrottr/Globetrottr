@@ -28,6 +28,8 @@ void main() {
 
       final source = await container.read(fogProvider.future);
 
+      await source.store.whenCaughtUp();
+
       final middle = offsetMeters(krakowLat, krakowLng, east: 100);
       expect(
         await FogQuery(source.store).coverageAt(middle.lat, middle.lng),
@@ -39,6 +41,7 @@ void main() {
       final container = env.createContainer();
       addTearDown(container.dispose);
       final source = await container.read(fogProvider.future);
+      await source.store.whenCaughtUp();
 
       final entries = await env.log.appendAll(walkEast('live', points: 12));
       for (final entry in entries) {
@@ -56,6 +59,7 @@ void main() {
       final container = env.createContainer();
       addTearDown(container.dispose);
       final source = await container.read(fogProvider.future);
+      await source.store.whenCaughtUp();
       final notifier = container.read(locationProvider.notifier);
       await notifier.setRecording(true);
       final entries = await env.log.appendAll(walkEast('live', points: 5));
@@ -74,6 +78,7 @@ void main() {
     test('recovers after a restart without duplicating anything', () async {
       final first = env.createContainer();
       final source = await first.read(fogProvider.future);
+      await source.store.whenCaughtUp();
       final entries = await env.log.appendAll(walkEast('a', points: 30));
       for (final entry in entries.take(10)) {
         env.location.logged.add(entry);
@@ -87,6 +92,7 @@ void main() {
       final second = env.createContainer();
       addTearDown(second.dispose);
       final restarted = await second.read(fogProvider.future);
+      await restarted.store.whenCaughtUp();
 
       const expected = 2 * 30 * 290 + math.pi * 30 * 30;
       expect(restarted.store.totalAreaM2, closeTo(expected, expected * 0.04));
@@ -96,7 +102,7 @@ void main() {
     test('imports entries and keeps them in the fog', () async {
       final container = env.createContainer();
       addTearDown(container.dispose);
-      await container.read(fogProvider.future);
+      await (await container.read(fogProvider.future)).store.whenCaughtUp();
       final notifier = container.read(fogProvider.notifier);
 
       await notifier.importEntries(
@@ -114,6 +120,7 @@ void main() {
       final container = env.createContainer();
       addTearDown(container.dispose);
       final source = await container.read(fogProvider.future);
+      await source.store.whenCaughtUp();
       expect(source.store.totalAreaM2, greaterThan(0));
 
       await container.read(fogProvider.notifier).clearFog();
@@ -125,13 +132,14 @@ void main() {
     test('a cleared fog stays cleared after a restart', () async {
       await env.log.appendAll(walkEast('old'));
       final first = env.createContainer();
-      await first.read(fogProvider.future);
+      await (await first.read(fogProvider.future)).store.whenCaughtUp();
       await first.read(fogProvider.notifier).clearFog();
       first.dispose();
 
       final second = env.createContainer();
       addTearDown(second.dispose);
       final restarted = await second.read(fogProvider.future);
+      await restarted.store.whenCaughtUp();
 
       expect(restarted.store.totalAreaM2, 0);
       expect(await env.log.count(), 20);
@@ -142,6 +150,7 @@ void main() {
       final container = env.createContainer();
       addTearDown(container.dispose);
       final source = await container.read(fogProvider.future);
+      await source.store.whenCaughtUp();
       final area = source.store.totalAreaM2;
       await container.read(fogProvider.notifier).clearFog();
 
@@ -165,6 +174,8 @@ void main() {
       addTearDown(container.dispose);
 
       final source = await container.read(fogProvider.future);
+
+      await source.store.whenCaughtUp();
 
       expect(await FogQuery(source.store).coverageAt(seen.lat, seen.lng), 1);
     });
