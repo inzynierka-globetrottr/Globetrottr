@@ -61,6 +61,19 @@ void main() {
       },
     );
 
+    test('stores the fix time, not the writing time, in both places', () async {
+      final mapStorage = _GatedMapStorage()..gate.complete(1);
+      final trackLog = InMemoryTrackLogStorage();
+      final service = LocationService(mapStorage, trackLog);
+      service.setRecording(true);
+
+      await service.recordPosition(_at(50.06, 19.94));
+
+      final fixTime = DateTime.utc(2026).millisecondsSinceEpoch;
+      expect(mapStorage.inserted.single.timestamp, fixTime);
+      expect((await trackLog.entriesAfter(0)).single.timestampMs, fixTime);
+    });
+
     test('ignores a fix that arrives while not recording', () async {
       final mapStorage = _GatedMapStorage();
       final trackLog = InMemoryTrackLogStorage();

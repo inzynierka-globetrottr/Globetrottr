@@ -137,7 +137,7 @@ class LocationService {
       sessionId: sessionId,
       latitude: position.latitude,
       longitude: position.longitude,
-      timestamp: DateTime.now().millisecondsSinceEpoch,
+      timestamp: position.timestamp.millisecondsSinceEpoch,
     );
     try {
       await _mapStorage.insertPendingPoint(point);

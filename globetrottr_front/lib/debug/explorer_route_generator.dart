@@ -120,6 +120,7 @@ class ExplorerJourney {
     this.region,
     int seed = 7,
   }) : totalKm = math.max(0, totalKm),
+       _seed = seed,
        _random = math.Random(seed),
        _remainingMeters = math.max(0, totalKm) * 1000 {
     final from = region == null || region!.contains(start)
@@ -142,6 +143,7 @@ class ExplorerJourney {
   final double spacingMeters;
   final bool spacingFollowsSpeed;
   final ExplorerRegion? region;
+  final int _seed;
   final math.Random _random;
 
   double _remainingMeters;
@@ -195,7 +197,7 @@ class ExplorerJourney {
     }
     _timestamp = _firstDay + _day * Duration.millisecondsPerDay;
     _day++;
-    _session = 'trip_$_day';
+    _session = 'trip_${_seed}_$_day';
     _travelled = 0;
     _segmentLeft = 0;
     _segment = _Segment.highway;

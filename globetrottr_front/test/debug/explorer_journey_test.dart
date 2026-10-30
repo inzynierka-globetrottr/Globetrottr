@@ -156,6 +156,24 @@ void main() {
       expect(fast, greaterThan(europe.length ~/ 4));
     });
 
+    test('separate runs never share a session id', () {
+      Set<String> sessions(int seed) => {
+        for (final e in ExplorerRouteGenerator.generate(
+          start: _krakow,
+          totalKm: 200,
+          seed: seed,
+        ))
+          e.sessionId,
+      };
+
+      final first = sessions(1);
+      final second = sessions(2);
+
+      expect(first, isNotEmpty);
+      expect(first.intersection(second), isEmpty);
+      expect(sessions(1), first);
+    });
+
     test('starts in the middle of the continent when the start is outside', () {
       const region = ExplorerRegion.southAmerica;
       final first = ExplorerJourney(

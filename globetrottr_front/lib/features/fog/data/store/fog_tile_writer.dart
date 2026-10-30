@@ -148,6 +148,7 @@ class FogTileWriter {
           'baseZoom': baseZoom.toDouble(),
           'minZoom': minZoom.toDouble(),
           'formatVersion': FogTileCodec.formatVersion.toDouble(),
+          'drawVersion': FogConfig.drawVersion.toDouble(),
         },
       );
     } on Object {

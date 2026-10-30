@@ -8,6 +8,7 @@ import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
@@ -38,6 +39,7 @@ class FogStore {
     required this.baseZoom,
     required this.minZoom,
     required this.radiusMeters,
+    required this.maxSegmentMeters,
     required this.maxCachedTiles,
     required this.maxDirtyTiles,
     required this.importTileBudget,
@@ -56,6 +58,7 @@ class FogStore {
     int baseZoom = FogConfig.baseZoom,
     int minZoom = FogConfig.minZoom,
     double radiusMeters = FogConfig.visionRadiusMeters,
+    double maxSegmentMeters = FogConfig.maxSegmentMeters,
     int maxCachedTiles = FogConfig.maxCachedTiles,
     int maxDirtyTiles = FogConfig.maxDirtyTiles,
     int importTileBudget = FogConfig.importTileBudget,
@@ -70,7 +73,8 @@ class FogStore {
         meta.isEmpty ||
         (meta['baseZoom'] == baseZoom &&
             meta['minZoom'] == minZoom &&
-            meta['formatVersion'] == FogTileCodec.formatVersion);
+            meta['formatVersion'] == FogTileCodec.formatVersion &&
+            meta['drawVersion'] == FogConfig.drawVersion);
     if (!compatible) {
       await storage.clear();
       meta = {};
@@ -80,6 +84,7 @@ class FogStore {
       baseZoom: baseZoom,
       minZoom: minZoom,
       radiusMeters: radiusMeters,
+      maxSegmentMeters: maxSegmentMeters,
       maxCachedTiles: maxCachedTiles,
       maxDirtyTiles: maxDirtyTiles,
       importTileBudget: importTileBudget,
@@ -102,6 +107,10 @@ class FogStore {
   final int baseZoom;
   final int minZoom;
   final double radiusMeters;
+
+  /// Longest stretch of one session drawn as a path; a longer gap between two
+  /// points starts a new one (see [FogSegmentRule]).
+  final double maxSegmentMeters;
   final int maxCachedTiles;
   final int maxDirtyTiles;
 
@@ -129,9 +138,14 @@ class FogStore {
     encodeInIsolate: encodeInIsolate,
     isolateEncodeThreshold: isolateEncodeThreshold,
   );
+  late final FogSegmentRule _segmentRule = FogSegmentRule(
+    radiusMeters: radiusMeters,
+    maxSegmentMeters: maxSegmentMeters,
+  );
   late final FogImportPlanner _planner = FogImportPlanner(
     baseZoom: baseZoom,
     radiusMeters: radiusMeters,
+    segmentRule: _segmentRule,
     rasterizer: _rasterizer,
   );
   final FogLastPoints _lastPoints = FogLastPoints();
@@ -229,7 +243,11 @@ class FogStore {
       latitude: latitude,
       zoom: baseZoom.toDouble(),
     );
-    final previous = _lastPoints[sessionId];
+    final last = _lastPoints[sessionId];
+    final previous =
+        last != null && _segmentRule.connects(last.x, last.y, x, y, radius)
+        ? last
+        : null;
     final ax = previous?.x ?? x;
     final ay = previous?.y ?? y;
 

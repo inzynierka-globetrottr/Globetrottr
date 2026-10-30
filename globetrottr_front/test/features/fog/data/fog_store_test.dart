@@ -142,6 +142,40 @@ void main() {
       expect(await coverageAt(store, middle.lat, middle.lng), 0);
     });
 
+    test('a gap beyond the segment limit draws two discs', () async {
+      final end = offsetMeters(krakowLat, krakowLng, east: 400);
+      final middle = offsetMeters(krakowLat, krakowLng, east: 200);
+
+      await _apply(store, 'a', krakowLat, krakowLng);
+      await _apply(store, 'a', end.lat, end.lng);
+
+      expect(await coverageAt(store, krakowLat, krakowLng), 1);
+      expect(await coverageAt(store, end.lat, end.lng), 1);
+      expect(await coverageAt(store, middle.lat, middle.lng), 0);
+    });
+
+    test('the path continues from the point after a gap', () async {
+      final far = offsetMeters(krakowLat, krakowLng, east: 5000);
+      final next = offsetMeters(krakowLat, krakowLng, east: 5100);
+      final middle = offsetMeters(krakowLat, krakowLng, east: 5050);
+
+      await _apply(store, 'a', krakowLat, krakowLng);
+      await _apply(store, 'a', far.lat, far.lng);
+      await _apply(store, 'a', next.lat, next.lng);
+
+      expect(await coverageAt(store, middle.lat, middle.lng), 1);
+    });
+
+    test('a jump of hundreds of kilometres touches only a few tiles', () async {
+      await _apply(store, 'a', krakowLat, krakowLng);
+      await _apply(store, 'a', 54.352, 18.646);
+      await store.flush();
+
+      expect(store.diagnostics.peakCachedTiles, lessThan(50));
+      expect(await coverageAt(store, 54.352, 18.646), 1);
+      expect(await coverageAt(store, 52.2, 19.3), 0);
+    });
+
     test('applying the same point twice changes nothing', () async {
       await _apply(store, 'a', krakowLat, krakowLng);
       await store.flush();
@@ -444,6 +478,23 @@ void main() {
       await other.dispose();
     });
 
+    test('a store drawn by an older rule starts clean', () async {
+      await _apply(store, 'a', krakowLat, krakowLng);
+      await store.flush();
+      final meta = await storage.loadMeta();
+      await storage.commit(
+        upserts: const [],
+        meta: {...meta, 'drawVersion': FogConfig.drawVersion - 1.0},
+      );
+
+      final other = await _open(storage);
+
+      expect(other.totalAreaM2, 0);
+      expect(other.lastAppliedLogId, 0);
+      expect((await storage.stats()).tileCount, 0);
+      await other.dispose();
+    });
+
     test('clear forgets everything', () async {
       await _apply(store, 'a', krakowLat, krakowLng);
       await store.flush();
@@ -491,6 +542,22 @@ void main() {
       ]);
       return (log, [for (final e in stored) e.id!]);
     }
+
+    test('a replay does not join the log to a far away new point', () async {
+      final log = InMemoryTrackLogStorage();
+      await log.appendAll(walkEast('a', points: 10));
+      await store.replayFrom(log, useIsolate: false);
+      await store.flush();
+
+      final far = offsetMeters(krakowLat, krakowLng, north: 600000);
+      final middle = offsetMeters(krakowLat, krakowLng, north: 300000);
+      await log.appendAll([logEntry('a', 10, far)]);
+      await store.replayFrom(log, useIsolate: false);
+
+      expect(await coverageAt(store, far.lat, far.lng), 1);
+      expect(await coverageAt(store, middle.lat, middle.lng), 0);
+      expect(store.diagnostics.peakCachedTiles, lessThan(60));
+    });
 
     test('rebuilding from the log equals applying live', () async {
       final (log, _) = await logWithTwoWalks();
@@ -641,14 +708,14 @@ void main() {
             logEntry(
               'a',
               i,
-              offsetMeters(krakowLat, krakowLng, north: i * 100),
+              offsetMeters(krakowLat, krakowLng, north: i * 70),
             ),
         ]);
         log.pauseAt = _LogCall.entriesAfter;
 
         final replay = store.replayFrom(log, useIsolate: false);
         await log.paused.future;
-        final east = offsetMeters(krakowLat, krakowLng, east: 600);
+        final east = offsetMeters(krakowLat, krakowLng, north: 210, east: 210);
         final applied = _applyLogged(
           store,
           await log.append(logEntry('a', 4, east)),
@@ -656,14 +723,19 @@ void main() {
         log.resume();
         await replay;
         await applied;
-        final backToStart = offsetMeters(krakowLat, krakowLng, east: 300);
+        final towardsStart = offsetMeters(
+          krakowLat,
+          krakowLng,
+          north: 105,
+          east: 105,
+        );
         final lastLeg = offsetMeters(
           krakowLat,
           krakowLng,
-          north: 150,
-          east: 300,
+          north: 210,
+          east: 105,
         );
-        expect(await coverageAt(store, backToStart.lat, backToStart.lng), 0);
+        expect(await coverageAt(store, towardsStart.lat, towardsStart.lng), 0);
         expect(await coverageAt(store, lastLeg.lat, lastLeg.lng), 1);
       },
     );
@@ -754,6 +826,46 @@ void main() {
         isTrue,
       );
       await imported.dispose();
+    });
+
+    test('equals applying live when the journey has gaps', () async {
+      final far = offsetMeters(krakowLat, krakowLng, north: 20000);
+      final entries = [
+        ...walkEast('a'),
+        ...walkEast(
+          'a',
+          startLat: far.lat,
+          startLng: far.lng,
+          firstIndex: 20,
+        ),
+        ...walkEast('a', points: 10, startLat: krakowLat + 0.1, firstIndex: 40),
+      ];
+      for (final e in entries) {
+        await _apply(store, e.sessionId, e.latitude, e.longitude);
+      }
+      await store.flush();
+
+      for (final chunkSize in [7, 20, 21, 1000]) {
+        final importedStorage = InMemoryFogTileStorage();
+        final imported = await _open(importedStorage);
+        await imported.importEntries(
+          entries,
+          useIsolate: false,
+          chunkSize: chunkSize,
+        );
+        await imported.flush();
+
+        expect(imported.totalAreaM2, closeTo(store.totalAreaM2, 1e-3));
+        expect(
+          sameMasks(
+            await decodeAllTiles(storage, FogConfig.baseZoom),
+            await decodeAllTiles(importedStorage, FogConfig.baseZoom),
+          ),
+          isTrue,
+          reason: 'chunk size $chunkSize',
+        );
+        await imported.dispose();
+      }
     });
 
     test('works through a background isolate too', () async {

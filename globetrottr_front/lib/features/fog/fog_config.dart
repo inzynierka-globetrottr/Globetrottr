@@ -13,6 +13,14 @@ abstract final class FogConfig {
 
   static const double visionRadiusMeters = MapConfig.defaultVisionRadius;
 
+  /// Longest stretch joined into one path. About 1200 km/h at one fix per
+  /// second; a longer gap between two fixes starts a new path.
+  static const double maxSegmentMeters = 350;
+
+  /// Bumped whenever the way points are drawn changes, so tiles drawn by an
+  /// older rule are dropped and rebuilt from the track log.
+  static const int drawVersion = 1;
+
   /// Width of the anti-aliased rim of every stored shape, in base pixels.
   static const double edgeWidthPixels = 1.5;
 

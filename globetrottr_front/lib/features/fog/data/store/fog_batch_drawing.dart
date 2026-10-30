@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
@@ -100,11 +101,13 @@ class FogImportPlanner {
   FogImportPlanner({
     required this.baseZoom,
     required this.radiusMeters,
+    required this.segmentRule,
     required this.rasterizer,
   });
 
   final int baseZoom;
   final double radiusMeters;
+  final FogSegmentRule segmentRule;
   final FogRasterizer rasterizer;
 
   /// End (exclusive) of the chunk starting at [from]: at most [maxPoints]
@@ -125,7 +128,13 @@ class FogImportPlanner {
       final entry = entries[i];
       final x = FogMercator.lngToX(entry.longitude, baseZoom);
       final y = FogMercator.latToY(entry.latitude, baseZoom);
-      if (entry.sessionId == previous.sessionId) {
+      final radius = metersToPixels(
+        meters: radiusMeters,
+        latitude: entry.latitude,
+        zoom: baseZoom.toDouble(),
+      );
+      if (entry.sessionId == previous.sessionId &&
+          segmentRule.connects(px, py, x, y, radius)) {
         final dx = x - px;
         final dy = y - py;
         path += math.sqrt(dx * dx + dy * dy);
@@ -152,14 +161,28 @@ class FogImportPlanner {
     final newLastPoints = <String, FogLastPoint>{};
     for (final session in bySession.entries) {
       final lastPoint = lastPoints[session.key];
-      final xy = <double>[];
-      final radii = <double>[];
+      var xy = <double>[];
+      var radii = <double>[];
+      var continues = lastPoint != null;
       if (lastPoint != null) {
         xy
           ..add(lastPoint.x)
           ..add(lastPoint.y);
         radii.add(lastPoint.radius);
       }
+
+      // A path that only holds the point it continues from draws nothing.
+      void closePath() {
+        if (radii.length <= (continues ? 1 : 0)) return;
+        paths.add(
+          FogPathJob(
+            Float64List.fromList(xy),
+            Float64List.fromList(radii),
+            continues: continues,
+          ),
+        );
+      }
+
       for (final entry in session.value) {
         final x = FogMercator.lngToX(entry.longitude, baseZoom);
         final y = FogMercator.latToY(entry.latitude, baseZoom);
@@ -168,19 +191,26 @@ class FogImportPlanner {
           latitude: entry.latitude,
           zoom: baseZoom.toDouble(),
         );
+        if (radii.isNotEmpty &&
+            !segmentRule.connects(
+              xy[xy.length - 2],
+              xy[xy.length - 1],
+              x,
+              y,
+              radius,
+            )) {
+          closePath();
+          xy = <double>[];
+          radii = <double>[];
+          continues = false;
+        }
         xy
           ..add(x)
           ..add(y);
         radii.add(radius);
         newLastPoints[session.key] = FogLastPoint(x, y, radius);
       }
-      paths.add(
-        FogPathJob(
-          Float64List.fromList(xy),
-          Float64List.fromList(radii),
-          continues: lastPoint != null,
-        ),
-      );
+      closePath();
     }
     newLastPoints.forEach(lastPoints.remember);
     return FogChunkJob(
