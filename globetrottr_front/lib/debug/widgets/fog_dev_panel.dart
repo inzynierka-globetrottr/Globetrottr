@@ -123,6 +123,8 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
             'Last apply: ${d.lastApplyMicros} us, points ${d.appliedPoints}',
             'Last flush: ${d.lastFlushMillis} ms (${d.lastFlushTiles} tiles)',
             'Paint: avg $avg ms, max $max ms (${stats.frames} frames)',
+            if (d.skippedLogEntries > 0)
+              'Skipped log entries: ${d.skippedLogEntries} (rebuild to redraw)',
           ];
         },
         loading: () => ['Fog is loading...'],

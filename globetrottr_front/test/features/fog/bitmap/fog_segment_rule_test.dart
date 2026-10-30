@@ -58,6 +58,44 @@ void main() {
       }
     });
 
+    test('breaks a path whose tiles exceed the safety cap', () {
+      const loose = FogSegmentRule(
+        radiusMeters: FogConfig.visionRadiusMeters,
+        maxSegmentMeters: 1000000,
+      );
+      final a = _pixel(krakowLat, krakowLng);
+      final near = offsetMeters(krakowLat, krakowLng, north: 1000, east: 1000);
+      final far = offsetMeters(krakowLat, krakowLng, north: 5000, east: 5000);
+      final nearPixel = _pixel(near.lat, near.lng);
+      final farPixel = _pixel(far.lat, far.lng);
+
+      expect(
+        loose.connects(a.x, a.y, nearPixel.x, nearPixel.y, nearPixel.radius),
+        isTrue,
+      );
+      expect(
+        loose.connects(a.x, a.y, farPixel.x, farPixel.y, farPixel.radius),
+        isFalse,
+      );
+    });
+
+    test('the cap never cuts a segment within the meter limit', () {
+      for (final lat in [0.0, 50.0, 70.0, 80.0]) {
+        for (final direction in [(1.0, 0.0), (0.0, 1.0), (0.7, 0.7)]) {
+          expect(
+            connectsAfter(
+              lat,
+              19,
+              north: 340 * direction.$1,
+              east: 340 * direction.$2,
+            ),
+            isTrue,
+            reason: 'latitude $lat, direction $direction',
+          );
+        }
+      }
+    });
+
     test('connects a point with itself', () {
       expect(connectsAfter(krakowLat, krakowLng), isTrue);
     });

@@ -48,6 +48,20 @@ class FogTileWriter {
     required this.isolateEncodeThreshold,
   });
 
+  /// The metadata `FogStore.open` checks to know the tiles were drawn the way
+  /// this build draws them. Every metadata write must include it, otherwise
+  /// a store holding only a small mark would be taken for an incompatible one
+  /// and cleared.
+  static Map<String, double> compatibilityMeta({
+    required int baseZoom,
+    required int minZoom,
+  }) => {
+    'baseZoom': baseZoom.toDouble(),
+    'minZoom': minZoom.toDouble(),
+    'formatVersion': FogTileCodec.formatVersion.toDouble(),
+    'drawVersion': FogConfig.drawVersion.toDouble(),
+  };
+
   final FogTileCache cache;
   final int baseZoom;
   final int minZoom;
@@ -145,10 +159,7 @@ class FogTileWriter {
           'rev': nextRevision.toDouble(),
           'totalAreaM2': newTotal,
           'lastAppliedLogId': lastAppliedLogId.toDouble(),
-          'baseZoom': baseZoom.toDouble(),
-          'minZoom': minZoom.toDouble(),
-          'formatVersion': FogTileCodec.formatVersion.toDouble(),
-          'drawVersion': FogConfig.drawVersion.toDouble(),
+          ...compatibilityMeta(baseZoom: baseZoom, minZoom: minZoom),
         },
       );
     } on Object {

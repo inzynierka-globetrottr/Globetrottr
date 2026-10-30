@@ -25,6 +25,7 @@ class FogStoreDiagnostics {
     required this.lastFlushMillis,
     required this.lastFlushTiles,
     required this.peakCachedTiles,
+    required this.skippedLogEntries,
   });
 
   final int cachedTiles;
@@ -38,4 +39,8 @@ class FogStoreDiagnostics {
   final int lastApplyMicros;
   final int lastFlushMillis;
   final int lastFlushTiles;
+
+  /// Log entries a replay gave up on after repeated failures; a rebuild from
+  /// the track log draws them again.
+  final int skippedLogEntries;
 }

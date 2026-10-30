@@ -51,6 +51,7 @@ class FogStore {
     required this._revision,
     required this._totalAreaM2,
     required this._lastAppliedLogId,
+    required this._skippedLogEntries,
   });
 
   static Future<FogStore> open(
@@ -100,6 +101,7 @@ class FogStore {
       revision: meta['rev']?.toInt() ?? 0,
       totalAreaM2: meta['totalAreaM2'] ?? 0,
       lastAppliedLogId: meta['lastAppliedLogId']?.toInt() ?? 0,
+      skippedLogEntries: meta['skippedLogEntries']?.toInt() ?? 0,
     );
   }
 
@@ -165,6 +167,7 @@ class FogStore {
   int _revision;
   double _totalAreaM2;
   int _lastAppliedLogId;
+  int _skippedLogEntries;
   int _appliedPoints = 0;
   int _lastApplyMicros = 0;
   int _lastFlushMillis = 0;
@@ -193,6 +196,7 @@ class FogStore {
     lastFlushMillis: _lastFlushMillis,
     lastFlushTiles: _lastFlushTiles,
     peakCachedTiles: _tiles.peak,
+    skippedLogEntries: _skippedLogEntries,
   );
 
   /// Draws the segment from the previous point of [sessionId] to this one.
@@ -476,23 +480,82 @@ class FogStore {
     void Function(double progress)? onProgress,
   ) async {
     final total = await log.count();
+    final meta = await storage.loadMeta();
+    final markedAfter = meta['replayStepAfter']?.toInt();
+    final markedAttempts = meta['replayAttempts']?.toInt() ?? 0;
     var after = _lastAppliedLogId;
     var done = after;
+    var stitch = true;
     while (true) {
-      final batch = await log.entriesAfter(after);
+      // A step that was started before and never finished is retried in a
+      // small size, and skipped once it failed too often.
+      final failedBefore = markedAfter == after ? markedAttempts : 0;
+      final batch = failedBefore > 0
+          ? await log.entriesAfter(after, limit: FogConfig.retryStepEntries)
+          : await log.entriesAfter(after);
       if (batch.isEmpty) break;
-      final previous = <TrackLogEntry>[];
-      for (final session in batch.map((e) => e.sessionId).toSet()) {
-        if (_lastPoints.contains(session)) continue;
-        final last = await log.lastEntryOfSession(session, atOrBeforeId: after);
-        if (last != null) previous.add(last);
+
+      if (failedBefore >= FogConfig.maxReplayStepAttempts) {
+        await _skipEntries(batch);
+        stitch = false;
+      } else {
+        await _markReplayStep(after, failedBefore + 1);
+        final previous = <TrackLogEntry>[];
+        for (final session in batch.map((e) => e.sessionId).toSet()) {
+          if (!stitch || _lastPoints.contains(session)) continue;
+          final last = await log.lastEntryOfSession(
+            session,
+            atOrBeforeId: after,
+          );
+          if (last != null) previous.add(last);
+        }
+        await importEntries([...previous, ...batch], useIsolate: useIsolate);
+        await _markReplayStep(after, 0);
+        stitch = true;
       }
-      await importEntries([...previous, ...batch], useIsolate: useIsolate);
       after = batch.last.id!;
       done += batch.length;
       if (total > 0) onProgress?.call(math.min(1, done / total));
     }
     await flush();
+  }
+
+  Map<String, double> get _compatibilityMeta =>
+      FogTileWriter.compatibilityMeta(baseZoom: baseZoom, minZoom: minZoom);
+
+  Future<void> _markReplayStep(int after, int attempts) {
+    return _queue.run(
+      () => storage.commit(
+        upserts: const [],
+        meta: {
+          ..._compatibilityMeta,
+          'replayStepAfter': after.toDouble(),
+          'replayAttempts': attempts.toDouble(),
+        },
+      ),
+    );
+  }
+
+  /// Gives up on [entries]: they count as handled, so a restart does not
+  /// try them again. A rebuild from the track log draws them.
+  Future<void> _skipEntries(List<TrackLogEntry> entries) {
+    return _queue.run(() async {
+      debugPrint(
+        'Skipping ${entries.length} track log entries that keep failing '
+        'to replay (ids ${entries.first.id}..${entries.last.id})',
+      );
+      _noteApplied(entries.last.id);
+      _skippedLogEntries += entries.length;
+      await _flush();
+      await storage.commit(
+        upserts: const [],
+        meta: {
+          ..._compatibilityMeta,
+          'skippedLogEntries': _skippedLogEntries.toDouble(),
+          'replayAttempts': 0,
+        },
+      );
+    });
   }
 
   /// Declares every log entry up to [id] as handled, without drawing it.
@@ -516,6 +579,7 @@ class FogStore {
       _revision = 0;
       _totalAreaM2 = 0;
       _lastAppliedLogId = 0;
+      _skippedLogEntries = 0;
       _metaDirty = false;
       if (!_changes.isClosed) _changes.add(const FogChange({}, all: true));
     });

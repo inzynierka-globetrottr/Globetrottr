@@ -17,9 +17,13 @@ abstract final class FogConfig {
   /// second; a longer gap between two fixes starts a new path.
   static const double maxSegmentMeters = 350;
 
+  /// Most base tiles one path may cover (about 4 MB of masks). A safety net
+  /// next to [maxSegmentMeters]; it only matters at extreme latitudes.
+  static const int maxTilesPerSegment = 64;
+
   /// Bumped whenever the way points are drawn changes, so tiles drawn by an
   /// older rule are dropped and rebuilt from the track log.
-  static const int drawVersion = 1;
+  static const int drawVersion = 2;
 
   /// Width of the anti-aliased rim of every stored shape, in base pixels.
   static const double edgeWidthPixels = 1.5;
@@ -32,6 +36,15 @@ abstract final class FogConfig {
 
   /// Base tiles one step of a batch import may touch (about 16 MB of masks).
   static const int importTileBudget = 256;
+
+  /// A replay step that was started this many times without finishing (the
+  /// app died or failed in it) is skipped, so a poisonous stretch of the log
+  /// cannot block every start.
+  static const int maxReplayStepAttempts = 2;
+
+  /// Size of the replay step that follows an unfinished one: if the step
+  /// fails again only this many entries are skipped.
+  static const int retryStepEntries = 50;
 
   /// Modified tiles are written at the latest this long after the first one.
   static const Duration flushDelay = Duration(seconds: 4);

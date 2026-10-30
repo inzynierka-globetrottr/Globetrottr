@@ -19,10 +19,12 @@ Future<FogStore> _open(
   int maxCachedTiles = 256,
   int maxDirtyTiles = 96,
   int baseZoom = FogConfig.baseZoom,
+  double maxSegmentMeters = FogConfig.maxSegmentMeters,
 }) {
   return FogStore.open(
     storage,
     baseZoom: baseZoom,
+    maxSegmentMeters: maxSegmentMeters,
     maxCachedTiles: maxCachedTiles,
     maxDirtyTiles: maxDirtyTiles,
     flushDelay: const Duration(hours: 1),
@@ -175,6 +177,78 @@ void main() {
       expect(await coverageAt(store, 54.352, 18.646), 1);
       expect(await coverageAt(store, 52.2, 19.3), 0);
     });
+
+    test(
+      'the tile cap cuts a path even when the meter limit is loose',
+      () async {
+        final loose = await _open(
+          InMemoryFogTileStorage(),
+          maxSegmentMeters: 1000000,
+        );
+        final far = offsetMeters(
+          krakowLat,
+          krakowLng,
+          north: 50000,
+          east: 50000,
+        );
+        final middle = offsetMeters(
+          krakowLat,
+          krakowLng,
+          north: 25000,
+          east: 25000,
+        );
+
+        await _apply(loose, 'a', krakowLat, krakowLng);
+        await _apply(loose, 'a', far.lat, far.lng);
+
+        expect(await coverageAt(loose, far.lat, far.lng), 1);
+        expect(await coverageAt(loose, middle.lat, middle.lng), 0);
+        expect(loose.diagnostics.peakCachedTiles, lessThan(10));
+        await loose.dispose();
+      },
+    );
+
+    test(
+      'importing equals applying live when the tile cap cuts a path',
+      () async {
+        final looseTiles = InMemoryFogTileStorage();
+        final loose = await _open(looseTiles, maxSegmentMeters: 1000000);
+        final far = offsetMeters(
+          krakowLat,
+          krakowLng,
+          north: 50000,
+          east: 50000,
+        );
+        final entries = [
+          ...walkEast('a'),
+          ...walkEast(
+            'a',
+            startLat: far.lat,
+            startLng: far.lng,
+            firstIndex: 20,
+          ),
+        ];
+        for (final e in entries) {
+          await _apply(loose, e.sessionId, e.latitude, e.longitude);
+        }
+        await loose.flush();
+
+        final importedTiles = InMemoryFogTileStorage();
+        final imported = await _open(importedTiles, maxSegmentMeters: 1000000);
+        await imported.importEntries(entries, useIsolate: false);
+        await imported.flush();
+
+        expect(
+          sameMasks(
+            await decodeAllTiles(looseTiles, FogConfig.baseZoom),
+            await decodeAllTiles(importedTiles, FogConfig.baseZoom),
+          ),
+          isTrue,
+        );
+        await loose.dispose();
+        await imported.dispose();
+      },
+    );
 
     test('applying the same point twice changes nothing', () async {
       await _apply(store, 'a', krakowLat, krakowLng);
