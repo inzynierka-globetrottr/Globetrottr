@@ -13,12 +13,22 @@ The repository is organized as a monorepo:
 * **Backend (`globetrottr_backend/`)**: REST API built with Java 25 and Spring Boot 4.0.
 * **Database & Infrastructure (`docker-compose.yaml`, `db-init/`)**: PostgreSQL with PostGIS extension for spatial queries.
 
+### ROADMAP.md (mandatory)
+`ROADMAP.md` in the repository root is the **source of truth** for what the app is, what is planned and what is being built. Its purpose: any agent can read it first and understand the project, its direction and the reasons behind it from the first prompt.
+* **Read it first:** before starting any task, read `ROADMAP.md`.
+* **Keep it current:** every planned change, and every change an agent is currently introducing, must be added or updated there as part of the same task. A task is not complete until the roadmap reflects it.
+* **Record decisions:** write down the key design and architectural decisions together with the reasons (and rejected alternatives), not implementation detail or measurements.
+* **Keep it concise:** short entries, grouped per area, each with a status (Done, In progress, Planned, Idea). Remove or rewrite entries that became outdated.
+* **Code wins:** if the code and the roadmap disagree, trust the code, fix the roadmap and report the discrepancy to the user.
+* **Binding decisions:** settled decisions are binding; changing one needs the owner's approval and a roadmap update.
+
 ---
 
 ## 2. Repository Structure
 
 ```text
 Globetrottr/
+├── ROADMAP.md                  # Source of truth: app scope, plans, key decisions (mandatory reading)
 ├── globetrottr_front/          # Flutter mobile application
 │   ├── lib/
 │   │   ├── core/               # Shared theme, routing, config, network, exceptions, widgets
