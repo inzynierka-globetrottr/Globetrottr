@@ -190,10 +190,14 @@ final playerMotionProvider = Provider<PlayerMotion>((ref) {
   final logged = ref.read(locationServiceProvider).loggedPoints.listen((entry) {
     motion.moveTo(LatLng(entry.latitude, entry.longitude), entry: entry);
   });
-  ref.listen(locationProvider.select((s) => s.currentPosition), (_, position) {
-    final recording = ref.read(locationProvider).isRecording;
-    if (position != null && !recording) motion.moveTo(position);
-  });
+  ref.listen(
+    locationProvider.select((s) => s.currentPosition),
+    (_, position) {
+      final recording = ref.read(locationProvider).isRecording;
+      if (position != null && !recording) motion.moveTo(position);
+    },
+    fireImmediately: true,
+  );
   ref.onDispose(() {
     unawaited(logged.cancel());
     motion.dispose();

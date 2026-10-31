@@ -41,6 +41,17 @@ List<int> _column(int Function(int, int) alpha) => [
   for (var y = 400; y < 800; y++) alpha(200, y),
 ];
 
+/// Where the fog starts below the middle of the screen, at half strength.
+double _edgeBelow(int Function(int, int) alpha) {
+  const half = _fogAlpha / 2;
+  for (var y = 400; y < 799; y++) {
+    final a = alpha(205, y);
+    final b = alpha(205, y + 1);
+    if (a < half && b >= half) return y + (half - a) / (b - a);
+  }
+  return -1;
+}
+
 int _worst(List<int> a, List<int> b) {
   var worst = 0;
   for (var i = 0; i < a.length; i++) {
@@ -99,6 +110,37 @@ void main() {
       final (trail, tiles) = await _edgeBeforeAndAfter(camera, 30);
 
       expect(_worst(trail, tiles), lessThan(24));
+    });
+  }
+
+  test('on a rotated map the trail edge looks like the tile edge', () async {
+    final camera = cameraAt(zoom: 17, rotation: 37);
+
+    final (trail, tiles) = await _edgeBeforeAndAfter(camera, 30);
+
+    expect(_worst(trail, tiles), lessThan(24));
+  });
+
+  for (final level in [14.5, 13.5, 12.5, 11.5]) {
+    test('the fog edge stays put when the level changes at $level', () async {
+      final store = await openStore();
+      await walk(store, 'a', points: 60);
+      await store.flush();
+      Future<double> edgeAt(double zoom) async {
+        final camera = cameraAt(zoom: zoom);
+        final source = await readySource(store, camera);
+        final alpha = await renderAlpha(
+          painterFor(camera, source: source, softEdge: true),
+        );
+        source.dispose();
+        return _edgeBelow(alpha);
+      }
+
+      final finer = await edgeAt(level + 0.01);
+      final coarser = await edgeAt(level - 0.01);
+
+      expect(finer - coarser, closeTo(0, 1));
+      await store.dispose();
     });
   }
 

@@ -488,7 +488,6 @@ void main() {
       final b = await FogStore.open(
         withIsolate,
         flushDelay: const Duration(hours: 1),
-        isolateEncodeThreshold: 4,
       );
 
       await a.importEntries(entries, useIsolate: false);
