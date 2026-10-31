@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 
+import '../../../support/fog_test_helpers.dart';
+
 void main() {
   group('FogMercator', () {
     test('world size doubles with every zoom level', () {
@@ -36,13 +38,13 @@ void main() {
     });
 
     test('finds the tile containing a coordinate', () {
-      expect(FogMercator.tileAt(50, 19, 1), const FogTileId(1, 1, 0));
-      expect(FogMercator.tileAt(-50, -19, 1), const FogTileId(1, 0, 1));
-      expect(FogMercator.tileAt(0.0001, 0.0001, 1), const FogTileId(1, 1, 0));
+      expect(tileOf(50, 19, 1), const FogTileId(1, 1, 0));
+      expect(tileOf(-50, -19, 1), const FogTileId(1, 0, 1));
+      expect(tileOf(0.0001, 0.0001, 1), const FogTileId(1, 1, 0));
     });
 
     test('finds the well-known OSM tile for London at zoom 10', () {
-      final tile = FogMercator.tileAt(51.5074, -0.1278, 10);
+      final tile = tileOf(51.5074, -0.1278, 10);
 
       expect(tile, const FogTileId(10, 511, 340));
     });

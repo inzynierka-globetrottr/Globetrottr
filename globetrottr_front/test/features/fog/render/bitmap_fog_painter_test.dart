@@ -428,7 +428,7 @@ void main() {
         base.shouldRepaint(
           BitmapFogPainter(
             camera: camera,
-            options: const FogRenderOptions(opacity: 0.5),
+            options: const FogRenderOptions(showGrid: true),
           ),
         ),
         isTrue,

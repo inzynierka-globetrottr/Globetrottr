@@ -6,7 +6,6 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
-import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
@@ -38,14 +37,11 @@ class FogStore {
   FogStore._(
     this.storage, {
     required this.baseZoom,
-    required this.minZoom,
-    required this.radiusMeters,
     required this.maxSegmentMeters,
     required this.maxCachedTiles,
     required this.maxDirtyTiles,
     required this.importTileBudget,
     required this.flushDelay,
-    required this.overviewFloor,
     required this.encodeInIsolate,
     required this.isolateEncodeThreshold,
     required this._rasterizer,
@@ -58,15 +54,11 @@ class FogStore {
   static Future<FogStore> open(
     FogTileStorage storage, {
     int baseZoom = FogConfig.baseZoom,
-    int minZoom = FogConfig.minZoom,
-    double radiusMeters = FogConfig.visionRadiusMeters,
     double maxSegmentMeters = FogConfig.maxSegmentMeters,
     int maxCachedTiles = FogConfig.maxCachedTiles,
     int maxDirtyTiles = FogConfig.maxDirtyTiles,
     int importTileBudget = FogConfig.importTileBudget,
     Duration flushDelay = FogConfig.flushDelay,
-    int overviewFloor = FogPyramid.defaultOverviewFloor,
-    double edgeWidth = FogConfig.edgeWidthPixels,
     bool encodeInIsolate = true,
     int isolateEncodeThreshold = FogConfig.isolateEncodeThreshold,
   }) async {
@@ -74,7 +66,7 @@ class FogStore {
     final compatible =
         meta.isEmpty ||
         (meta['baseZoom'] == baseZoom &&
-            meta['minZoom'] == minZoom &&
+            meta['minZoom'] == FogConfig.minZoom &&
             meta['formatVersion'] == FogTileCodec.formatVersion &&
             meta['drawVersion'] == FogConfig.drawVersion);
     if (!compatible) {
@@ -84,19 +76,15 @@ class FogStore {
     return FogStore._(
       storage,
       baseZoom: baseZoom,
-      minZoom: minZoom,
-      radiusMeters: radiusMeters,
       maxSegmentMeters: maxSegmentMeters,
       maxCachedTiles: maxCachedTiles,
       maxDirtyTiles: maxDirtyTiles,
       importTileBudget: importTileBudget,
       flushDelay: flushDelay,
-      overviewFloor: overviewFloor,
       encodeInIsolate: encodeInIsolate,
       isolateEncodeThreshold: isolateEncodeThreshold,
       rasterizer: FogRasterizer(
         zoom: baseZoom,
-        edgeWidth: edgeWidth,
         quantStep: FogConfig.baseQuantStep,
       ),
       revision: meta['rev']?.toInt() ?? 0,
@@ -108,8 +96,6 @@ class FogStore {
 
   final FogTileStorage storage;
   final int baseZoom;
-  final int minZoom;
-  final double radiusMeters;
 
   /// Longest stretch of one session drawn as a path; a longer gap between two
   /// points starts a new one (see [FogSegmentRule]).
@@ -122,7 +108,6 @@ class FogStore {
   /// long or fast the journey is.
   final int importTileBudget;
   final Duration flushDelay;
-  final int overviewFloor;
 
   /// Compress large writes in a background isolate to keep the UI smooth.
   final bool encodeInIsolate;
@@ -136,18 +121,16 @@ class FogStore {
   late final FogTileWriter _writer = FogTileWriter(
     _tiles,
     baseZoom: baseZoom,
-    minZoom: minZoom,
-    overviewFloor: overviewFloor,
     encodeInIsolate: encodeInIsolate,
     isolateEncodeThreshold: isolateEncodeThreshold,
   );
   late final FogSegmentRule _segmentRule = FogSegmentRule(
-    radiusMeters: radiusMeters,
+    radiusMeters: FogConfig.visionRadiusMeters,
     maxSegmentMeters: maxSegmentMeters,
   );
   late final FogImportPlanner _planner = FogImportPlanner(
     baseZoom: baseZoom,
-    radiusMeters: radiusMeters,
+    radiusMeters: FogConfig.visionRadiusMeters,
     segmentRule: _segmentRule,
     rasterizer: _rasterizer,
   );
@@ -259,7 +242,7 @@ class FogStore {
     final x = FogMercator.lngToX(longitude, baseZoom);
     final y = FogMercator.latToY(latitude, baseZoom);
     final radius = metersToPixels(
-      meters: radiusMeters,
+      meters: FogConfig.visionRadiusMeters,
       latitude: latitude,
       zoom: baseZoom.toDouble(),
     );
@@ -547,7 +530,7 @@ class FogStore {
   }
 
   Map<String, double> get _compatibilityMeta =>
-      FogTileWriter.compatibilityMeta(baseZoom: baseZoom, minZoom: minZoom);
+      FogTileWriter.compatibilityMeta(baseZoom: baseZoom);
 
   Future<void> _markReplayStep(int after, int attempts) {
     return _queue.run(
@@ -621,11 +604,6 @@ class FogStore {
   FogMask? peek(FogTileId id) => _tiles.peek(id);
 
   bool isKnownAbsent(FogTileId id) => _tiles.isKnownAbsent(id);
-
-  Future<FogMask?> maskFor(FogTileId id) async {
-    if (!_tiles.contains(id)) await prepare(id.z, id.x, id.x, id.y, id.y);
-    return _tiles.peek(id);
-  }
 
   Future<void> dispose() async {
     _disposed = true;

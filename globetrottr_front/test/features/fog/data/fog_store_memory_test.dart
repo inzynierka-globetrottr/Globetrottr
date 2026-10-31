@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/explorer_route_generator.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
-import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../support/fog_test_helpers.dart';
+import '../../../support/in_memory_fog_tile_storage.dart';
+import '../../../support/in_memory_track_log_storage.dart';
 
 const _maxCached = 32;
 const _maxDirty = 16;

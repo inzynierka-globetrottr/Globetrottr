@@ -6,6 +6,8 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../support/fog_test_helpers.dart';
+
 MapCamera _camera({
   double zoom = 16,
   double rotation = 0,
@@ -73,7 +75,7 @@ void main() {
       ]) {
         expect(
           range.contains(
-            FogMercator.tileAt(corner.latitude, corner.longitude, 16),
+            tileOf(corner.latitude, corner.longitude, 16),
           ),
           isTrue,
           reason: '$corner',
@@ -99,7 +101,7 @@ void main() {
       ]) {
         expect(
           range.contains(
-            FogMercator.tileAt(corner.latitude, corner.longitude, 16),
+            tileOf(corner.latitude, corner.longitude, 16),
           ),
           isTrue,
           reason: '$corner',

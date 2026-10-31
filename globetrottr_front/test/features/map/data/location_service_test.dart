@@ -5,7 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/data/pending_point.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
+
+import '../../../support/in_memory_track_log_storage.dart';
 
 class _GatedMapStorage extends MapStorage {
   final Completer<int> gate = Completer<int>();

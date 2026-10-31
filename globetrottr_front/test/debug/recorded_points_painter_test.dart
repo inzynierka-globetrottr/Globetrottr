@@ -4,10 +4,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/recorded_points_source.dart';
 import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 
 import '../support/fog_render_helpers.dart';
 import '../support/fog_test_helpers.dart';
+import '../support/in_memory_track_log_storage.dart';
 
 /// Strongest alpha in the 7x7 pixels around where [camera] puts a point.
 int _alphaAt(

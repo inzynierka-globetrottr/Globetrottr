@@ -9,10 +9,11 @@ import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_test_helpers.dart';
+import '../../../support/in_memory_fog_tile_storage.dart';
+import '../../../support/in_memory_track_log_storage.dart';
 
 Future<FogStore> _open(
   FogTileStorage storage, {
@@ -314,7 +315,7 @@ void main() {
           FogMercator.xToLng(border + 0.5, FogConfig.baseZoom),
           FogConfig.baseZoom,
         );
-        final mask = await store.maskFor(right);
+        final mask = await loadedMask(store, right);
         expect(mask, isNotNull);
         expect(mask!.at(0, _rowOf(krakowLat)), greaterThan(0));
       },

@@ -8,13 +8,6 @@ class FogService {
 
   FogService(this._client);
 
-  // TODO(fog): unused since the own fog lives in local bitmap tiles. Replace
-  // with a one-time tile download that restores the fog on a new device.
-  Future<List<List<LatLng>>> getMyFog() async {
-    final response = await _client.get('/api/fog/me');
-    return _parseMultiPolygon(response.body);
-  }
-
   // TODO(fog): fetch the friend's fog as bitmap tiles (levels up to z15, on
   // demand for the visible area) instead of one GeoJSON polygon.
   Future<List<List<LatLng>>> getFriendFog(String friendUsername) async {

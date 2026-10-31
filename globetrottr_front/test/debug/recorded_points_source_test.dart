@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/recorded_points_source.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 
 import '../support/fog_render_helpers.dart';
 import '../support/fog_test_helpers.dart';
+import '../support/in_memory_track_log_storage.dart';
 
 class _GatedStorage extends InMemoryTrackLogStorage {
   final List<Completer<void>> gates = [];

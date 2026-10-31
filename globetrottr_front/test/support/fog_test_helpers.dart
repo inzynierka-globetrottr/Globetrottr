@@ -89,8 +89,18 @@ bool sameMasks(Map<int, FogMask> a, Map<int, FogMask> b) {
   return true;
 }
 
-FogTileId tileOf(double lat, double lng, int z) =>
-    FogMercator.tileAt(lat, lng, z);
+FogTileId tileOf(double lat, double lng, int z) {
+  final tiles = 1 << z;
+  final x = (FogMercator.lngToX(lng, z) / FogTileId.size).floor();
+  final y = (FogMercator.latToY(lat, z) / FogTileId.size).floor();
+  return FogTileId(z, x.clamp(0, tiles - 1), y.clamp(0, tiles - 1));
+}
+
+/// The decoded tile, read from storage when it is not cached.
+Future<FogMask?> loadedMask(FogStore store, FogTileId id) async {
+  await store.prepare(id.z, id.x, id.x, id.y, id.y);
+  return store.peek(id);
+}
 
 /// Coverage of one point in the base level of [store], from 0 (fog) to 1.
 Future<double> coverageAt(
@@ -99,8 +109,8 @@ Future<double> coverageAt(
   double longitude,
 ) async {
   final zoom = store.baseZoom;
-  final tile = FogMercator.tileAt(latitude, longitude, zoom);
-  final mask = await store.maskFor(tile);
+  final tile = tileOf(latitude, longitude, zoom);
+  final mask = await loadedMask(store, tile);
   if (mask == null) return 0;
   final px = (FogMercator.lngToX(longitude, zoom) - tile.x * FogTileId.size)
       .floor()

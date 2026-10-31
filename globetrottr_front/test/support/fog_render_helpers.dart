@@ -12,6 +12,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import 'fog_test_helpers.dart';
+import 'in_memory_fog_tile_storage.dart';
 
 const Size viewSize = Size(400, 800);
 

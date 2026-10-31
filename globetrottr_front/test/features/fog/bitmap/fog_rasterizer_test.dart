@@ -249,26 +249,6 @@ void main() {
       expect(canvas.tiles.keys, [const FogTileId(_zoom, 0, 0)]);
     });
 
-    test('reports the tiles it touched', () {
-      final touched = <FogTileId>{};
-      final canvas = _Canvas();
-
-      _rasterizer.drawStadium(
-        ax: 250,
-        ay: 100,
-        bx: 270,
-        by: 100,
-        radius: 10,
-        maskFor: canvas.maskFor,
-        onTouched: touched.add,
-      );
-
-      expect(touched, {
-        const FogTileId(_zoom, 0, 0),
-        const FogTileId(_zoom, 1, 0),
-      });
-    });
-
     test('clips shapes at the edge of the world', () {
       final canvas = _Canvas();
 
@@ -298,26 +278,6 @@ void main() {
       );
 
       expect(canvas.pixel(100, 100), greaterThan(0));
-    });
-
-    test('drawPolyline draws every segment and a single point as a disc', () {
-      final canvas = _Canvas();
-
-      _rasterizer.drawPolyline(
-        const [100, 100, 140, 100, 140, 140],
-        radius: 6,
-        maskFor: canvas.maskFor,
-      );
-      _rasterizer.drawPolyline(
-        const [400, 400],
-        radius: 6,
-        maskFor: canvas.maskFor,
-      );
-
-      expect(canvas.pixel(120, 100), 255);
-      expect(canvas.pixel(140, 120), 255);
-      expect(canvas.pixel(400, 400), 255);
-      expect(canvas.pixel(120, 120), 0);
     });
 
     group('onChanged', () {

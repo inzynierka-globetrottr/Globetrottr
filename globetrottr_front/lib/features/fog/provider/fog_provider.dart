@@ -95,8 +95,6 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
     }
   }
 
-  Future<void> flush() => _openStore.flush();
-
   /// Stores [entries] in the track log and draws them into the fog.
   Future<void> importEntries(
     List<TrackLogEntry> entries, {

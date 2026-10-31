@@ -5,9 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/widgets/fog_dev_panel.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 
 import '../support/fake_location_service.dart';
+import '../support/in_memory_fog_tile_storage.dart';
+import '../support/in_memory_track_log_storage.dart';
 
 class _SlowStorage extends InMemoryFogTileStorage {
   final Completer<void> gate = Completer<void>();

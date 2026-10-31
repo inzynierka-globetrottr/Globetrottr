@@ -44,8 +44,6 @@ class FogTileCache {
 
   FogCacheEntry? operator [](FogTileId id) => _entries[id];
 
-  bool contains(FogTileId id) => _entries.containsKey(id);
-
   /// The decoded tile if it is cached, without any I/O.
   FogMask? peek(FogTileId id) => _entries[id]?.mask;
 

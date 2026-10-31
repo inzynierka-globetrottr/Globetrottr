@@ -8,6 +8,7 @@ import 'package:globetrottr_front/features/fog/data/sqflite_fog_tile_storage.dar
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../support/storage_contracts.dart';
+import '../../../support/in_memory_fog_tile_storage.dart';
 
 void main() {
   sqfliteFfiInit();

@@ -4,9 +4,10 @@ import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_tile_writer.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 
 import '../../../support/fog_test_helpers.dart';
+import '../../../support/in_memory_fog_tile_storage.dart';
+import '../../../support/in_memory_track_log_storage.dart';
 
 const _points = 200;
 
@@ -24,10 +25,7 @@ Future<void> _leaveMark(
   return storage.commit(
     upserts: const [],
     meta: {
-      ...FogTileWriter.compatibilityMeta(
-        baseZoom: FogConfig.baseZoom,
-        minZoom: FogConfig.minZoom,
-      ),
+      ...FogTileWriter.compatibilityMeta(baseZoom: FogConfig.baseZoom),
       'replayStepAfter': after.toDouble(),
       'replayAttempts': attempts.toDouble(),
     },

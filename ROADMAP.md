@@ -32,7 +32,6 @@ Source of truth for the plan and the key design decisions of every part of the a
 **Legacy still in place** (marked `TODO(fog)` in code, do not extend):
 - Friends' fog is still a backend polygon drawn by `FogLayer` / `FogPainter`.
 - The backend still builds its own fog from synced points, and quests and statistics are computed from it.
-- `FogService.getMyFog` is dead code.
 
 ---
 

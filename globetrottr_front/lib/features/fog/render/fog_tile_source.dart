@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_stats.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_pixels.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
@@ -52,7 +53,7 @@ class FogTileSource extends ChangeNotifier {
   /// The pyramid level whose tiles are about 1:1 with the screen at [zoom].
   int levelFor(double zoom) {
     if (!zoom.isFinite) return store.baseZoom;
-    return zoom.round().clamp(store.minZoom, store.baseZoom);
+    return zoom.round().clamp(FogConfig.minZoom, store.baseZoom);
   }
 
   /// Starts loading what [camera] currently shows (plus a ring around it).
@@ -105,7 +106,7 @@ class FogTileSource extends ChangeNotifier {
 
   /// The image of the closest coarser tile that is already available.
   FogFallback? fallbackFor(FogTileId id) {
-    for (var z = id.z - 1; z >= store.minZoom; z--) {
+    for (var z = id.z - 1; z >= FogConfig.minZoom; z--) {
       final ancestor = id.ancestorAt(z);
       final image = _images[ancestor];
       if (image != null) return FogFallback(ancestor, image);

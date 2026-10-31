@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
-import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_log/sqflite_track_log_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_test_helpers.dart';
+import '../../../support/in_memory_fog_tile_storage.dart';
 
 void main() {
   sqfliteFfiInit();

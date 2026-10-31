@@ -40,8 +40,6 @@ class FogMask {
     return changed;
   }
 
-  FogMask copy() => FogMask.fromBytes(Uint8List.fromList(data));
-
   /// Rounds every value to the nearest multiple of [step] (0 and 255 stay).
   ///
   /// Sixteen levels (step 16) are invisible on the 1.5 px rim but make a tile

@@ -11,7 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/explorer_route_generator.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
-import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
@@ -22,6 +21,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../support/fog_render_helpers.dart';
+import '../support/in_memory_fog_tile_storage.dart';
 
 final bool _enabled = Platform.environment['FOG_BENCH'] == '1';
 final double _journeyKm =

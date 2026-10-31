@@ -4,11 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 
 import '../../../support/fake_location_service.dart';
 import '../../../support/fog_test_helpers.dart';
+import '../../../support/in_memory_track_log_storage.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

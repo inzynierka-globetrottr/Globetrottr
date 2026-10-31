@@ -65,11 +65,4 @@ abstract final class FogMercator {
     final n = math.pi - 2 * math.pi * y / worldSize(zoom);
     return 180.0 / math.pi * math.atan(0.5 * (math.exp(n) - math.exp(-n)));
   }
-
-  static FogTileId tileAt(double lat, double lng, int zoom) {
-    final tiles = 1 << zoom;
-    final x = (lngToX(lng, zoom) / FogTileId.size).floor().clamp(0, tiles - 1);
-    final y = (latToY(lat, zoom) / FogTileId.size).floor().clamp(0, tiles - 1);
-    return FogTileId(zoom, x, y);
-  }
 }

@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
-import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
-import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 
 import '../../../support/fake_location_service.dart';
 import '../../../support/fog_test_helpers.dart';
+import '../../../support/in_memory_fog_tile_storage.dart';
+import '../../../support/in_memory_track_log_storage.dart';
 
 /// A track log whose reads wait until [gate] is completed.
 class _SlowTrackLog extends InMemoryTrackLogStorage {

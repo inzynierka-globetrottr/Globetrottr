@@ -27,13 +27,15 @@ class BitmapFogPainter extends CustomPainter {
     this.source,
     this.liveCenter,
     this.options = defaultOptions,
-    this.visionRadiusMeters = FogConfig.visionRadiusMeters,
   }) : super(repaint: source);
 
   static const FogRenderOptions defaultOptions = FogRenderOptions();
   static const int _maxDrawnTiles = 96;
   static const double _tile = 256;
   static const double _minPixelLineSize = 6;
+
+  /// Upper bound of the edge blur in screen pixels, to keep drawing cheap.
+  static const double _maxBlurSigma = 3;
 
   final MapCamera camera;
   final FogTileSource? source;
@@ -42,7 +44,6 @@ class BitmapFogPainter extends CustomPainter {
   /// waiting for the next tile update.
   final LatLng? liveCenter;
   final FogRenderOptions options;
-  final double visionRadiusMeters;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -61,7 +62,7 @@ class BitmapFogPainter extends CustomPainter {
               ),
     );
     canvas.drawColor(
-      AppColors.fog.withValues(alpha: options.opacity),
+      AppColors.fog.withValues(alpha: FogConfig.fogOpacity),
       BlendMode.srcOver,
     );
     // Coverage is first summed in its own layer and only then subtracted
@@ -90,7 +91,7 @@ class BitmapFogPainter extends CustomPainter {
       zoom: camera.zoom,
     );
     final sigma = math.min(
-      options.maxBlurSigma,
+      _maxBlurSigma,
       options.softEdgeMeters / 2 / groundResolution,
     );
     return sigma < 0.4 ? null : sigma;
@@ -306,7 +307,7 @@ class BitmapFogPainter extends CustomPainter {
       final x = FogMercator.lngToX(center.longitude, z);
       final y = FogMercator.latToY(center.latitude, z);
       final radius = metersToPixels(
-        meters: visionRadiusMeters,
+        meters: FogConfig.visionRadiusMeters,
         latitude: center.latitude,
         zoom: z.toDouble(),
       );
@@ -324,7 +325,7 @@ class BitmapFogPainter extends CustomPainter {
     final width =
         2 *
         metersToPixels(
-          meters: visionRadiusMeters,
+          meters: FogConfig.visionRadiusMeters,
           latitude: camera.center.latitude,
           zoom: camera.zoom,
         );
@@ -347,7 +348,7 @@ class BitmapFogPainter extends CustomPainter {
     final levelWidth =
         2 *
         metersToPixels(
-          meters: visionRadiusMeters,
+          meters: FogConfig.visionRadiusMeters,
           latitude: camera.center.latitude,
           zoom: level.toDouble(),
         );
@@ -359,7 +360,7 @@ class BitmapFogPainter extends CustomPainter {
     final center = liveCenter;
     if (center == null) return;
     final radius = metersToPixels(
-      meters: visionRadiusMeters,
+      meters: FogConfig.visionRadiusMeters,
       latitude: center.latitude,
       zoom: camera.zoom,
     );
@@ -383,7 +384,6 @@ class BitmapFogPainter extends CustomPainter {
     return oldDelegate.source != source ||
         oldDelegate.options != options ||
         oldDelegate.liveCenter != liveCenter ||
-        oldDelegate.visionRadiusMeters != visionRadiusMeters ||
         oldDelegate.camera.center != camera.center ||
         oldDelegate.camera.zoom != camera.zoom ||
         oldDelegate.camera.rotation != camera.rotation;

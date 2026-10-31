@@ -42,8 +42,6 @@ class FogTileWriter {
   FogTileWriter(
     this.cache, {
     required this.baseZoom,
-    required this.minZoom,
-    required this.overviewFloor,
     required this.encodeInIsolate,
     required this.isolateEncodeThreshold,
   });
@@ -52,20 +50,15 @@ class FogTileWriter {
   /// this build draws them. Every metadata write must include it, otherwise
   /// a store holding only a small mark would be taken for an incompatible one
   /// and cleared.
-  static Map<String, double> compatibilityMeta({
-    required int baseZoom,
-    required int minZoom,
-  }) => {
+  static Map<String, double> compatibilityMeta({required int baseZoom}) => {
     'baseZoom': baseZoom.toDouble(),
-    'minZoom': minZoom.toDouble(),
+    'minZoom': FogConfig.minZoom.toDouble(),
     'formatVersion': FogTileCodec.formatVersion.toDouble(),
     'drawVersion': FogConfig.drawVersion.toDouble(),
   };
 
   final FogTileCache cache;
   final int baseZoom;
-  final int minZoom;
-  final int overviewFloor;
 
   /// Compress large writes in a background isolate to keep the UI smooth.
   final bool encodeInIsolate;
@@ -87,7 +80,7 @@ class FogTileWriter {
     final ancestors = <FogTileId>{};
 
     var level = baseDirty;
-    for (var z = baseZoom; z > minZoom; z--) {
+    for (var z = baseZoom; z > FogConfig.minZoom; z--) {
       final byParent = <FogTileId, List<FogTileId>>{};
       for (final id in level) {
         byParent.putIfAbsent(id.parent!, () => []).add(id);
@@ -103,7 +96,6 @@ class FogTileWriter {
             parent: parentMask,
             quadX: child.x & 1,
             quadY: child.y & 1,
-            overviewFloor: overviewFloor,
           );
         }
         entry.dirty = true;
@@ -159,7 +151,7 @@ class FogTileWriter {
           'rev': nextRevision.toDouble(),
           'totalAreaM2': newTotal,
           'lastAppliedLogId': lastAppliedLogId.toDouble(),
-          ...compatibilityMeta(baseZoom: baseZoom, minZoom: minZoom),
+          ...compatibilityMeta(baseZoom: baseZoom),
         },
       );
     } on Object {

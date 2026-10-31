@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 typedef FogMaskProvider = FogMask Function(FogTileId id);
 
@@ -15,7 +16,7 @@ typedef FogMaskProvider = FogMask Function(FogTileId id);
 class FogRasterizer {
   const FogRasterizer({
     required this.zoom,
-    this.edgeWidth = 1.5,
+    this.edgeWidth = FogConfig.edgeWidthPixels,
     this.quantStep = 1,
   });
 
@@ -36,7 +37,6 @@ class FogRasterizer {
     required double by,
     required double radius,
     required FogMaskProvider maskFor,
-    void Function(FogTileId id)? onTouched,
     void Function(FogTileId id)? onChanged,
   }) {
     final shape = _Stadium(ax, ay, bx, by);
@@ -84,7 +84,6 @@ class FogRasterizer {
           }
 
           final data = (mask ??= maskFor(id)).data;
-          onTouched?.call(id);
           final rowBase = (row - originY) * size - originX;
           var rowChanged = false;
 
@@ -133,43 +132,6 @@ class FogRasterizer {
           }
         }
       }
-    }
-  }
-
-  /// Draws a polyline given as flat `[x0, y0, x1, y1, ...]` world pixels.
-  /// A single point is drawn as a disc.
-  void drawPolyline(
-    List<double> xy, {
-    required double radius,
-    required FogMaskProvider maskFor,
-    void Function(FogTileId id)? onTouched,
-    void Function(FogTileId id)? onChanged,
-  }) {
-    if (xy.length < 2) return;
-    if (xy.length == 2) {
-      drawStadium(
-        ax: xy[0],
-        ay: xy[1],
-        bx: xy[0],
-        by: xy[1],
-        radius: radius,
-        maskFor: maskFor,
-        onTouched: onTouched,
-        onChanged: onChanged,
-      );
-      return;
-    }
-    for (var i = 0; i + 3 < xy.length; i += 2) {
-      drawStadium(
-        ax: xy[i],
-        ay: xy[i + 1],
-        bx: xy[i + 2],
-        by: xy[i + 3],
-        radius: radius,
-        maskFor: maskFor,
-        onTouched: onTouched,
-        onChanged: onChanged,
-      );
     }
   }
 

@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 
+FogMask _copy(FogMask mask) => FogMask.fromBytes(Uint8List.fromList(mask.data));
+
 void main() {
   group('FogMask', () {
     test('starts empty', () {
@@ -56,20 +58,12 @@ void main() {
     test('mergeMax with itself or an empty mask changes nothing', () {
       final a = FogMask();
       a.data[5] = 80;
-      final copy = a.copy();
+      final copy = _copy(a);
 
       a.mergeMax(a);
       a.mergeMax(FogMask());
 
       expect(a.data, copy.data);
-    });
-
-    test('copy is independent from the original', () {
-      final a = FogMask();
-      final b = a.copy();
-      b.data[0] = 1;
-
-      expect(a.data[0], 0);
     });
 
     test('fromBytes validates the length', () {
@@ -165,9 +159,9 @@ void main() {
         a.data[i] = (i * 37) % 256;
         b.data[i] = (i * 91 + 13) % 256;
       }
-      final merged = a.copy()..mergeMax(b);
-      final qa = a.copy()..quantizeInPlace();
-      final viaStored = qa.copy()..mergeMax(b);
+      final merged = _copy(a)..mergeMax(b);
+      final qa = _copy(a)..quantizeInPlace();
+      final viaStored = _copy(qa)..mergeMax(b);
       merged.quantizeInPlace();
       viaStored.quantizeInPlace();
 
@@ -188,7 +182,7 @@ void main() {
       final higher = FogMask()..data[0] = 150;
 
       expect(a.mergeMax(lower), isFalse);
-      expect(a.mergeMax(a.copy()), isFalse);
+      expect(a.mergeMax(_copy(a)), isFalse);
       expect(a.mergeMax(FogMask()), isFalse);
       expect(a.mergeMax(higher), isTrue);
       expect(a.data[0], 150);
