@@ -313,12 +313,20 @@ void main() {
       },
     );
 
-    test('the live disc clears the fog around the player at once', () async {
+    test('the fog clears around the player at once', () async {
       final camera = cameraAt();
+      final store = await openStore();
+      final source = await readySource(store, camera);
 
       final alpha = await renderAlpha(
-        painterFor(camera, liveCenter: const LatLng(krakowLat, krakowLng)),
+        painterFor(
+          camera,
+          source: source,
+          head: const LatLng(krakowLat, krakowLng),
+        ),
       );
+      source.dispose();
+      await store.dispose();
 
       expect(alpha(200, 400), 0);
       expect(alpha(200 + (baseRadiusPixels * 0.5).round(), 400), lessThan(5));
@@ -425,7 +433,7 @@ void main() {
       expect(base.shouldRepaint(painterFor(cameraAt(rotation: 5))), isTrue);
       expect(
         base.shouldRepaint(
-          painterFor(camera, liveCenter: const LatLng(krakowLat, krakowLng)),
+          painterFor(camera, head: const LatLng(krakowLat, krakowLng)),
         ),
         isTrue,
       );

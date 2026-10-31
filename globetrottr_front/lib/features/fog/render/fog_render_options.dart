@@ -4,15 +4,15 @@ import 'package:meta/meta.dart';
 class FogRenderOptions {
   const FogRenderOptions({
     this.softEdge = true,
-    this.softEdgeMeters = 4.0,
+    this.softEdgeMeters = 6.0,
     this.showGrid = false,
     this.rawPixels = false,
   });
 
-  /// Blurs the rim of the fog so it looks continuous instead of pixelated.
+  /// Keeps the edge of the fog soft instead of as sharp as the screen allows.
   final bool softEdge;
 
-  /// Rough width of the soft rim on the ground.
+  /// Width of the soft edge on the ground.
   final double softEdgeMeters;
 
   /// Developer aid: outlines the fog tiles that are being drawn and names
@@ -20,7 +20,7 @@ class FogRenderOptions {
   final bool showGrid;
 
   /// Developer aid: shows the stored fog pixels exactly as they are. No blur,
-  /// no smoothing between pixels, no live disc around the player, and thin
+  /// no smoothing between pixels, no live fog, and thin
   /// lines between the pixels once they are large enough on the screen.
   final bool rawPixels;
 

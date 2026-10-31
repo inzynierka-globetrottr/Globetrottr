@@ -18,7 +18,7 @@ abstract final class FogConfig {
 
   /// Longest stretch joined into one path. About 1200 km/h at one fix per
   /// second; a longer gap between two fixes starts a new path.
-  static const double maxSegmentMeters = 350;
+  static const double maxSegmentMeters = MapConfig.maxPathGapMeters;
 
   /// Most base tiles one path may cover (about 4 MB of masks). A safety net
   /// next to [maxSegmentMeters]; it only matters at extreme latitudes.
@@ -26,10 +26,12 @@ abstract final class FogConfig {
 
   /// Bumped whenever the way points are drawn changes, so tiles drawn by an
   /// older rule are dropped and rebuilt from the track log.
-  static const int drawVersion = 5;
+  static const int drawVersion = 6;
 
-  /// Width of the anti-aliased rim of every stored shape, in base pixels.
-  static const double edgeWidthPixels = 2.5;
+  /// Width of the soft edge of every stored shape, in base pixels. Wide enough
+  /// that the edge can be enlarged and steepened on the screen and stay
+  /// smooth.
+  static const double edgeWidthPixels = 3;
 
   /// Soft limit of tiles (64 KB each) kept decoded in memory: 16 MB.
   static const int maxCachedTiles = 256;
@@ -52,14 +54,20 @@ abstract final class FogConfig {
   /// Modified tiles are written at the latest this long after the first one.
   static const Duration flushDelay = Duration(seconds: 4);
 
-  /// Stored coverage of base tiles is rounded to multiples of this.
-  static const int baseQuantStep = 16;
+  /// Stored coverage of base tiles is rounded to multiples of this. A larger
+  /// step shows as a wavy fog edge once the edge is enlarged.
+  static const int baseQuantStep = 8;
 
   /// Overview tiles are only for display, so eight levels are plenty.
   static const int overviewQuantStep = 32;
 
-  /// A write of at least this many tiles is compressed in an isolate.
-  static const int isolateEncodeThreshold = 24;
+  /// A write of at least this many tiles is compressed in an isolate, so a
+  /// flush cannot make the moving player stutter.
+  static const int isolateEncodeThreshold = 4;
+
+  /// Coarsest level that shows a plain average; below it a route is too thin
+  /// for that and keeps a minimum strength.
+  static const int overviewFloorMaxZoom = 10;
 
   /// Most isolates one batch of work may use at the same time.
   static int get isolateWorkers => math.min(Platform.numberOfProcessors, 4);

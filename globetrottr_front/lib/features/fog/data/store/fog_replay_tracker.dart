@@ -1,13 +1,15 @@
 import 'dart:async';
 
+import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
+
 /// A point logged while the store catches up with the track log.
 class FogDeferredPoint {
-  FogDeferredPoint(this.sessionId, this.latitude, this.longitude, this.logId);
+  FogDeferredPoint(this.sessionId, this.point, this.logId, this.trailId);
 
   final String sessionId;
-  final double latitude;
-  final double longitude;
+  final FogPathPoint point;
   final int? logId;
+  final int trailId;
 
   /// Completes once the point is drawn (or skipped as already drawn).
   final Completer<void> done = Completer<void>();

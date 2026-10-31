@@ -4,7 +4,11 @@ import 'package:latlong2/latlong.dart';
 class MapConfig {
   static const double defaultVisionRadius = 50.0;
   static const double defaultZoom = 16.0;
-  static const int distanceFilter = 10;
+  static const int distanceFilter = 5;
+
+  /// Longest stretch between two fixes treated as one continuous path; a
+  /// longer gap means the device saw nothing in between.
+  static const double maxPathGapMeters = 350;
 
   static const LatLng initialCenter = LatLng(50.0614, 19.9383); // Kraków
 

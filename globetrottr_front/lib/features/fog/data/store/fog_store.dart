@@ -152,9 +152,12 @@ class FogStore {
   int _lastFlushMillis = 0;
   int _lastFlushTiles = 0;
 
+  /// Newest segment of the trail already drawn into the tiles.
+  int _appliedTrailId = 0;
+
   int get revision => _revision;
 
-  /// What was revealed since the last flush, for drawing over the tiles.
+  /// What was revealed since the last flush, for drawing over the images.
   FogTrail get trail => _trail;
 
   /// Whether the position continues the path from the newest drawn point,
@@ -199,6 +202,9 @@ class FogStore {
   /// A session's first point is drawn as a disc. [logId] is the track log id
   /// of the point, used to resume after a crash.
   ///
+  /// The point joins the trail before this returns, so the frame that calls
+  /// it already shows it; the tiles follow in the queue.
+  ///
   /// During a replay or rebuild the point is drawn only after it finished,
   /// so log entries always reach the tiles in log order.
   Future<void> applyPoint({
@@ -207,12 +213,14 @@ class FogStore {
     required double longitude,
     int? logId,
   }) {
+    final point = FogPathPoint.at(latitude, longitude, baseZoom);
+    final trailId = _trail.add(sessionId, point, _segmentRule);
     if (_replayTracker.isRunning) {
       return _replayTracker.defer(
-        FogDeferredPoint(sessionId, latitude, longitude, logId),
+        FogDeferredPoint(sessionId, point, logId, trailId),
       );
     }
-    return _queue.run(() => _apply(sessionId, latitude, longitude, logId));
+    return _queue.run(() => _apply(sessionId, point, logId, trailId));
   }
 
   /// Draws the points that waited for a replay. Those the replay already
@@ -222,8 +230,11 @@ class FogStore {
       point.done.complete(
         _queue.run(() async {
           final logId = point.logId;
-          if (logId != null && logId <= _lastAppliedLogId) return;
-          await _apply(point.sessionId, point.latitude, point.longitude, logId);
+          if (logId != null && logId <= _lastAppliedLogId) {
+            _appliedTrailId = point.trailId;
+            return;
+          }
+          await _apply(point.sessionId, point.point, logId, point.trailId);
         }),
       );
     }
@@ -231,12 +242,11 @@ class FogStore {
 
   Future<void> _apply(
     String sessionId,
-    double latitude,
-    double longitude,
+    FogPathPoint point,
     int? logId,
+    int trailId,
   ) async {
     final timer = Stopwatch()..start();
-    final point = FogPathPoint.at(latitude, longitude, baseZoom);
     final last = _lastPoints[sessionId];
     final start = last != null && _segmentRule.connects(last, point)
         ? last
@@ -268,12 +278,9 @@ class FogStore {
       );
       _tiles.markDrawn(created, changed);
       _lastPoints.remember(sessionId, point);
-      _trail.anchor = point;
       _noteApplied(logId);
-      if (changed.isNotEmpty) {
-        _trail.add(start.x, start.y, point.x, point.y);
-        _emit(FogChange(changed, onTrail: true));
-      }
+      _appliedTrailId = trailId;
+      if (changed.isNotEmpty) _emit(FogChange(changed, onTrail: true));
     } finally {
       _tiles.pinned.removeAll(needed);
     }
@@ -297,7 +304,7 @@ class FogStore {
   Future<void> _flushIfNeeded() async {
     if (_tiles.dirty.length >= maxDirtyTiles) {
       await _flush();
-    } else if (_tiles.dirty.isNotEmpty || _metaDirty) {
+    } else if (_tiles.dirty.isNotEmpty || _metaDirty || !_trail.isEmpty) {
       _scheduleFlush();
     }
   }
@@ -318,7 +325,11 @@ class FogStore {
   Future<void> _flush() async {
     _flushTimer?.cancel();
     _flushTimer = null;
-    if (_tiles.dirty.isEmpty && !_metaDirty) return;
+    final drawn = _appliedTrailId;
+    if (_tiles.dirty.isEmpty && !_metaDirty) {
+      _trail.forget(drawn);
+      return;
+    }
 
     final timer = Stopwatch()..start();
     final result = await _writer.write(
@@ -331,12 +342,12 @@ class FogStore {
     _metaDirty = false;
     _lastFlushMillis = timer.elapsedMilliseconds;
     _lastFlushTiles = result.tiles.length;
-    if (result.tiles.isEmpty) return;
-    final written = _trail.newestId;
-    if (_changes.isClosed || !_changes.hasListener) {
-      _trail.forget(written);
+    if (result.tiles.isEmpty || _changes.isClosed || !_changes.hasListener) {
+      _trail.forget(drawn);
     }
-    _emit(FogChange(result.tiles, trailWrittenUpTo: written));
+    if (result.tiles.isNotEmpty) {
+      _emit(FogChange(result.tiles, trailWrittenUpTo: drawn));
+    }
   }
 
   /// Draws many entries at once, optionally rasterizing in a background

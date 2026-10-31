@@ -3,9 +3,12 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 /// Builds coarser tiles from finer ones for displaying the fog zoomed out.
 ///
 /// A plain average would make a 60 m road vanish on a country-sized view, so
-/// a coarse pixel is the larger of the average and the strongest child pixel
-/// capped at [defaultOverviewFloor]. Capping (instead of scaling) means a
-/// thin road keeps the same visibility on every level instead of decaying.
+/// on the levels where a road is thinner than a few pixels a coarse pixel is
+/// the larger of the average and the strongest child pixel capped at
+/// [defaultOverviewFloor]. Capping (instead of scaling) means a thin road
+/// keeps the same visibility on every level instead of decaying. An
+/// `overviewFloor` of 0 leaves the plain average, which keeps the fog edge in
+/// place between levels.
 abstract final class FogPyramid {
   static const int defaultOverviewFloor = 144;
 

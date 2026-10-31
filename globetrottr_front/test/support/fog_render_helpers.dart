@@ -90,13 +90,13 @@ Future<FogTileSource> readySource(FogStore store, MapCamera camera) async {
 BitmapFogPainter painterFor(
   MapCamera camera, {
   FogTileSource? source,
-  LatLng? liveCenter,
+  LatLng? head,
   bool softEdge = false,
 }) {
   return BitmapFogPainter(
     camera: camera,
     source: source,
-    liveCenter: liveCenter,
+    head: head == null ? null : ValueNotifier<LatLng?>(head),
     options: BitmapFogPainter.defaultOptions.copyWith(softEdge: softEdge),
   );
 }

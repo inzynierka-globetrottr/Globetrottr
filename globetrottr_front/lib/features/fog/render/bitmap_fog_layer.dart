@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
@@ -12,12 +13,12 @@ class BitmapFogLayer extends StatelessWidget {
     super.key,
     this.source,
     this.options = BitmapFogPainter.defaultOptions,
-    this.liveCenter,
+    this.head,
   });
 
   final FogTileSource? source;
   final FogRenderOptions options;
-  final LatLng? liveCenter;
+  final ValueListenable<LatLng?>? head;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,7 @@ class BitmapFogLayer extends StatelessWidget {
           camera: camera,
           source: source,
           options: options,
-          liveCenter: liveCenter,
+          head: head,
         ),
       ),
     );
