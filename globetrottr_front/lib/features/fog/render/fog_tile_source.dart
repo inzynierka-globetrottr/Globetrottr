@@ -5,11 +5,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_stats.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_pixels.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 
 class FogFallback {
   const FogFallback(this.id, this.image);
@@ -61,8 +62,8 @@ class FogTileSource extends ChangeNotifier {
 
   /// Starts loading what [camera] currently shows (plus a ring around it).
   void ensureVisible(MapCamera camera) {
-    if (!FogTileRange.isUsable(camera)) return;
-    ensureRange(FogTileRange.visible(camera, levelFor(camera.zoom)));
+    if (!camera.isUsableForFog) return;
+    ensureRange(camera.visibleTiles(levelFor(camera.zoom)));
   }
 
   void ensureRange(FogTileRange range) {
@@ -79,13 +80,7 @@ class FogTileSource extends ChangeNotifier {
   Future<void> _load(FogTileRange target) async {
     _begin();
     try {
-      await store.prepare(
-        target.z,
-        target.xMin,
-        target.xMax,
-        target.yMin,
-        target.yMax,
-      );
+      await store.prepare(target);
       if (_disposed) return;
       for (final id in target.ids) {
         if (store.peek(id) != null) _request(id);

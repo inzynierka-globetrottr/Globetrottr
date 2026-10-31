@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+
 /// 256x256 grid of 8-bit discovery coverage: 0 is fog, 255 is fully revealed.
 class FogMask {
   FogMask() : data = Uint8List(pixels);
@@ -7,7 +9,7 @@ class FogMask {
   FogMask.fromBytes(this.data)
     : assert(data.length == pixels, 'A mask needs exactly $pixels bytes');
 
-  static const int size = 256;
+  static const int size = FogTileId.size;
   static const int pixels = size * size;
 
   final Uint8List data;

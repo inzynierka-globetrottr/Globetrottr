@@ -6,7 +6,7 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_tile_cache.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
@@ -25,14 +25,8 @@ class FogWriteResult {
   final Set<FogTileId> tiles;
 }
 
-List<(int, Uint8List?)> _encodeBatch(List<Uint8List> raw) {
-  return [
-    for (final data in raw)
-      () {
-        final encoded = FogTileCodec.encode(FogMask.fromBytes(data));
-        return (encoded.flag, encoded.bytes);
-      }(),
-  ];
+List<EncodedFogTile> _encodeBatch(List<Uint8List> raw) {
+  return [for (final data in raw) FogTileCodec.encode(FogMask.fromBytes(data))];
 }
 
 /// Writes the modified tiles of a [FogTileCache] to its storage, together
@@ -82,7 +76,7 @@ class FogTileWriter {
       for (var z = baseZoom; z > FogConfig.minZoom; z--) {
         final byParent = <FogTileId, List<FogTileId>>{};
         for (final id in level) {
-          byParent.putIfAbsent(id.parent!, () => []).add(id);
+          byParent.putIfAbsent(id.ancestorAt(z - 1), () => []).add(id);
         }
         ancestors.addAll(byParent.keys);
         cache.pinned.addAll(byParent.keys);
@@ -177,10 +171,7 @@ class FogTileWriter {
           return Isolate.run(() => _encodeBatch(slice));
         }(),
     ]);
-    return [
-      for (final part in parts)
-        for (final item in part) EncodedFogTile(item.$1, item.$2),
-    ];
+    return [for (final part in parts) ...part];
   }
 
   double _areaOf(FogTileId id, FogMask mask) {

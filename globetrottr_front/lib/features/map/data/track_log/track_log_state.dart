@@ -72,15 +72,34 @@ class TrackLogState {
   /// Points waiting in `track_tail`.
   int tailCount;
 
+  int get pointCount => sessions.values.fold(0, (sum, s) => sum + s.count);
+
+  /// Id of the newest stored point, or 0 when there is none.
+  int get newestId => sessions.values.fold(0, (m, s) => math.max(m, s.lastId));
+
+  /// Every session, the oldest first.
+  List<TrackSessionSummary> get summaries {
+    final ordered = sessions.values.toList()
+      ..sort((a, b) {
+        final byStart = a.startTs.compareTo(b.startTs);
+        return byStart != 0 ? byStart : a.firstId.compareTo(b.firstId);
+      });
+    return [
+      for (final s in ordered)
+        TrackSessionSummary(
+          sessionId: s.sessionId,
+          startMs: s.startTs,
+          endMs: s.endTs,
+          pointCount: s.count,
+        ),
+    ];
+  }
+
   static Future<TrackLogState> read(DatabaseExecutor db) async {
     final sessions = {
       for (final row in await db.query('track_sessions'))
         row['session_id']! as String: TrackLogSession.fromRow(row),
     };
-    final newest = sessions.values.fold<int>(
-      0,
-      (m, s) => math.max(m, s.lastId),
-    );
     final saved = await db.query('track_meta', where: "key = 'next_id'");
     final remembered = saved.isEmpty ? 1 : saved.single['value']! as int;
     final tailCount =
@@ -88,10 +107,8 @@ class TrackLogState {
           await db.rawQuery('SELECT COUNT(*) FROM track_tail'),
         ) ??
         0;
-    return TrackLogState(
-      sessions,
-      math.max(newest + 1, remembered),
-      tailCount,
-    );
+    final state = TrackLogState(sessions, remembered, tailCount);
+    state.nextId = math.max(state.newestId + 1, remembered);
+    return state;
   }
 }

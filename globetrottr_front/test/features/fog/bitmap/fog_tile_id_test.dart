@@ -66,9 +66,8 @@ void main() {
       expect(const FogTileId(3, 2, 1), isNot(const FogTileId(4, 2, 1)));
     });
 
-    test('parent halves the coordinates', () {
-      expect(const FogTileId(5, 13, 7).parent, const FogTileId(4, 6, 3));
-      expect(const FogTileId(0, 0, 0).parent, isNull);
+    test('the ancestor one level up halves the coordinates', () {
+      expect(const FogTileId(5, 13, 7).ancestorAt(4), const FogTileId(4, 6, 3));
     });
 
     test('ancestorAt walks up several levels', () {

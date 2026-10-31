@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
@@ -96,9 +97,13 @@ FogTileId tileOf(double lat, double lng, int z) {
   return FogTileId(z, x.clamp(0, tiles - 1), y.clamp(0, tiles - 1));
 }
 
+FogTileRange singleTile(FogTileId id) {
+  return FogTileRange(z: id.z, xMin: id.x, xMax: id.x, yMin: id.y, yMax: id.y);
+}
+
 /// The decoded tile, read from storage when it is not cached.
 Future<FogMask?> loadedMask(FogStore store, FogTileId id) async {
-  await store.prepare(id.z, id.x, id.x, id.y, id.y);
+  await store.prepare(singleTile(id));
   return store.peek(id);
 }
 

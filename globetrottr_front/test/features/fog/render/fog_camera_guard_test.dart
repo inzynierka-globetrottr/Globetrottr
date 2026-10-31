@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
@@ -38,14 +38,14 @@ void main() {
     'zero size': _camera(size: const math.Point<double>(0, 0)),
   };
 
-  group('FogTileRange.isUsable', () {
+  group('isUsableForFog', () {
     test('accepts a normal camera', () {
-      expect(FogTileRange.isUsable(_camera()), isTrue);
+      expect(_camera().isUsableForFog, isTrue);
     });
 
     for (final entry in broken.entries) {
       test('rejects a camera with ${entry.key}', () {
-        expect(FogTileRange.isUsable(entry.value), isFalse);
+        expect(entry.value.isUsableForFog, isFalse);
       });
     }
   });

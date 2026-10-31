@@ -249,6 +249,35 @@ void main() {
       expect(canvas.tiles.keys, [const FogTileId(_zoom, 0, 0)]);
     });
 
+    test('tilesFor names every tile the stadium draws into', () {
+      const shapes = [
+        (ax: 250.0, ay: 100.0, bx: 270.0, by: 100.0, radius: 10.0),
+        (ax: 100.0, ay: 100.0, bx: 600.0, by: 700.0, radius: 20.0),
+        (ax: 255.5, ay: 255.5, bx: 255.5, by: 255.5, radius: 0.5),
+      ];
+      for (final shape in shapes) {
+        final canvas = _Canvas();
+
+        _rasterizer.drawStadium(
+          ax: shape.ax,
+          ay: shape.ay,
+          bx: shape.bx,
+          by: shape.by,
+          radius: shape.radius,
+          maskFor: canvas.maskFor,
+        );
+
+        final range = _rasterizer.tilesFor(
+          ax: shape.ax,
+          ay: shape.ay,
+          bx: shape.bx,
+          by: shape.by,
+          radius: shape.radius,
+        );
+        expect(canvas.tiles.keys.every(range.contains), isTrue);
+      }
+    });
+
     test('clips shapes at the edge of the world', () {
       final canvas = _Canvas();
 

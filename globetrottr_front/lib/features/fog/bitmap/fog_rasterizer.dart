@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 typedef FogMaskProvider = FogMask Function(FogTileId id);
@@ -30,6 +31,24 @@ class FogRasterizer {
   /// the stored one, so a pass that adds nothing is recognised as such.
   final int quantStep;
 
+  /// The tiles [drawStadium] may draw into for this stadium.
+  FogTileRange tilesFor({
+    required double ax,
+    required double ay,
+    required double bx,
+    required double by,
+    required double radius,
+  }) {
+    final reach = radius + edgeWidth / 2;
+    return FogTileRange.covering(
+      z: zoom,
+      minX: math.min(ax, bx) - reach,
+      maxX: math.max(ax, bx) + reach,
+      minY: math.min(ay, by) - reach,
+      maxY: math.max(ay, by) + reach,
+    );
+  }
+
   void drawStadium({
     required double ax,
     required double ay,
@@ -43,21 +62,13 @@ class FogRasterizer {
     final half = edgeWidth / 2;
     final outer = radius + half;
     final inner = radius - half;
-    final tiles = 1 << zoom;
     const size = FogMask.size;
-
-    final minX = math.min(ax, bx) - outer;
-    final maxX = math.max(ax, bx) + outer;
     final minY = math.min(ay, by) - outer;
     final maxY = math.max(ay, by) + outer;
+    final range = tilesFor(ax: ax, ay: ay, bx: bx, by: by, radius: radius);
 
-    final tileX0 = (minX / size).floor().clamp(0, tiles - 1);
-    final tileX1 = (maxX / size).floor().clamp(0, tiles - 1);
-    final tileY0 = (minY / size).floor().clamp(0, tiles - 1);
-    final tileY1 = (maxY / size).floor().clamp(0, tiles - 1);
-
-    for (var ty = tileY0; ty <= tileY1; ty++) {
-      for (var tx = tileX0; tx <= tileX1; tx++) {
+    for (var ty = range.yMin; ty <= range.yMax; ty++) {
+      for (var tx = range.xMin; tx <= range.xMax; tx++) {
         final originX = tx * size;
         final originY = ty * size;
         final rowStart = math.max(minY.floor(), originY);

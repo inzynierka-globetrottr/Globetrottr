@@ -5,10 +5,11 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_replay_tracker.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_batch_drawing.dart';
@@ -124,8 +125,6 @@ class FogStore {
     maxSegmentMeters: maxSegmentMeters,
   );
   late final FogImportPlanner _planner = FogImportPlanner(
-    baseZoom: baseZoom,
-    radiusMeters: FogConfig.visionRadiusMeters,
     segmentRule: _segmentRule,
     rasterizer: _rasterizer,
   );
@@ -158,12 +157,15 @@ class FogStore {
   /// What was revealed since the last flush, for drawing over the tiles.
   FogTrail get trail => _trail;
 
-  /// Whether the position (given in base level pixels) continues the path
-  /// from the newest drawn point, by the same rule as the tiles.
-  bool joinsTrail(double x, double y, double radius) {
+  /// Whether the position continues the path from the newest drawn point,
+  /// by the same rule as the tiles.
+  bool joinsTrail(double latitude, double longitude) {
     final anchor = _trail.anchor;
     return anchor != null &&
-        _segmentRule.connects(anchor.x, anchor.y, x, y, radius);
+        _segmentRule.connects(
+          anchor,
+          FogPathPoint.at(latitude, longitude, baseZoom),
+        );
   }
 
   /// Recording stopped or started: the next position starts a new path.
@@ -234,49 +236,42 @@ class FogStore {
     int? logId,
   ) async {
     final timer = Stopwatch()..start();
-    final x = FogMercator.lngToX(longitude, baseZoom);
-    final y = FogMercator.latToY(latitude, baseZoom);
-    final radius = metersToPixels(
-      meters: FogConfig.visionRadiusMeters,
-      latitude: latitude,
-      zoom: baseZoom.toDouble(),
-    );
+    final point = FogPathPoint.at(latitude, longitude, baseZoom);
     final last = _lastPoints[sessionId];
-    final previous =
-        last != null && _segmentRule.connects(last.x, last.y, x, y, radius)
+    final start = last != null && _segmentRule.connects(last, point)
         ? last
-        : null;
-    final ax = previous?.x ?? x;
-    final ay = previous?.y ?? y;
+        : point;
 
-    final reach = radius + _rasterizer.edgeWidth;
-    final needed = _tilesCovering(
-      math.min(ax, x) - reach,
-      math.max(ax, x) + reach,
-      math.min(ay, y) - reach,
-      math.max(ay, y) + reach,
-    );
+    final needed = _rasterizer
+        .tilesFor(
+          ax: start.x,
+          ay: start.y,
+          bx: point.x,
+          by: point.y,
+          radius: point.radius,
+        )
+        .ids
+        .toList();
     _tiles.pinned.addAll(needed);
     try {
       await _tiles.ensureLoaded(needed);
       final created = <FogTileId>{};
       final changed = <FogTileId>{};
       _rasterizer.drawStadium(
-        ax: ax,
-        ay: ay,
-        bx: x,
-        by: y,
-        radius: radius,
+        ax: start.x,
+        ay: start.y,
+        bx: point.x,
+        by: point.y,
+        radius: point.radius,
         maskFor: (id) => _tiles.maskToDrawInto(id, created),
         onChanged: changed.add,
       );
       _tiles.markDrawn(created, changed);
-      final point = FogLastPoint(x, y, radius);
       _lastPoints.remember(sessionId, point);
       _trail.anchor = point;
       _noteApplied(logId);
       if (changed.isNotEmpty) {
-        _trail.add(ax, ay, x, y);
+        _trail.add(start.x, start.y, point.x, point.y);
         _emit(FogChange(changed, onTrail: true));
       }
     } finally {
@@ -297,24 +292,6 @@ class FogStore {
       _lastAppliedLogId = logId;
       _metaDirty = true;
     }
-  }
-
-  List<FogTileId> _tilesCovering(
-    double minX,
-    double maxX,
-    double minY,
-    double maxY,
-  ) {
-    final tiles = 1 << baseZoom;
-    const size = FogTileId.size;
-    final x0 = (minX / size).floor().clamp(0, tiles - 1);
-    final x1 = (maxX / size).floor().clamp(0, tiles - 1);
-    final y0 = (minY / size).floor().clamp(0, tiles - 1);
-    final y1 = (maxY / size).floor().clamp(0, tiles - 1);
-    return [
-      for (var ty = y0; ty <= y1; ty++)
-        for (var tx = x0; tx <= x1; tx++) FogTileId(baseZoom, tx, ty),
-    ];
   }
 
   Future<void> _flushIfNeeded() async {
@@ -585,10 +562,8 @@ class FogStore {
     });
   }
 
-  /// Loads the tiles of a level range so [peek] can answer synchronously.
-  Future<void> prepare(int z, int xMin, int xMax, int yMin, int yMax) {
-    return _tiles.loadRange(z, xMin, xMax, yMin, yMax);
-  }
+  /// Loads the tiles of [range] so [peek] can answer synchronously.
+  Future<void> prepare(FogTileRange range) => _tiles.loadRange(range);
 
   /// The decoded tile if it is cached, without any I/O.
   FogMask? peek(FogTileId id) => _tiles.peek(id);

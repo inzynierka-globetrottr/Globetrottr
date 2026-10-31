@@ -1,4 +1,3 @@
-import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:meta/meta.dart';
 
@@ -13,42 +12,26 @@ class FogTileRange {
     required this.yMax,
   });
 
-  /// Whether [camera] has finite coordinates, zoom and a real size.
-  ///
-  /// The map can briefly report a camera that is not laid out yet or has
-  /// received a NaN or infinite value; converting it to tile numbers with
-  /// `floor()` or `round()` would throw an "Infinity or NaN toInt" error.
-  static bool isUsable(MapCamera camera) {
-    final size = camera.nonRotatedSize;
-    final basics =
-        camera.zoom.isFinite &&
-        camera.center.latitude.isFinite &&
-        camera.center.longitude.isFinite &&
-        size.x.isFinite &&
-        size.y.isFinite &&
-        size.x > 0 &&
-        size.y > 0;
-    if (!basics) return false;
-    final bounds = camera.visibleBounds;
-    return bounds.south.isFinite &&
-        bounds.north.isFinite &&
-        bounds.west.isFinite &&
-        bounds.east.isFinite;
-  }
-
-  /// The tiles that intersect the screen of [camera] on level [z].
-  factory FogTileRange.visible(MapCamera camera, int z) {
-    final bounds = camera.visibleBounds;
-    final tiles = 1 << z;
-    int tileOf(double worldPixel) =>
-        (worldPixel / FogTileId.size).floor().clamp(0, tiles - 1);
+  /// The tiles under a box of world pixels at level [z], cut to the world.
+  factory FogTileRange.covering({
+    required int z,
+    required double minX,
+    required double maxX,
+    required double minY,
+    required double maxY,
+  }) {
+    final last = (1 << z) - 1;
     return FogTileRange(
       z: z,
-      xMin: tileOf(FogMercator.lngToX(bounds.west, z)),
-      xMax: tileOf(FogMercator.lngToX(bounds.east, z)),
-      yMin: tileOf(FogMercator.latToY(bounds.north, z)),
-      yMax: tileOf(FogMercator.latToY(bounds.south, z)),
+      xMin: _tileOf(minX, last),
+      xMax: _tileOf(maxX, last),
+      yMin: _tileOf(minY, last),
+      yMax: _tileOf(maxY, last),
     );
+  }
+
+  static int _tileOf(double worldPixel, int last) {
+    return (worldPixel / FogTileId.size).floor().clamp(0, last);
   }
 
   final int z;

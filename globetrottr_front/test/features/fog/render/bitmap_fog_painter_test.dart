@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
@@ -272,7 +272,7 @@ void main() {
         final fine = cameraAt();
         final source = FogTileSource(store);
         source.ensureRange(
-          FogTileRange.visible(coarse, FogConfig.baseZoom - 1),
+          coarse.visibleTiles(FogConfig.baseZoom - 1),
         );
         await source.whenIdle();
 
@@ -294,7 +294,7 @@ void main() {
         final fine = cameraAt();
         final coarse = cameraAt(zoom: FogConfig.baseZoom - 1);
         final source = FogTileSource(store);
-        source.ensureRange(FogTileRange.visible(fine, FogConfig.baseZoom));
+        source.ensureRange(fine.visibleTiles(FogConfig.baseZoom));
         await source.whenIdle();
 
         final alpha = await renderAlpha(painterFor(coarse, source: source));

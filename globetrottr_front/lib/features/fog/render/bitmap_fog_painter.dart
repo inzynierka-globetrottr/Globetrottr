@@ -7,10 +7,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -31,7 +31,7 @@ class BitmapFogPainter extends CustomPainter {
 
   static const FogRenderOptions defaultOptions = FogRenderOptions();
   static const int _maxDrawnTiles = 96;
-  static const double _tile = 256;
+  static const double _tile = FogTileId.size + 0.0;
   static const double _minPixelLineSize = 6;
 
   /// Upper bound of the edge blur in screen pixels, to keep drawing cheap.
@@ -48,7 +48,7 @@ class BitmapFogPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final timer = Stopwatch()..start();
-    final usable = FogTileRange.isUsable(camera);
+    final usable = camera.isUsableForFog;
     final sigma = usable && !options.rawPixels ? _blurSigma() : null;
     canvas.saveLayer(
       Offset.zero & size,
@@ -104,7 +104,7 @@ class BitmapFogPainter extends CustomPainter {
     final level = _drawnLevel();
     final pixelSize = math.pow(2, camera.zoom - level).toDouble();
     if (pixelSize < _minPixelLineSize) return;
-    final range = FogTileRange.visible(camera, level);
+    final range = camera.visibleTiles(level);
     if (range.cellCount > _maxDrawnTiles) return;
 
     final lines = ui.Path();
@@ -137,7 +137,7 @@ class BitmapFogPainter extends CustomPainter {
   /// is still loading.
   void _drawGrid(Canvas canvas) {
     final source = this.source;
-    final range = FogTileRange.visible(camera, _drawnLevel());
+    final range = camera.visibleTiles(_drawnLevel());
     if (range.cellCount > _maxDrawnTiles) return;
 
     final line = Paint()
@@ -187,7 +187,7 @@ class BitmapFogPainter extends CustomPainter {
 
   void _drawTiles(Canvas canvas, FogTileSource source) {
     final level = source.levelFor(camera.zoom);
-    final range = FogTileRange.visible(camera, level);
+    final range = camera.visibleTiles(level);
     if (range.cellCount > _maxDrawnTiles) return;
     for (final id in range.ids) {
       final image = source.imageFor(id);
@@ -303,22 +303,15 @@ class BitmapFogPainter extends CustomPainter {
 
     final center = liveCenter;
     final anchor = store.trail.anchor;
-    if (center != null && anchor != null) {
-      final x = FogMercator.lngToX(center.longitude, z);
-      final y = FogMercator.latToY(center.latitude, z);
-      final radius = metersToPixels(
-        meters: FogConfig.visionRadiusMeters,
-        latitude: center.latitude,
-        zoom: z.toDouble(),
-      );
-      if (store.joinsTrail(x, y, radius)) {
-        empty = false;
-        final from = _screen(anchor.x, anchor.y, z);
-        final to = camera.latLngToScreenPoint(center);
-        path
-          ..moveTo(from.dx, from.dy)
-          ..lineTo(to.x, to.y);
-      }
+    if (center != null &&
+        anchor != null &&
+        store.joinsTrail(center.latitude, center.longitude)) {
+      empty = false;
+      final from = _screen(anchor.x, anchor.y, z);
+      final to = camera.latLngToScreenPoint(center);
+      path
+        ..moveTo(from.dx, from.dy)
+        ..lineTo(to.x, to.y);
     }
     if (empty) return;
 

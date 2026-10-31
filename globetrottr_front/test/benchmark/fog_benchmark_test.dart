@@ -12,7 +12,7 @@ import 'package:globetrottr_front/debug/explorer_route_generator.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log/sqflite_track_log_storage.dart';
@@ -70,7 +70,7 @@ Future<void> _paintTable(
       BitmapFogPainter(camera: camera, source: source),
       30,
     );
-    final tiles = FogTileRange.visible(camera, source.levelFor(zoom)).cellCount;
+    final tiles = camera.visibleTiles(source.levelFor(zoom)).cellCount;
     _say(
       '$label zoom ${zoom.toStringAsFixed(1).padLeft(4)}: '
       'paint ${plain.toStringAsFixed(3)} ms '

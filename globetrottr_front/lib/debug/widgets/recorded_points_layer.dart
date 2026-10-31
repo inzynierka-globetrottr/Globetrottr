@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/debug/recorded_points_source.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:latlong2/latlong.dart';
@@ -40,7 +40,7 @@ class RecordedPointsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!FogTileRange.isUsable(camera)) return;
+    if (!camera.isUsableForFog) return;
     final points = source.points;
     if (points.isEmpty) return;
 

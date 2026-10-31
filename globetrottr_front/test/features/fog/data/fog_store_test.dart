@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
@@ -516,7 +517,7 @@ void main() {
 
       for (final z in [14, 11, 8, 5]) {
         final id = tileOf(krakowLat, krakowLng, z);
-        await store.prepare(z, id.x, id.x, id.y, id.y);
+        await store.prepare(singleTile(id));
         final mask = store.peek(id);
         expect(mask, isNotNull, reason: 'level $z');
         final strongest = mask!.data.reduce(math.max);
@@ -587,7 +588,15 @@ void main() {
     test('prepare marks tiles without fog data as known absent', () async {
       final id = tileOf(krakowLat, krakowLng, 12);
 
-      await store.prepare(12, id.x, id.x + 1, id.y, id.y + 1);
+      await store.prepare(
+        FogTileRange(
+          z: 12,
+          xMin: id.x,
+          xMax: id.x + 1,
+          yMin: id.y,
+          yMax: id.y + 1,
+        ),
+      );
 
       expect(store.isKnownAbsent(id), isTrue);
       expect(store.peek(id), isNull);
@@ -600,7 +609,7 @@ void main() {
       final id = tileOf(krakowLat, krakowLng, FogConfig.baseZoom);
 
       expect(reopened.peek(id), isNull);
-      await reopened.prepare(FogConfig.baseZoom, id.x, id.x, id.y, id.y);
+      await reopened.prepare(singleTile(id));
 
       expect(reopened.peek(id), isNotNull);
       expect(reopened.isKnownAbsent(id), isFalse);

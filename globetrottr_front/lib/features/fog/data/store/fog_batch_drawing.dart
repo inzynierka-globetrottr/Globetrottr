@@ -2,33 +2,24 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
-
-/// The last drawn point of a session, in base level world pixels.
-class FogLastPoint {
-  const FogLastPoint(this.x, this.y, this.radius);
-
-  final double x;
-  final double y;
-  final double radius;
-}
 
 /// Where each recent session ended, so its next point continues the path.
 /// Only the latest sessions are kept.
 class FogLastPoints {
   static const int _limit = 16;
 
-  final Map<String, FogLastPoint> _points = {};
+  final Map<String, FogPathPoint> _points = {};
 
-  FogLastPoint? operator [](String sessionId) => _points[sessionId];
+  FogPathPoint? operator [](String sessionId) => _points[sessionId];
 
   bool contains(String sessionId) => _points.containsKey(sessionId);
 
-  void remember(String sessionId, FogLastPoint lastPoint) {
+  void remember(String sessionId, FogPathPoint lastPoint) {
     _points.remove(sessionId);
     _points[sessionId] = lastPoint;
     while (_points.length > _limit) {
@@ -50,23 +41,17 @@ class FogPathJob {
 }
 
 class FogChunkJob {
-  FogChunkJob(this.zoom, this.edgeWidth, this.quantStep, this.paths);
+  FogChunkJob(this.rasterizer, this.paths);
 
-  final int zoom;
-  final double edgeWidth;
-  final int quantStep;
+  final FogRasterizer rasterizer;
   final List<FogPathJob> paths;
 }
 
 /// Rasterizes [job] into new masks keyed by [FogTileId.key]. It runs in a
-/// background isolate, so it only takes and returns plain data.
+/// background isolate, so [job] holds only numbers and typed data.
 Map<int, Uint8List> rasterizeChunk(FogChunkJob job) {
   final masks = <FogTileId, FogMask>{};
-  final rasterizer = FogRasterizer(
-    zoom: job.zoom,
-    edgeWidth: job.edgeWidth,
-    quantStep: job.quantStep,
-  );
+  final rasterizer = job.rasterizer;
   FogMask provide(FogTileId id) => masks.putIfAbsent(id, FogMask.new);
 
   for (final path in job.paths) {
@@ -98,17 +83,14 @@ Map<int, Uint8List> rasterizeChunk(FogChunkJob job) {
 /// Cuts track log entries into chunks and turns them into jobs for
 /// [rasterizeChunk].
 class FogImportPlanner {
-  FogImportPlanner({
-    required this.baseZoom,
-    required this.radiusMeters,
-    required this.segmentRule,
-    required this.rasterizer,
-  });
+  FogImportPlanner({required this.segmentRule, required this.rasterizer});
 
-  final int baseZoom;
-  final double radiusMeters;
   final FogSegmentRule segmentRule;
   final FogRasterizer rasterizer;
+
+  FogPathPoint _pointOf(TrackLogEntry entry) {
+    return FogPathPoint.at(entry.latitude, entry.longitude, rasterizer.zoom);
+  }
 
   /// End (exclusive) of the chunk starting at [from]: at most [maxPoints]
   /// entries and a path of at most [maxPathPixels] base pixels, but always
@@ -121,30 +103,21 @@ class FogImportPlanner {
   ) {
     final limit = math.min(entries.length, from + maxPoints);
     var path = 0.0;
-    var previous = entries[from];
-    var px = FogMercator.lngToX(previous.longitude, baseZoom);
-    var py = FogMercator.latToY(previous.latitude, baseZoom);
+    var session = entries[from].sessionId;
+    var previous = _pointOf(entries[from]);
     for (var i = from + 1; i < limit; i++) {
       final entry = entries[i];
-      final x = FogMercator.lngToX(entry.longitude, baseZoom);
-      final y = FogMercator.latToY(entry.latitude, baseZoom);
-      final radius = metersToPixels(
-        meters: radiusMeters,
-        latitude: entry.latitude,
-        zoom: baseZoom.toDouble(),
-      );
-      if (entry.sessionId == previous.sessionId &&
-          segmentRule.connects(px, py, x, y, radius)) {
-        final dx = x - px;
-        final dy = y - py;
+      final point = _pointOf(entry);
+      if (entry.sessionId == session && segmentRule.connects(previous, point)) {
+        final dx = point.x - previous.x;
+        final dy = point.y - previous.y;
         path += math.sqrt(dx * dx + dy * dy);
       } else {
         path += FogTileId.size;
       }
       if (path > maxPathPixels) return i;
-      previous = entry;
-      px = x;
-      py = y;
+      session = entry.sessionId;
+      previous = point;
     }
     return limit;
   }
@@ -158,17 +131,17 @@ class FogImportPlanner {
     }
 
     final paths = <FogPathJob>[];
-    final newLastPoints = <String, FogLastPoint>{};
+    final newLastPoints = <String, FogPathPoint>{};
     for (final session in bySession.entries) {
-      final lastPoint = lastPoints[session.key];
+      var previous = lastPoints[session.key];
       var xy = <double>[];
       var radii = <double>[];
-      var continues = lastPoint != null;
-      if (lastPoint != null) {
+      var continues = previous != null;
+      if (previous != null) {
         xy
-          ..add(lastPoint.x)
-          ..add(lastPoint.y);
-        radii.add(lastPoint.radius);
+          ..add(previous.x)
+          ..add(previous.y);
+        radii.add(previous.radius);
       }
 
       // A path that only holds the point it continues from draws nothing.
@@ -184,40 +157,23 @@ class FogImportPlanner {
       }
 
       for (final entry in session.value) {
-        final x = FogMercator.lngToX(entry.longitude, baseZoom);
-        final y = FogMercator.latToY(entry.latitude, baseZoom);
-        final radius = metersToPixels(
-          meters: radiusMeters,
-          latitude: entry.latitude,
-          zoom: baseZoom.toDouble(),
-        );
-        if (radii.isNotEmpty &&
-            !segmentRule.connects(
-              xy[xy.length - 2],
-              xy[xy.length - 1],
-              x,
-              y,
-              radius,
-            )) {
+        final point = _pointOf(entry);
+        if (previous != null && !segmentRule.connects(previous, point)) {
           closePath();
           xy = <double>[];
           radii = <double>[];
           continues = false;
         }
         xy
-          ..add(x)
-          ..add(y);
-        radii.add(radius);
-        newLastPoints[session.key] = FogLastPoint(x, y, radius);
+          ..add(point.x)
+          ..add(point.y);
+        radii.add(point.radius);
+        previous = point;
+        newLastPoints[session.key] = point;
       }
       closePath();
     }
     newLastPoints.forEach(lastPoints.remember);
-    return FogChunkJob(
-      baseZoom,
-      rasterizer.edgeWidth,
-      rasterizer.quantStep,
-      paths,
-    );
+    return FogChunkJob(rasterizer, paths);
   }
 }

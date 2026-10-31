@@ -22,8 +22,6 @@ class FogTileId {
 
   int get key => (z << 52) | (x << 26) | y;
 
-  FogTileId? get parent => z == 0 ? null : FogTileId(z - 1, x >> 1, y >> 1);
-
   FogTileId ancestorAt(int zoom) {
     assert(zoom >= 0 && zoom <= z, 'zoom must not be deeper than the tile');
     final shift = z - zoom;

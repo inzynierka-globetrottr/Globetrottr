@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:globetrottr_front/core/async/serial_queue.dart';
@@ -76,6 +75,11 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
       final db = await _db;
       return read(TrackLogQueries(db, await _loadState(db)));
     });
+  }
+
+  /// Runs [read] in the queue with the cached state of the database.
+  Future<T> _readState<T>(T Function(TrackLogState state) read) {
+    return _read((queries) async => read(queries.state));
   }
 
   @override
@@ -219,43 +223,14 @@ class SqfliteTrackLogStorage implements TrackLogStorage {
 
   @override
   Future<List<TrackSessionSummary>> sessionSummaries() {
-    return _queue.run(() async {
-      final state = await _loadState(await _db);
-      final sessions = state.sessions.values.toList()
-        ..sort((a, b) {
-          final byStart = a.startTs.compareTo(b.startTs);
-          return byStart != 0 ? byStart : a.firstId.compareTo(b.firstId);
-        });
-      return [
-        for (final s in sessions)
-          TrackSessionSummary(
-            sessionId: s.sessionId,
-            startMs: s.startTs,
-            endMs: s.endTs,
-            pointCount: s.count,
-          ),
-      ];
-    });
+    return _readState((state) => state.summaries);
   }
 
   @override
-  Future<int> count() {
-    return _queue.run(() async {
-      final state = await _loadState(await _db);
-      return state.sessions.values.fold<int>(0, (sum, s) => sum + s.count);
-    });
-  }
+  Future<int> count() => _readState((state) => state.pointCount);
 
   @override
-  Future<int> lastId() {
-    return _queue.run(() async {
-      final state = await _loadState(await _db);
-      return state.sessions.values.fold<int>(
-        0,
-        (m, s) => math.max(m, s.lastId),
-      );
-    });
-  }
+  Future<int> lastId() => _readState((state) => state.newestId);
 
   @override
   Future<void> clear() {

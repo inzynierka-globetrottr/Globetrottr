@@ -1,23 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
-import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart'
-    show FogMercator;
-import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_test_helpers.dart';
 
-({double x, double y, double radius}) _pixel(double lat, double lng) {
-  const zoom = FogConfig.baseZoom;
-  return (
-    x: FogMercator.lngToX(lng, zoom),
-    y: FogMercator.latToY(lat, zoom),
-    radius: metersToPixels(
-      meters: FogConfig.visionRadiusMeters,
-      latitude: lat,
-      zoom: zoom.toDouble(),
-    ),
-  );
+FogPathPoint _pixel(double lat, double lng) {
+  return FogPathPoint.at(lat, lng, FogConfig.baseZoom);
 }
 
 void main() {
@@ -35,7 +24,7 @@ void main() {
     final a = _pixel(lat, lng);
     final end = offsetMeters(lat, lng, north: north, east: east);
     final b = _pixel(end.lat, end.lng);
-    return rule.connects(a.x, a.y, b.x, b.y, b.radius);
+    return rule.connects(a, b);
   }
 
   group('FogSegmentRule', () {
@@ -66,17 +55,9 @@ void main() {
       final a = _pixel(krakowLat, krakowLng);
       final near = offsetMeters(krakowLat, krakowLng, north: 1000, east: 1000);
       final far = offsetMeters(krakowLat, krakowLng, north: 5000, east: 5000);
-      final nearPixel = _pixel(near.lat, near.lng);
-      final farPixel = _pixel(far.lat, far.lng);
 
-      expect(
-        loose.connects(a.x, a.y, nearPixel.x, nearPixel.y, nearPixel.radius),
-        isTrue,
-      );
-      expect(
-        loose.connects(a.x, a.y, farPixel.x, farPixel.y, farPixel.radius),
-        isFalse,
-      );
+      expect(loose.connects(a, _pixel(near.lat, near.lng)), isTrue);
+      expect(loose.connects(a, _pixel(far.lat, far.lng)), isFalse);
     });
 
     test('the cap never cuts a segment within the meter limit', () {

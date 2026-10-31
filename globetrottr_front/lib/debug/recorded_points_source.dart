@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 
@@ -60,7 +60,7 @@ class RecordedPointsSource extends ChangeNotifier {
   /// Loads the points for [camera] unless the area is already loaded.
   Future<void> ensure(MapCamera camera) async {
     if (_disposed) return;
-    if (!FogTileRange.isUsable(camera) || camera.zoom < minZoom) {
+    if (!camera.isUsableForFog || camera.zoom < minZoom) {
       clear();
       return;
     }

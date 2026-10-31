@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 
 class FogCacheEntry {
@@ -63,22 +64,19 @@ class FogTileCache {
     _add(await storage.loadTiles(missing), missing);
   }
 
-  /// Loads the tiles of a level range so [peek] can answer synchronously.
-  Future<void> loadRange(int z, int xMin, int xMax, int yMin, int yMax) async {
-    final wanted = <FogTileId>[
-      for (var x = xMin; x <= xMax; x++)
-        for (var y = yMin; y <= yMax; y++) FogTileId(z, x, y),
-    ];
+  /// Loads the tiles of [range] so [peek] can answer synchronously.
+  Future<void> loadRange(FogTileRange range) async {
+    final wanted = range.ids.toList();
     if (wanted.every(_entries.containsKey)) {
       wanted.forEach(touch);
       return;
     }
     final stored = await storage.loadRange(
-      z: z,
-      xMin: xMin,
-      xMax: xMax,
-      yMin: yMin,
-      yMax: yMax,
+      z: range.z,
+      xMin: range.xMin,
+      xMax: range.xMax,
+      yMin: range.yMin,
+      yMax: range.yMax,
     );
     _add(stored, wanted);
   }

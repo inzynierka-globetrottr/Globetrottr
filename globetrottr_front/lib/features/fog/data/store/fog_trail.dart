@@ -1,4 +1,4 @@
-import 'package:globetrottr_front/features/fog/data/store/fog_batch_drawing.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 
 /// One stretch of the trail in base level world pixels; a lone point has
 /// both ends equal.
@@ -22,7 +22,7 @@ class FogTrail {
 
   /// The newest point drawn while recording, which the live position
   /// continues from.
-  FogLastPoint? anchor;
+  FogPathPoint? anchor;
 
   List<FogTrailSegment> get segments => List.unmodifiable(_segments);
 

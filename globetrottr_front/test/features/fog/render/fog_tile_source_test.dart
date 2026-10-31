@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
@@ -178,7 +178,7 @@ void main() {
       );
       await store.flush();
       final source = FogTileSource(store);
-      source.ensureRange(FogTileRange.visible(cameraAt(zoom: 15), 15));
+      source.ensureRange(cameraAt(zoom: 15).visibleTiles(15));
       await source.whenIdle();
 
       final fallback = source.fallbackFor(
