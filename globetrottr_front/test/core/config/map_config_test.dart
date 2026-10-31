@@ -8,72 +8,34 @@ void main() {
       dotenv.clean();
     });
 
-    test(
-      'buildTileUrlTemplate includes key query param when apiKey is provided',
-      () {
-        final url = MapConfig.buildTileUrlTemplate(apiKey: 'sample-carto-key');
-
-        expect(
-          url,
-          equals(
-            'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=sample-carto-key',
-          ),
-        );
-      },
-    );
-
-    test('buildTileUrlTemplate trims apiKey whitespace', () {
-      final url = MapConfig.buildTileUrlTemplate(
-        apiKey: '  sample-carto-key  ',
-      );
-
-      expect(
-        url,
-        equals(
-          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=sample-carto-key',
-        ),
-      );
-    });
-
-    test(
-      'buildTileUrlTemplate returns base URL without query param when apiKey is null or empty',
-      () {
-        expect(
-          MapConfig.buildTileUrlTemplate(),
-          equals('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'),
-        );
-        expect(
-          MapConfig.buildTileUrlTemplate(apiKey: ''),
-          equals('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'),
-        );
-        expect(
-          MapConfig.buildTileUrlTemplate(apiKey: '   '),
-          equals('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'),
-        );
-      },
-    );
-
-    test('tileUrlTemplate reads CARTO_API_KEY from dotenv when initialized', () {
+    test('uses Carto with the key from dotenv', () {
       dotenv.loadFromString(envString: 'CARTO_API_KEY=env-carto-key');
 
       expect(
         MapConfig.tileUrlTemplate,
-        equals(
-          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=env-carto-key',
-        ),
+        'https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=env-carto-key',
       );
+      expect(MapConfig.tileSubdomains, ['a', 'b', 'c', 'd']);
     });
 
-    test(
-      'tileUrlTemplate returns base URL gracefully when dotenv is not initialized',
-      () {
-        dotenv.clean();
+    test('falls back to OpenStreetMap when the key is empty', () {
+      dotenv.loadFromString(envString: 'CARTO_API_KEY=');
 
-        expect(
-          MapConfig.tileUrlTemplate,
-          equals('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'),
-        );
-      },
-    );
+      expect(
+        MapConfig.tileUrlTemplate,
+        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      );
+      expect(MapConfig.tileSubdomains, isEmpty);
+    });
+
+    test('falls back to OpenStreetMap when dotenv is not initialized', () {
+      dotenv.clean();
+
+      expect(
+        MapConfig.tileUrlTemplate,
+        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      );
+      expect(MapConfig.tileSubdomains, isEmpty);
+    });
   });
 }
