@@ -1,6 +1,8 @@
 import 'dart:collection';
+import 'dart:isolate';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
@@ -15,17 +17,42 @@ class FogCacheEntry {
   double areaM2;
 }
 
+/// The mask of a stored tile, or null for a damaged one. The tiles are a cache
+/// of the track log, so a damaged tile counts as missing and a rebuild brings
+/// it back.
+FogMask? _decodeTile(int flag, Uint8List? bytes) {
+  try {
+    return FogTileCodec.decode(flag, bytes);
+  } on Object catch (error) {
+    debugPrint('Skipping unreadable fog tile: $error');
+    return null;
+  }
+}
+
+List<Uint8List?> _decodeBatch(List<(int, Uint8List?)> tiles) {
+  return [for (final (flag, bytes) in tiles) _decodeTile(flag, bytes)?.data];
+}
+
 /// Decoded fog tiles kept in memory, the least recently used first.
 ///
 /// Tiles waiting to be written ([dirty]) and tiles a running operation relies
 /// on ([pinned]) are never evicted.
 class FogTileCache {
-  FogTileCache(this.storage, {required this.maxTiles});
+  FogTileCache(
+    this.storage, {
+    required this.maxTiles,
+    this.decodeInIsolate = false,
+    this.isolateDecodeThreshold = 4,
+  });
 
   final FogTileStorage storage;
 
   /// Soft limit of cached tiles; dirty and pinned tiles may exceed it.
   final int maxTiles;
+
+  /// Decode large reads in a background isolate to keep the UI smooth.
+  final bool decodeInIsolate;
+  final int isolateDecodeThreshold;
 
   final LinkedHashMap<FogTileId, FogCacheEntry> _entries = LinkedHashMap();
 
@@ -36,6 +63,10 @@ class FogTileCache {
   final Set<FogTileId> pinned = {};
 
   int _peak = 0;
+
+  /// Grows whenever a tile leaves the cache, so a read that was running at
+  /// that moment knows it may hold an older copy of it.
+  int _removals = 0;
 
   int get length => _entries.length;
 
@@ -74,24 +105,55 @@ class FogTileCache {
   Future<void> ensureLoaded(Iterable<FogTileId> ids) async {
     final missing = ids.where((id) => !_entries.containsKey(id)).toList();
     if (missing.isEmpty) return;
-    _add(await storage.loadTiles(missing), missing);
+    final stored = await storage.loadTiles(missing);
+    _add(stored, await _decode(stored), missing);
   }
 
   /// Loads the tiles of [range] so [peek] can answer synchronously.
+  ///
+  /// This runs beside the store's queue, so a tile can be written and evicted,
+  /// or cleared, during the read. Such a read is repeated: a stale copy in the
+  /// cache would overwrite the newer tile at the next write.
   Future<void> loadRange(FogTileRange range) async {
     final wanted = range.ids.toList();
     if (wanted.every(_entries.containsKey)) {
       wanted.forEach(touch);
       return;
     }
-    final stored = await storage.loadRange(
-      z: range.z,
-      xMin: range.xMin,
-      xMax: range.xMax,
-      yMin: range.yMin,
-      yMax: range.yMax,
-    );
-    _add(stored, wanted);
+    while (true) {
+      final removals = _removals;
+      final stored = await storage.loadRange(
+        z: range.z,
+        xMin: range.xMin,
+        xMax: range.xMax,
+        yMin: range.yMin,
+        yMax: range.yMax,
+      );
+      final masks = await _decode(stored);
+      if (removals != _removals) continue;
+      _add(stored, masks, wanted);
+      return;
+    }
+  }
+
+  Future<List<FogMask?>> _decode(List<StoredFogTile> stored) async {
+    if (!decodeInIsolate || stored.length < isolateDecodeThreshold) {
+      return [for (final tile in stored) _decodeTile(tile.flag, tile.bytes)];
+    }
+    final decoded = await _decodeInIsolate([
+      for (final tile in stored) (tile.flag, tile.bytes),
+    ]);
+    return [
+      for (final data in decoded)
+        if (data == null) null else FogMask.fromBytes(data),
+    ];
+  }
+
+  // Static, so the closure sent to the isolate cannot capture the cache.
+  static Future<List<Uint8List?>> _decodeInIsolate(
+    List<(int, Uint8List?)> tiles,
+  ) {
+    return Isolate.run(() => _decodeBatch(tiles));
   }
 
   /// The mask a shape is drawn into, created empty for a tile without fog
@@ -150,6 +212,7 @@ class FogTileCache {
       if (_entries.length <= maxTiles) break;
       if (dirty.contains(id) || pinned.contains(id)) continue;
       _entries.remove(id);
+      _removals++;
     }
   }
 
@@ -157,18 +220,22 @@ class FogTileCache {
     _entries.clear();
     dirty.clear();
     pinned.clear();
+    _removals++;
   }
 
   /// Caches the tiles read from [storage] and marks the rest of [requested]
-  /// as known to have no fog data, so they are not read again.
-  void _add(Iterable<StoredFogTile> stored, Iterable<FogTileId> requested) {
-    for (final tile in stored) {
+  /// as known to have no fog data, so they are not read again. A damaged tile
+  /// keeps its area, so a redraw replaces it in the total.
+  void _add(
+    List<StoredFogTile> stored,
+    List<FogMask?> masks,
+    Iterable<FogTileId> requested,
+  ) {
+    for (var i = 0; i < stored.length; i++) {
+      final tile = stored[i];
       _entries.putIfAbsent(
         tile.id,
-        () => FogCacheEntry(
-          FogTileCodec.decode(tile.flag, tile.bytes),
-          areaM2: tile.areaM2,
-        ),
+        () => FogCacheEntry(masks[i], areaM2: tile.areaM2),
       );
     }
     for (final id in requested) {

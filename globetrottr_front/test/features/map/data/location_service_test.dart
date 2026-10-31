@@ -40,6 +40,27 @@ Position _at(double lat, double lng) => Position(
 );
 
 void main() {
+  group('LocationService.followPositions', () {
+    test('passes on only real coordinates', () async {
+      final fixes = StreamController<Position>();
+      addTearDown(fixes.close);
+      final service = LocationService(MapStorage(), InMemoryTrackLogStorage());
+      service.followPositions(fixes.stream);
+      final seen = <Position>[];
+      final subscription = service.positionStream.listen(seen.add);
+      addTearDown(subscription.cancel);
+
+      fixes
+        ..add(_at(double.nan, 19))
+        ..add(_at(50, double.infinity))
+        ..add(_at(95, 19))
+        ..add(_at(50, 19));
+      await pumpEventQueue();
+
+      expect(seen.map((p) => p.latitude), [50]);
+    });
+  });
+
   group('LocationService.recordPosition', () {
     test(
       'keeps a fix whose recording stopped while it was being stored',

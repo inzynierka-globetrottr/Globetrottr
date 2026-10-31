@@ -18,6 +18,13 @@ class AppTheme {
 }
 
 class AppTextStyles {
+  /// Names a tile on the fog tile grid of the developer options.
+  static const TextStyle devGridLabel = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    backgroundColor: AppColors.devGridLabelBackground,
+  );
+
   AppTextStyles._();
 
   // * these text styles are AI generated, but are intended to be used as mocks for now, change after designing more screens

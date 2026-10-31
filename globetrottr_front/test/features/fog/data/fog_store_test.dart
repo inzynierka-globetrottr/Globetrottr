@@ -101,7 +101,94 @@ Future<void> _applyLogged(FogStore store, TrackLogEntry entry) {
   );
 }
 
+/// Fails the next [loadTiles].
+class _FailingLoadStorage extends InMemoryFogTileStorage {
+  bool failNextLoad = false;
+
+  @override
+  Future<List<StoredFogTile>> loadTiles(Iterable<FogTileId> ids) {
+    if (failNextLoad) {
+      failNextLoad = false;
+      throw StateError('the load failed');
+    }
+    return super.loadTiles(ids);
+  }
+}
+
 void main() {
+  test('a point skipped after a replay leaves the trail at a flush', () async {
+    final log = _PausingTrackLog();
+    final start = await log.append(
+      const TrackLogEntry(
+        sessionId: 'a',
+        timestampMs: 1,
+        latitude: krakowLat,
+        longitude: krakowLng,
+      ),
+    );
+    final store = await FogStore.open(
+      InMemoryFogTileStorage(),
+      flushDelay: const Duration(milliseconds: 5),
+    );
+    log.pauseAt = _LogCall.count;
+
+    final replay = store.replayFrom(log, useIsolate: false);
+    await log.paused.future;
+    final point = store.applyPoint(
+      sessionId: 'a',
+      latitude: start.latitude,
+      longitude: start.longitude,
+      logId: start.id,
+    );
+    log.resume();
+    await replay;
+    await point;
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(store.trail.isEmpty, isTrue);
+    await store.dispose();
+  });
+
+  test('a failed import does not move where the path continues', () async {
+    TrackLogEntry entry(int id, double east) {
+      final at = offsetMeters(krakowLat, krakowLng, east: east);
+      return TrackLogEntry(
+        id: id,
+        sessionId: 'a',
+        timestampMs: id,
+        latitude: at.lat,
+        longitude: at.lng,
+      );
+    }
+
+    final storage = _FailingLoadStorage();
+    final store = await FogStore.open(
+      storage,
+      maxCachedTiles: 0,
+      flushDelay: const Duration(hours: 1),
+    );
+    await store.importEntries([entry(1, 0)], useIsolate: false);
+    await store.flush();
+
+    storage.failNextLoad = true;
+    await expectLater(
+      store.importEntries([entry(2, 300)], useIsolate: false),
+      throwsStateError,
+    );
+    await store.importEntries([entry(2, 300)], useIsolate: false);
+    await store.flush();
+
+    await store.dispose();
+
+    final reopened = await FogStore.open(storage);
+    final middle = offsetMeters(krakowLat, krakowLng, east: 150);
+    expect(
+      await coverageAt(reopened, middle.lat, middle.lng),
+      greaterThan(0.9),
+    );
+    await reopened.dispose();
+  });
+
   late InMemoryFogTileStorage storage;
   late FogStore store;
 

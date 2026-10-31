@@ -54,6 +54,21 @@ void main() {
       expect(state.isRecording, isFalse);
     });
 
+    test('starting twice follows every position once', () async {
+      final container = env.createContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(locationProvider.notifier);
+      await notifier.startTracking();
+      await notifier.startTracking();
+      var updates = 0;
+      container.listen(locationProvider, (_, _) => updates++);
+
+      env.location.emit(50.0, 19.0);
+      await pumpEventQueue();
+
+      expect(updates, 1);
+    });
+
     test('reports why tracking could not start', () async {
       env.location.startError = Exception('no permission');
       final container = env.createContainer();

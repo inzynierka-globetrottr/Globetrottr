@@ -49,6 +49,9 @@ abstract final class FogTileCodec {
         return mask;
       case flagData:
         final filtered = Uint8List.fromList(_zlib.decode(bytes!));
+        if (filtered.length != FogMask.pixels) {
+          throw FormatException('Fog tile of ${filtered.length} bytes');
+        }
         return FogMask.fromBytes(_restoreRows(filtered));
       default:
         throw FormatException('Unknown fog tile flag: $flag');

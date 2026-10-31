@@ -13,7 +13,6 @@ import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
-import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log/sqflite_track_log_storage.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:latlong2/latlong.dart';
@@ -299,37 +298,6 @@ void main() {
       );
       await live.close();
       await log.close();
-    });
-
-    test('P3 detail: zoom 16 / 17 / 18 storage and speed', () async {
-      const start = LatLng(50.0614, 19.9383);
-      final entries = ExplorerRouteGenerator.generate(
-        start: start,
-        totalKm: 60,
-      );
-      for (final zoom in [16, 17, 18]) {
-        final storage = InMemoryFogTileStorage();
-        final store = await FogStore.open(
-          storage,
-          baseZoom: zoom,
-          flushDelay: const Duration(hours: 1),
-        );
-        final timer = Stopwatch()..start();
-        await store.importEntries(
-          List<TrackLogEntry>.of(entries),
-          chunkSize: 4000,
-        );
-        await store.flush();
-        timer.stop();
-        final stats = await storage.stats();
-        _say(
-          'base zoom $zoom: 60 km imported in ${timer.elapsedMilliseconds} ms, '
-          'base tiles ${stats.tilesPerLevel[zoom]}, '
-          'payload ${(stats.totalBytes / 1024).toStringAsFixed(0)} KB, '
-          'area ${(store.diagnostics.totalAreaM2 / 1e6).toStringAsFixed(3)} km2',
-        );
-        await store.dispose();
-      }
     });
   });
 }

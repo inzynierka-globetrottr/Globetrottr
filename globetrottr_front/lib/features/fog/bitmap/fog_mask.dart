@@ -44,9 +44,8 @@ class FogMask {
 
   /// Rounds every value to the nearest multiple of [step] (0 and 255 stay).
   ///
-  /// Sixteen levels (step 16) are invisible on the soft rim but make a tile
-  /// compress about three times smaller. The operation is idempotent and
-  /// monotone, so `quantize(max(a, b)) == max(quantize(a), quantize(b))`:
+  /// Fewer levels are invisible on the soft rim but make a tile compress
+  /// better. The operation is idempotent and monotone, so `quantize(max(a, b)) == max(quantize(a), quantize(b))`:
   /// drawing again over stored (quantized) tiles gives the same result as
   /// never having quantized, which keeps replays after a crash exact.
   void quantizeInPlace({int step = 16}) {

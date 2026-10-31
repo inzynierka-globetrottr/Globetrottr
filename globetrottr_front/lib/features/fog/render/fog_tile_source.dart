@@ -25,7 +25,8 @@ class FogFallback {
 /// whenever an image becomes ready.
 ///
 /// The painter only ever reads from here synchronously; loading, decoding and
-/// refreshing all happen asynchronously off the paint path.
+/// refreshing all happen asynchronously off the paint path, and large reads
+/// are decoded in an isolate.
 class FogTileSource extends ChangeNotifier {
   FogTileSource(this.store, {this.maxImages = 100}) {
     _subscription = store.changes.listen(_onChange);
@@ -86,6 +87,9 @@ class FogTileSource extends ChangeNotifier {
       for (final id in target.ids) {
         if (store.peek(id) != null) _request(id);
       }
+    } on Object catch (error) {
+      debugPrint('Loading fog tiles failed: $error');
+      _lastRange = null;
     } finally {
       _work.end();
     }

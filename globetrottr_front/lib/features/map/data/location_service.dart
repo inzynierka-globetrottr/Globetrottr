@@ -125,10 +125,15 @@ class LocationService {
       );
     }
 
-    _broadcastStream = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).where(isUsablePosition).asBroadcastStream();
+    followPositions(
+      Geolocator.getPositionStream(locationSettings: locationSettings),
+    );
+  }
 
+  /// Takes [fixes] as the source of positions, without the unusable ones.
+  @visibleForTesting
+  void followPositions(Stream<Position> fixes) {
+    _broadcastStream = fixes.where(isUsablePosition).asBroadcastStream();
     _dbSubscription = _broadcastStream!.listen(recordPosition);
   }
 

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
@@ -181,12 +182,7 @@ class BitmapFogPainter extends CustomPainter {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          backgroundColor: AppColors.devGridLabelBackground,
-        ),
+        style: AppTextStyles.devGridLabel.copyWith(color: color),
       ),
       textDirection: TextDirection.ltr,
     )..layout();

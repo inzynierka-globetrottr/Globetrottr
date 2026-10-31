@@ -26,6 +26,7 @@ class LocationNotifier extends Notifier<TrackingState> {
   Future<void> startTracking() async {
     try {
       await _locationService.startTracking();
+      unawaited(_positionStream?.cancel());
       _positionStream = _locationService.positionStream.listen(_onPosition);
       state = state.copyWith(isTracking: true, clearError: true);
     } catch (e) {

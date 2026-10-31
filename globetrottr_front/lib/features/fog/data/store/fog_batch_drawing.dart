@@ -19,6 +19,15 @@ class FogLastPoints {
 
   bool contains(String sessionId) => _points.containsKey(sessionId);
 
+  FogLastPoints copy() => FogLastPoints().._points.addAll(_points);
+
+  /// Takes over the points of [other].
+  void adopt(FogLastPoints other) {
+    _points
+      ..clear()
+      ..addAll(other._points);
+  }
+
   void remember(String sessionId, FogPathPoint lastPoint) {
     _points.remove(sessionId);
     _points[sessionId] = lastPoint;

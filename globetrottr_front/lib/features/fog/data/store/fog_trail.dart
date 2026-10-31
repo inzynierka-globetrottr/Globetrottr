@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
 
@@ -25,7 +27,7 @@ class FogTrail {
   /// The newest point, which the player continues from.
   FogPathPoint? anchor;
 
-  List<FogTrailSegment> get segments => List.unmodifiable(_segments);
+  List<FogTrailSegment> get segments => UnmodifiableListView(_segments);
 
   bool get isEmpty => _segments.isEmpty;
 

@@ -44,10 +44,10 @@ void main() {
   });
 
   group('metersToPixels', () {
-    test('converts 30 m at Krakow latitude and zoom 16 to about 19.5 px', () {
+    test('converts 50 m at Krakow latitude and zoom 15 to about 16.3 px', () {
       expect(
-        metersToPixels(meters: 30, latitude: 50.0614, zoom: 16),
-        closeTo(19.5, 0.1),
+        metersToPixels(meters: 50, latitude: 50.0614, zoom: 15),
+        closeTo(16.3, 0.1),
       );
     });
 

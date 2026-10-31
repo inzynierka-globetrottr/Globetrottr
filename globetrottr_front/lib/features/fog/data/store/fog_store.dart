@@ -107,7 +107,8 @@ class FogStore {
   final int importTileBudget;
   final Duration flushDelay;
 
-  /// Compress large writes in a background isolate to keep the UI smooth.
+  /// Compress large writes and decode large reads in a background isolate to
+  /// keep the UI smooth.
   final bool encodeInIsolate;
   final int isolateEncodeThreshold;
   final FogRasterizer _rasterizer;
@@ -115,6 +116,8 @@ class FogStore {
   late final FogTileCache _tiles = FogTileCache(
     storage,
     maxTiles: maxCachedTiles,
+    decodeInIsolate: encodeInIsolate,
+    isolateDecodeThreshold: isolateEncodeThreshold,
   );
   late final FogTileWriter _writer = FogTileWriter(
     _tiles,
@@ -228,6 +231,7 @@ class FogStore {
           final logId = point.logId;
           if (logId != null && logId <= _lastAppliedLogId) {
             _appliedTrailId = point.trailId;
+            await _flushIfNeeded();
             return;
           }
           await _apply(point.sessionId, point.point, logId, point.trailId);
@@ -372,12 +376,15 @@ class FogStore {
     while (start < entries.length) {
       final chunks = <List<TrackLogEntry>>[];
       final jobs = <FogChunkJob>[];
+      // Takes effect only after the step is drawn, so a failed step can be
+      // repeated from where the path really ends.
+      final lastPoints = _lastPoints.copy();
       var from = start;
       while (chunks.length < parallel && from < entries.length) {
         final to = _planner.chunkEnd(entries, from, chunkSize, pathBudget);
         final chunk = entries.sublist(from, to);
         chunks.add(chunk);
-        jobs.add(_planner.buildJob(chunk, _lastPoints));
+        jobs.add(_planner.buildJob(chunk, lastPoints));
         from = to;
       }
 
@@ -389,6 +396,7 @@ class FogStore {
       for (var i = 0; i < results.length; i++) {
         await _mergeChunk(chunks[i], results[i]);
       }
+      _lastPoints.adopt(lastPoints);
       await _flushIfNeeded();
       start = from;
       onProgress?.call(start / entries.length);
