@@ -387,13 +387,13 @@ void main() {
     );
 
     test('flushes by itself when too many tiles are waiting', () async {
-      final small = await _open(InMemoryFogTileStorage(), maxDirtyTiles: 6);
+      final small = await _open(InMemoryFogTileStorage(), maxDirtyTiles: 3);
       for (final e in walkEast('a', points: 120, stepMeters: 20)) {
         await _apply(small, 'a', e.latitude, e.longitude);
       }
 
       expect(small.revision, greaterThan(0));
-      expect(small.diagnostics.dirtyTiles, lessThan(6));
+      expect(small.diagnostics.dirtyTiles, lessThan(3));
       await small.dispose();
     });
 

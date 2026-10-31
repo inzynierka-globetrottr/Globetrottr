@@ -3,13 +3,13 @@ import 'dart:math' as math;
 
 import 'package:globetrottr_front/core/config/map_config.dart';
 
-/// Tunables of the bitmap fog. Zoom 16 is about 1.47 m per pixel at 52 N,
-/// so the 50 m vision radius is a disc of roughly 34 px. Zoom 17 would be
+/// Tunables of the bitmap fog. Zoom 15 is about 2.9 m per pixel at 52 N,
+/// so the 50 m vision radius is a disc of roughly 17 px. Zoom 16 would be
 /// twice as sharp and take twice the space; at the usual walking zoom the
 /// difference on screen is small.
 abstract final class FogConfig {
   /// Most detailed level; everything is rasterized here.
-  static const int baseZoom = 16;
+  static const int baseZoom = 15;
 
   /// Coarsest level of the display pyramid.
   static const int minZoom = 4;

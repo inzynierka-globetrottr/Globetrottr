@@ -54,7 +54,7 @@ void main() {
       );
       final a = _pixel(krakowLat, krakowLng);
       final near = offsetMeters(krakowLat, krakowLng, north: 1000, east: 1000);
-      final far = offsetMeters(krakowLat, krakowLng, north: 5000, east: 5000);
+      final far = offsetMeters(krakowLat, krakowLng, north: 10000, east: 10000);
 
       expect(loose.connects(a, _pixel(near.lat, near.lng)), isTrue);
       expect(loose.connects(a, _pixel(far.lat, far.lng)), isFalse);

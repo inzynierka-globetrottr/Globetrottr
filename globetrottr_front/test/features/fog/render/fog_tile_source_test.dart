@@ -178,7 +178,7 @@ void main() {
       );
       await store.flush();
       final source = FogTileSource(store);
-      source.ensureRange(cameraAt(zoom: 15).visibleTiles(15));
+      source.ensureRange(cameraAt(zoom: 14).visibleTiles(14));
       await source.whenIdle();
 
       final fallback = source.fallbackFor(
@@ -186,7 +186,7 @@ void main() {
       );
 
       expect(fallback, isNotNull);
-      expect(fallback!.id, tileOf(krakowLat, krakowLng, 15));
+      expect(fallback!.id, tileOf(krakowLat, krakowLng, 14));
       source.dispose();
       await store.dispose();
     });

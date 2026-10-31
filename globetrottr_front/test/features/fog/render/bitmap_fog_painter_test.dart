@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
@@ -174,10 +177,12 @@ void main() {
 
     test('the soft rim has no jump where tiles meet', () async {
       final store = await openStore();
-      await walk(store, 'a');
+      await walk(store, 'a', points: 200);
       await store.flush();
+      const zoom = FogConfig.baseZoom;
+      final border = tileOf(krakowLat, krakowLng, zoom).x + 1;
       final camera = cameraAt(
-        lng: offsetMeters(krakowLat, krakowLng, east: 195).lng,
+        lng: FogMercator.xToLng(border * FogTileId.size * 1.0, zoom),
       );
       final source = await readySource(store, camera);
       final alpha = await renderAlpha(painterFor(camera, source: source));
@@ -185,7 +190,7 @@ void main() {
 
       final rimY = start.dy.round() + baseRadiusPixels.round();
       var worstStep = 0;
-      for (var x = start.dx.round() + 10; x < 390; x++) {
+      for (var x = math.max(start.dx.round() + 10, 10); x < 390; x++) {
         worstStep = worstStep < (alpha(x + 1, rimY) - alpha(x, rimY)).abs()
             ? (alpha(x + 1, rimY) - alpha(x, rimY)).abs()
             : worstStep;

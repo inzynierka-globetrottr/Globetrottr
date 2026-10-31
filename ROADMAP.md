@@ -15,11 +15,11 @@ Source of truth for the plan and the key design decisions of every part of the a
 **Decisions:**
 - The user's own fog is computed, stored and drawn on the device only, fully offline. The backend plays no part in it.
 - The track log (`tracks.db`) is the source of truth; the fog is a derived cache that can always be rebuilt from it. The log stays lossless: future views need dense points.
-- The fog is a set of Web Mercator tiles with 8-bit coverage per pixel, base level z16, plus a pyramid of coarser levels for zoomed-out views. Merging is a per-pixel `max`; drawing cost does not depend on how much has been discovered.
+- The fog is a set of Web Mercator tiles with 8-bit coverage per pixel, base level z15, plus a pyramid of coarser levels for zoomed-out views. Merging is a per-pixel `max`; drawing cost does not depend on how much has been discovered.
 - Each pair of consecutive points of one session reveals a stadium with a 50 m radius (`MapConfig.defaultVisionRadius`); points of different sessions are never connected.
 - A gap over 350 m between two points of a session breaks the path (the later point is a lone disc). Why: a long jump drew a strip across the whole distance and ran the app out of memory. A flat distance limit was chosen over a speed or time test: it needs no timestamps (about 1200 km/h at one fix per second; GPS lag is ignored).
 - Smooth edges are stored in the data (anti-aliased rim), not computed while drawing. No custom GPU shaders.
-- Rejected: polygons with `clipper2`, base level z17 (twice the storage), binary tiles with a GPU edge shader (kept in `git stash` "exp: binary fog tiles and GPU edge shader"), simplifying old sessions of the track log.
+- Rejected: polygons with `clipper2`, base levels z16 and z17 (more storage for detail a 50 m radius does not need), binary tiles with a GPU edge shader (kept in `git stash` "exp: binary fog tiles and GPU edge shader"), simplifying old sessions of the track log.
 
 **Invariants:**
 - Positions reach the fog only in the rounded form stored in the log, so live and rebuilt fog are identical.
@@ -37,7 +37,7 @@ Source of truth for the plan and the key design decisions of every part of the a
 
 ## Fog follow-ups (Planned)
 
-- **Friends' fog as tiles:** the client uploads tiles up to z15 changed since the last synced revision; the server stores them per user and serves them on demand to accepted friends. The friend's map uses the same renderer with a network tile source. Then the polygon friends' fog is removed.
+- **Friends' fog as tiles:** the client uploads tiles changed since the last synced revision; the server stores them per user and serves them on demand to accepted friends. The friend's map uses the same renderer with a network tile source. Then the polygon friends' fog is removed.
 - **Backend stops computing the fog:** raw routes are still uploaded and persisted for statistics; quests and statistics move to the bitmap fog (computed on the device, or the same rasterization on the server; to be decided).
 - **Restore on a new device:** from server tiles (lower resolution) or by syncing the track log and rebuilding locally; to be decided with the backend work.
 - **Store resilience after an out-of-memory (Done, one part open):** a tile cap per path and a replay that retries a failing step small and then skips it keep a bad stretch of the log from blocking every start; skipped entries show in the dev panel and a rebuild redraws them. Still to investigate: after an OOM the store queues did not recover (Clear fog / Clear track log did nothing).
