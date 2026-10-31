@@ -38,13 +38,16 @@ class FogTileSource extends ChangeNotifier {
   final LinkedHashMap<FogTileId, ui.Image> _images = LinkedHashMap();
   final Set<FogTileId> _stale = {};
   final Set<FogTileId> _building = {};
-  final Set<FogTileId> _rebuildAfter = {};
   final List<Completer<void>> _idleWaiters = [];
   late final StreamSubscription<FogChange> _subscription;
 
   FogTileRange? _lastRange;
   int _pending = 0;
   bool _disposed = false;
+
+  /// Grows when the images are thrown away, so a build started earlier knows
+  /// its result is out of date.
+  int _generation = 0;
 
   int get imageCount => _images.length;
 
@@ -164,9 +167,10 @@ class FogTileSource extends ChangeNotifier {
       return;
     }
 
+    final written = change.trailWrittenUpTo;
     final wanted = _lastRange?.expand(1);
     final refresh = <FogTileId>{...change.tiles};
-    if (change.flushed) {
+    if (written != null) {
       for (final id in change.tiles) {
         for (var dy = -1; dy <= 1; dy++) {
           for (var dx = -1; dx <= 1; dx++) {
@@ -178,15 +182,12 @@ class FogTileSource extends ChangeNotifier {
     for (final id in refresh) {
       final hasImage = _images.containsKey(id);
       final visible = wanted?.contains(id) ?? false;
-      if (hasImage) {
+      if (hasImage || (visible && change.tiles.contains(id))) {
         _stale.add(id);
-        _request(id);
-      } else if (visible && change.tiles.contains(id)) {
         _request(id);
       }
     }
 
-    final written = change.trailWrittenUpTo;
     if (written != null) unawaited(_releaseTrail(written));
   }
 
@@ -199,40 +200,35 @@ class FogTileSource extends ChangeNotifier {
   }
 
   void _request(FogTileId id) {
-    if (_disposed) return;
-    if (_building.contains(id)) {
-      _rebuildAfter.add(id);
-      return;
-    }
+    if (_disposed || _building.contains(id)) return;
     if (_images.containsKey(id) && !_stale.contains(id)) return;
     final mask = store.peek(id);
     if (mask == null) return;
 
+    _stale.remove(id);
     _building.add(id);
     _begin();
     final pixels = FogTilePixels.build(
       mask,
       neighbor: (dx, dy) => store.peek(FogTileId(id.z, id.x + dx, id.y + dy)),
     );
-    unawaited(_decode(pixels).then((image) => _finishBuild(id, image)));
+    final generation = _generation;
+    unawaited(
+      _decode(pixels).then((image) => _finishBuild(id, image, generation)),
+    );
   }
 
-  void _finishBuild(FogTileId id, ui.Image image) {
+  void _finishBuild(FogTileId id, ui.Image image, int generation) {
     _building.remove(id);
-    _stale.remove(id);
-    if (_disposed) {
+    if (generation == _generation) {
+      _images.remove(id)?.dispose();
+      _images[id] = image;
+      _evictImages();
+      notifyListeners();
+    } else {
       image.dispose();
-      _end();
-      return;
     }
-    _images.remove(id)?.dispose();
-    _images[id] = image;
-    _evictImages();
-    notifyListeners();
-    if (_rebuildAfter.remove(id)) {
-      _stale.add(id);
-      _request(id);
-    }
+    if (_stale.contains(id)) _request(id);
     _end();
   }
 
@@ -253,7 +249,7 @@ class FogTileSource extends ChangeNotifier {
     }
     _images.clear();
     _stale.clear();
-    _rebuildAfter.clear();
+    _generation++;
   }
 
   Future<ui.Image> _decode(Uint8List pixels) {

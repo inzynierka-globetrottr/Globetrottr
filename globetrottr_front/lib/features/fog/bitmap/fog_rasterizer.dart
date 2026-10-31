@@ -148,12 +148,6 @@ class FogRasterizer {
     return changed;
   }
 
-  int _quantize(int value) {
-    if (quantStep <= 1 || value == 255) return value;
-    final rounded = (value + quantStep ~/ 2) ~/ quantStep * quantStep;
-    return rounded > 255 ? 255 : rounded;
-  }
-
   bool _ramp(
     Uint8List data,
     int rowBase,
@@ -168,7 +162,10 @@ class FogRasterizer {
       final distance = shape.distanceTo(x + 0.5, yc);
       final coverage = (reach - distance) / edgeWidth;
       if (coverage <= 0) continue;
-      final value = _quantize(coverage >= 1 ? 255 : (coverage * 255).round());
+      final value = FogMask.quantized(
+        coverage >= 1 ? 255 : (coverage * 255).round(),
+        quantStep,
+      );
       final index = rowBase + x;
       if (value > data[index]) {
         data[index] = value;

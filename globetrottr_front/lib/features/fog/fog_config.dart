@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+import 'dart:math' as math;
+
 import 'package:globetrottr_front/core/config/map_config.dart';
 
 /// Tunables of the bitmap fog. Zoom 16 is about 1.47 m per pixel at 52 N,
@@ -57,6 +60,9 @@ abstract final class FogConfig {
 
   /// A write of at least this many tiles is compressed in an isolate.
   static const int isolateEncodeThreshold = 24;
+
+  /// Most isolates one batch of work may use at the same time.
+  static int get isolateWorkers => math.min(Platform.numberOfProcessors, 4);
 
   static const double fogOpacity = 0.75;
 }

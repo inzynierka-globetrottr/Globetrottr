@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'dart:isolate';
 import 'dart:math' as math;
 
@@ -8,7 +7,6 @@ import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
-import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
@@ -63,12 +61,9 @@ class FogStore {
     int isolateEncodeThreshold = FogConfig.isolateEncodeThreshold,
   }) async {
     var meta = await storage.loadMeta();
+    final expected = FogTileWriter.compatibilityMeta(baseZoom: baseZoom);
     final compatible =
-        meta.isEmpty ||
-        (meta['baseZoom'] == baseZoom &&
-            meta['minZoom'] == FogConfig.minZoom &&
-            meta['formatVersion'] == FogTileCodec.formatVersion &&
-            meta['drawVersion'] == FogConfig.drawVersion);
+        meta.isEmpty || expected.entries.every((e) => meta[e.key] == e.value);
     if (!compatible) {
       await storage.clear();
       meta = {};
@@ -282,7 +277,7 @@ class FogStore {
       _noteApplied(logId);
       if (changed.isNotEmpty) {
         _trail.add(ax, ay, x, y);
-        if (!_changes.isClosed) _changes.add(FogChange(changed, onTrail: true));
+        _emit(FogChange(changed, onTrail: true));
       }
     } finally {
       _tiles.pinned.removeAll(needed);
@@ -290,6 +285,10 @@ class FogStore {
     _appliedPoints++;
     _lastApplyMicros = timer.elapsedMicroseconds;
     await _flushIfNeeded();
+  }
+
+  void _emit(FogChange change) {
+    if (!_changes.isClosed) _changes.add(change);
   }
 
   void _noteApplied(int? logId) {
@@ -360,11 +359,7 @@ class FogStore {
     if (_changes.isClosed || !_changes.hasListener) {
       _trail.forget(written);
     }
-    if (!_changes.isClosed) {
-      _changes.add(
-        FogChange(result.tiles, flushed: true, trailWrittenUpTo: written),
-      );
-    }
+    _emit(FogChange(result.tiles, trailWrittenUpTo: written));
   }
 
   /// Draws many entries at once, optionally rasterizing in a background
@@ -386,9 +381,7 @@ class FogStore {
     int chunkSize,
     void Function(double progress)? onProgress,
   ) async {
-    final parallel = useIsolate
-        ? math.max(1, math.min(Platform.numberOfProcessors, 4))
-        : 1;
+    final parallel = useIsolate ? FogConfig.isolateWorkers : 1;
     // A path of this many base pixels touches at most about
     // importTileBudget / parallel tiles, so a whole step stays in budget.
     final pathBudget =
@@ -430,9 +423,7 @@ class FogStore {
       _noteApplied(entry.id);
     }
     _appliedPoints += chunk.length;
-    if (changed.isNotEmpty && !_changes.isClosed) {
-      _changes.add(FogChange(changed));
-    }
+    if (changed.isNotEmpty) _emit(FogChange(changed));
   }
 
   /// Draws the log entries newer than the last applied one, for example
@@ -529,19 +520,22 @@ class FogStore {
     await flush();
   }
 
-  Map<String, double> get _compatibilityMeta =>
-      FogTileWriter.compatibilityMeta(baseZoom: baseZoom);
+  Future<void> _saveMeta(Map<String, double> meta) {
+    return storage.commit(
+      upserts: const [],
+      meta: {
+        ...FogTileWriter.compatibilityMeta(baseZoom: baseZoom),
+        ...meta,
+      },
+    );
+  }
 
   Future<void> _markReplayStep(int after, int attempts) {
     return _queue.run(
-      () => storage.commit(
-        upserts: const [],
-        meta: {
-          ..._compatibilityMeta,
-          'replayStepAfter': after.toDouble(),
-          'replayAttempts': attempts.toDouble(),
-        },
-      ),
+      () => _saveMeta({
+        'replayStepAfter': after.toDouble(),
+        'replayAttempts': attempts.toDouble(),
+      }),
     );
   }
 
@@ -556,14 +550,10 @@ class FogStore {
       _noteApplied(entries.last.id);
       _skippedLogEntries += entries.length;
       await _flush();
-      await storage.commit(
-        upserts: const [],
-        meta: {
-          ..._compatibilityMeta,
-          'skippedLogEntries': _skippedLogEntries.toDouble(),
-          'replayAttempts': 0,
-        },
-      );
+      await _saveMeta({
+        'skippedLogEntries': _skippedLogEntries.toDouble(),
+        'replayAttempts': 0,
+      });
     });
   }
 
@@ -591,7 +581,7 @@ class FogStore {
       _lastAppliedLogId = 0;
       _skippedLogEntries = 0;
       _metaDirty = false;
-      if (!_changes.isClosed) _changes.add(const FogChange({}, all: true));
+      _emit(const FogChange({}, all: true));
     });
   }
 

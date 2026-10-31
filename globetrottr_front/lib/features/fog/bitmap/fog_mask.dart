@@ -48,13 +48,18 @@ class FogMask {
   /// drawing again over stored (quantized) tiles gives the same result as
   /// never having quantized, which keeps replays after a crash exact.
   void quantizeInPlace({int step = 16}) {
-    final half = step ~/ 2;
     for (var i = 0; i < pixels; i++) {
       final value = data[i];
       if (value == 0 || value == 255) continue;
-      final rounded = (value + half) ~/ step * step;
-      data[i] = rounded > 255 ? 255 : rounded;
+      data[i] = quantized(value, step);
     }
+  }
+
+  /// [value] rounded to the nearest multiple of [step] (255 stays).
+  static int quantized(int value, int step) {
+    if (value == 255) return value;
+    final rounded = (value + step ~/ 2) ~/ step * step;
+    return rounded > 255 ? 255 : rounded;
   }
 
   /// Compares the mask as 64-bit words, which is 8x faster than per byte.

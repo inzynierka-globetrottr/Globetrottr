@@ -191,6 +191,99 @@ void main() {
       await store.dispose();
     });
 
+    test('an image still being built does not outlive a clear', () async {
+      final store = await openStore();
+      await store.applyPoint(
+        sessionId: 'a',
+        latitude: krakowLat,
+        longitude: krakowLng,
+      );
+      await store.flush();
+      final camera = cameraAt();
+      final source = await readySource(store, camera);
+      final east = offsetMeters(krakowLat, krakowLng, east: 40);
+      await store.applyPoint(
+        sessionId: 'a',
+        latitude: east.lat,
+        longitude: east.lng,
+      );
+
+      await store.flush();
+      await pumpEventQueue(times: 1);
+      expect(source.pendingBuilds, greaterThan(0));
+      await store.clear();
+      await pumpEventQueue();
+      await source.whenIdle();
+
+      expect(
+        source.imageFor(tileOf(krakowLat, krakowLng, FogConfig.baseZoom)),
+        isNull,
+      );
+      source.dispose();
+      await store.dispose();
+    });
+
+    test('a tile requested twice at once is built once', () async {
+      final store = await openStore();
+      await store.applyPoint(
+        sessionId: 'a',
+        latitude: krakowLat,
+        longitude: krakowLng,
+      );
+      await store.flush();
+      final source = FogTileSource(store);
+      var notifications = 0;
+      source.addListener(() => notifications++);
+      final nearby = offsetMeters(krakowLat, krakowLng, east: 800);
+
+      source.ensureVisible(cameraAt());
+      source.ensureVisible(cameraAt(lat: nearby.lat, lng: nearby.lng));
+      await source.whenIdle();
+
+      expect(notifications, 1);
+      source.dispose();
+      await store.dispose();
+    });
+
+    test('a change during a build reaches the image', () async {
+      final store = await openStore();
+      await store.applyPoint(
+        sessionId: 'a',
+        latitude: krakowLat,
+        longitude: krakowLng,
+      );
+      await store.flush();
+      final camera = cameraAt();
+      final source = await readySource(store, camera);
+      final first = offsetMeters(krakowLat, krakowLng, east: 40);
+      final second = offsetMeters(krakowLat, krakowLng, east: 150);
+
+      await store.applyPoint(
+        sessionId: 'a',
+        latitude: first.lat,
+        longitude: first.lng,
+      );
+      await store.flush();
+      await pumpEventQueue(times: 1);
+      expect(source.pendingBuilds, greaterThan(0));
+      await store.applyPoint(
+        sessionId: 'a',
+        latitude: second.lat,
+        longitude: second.lng,
+      );
+      await store.flush();
+      await pumpEventQueue();
+      await source.whenIdle();
+      await pumpEventQueue();
+
+      expect(store.trail.segments, isEmpty);
+      final spot = screenOf(camera, second.lat, second.lng);
+      final alpha = await renderAlpha(painterFor(camera, source: source));
+      expect(alpha(spot.dx.round(), spot.dy.round()), lessThan(10));
+      source.dispose();
+      await store.dispose();
+    });
+
     test('whenIdle completes at once when nothing is loading', () async {
       final store = await openStore();
       final source = FogTileSource(store);

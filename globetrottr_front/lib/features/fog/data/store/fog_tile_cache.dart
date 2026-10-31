@@ -12,13 +12,12 @@ class FogCacheEntry {
   /// Null means "known to have no fog data".
   FogMask? mask;
   double areaM2;
-  bool dirty = false;
 }
 
 /// Decoded fog tiles kept in memory, the least recently used first.
 ///
-/// Tiles waiting to be written ([FogCacheEntry.dirty]) and tiles a running
-/// operation relies on ([pinned]) are never evicted.
+/// Tiles waiting to be written ([dirty]) and tiles a running operation relies
+/// on ([pinned]) are never evicted.
 class FogTileCache {
   FogTileCache(this.storage, {required this.maxTiles});
 
@@ -101,10 +100,7 @@ class FogTileCache {
   /// a tile that was only [created] for drawing, without gaining a pixel,
   /// stays absent.
   void markDrawn(Set<FogTileId> created, Set<FogTileId> changed) {
-    for (final id in changed) {
-      _entries[id]!.dirty = true;
-      dirty.add(id);
-    }
+    dirty.addAll(changed);
     for (final id in created.difference(changed)) {
       _entries[id]!.mask = null;
     }
@@ -131,7 +127,6 @@ class FogTileCache {
           changed = existing.mergeMax(incoming);
         }
         if (!changed) continue;
-        entry.dirty = true;
         dirty.add(id);
         changedIds.add(id);
       }
@@ -145,8 +140,7 @@ class FogTileCache {
     if (_entries.length <= maxTiles) return;
     for (final id in _entries.keys.toList()) {
       if (_entries.length <= maxTiles) break;
-      final entry = _entries[id]!;
-      if (entry.dirty || pinned.contains(id)) continue;
+      if (dirty.contains(id) || pinned.contains(id)) continue;
       _entries.remove(id);
     }
   }

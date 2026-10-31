@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -76,75 +75,68 @@ class FogTileWriter {
     // The revision counts writes that change tiles; saving only the log
     // position does not make any tile newer.
     final nextRevision = baseDirty.isEmpty ? revision : revision + 1;
-    final changed = <FogTileId>{...baseDirty};
     final ancestors = <FogTileId>{};
 
-    var level = baseDirty;
-    for (var z = baseZoom; z > FogConfig.minZoom; z--) {
-      final byParent = <FogTileId, List<FogTileId>>{};
-      for (final id in level) {
-        byParent.putIfAbsent(id.parent!, () => []).add(id);
-      }
-      cache.pinned.addAll(byParent.keys);
-      await cache.ensureLoaded(byParent.keys);
-      for (final group in byParent.entries) {
-        final entry = cache[group.key]!;
-        final parentMask = entry.mask ??= FogMask();
-        for (final child in group.value) {
-          FogPyramid.downsampleInto(
-            child: cache[child]?.mask ?? FogMask(),
-            parent: parentMask,
-            quadX: child.x & 1,
-            quadY: child.y & 1,
-          );
-        }
-        entry.dirty = true;
-      }
-      ancestors.addAll(byParent.keys);
-      level = byParent.keys.toSet();
-    }
-    changed.addAll(ancestors);
-
-    var areaDelta = 0.0;
-    final upserts = <StoredFogTile>[];
-    final newAreas = <FogTileId, double>{};
-    final ids = changed.toList();
-    final List<EncodedFogTile> encoded;
     try {
-      for (final id in ids) {
-        cache[id]!.mask!.quantizeInPlace(
-          step: id.z == baseZoom
-              ? FogConfig.baseQuantStep
-              : FogConfig.overviewQuantStep,
+      var level = baseDirty;
+      for (var z = baseZoom; z > FogConfig.minZoom; z--) {
+        final byParent = <FogTileId, List<FogTileId>>{};
+        for (final id in level) {
+          byParent.putIfAbsent(id.parent!, () => []).add(id);
+        }
+        ancestors.addAll(byParent.keys);
+        cache.pinned.addAll(byParent.keys);
+        await cache.ensureLoaded(byParent.keys);
+        for (final group in byParent.entries) {
+          final parentMask = cache[group.key]!.mask ??= FogMask();
+          for (final child in group.value) {
+            FogPyramid.downsampleInto(
+              child: cache[child]?.mask ?? FogMask(),
+              parent: parentMask,
+              quadX: child.x & 1,
+              quadY: child.y & 1,
+            );
+          }
+        }
+        level = byParent.keys.toSet();
+      }
+
+      // The rasterizer already draws base tiles on the storage grid; only
+      // the averaging of the pyramid creates other values.
+      for (final id in ancestors) {
+        cache[id]!.mask!.quantizeInPlace(step: FogConfig.overviewQuantStep);
+      }
+
+      final changed = <FogTileId>{...baseDirty, ...ancestors};
+      final ids = changed.toList();
+      final encoded = await _encodeAll([
+        for (final id in ids) cache[id]!.mask!,
+      ]);
+
+      var areaDelta = 0.0;
+      final upserts = <StoredFogTile>[];
+      final newAreas = <FogTileId, double>{};
+      for (var i = 0; i < ids.length; i++) {
+        final id = ids[i];
+        final entry = cache[id]!;
+        var area = 0.0;
+        if (id.z == baseZoom) {
+          area = _areaOf(id, entry.mask!);
+          areaDelta += area - entry.areaM2;
+          newAreas[id] = area;
+        }
+        upserts.add(
+          StoredFogTile(
+            id: id,
+            flag: encoded[i].flag,
+            rev: nextRevision,
+            areaM2: area,
+            bytes: encoded[i].bytes,
+          ),
         );
       }
-      encoded = await _encodeAll([for (final id in ids) cache[id]!.mask!]);
-    } on Object {
-      cache.pinned.removeAll(ancestors);
-      rethrow;
-    }
-    for (var i = 0; i < ids.length; i++) {
-      final id = ids[i];
-      final entry = cache[id]!;
-      var area = 0.0;
-      if (id.z == baseZoom) {
-        area = _areaOf(id, entry.mask!);
-        areaDelta += area - entry.areaM2;
-        newAreas[id] = area;
-      }
-      upserts.add(
-        StoredFogTile(
-          id: id,
-          flag: encoded[i].flag,
-          rev: nextRevision,
-          areaM2: area,
-          bytes: encoded[i].bytes,
-        ),
-      );
-    }
 
-    final newTotal = math.max(0.0, totalAreaM2 + areaDelta);
-    try {
+      final newTotal = math.max(0.0, totalAreaM2 + areaDelta);
       await cache.storage.commit(
         upserts: upserts,
         meta: {
@@ -154,26 +146,18 @@ class FogTileWriter {
           ...compatibilityMeta(baseZoom: baseZoom),
         },
       );
-    } on Object {
-      cache.pinned.removeAll(ancestors);
-      rethrow;
-    }
 
-    for (final id in changed) {
-      final entry = cache[id];
-      if (entry == null) continue;
-      entry.dirty = false;
-      final area = newAreas[id];
-      if (area != null) entry.areaM2 = area;
+      newAreas.forEach((id, area) => cache[id]!.areaM2 = area);
+      cache.dirty.removeAll(baseDirty);
+      return FogWriteResult(
+        revision: nextRevision,
+        totalAreaM2: newTotal,
+        tiles: changed,
+      );
+    } finally {
+      cache.pinned.removeAll(ancestors);
+      cache.evict();
     }
-    cache.dirty.removeAll(baseDirty);
-    cache.pinned.removeAll(ancestors);
-    cache.evict();
-    return FogWriteResult(
-      revision: nextRevision,
-      totalAreaM2: newTotal,
-      tiles: changed,
-    );
   }
 
   Future<List<EncodedFogTile>> _encodeAll(List<FogMask> masks) async {
@@ -183,10 +167,7 @@ class FogTileWriter {
     final raw = [for (final mask in masks) mask.data];
     final workers = math.max(
       1,
-      math.min(
-        math.min(Platform.numberOfProcessors, 4),
-        raw.length ~/ isolateEncodeThreshold,
-      ),
+      math.min(FogConfig.isolateWorkers, raw.length ~/ isolateEncodeThreshold),
     );
     final share = (raw.length / workers).ceil();
     final parts = await Future.wait([
