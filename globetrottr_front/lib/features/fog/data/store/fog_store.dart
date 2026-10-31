@@ -18,6 +18,7 @@ import 'package:globetrottr_front/features/fog/data/store/fog_batch_drawing.dart
 import 'package:globetrottr_front/features/fog/data/store/fog_store_models.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_tile_cache.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_tile_writer.dart';
+import 'package:globetrottr_front/features/fog/data/store/fog_trail.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
@@ -151,6 +152,7 @@ class FogStore {
     rasterizer: _rasterizer,
   );
   final FogLastPoints _lastPoints = FogLastPoints();
+  final FogTrail _trail = FogTrail();
   final FogReplayTracker _replayTracker = FogReplayTracker();
   final StreamController<FogChange> _changes =
       StreamController<FogChange>.broadcast();
@@ -174,6 +176,20 @@ class FogStore {
   int _lastFlushTiles = 0;
 
   int get revision => _revision;
+
+  /// What was revealed since the last flush, for drawing over the tiles.
+  FogTrail get trail => _trail;
+
+  /// Whether the position (given in base level pixels) continues the path
+  /// from the newest drawn point, by the same rule as the tiles.
+  bool joinsTrail(double x, double y, double radius) {
+    final anchor = _trail.anchor;
+    return anchor != null &&
+        _segmentRule.connects(anchor.x, anchor.y, x, y, radius);
+  }
+
+  /// Recording stopped or started: the next position starts a new path.
+  void endLivePath() => _trail.anchor = null;
 
   /// Ground area revealed so far, in square meters, as of the last flush.
   double get totalAreaM2 => _totalAreaM2;
@@ -277,10 +293,13 @@ class FogStore {
         onChanged: changed.add,
       );
       _tiles.markDrawn(created, changed);
-      _lastPoints.remember(sessionId, FogLastPoint(x, y, radius));
+      final point = FogLastPoint(x, y, radius);
+      _lastPoints.remember(sessionId, point);
+      _trail.anchor = point;
       _noteApplied(logId);
-      if (changed.isNotEmpty && !_changes.isClosed) {
-        _changes.add(FogChange(changed));
+      if (changed.isNotEmpty) {
+        _trail.add(ax, ay, x, y);
+        if (!_changes.isClosed) _changes.add(FogChange(changed, onTrail: true));
       }
     } finally {
       _tiles.pinned.removeAll(needed);
@@ -353,8 +372,15 @@ class FogStore {
     _metaDirty = false;
     _lastFlushMillis = timer.elapsedMilliseconds;
     _lastFlushTiles = result.tiles.length;
-    if (result.tiles.isNotEmpty && !_changes.isClosed) {
-      _changes.add(FogChange(result.tiles, flushed: true));
+    if (result.tiles.isEmpty) return;
+    final written = _trail.newestId;
+    if (_changes.isClosed || !_changes.hasListener) {
+      _trail.forget(written);
+    }
+    if (!_changes.isClosed) {
+      _changes.add(
+        FogChange(result.tiles, flushed: true, trailWrittenUpTo: written),
+      );
     }
   }
 
@@ -576,6 +602,7 @@ class FogStore {
       await storage.clear();
       _tiles.clear();
       _lastPoints.clear();
+      _trail.clear();
       _revision = 0;
       _totalAreaM2 = 0;
       _lastAppliedLogId = 0;

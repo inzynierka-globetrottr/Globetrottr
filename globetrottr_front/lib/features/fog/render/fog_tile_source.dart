@@ -158,6 +158,10 @@ class FogTileSource extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    if (change.onTrail) {
+      notifyListeners();
+      return;
+    }
 
     final wanted = _lastRange?.expand(1);
     final refresh = <FogTileId>{...change.tiles};
@@ -180,6 +184,17 @@ class FogTileSource extends ChangeNotifier {
         _request(id);
       }
     }
+
+    final written = change.trailWrittenUpTo;
+    if (written != null) unawaited(_releaseTrail(written));
+  }
+
+  /// Drops the trail only once the new images can take over from it.
+  Future<void> _releaseTrail(int upToId) async {
+    await whenIdle();
+    if (_disposed) return;
+    store.trail.forget(upToId);
+    notifyListeners();
   }
 
   void _request(FogTileId id) {

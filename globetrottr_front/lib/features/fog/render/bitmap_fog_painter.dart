@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
@@ -69,7 +70,10 @@ class BitmapFogPainter extends CustomPainter {
     canvas.saveLayer(Offset.zero & size, Paint()..blendMode = BlendMode.dstOut);
     if (usable) {
       if (source != null) _drawTiles(canvas, source!);
-      if (!options.rawPixels) _drawLiveDisc(canvas);
+      if (!options.rawPixels) {
+        if (source != null) _drawTrail(canvas, source!);
+        _drawLiveDisc(canvas);
+      }
     }
     canvas
       ..restore()
@@ -278,6 +282,77 @@ class BitmapFogPainter extends CustomPainter {
       LatLng(FogMercator.yToLat(worldY, z), FogMercator.xToLng(worldX, z)),
     );
     return Offset(point.x, point.y);
+  }
+
+  /// Draws what is not in the tiles yet: the unflushed trail, and the stretch
+  /// from its newest point to the player, which waits for no storage write.
+  void _drawTrail(Canvas canvas, FogTileSource source) {
+    final store = source.store;
+    final z = store.baseZoom;
+    final path = ui.Path();
+    var empty = true;
+    for (final segment in store.trail.segments) {
+      empty = false;
+      final from = _screen(segment.ax, segment.ay, z);
+      final to = _screen(segment.bx, segment.by, z);
+      path
+        ..moveTo(from.dx, from.dy)
+        ..lineTo(to.dx, to.dy);
+    }
+
+    final center = liveCenter;
+    final anchor = store.trail.anchor;
+    if (center != null && anchor != null) {
+      final x = FogMercator.lngToX(center.longitude, z);
+      final y = FogMercator.latToY(center.latitude, z);
+      final radius = metersToPixels(
+        meters: visionRadiusMeters,
+        latitude: center.latitude,
+        zoom: z.toDouble(),
+      );
+      if (store.joinsTrail(x, y, radius)) {
+        empty = false;
+        final from = _screen(anchor.x, anchor.y, z);
+        final to = camera.latLngToScreenPoint(center);
+        path
+          ..moveTo(from.dx, from.dy)
+          ..lineTo(to.x, to.y);
+      }
+    }
+    if (empty) return;
+
+    final width =
+        2 *
+        metersToPixels(
+          meters: visionRadiusMeters,
+          latitude: camera.center.latitude,
+          zoom: camera.zoom,
+        );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..blendMode = BlendMode.plus
+        ..color = Colors.black.withValues(alpha: _trailOpacity(source)),
+    );
+  }
+
+  /// Matches the strength of a thin route in the coarse tiles, so the trail
+  /// does not fade when they take over from it.
+  double _trailOpacity(FogTileSource source) {
+    final level = source.levelFor(camera.zoom);
+    final levelWidth =
+        2 *
+        metersToPixels(
+          meters: visionRadiusMeters,
+          latitude: camera.center.latitude,
+          zoom: level.toDouble(),
+        );
+    const floor = FogPyramid.defaultOverviewFloor / 255;
+    return (floor + (levelWidth - 1) * (1 - floor)).clamp(floor, 1.0);
   }
 
   void _drawLiveDisc(Canvas canvas) {

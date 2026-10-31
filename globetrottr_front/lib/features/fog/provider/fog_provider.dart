@@ -38,6 +38,7 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       previous,
       next,
     ) {
+      _store?.endLivePath();
       if ((previous ?? false) && !next) unawaited(_flushQuietly());
     });
 

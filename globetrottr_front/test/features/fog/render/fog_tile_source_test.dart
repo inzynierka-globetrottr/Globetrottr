@@ -89,6 +89,7 @@ void main() {
         latitude: east.lat,
         longitude: east.lng,
       );
+      await store.flush();
       await pumpEventQueue();
       await source.whenIdle();
 
@@ -115,6 +116,7 @@ void main() {
           latitude: krakowLat,
           longitude: krakowLng,
         );
+        await store.flush();
         await pumpEventQueue();
         await source.whenIdle();
 

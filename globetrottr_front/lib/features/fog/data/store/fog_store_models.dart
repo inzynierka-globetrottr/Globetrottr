@@ -1,7 +1,13 @@
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 
 class FogChange {
-  const FogChange(this.tiles, {this.all = false, this.flushed = false});
+  const FogChange(
+    this.tiles, {
+    this.all = false,
+    this.flushed = false,
+    this.onTrail = false,
+    this.trailWrittenUpTo,
+  });
 
   /// Tiles whose content changed, on any level of the pyramid.
   final Set<FogTileId> tiles;
@@ -12,6 +18,13 @@ class FogChange {
   /// True when the change was written to storage, so coarser levels were
   /// refreshed too; false for a live update of the base level only.
   final bool flushed;
+
+  /// True when the change is drawn by the trail until the next flush, so the
+  /// images of its tiles need no rebuild yet.
+  final bool onTrail;
+
+  /// The newest trail segment this flush wrote into the tiles.
+  final int? trailWrittenUpTo;
 }
 
 class FogStoreDiagnostics {
