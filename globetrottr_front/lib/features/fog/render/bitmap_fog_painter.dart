@@ -37,6 +37,13 @@ class BitmapFogPainter extends CustomPainter {
   /// Upper bound of the edge blur in screen pixels, to keep drawing cheap.
   static const double _maxBlurSigma = 3;
 
+  /// Width of the soft edge of a drawn tile, in pixels of its level: the
+  /// stored rim plus what smoothing between the pixels adds to it.
+  static const double _tileRimPixels = FogConfig.edgeWidthPixels + 1;
+
+  /// Blur that spreads a sharp edge about as wide as a linear ramp of width 1.
+  static const double _rimBlurPerWidth = 0.31;
+
   final MapCamera camera;
   final FogTileSource? source;
 
@@ -329,9 +336,19 @@ class BitmapFogPainter extends CustomPainter {
         ..strokeWidth = width
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
-        ..blendMode = BlendMode.plus
+        ..blendMode = BlendMode.lighten
+        ..maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          _tileRimWidth * _rimBlurPerWidth,
+        )
         ..color = Colors.black.withValues(alpha: _trailOpacity(source)),
     );
+  }
+
+  /// Width on the screen of the soft edge of the tiles. It grows with the
+  /// magnification of their level, so vectors drawn with it look the same.
+  double get _tileRimWidth {
+    return _tileRimPixels * math.pow(2, camera.zoom - _drawnLevel());
   }
 
   /// Matches the strength of a thin route in the coarse tiles, so the trail
@@ -352,22 +369,25 @@ class BitmapFogPainter extends CustomPainter {
   void _drawLiveDisc(Canvas canvas) {
     final center = liveCenter;
     if (center == null) return;
-    final radius = metersToPixels(
-      meters: FogConfig.visionRadiusMeters,
-      latitude: center.latitude,
-      zoom: camera.zoom,
-    );
-    if (radius < 1) return;
+    final rim = _tileRimWidth;
+    // Ends inside the edge of the trail and the tiles, so that their soft
+    // edges do not add up to a brighter ring around the player.
+    final reach =
+        metersToPixels(
+          meters: FogConfig.visionRadiusMeters,
+          latitude: center.latitude,
+          zoom: camera.zoom,
+        ) -
+        rim / 2;
+    if (reach < 1) return;
     final screen = camera.latLngToScreenPoint(center);
-    const rim = 0.75;
-    final reach = radius + rim;
     final paint = Paint()
-      ..blendMode = BlendMode.plus
+      ..blendMode = BlendMode.lighten
       ..shader = ui.Gradient.radial(
         Offset(screen.x, screen.y),
         reach,
         const [Colors.black, Colors.black, Colors.transparent],
-        [0, (radius - rim) / reach, 1],
+        [0, math.max(0, reach - rim) / reach, 1],
       );
     canvas.drawCircle(Offset(screen.x, screen.y), reach, paint);
   }

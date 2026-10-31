@@ -86,6 +86,20 @@ void main() {
       expect(await trackLog.count(), 0);
     });
 
+    test('the log does not wait for the pending point write', () async {
+      final mapStorage = _GatedMapStorage();
+      final trackLog = InMemoryTrackLogStorage();
+      final service = LocationService(mapStorage, trackLog);
+      service.setRecording(true);
+
+      final recorded = service.recordPosition(_at(50.06, 19.94));
+      await pumpEventQueue();
+
+      expect(await trackLog.count(), 1);
+      mapStorage.gate.complete(1);
+      await recorded;
+    });
+
     test('still logs the fix when the pending point write fails', () async {
       final trackLog = InMemoryTrackLogStorage();
       final service = LocationService(_FailingMapStorage(), trackLog);

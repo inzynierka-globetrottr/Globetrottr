@@ -159,12 +159,18 @@ class LocationService {
       longitude: position.longitude,
       timestamp: timestampMs,
     );
+    // The fog waits only for the track log, not for the sync outbox.
+    final outbox = _savePending(point);
+    await _logPosition(sessionId, position, timestampMs);
+    await outbox;
+  }
+
+  Future<void> _savePending(PendingPoint point) async {
     try {
       await _mapStorage.insertPendingPoint(point);
     } on Object catch (error) {
       debugPrint('Pending point write failed: $error');
     }
-    await _logPosition(sessionId, position, timestampMs);
   }
 
   /// Packs the newest points of the track log when a recording ends.

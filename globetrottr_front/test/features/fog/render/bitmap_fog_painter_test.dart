@@ -62,10 +62,10 @@ void main() {
       final source = await readySource(store, camera);
       final alpha = await renderAlpha(painterFor(camera, source: source));
 
-      final east45 = offsetMeters(krakowLat, krakowLng, east: 45);
-      final east56 = offsetMeters(krakowLat, krakowLng, east: 56);
-      final inside = screenOf(camera, east45.lat, east45.lng);
-      final outside = screenOf(camera, east56.lat, east56.lng);
+      final east40 = offsetMeters(krakowLat, krakowLng, east: 40);
+      final east60 = offsetMeters(krakowLat, krakowLng, east: 60);
+      final inside = screenOf(camera, east40.lat, east40.lng);
+      final outside = screenOf(camera, east60.lat, east60.lng);
 
       expect(alpha(inside.dx.round(), inside.dy.round()), lessThan(10));
       expect(alpha(outside.dx.round(), outside.dy.round()), greaterThan(180));
@@ -321,7 +321,7 @@ void main() {
       );
 
       expect(alpha(200, 400), 0);
-      expect(alpha(200 + (baseRadiusPixels * 0.7).round(), 400), lessThan(5));
+      expect(alpha(200 + (baseRadiusPixels * 0.5).round(), 400), lessThan(5));
       expect(alpha(200, 400 + 70), closeTo(191, 1));
     });
 

@@ -1,4 +1,9 @@
+import 'dart:math' as math;
+
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -27,6 +32,28 @@ LatLng _eastOfStart(double meters) {
   return LatLng(at.lat, at.lng);
 }
 
+/// Alpha along the middle column of the screen, downwards from the walk
+/// through its lower edge.
+Future<List<int>> _edgeProfile(
+  MapCamera camera, {
+  required bool flushed,
+}) async {
+  final store = await openStore();
+  final source = await readySource(store, camera);
+  await walk(store, 'a', points: 30);
+  if (flushed) {
+    await store.flush();
+    await pumpEventQueue();
+    await source.whenIdle();
+    await pumpEventQueue();
+  }
+  final alpha = await renderAlpha(painterFor(camera, source: source));
+  final profile = [for (var y = 400; y < 800; y++) alpha(200, y)];
+  source.dispose();
+  await store.dispose();
+  return profile;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -46,6 +73,50 @@ void main() {
       await store.dispose();
     });
   }
+
+  for (final zoom in [14.6, 15.0, 16.0, 17.0, 18.0, 19.0]) {
+    test('at zoom $zoom the trail edge looks like the tile edge', () async {
+      final camera = cameraAt(
+        zoom: zoom,
+        lng: offsetMeters(krakowLat, krakowLng, east: 145).lng,
+      );
+      final trail = await _edgeProfile(camera, flushed: false);
+      final tiles = await _edgeProfile(camera, flushed: true);
+
+      var worst = 0;
+      for (var i = 0; i < tiles.length; i++) {
+        worst = math.max(worst, (trail[i] - tiles[i]).abs());
+      }
+      expect(worst, lessThan(32));
+    });
+  }
+
+  test('a flush shows its images together with dropping the trail', () async {
+    const z = FogConfig.baseZoom;
+    final border = (tileOf(krakowLat, krakowLng, z).x + 1) * FogTileId.size;
+    final start = FogMercator.xToLng(border * 1.0 - 40, z);
+    final store = await openStore();
+    final source = await readySource(
+      store,
+      cameraAt(lng: start, zoom: FogConfig.baseZoom + 0.0),
+    );
+    await walk(store, 'a', points: 30, startLng: start);
+
+    final overlaps = <bool>[];
+    source.addListener(() {
+      overlaps.add(source.imageCount > 0 && store.trail.segments.isNotEmpty);
+    });
+    await store.flush();
+    await pumpEventQueue();
+    await source.whenIdle();
+    await pumpEventQueue();
+
+    expect(source.imageCount, greaterThan(1));
+    expect(overlaps, isNotEmpty);
+    expect(overlaps, everyElement(isFalse));
+    source.dispose();
+    await store.dispose();
+  });
 
   test('a flush hands the trail over to the tiles', () async {
     final store = await openStore();

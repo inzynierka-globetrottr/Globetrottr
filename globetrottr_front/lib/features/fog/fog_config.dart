@@ -26,10 +26,10 @@ abstract final class FogConfig {
 
   /// Bumped whenever the way points are drawn changes, so tiles drawn by an
   /// older rule are dropped and rebuilt from the track log.
-  static const int drawVersion = 4;
+  static const int drawVersion = 5;
 
   /// Width of the anti-aliased rim of every stored shape, in base pixels.
-  static const double edgeWidthPixels = 1.5;
+  static const double edgeWidthPixels = 2.5;
 
   /// Soft limit of tiles (64 KB each) kept decoded in memory: 16 MB.
   static const int maxCachedTiles = 256;

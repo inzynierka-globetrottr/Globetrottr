@@ -6,7 +6,7 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 
 const _zoom = 5;
-const _rasterizer = FogRasterizer(zoom: _zoom);
+const _rasterizer = FogRasterizer(zoom: _zoom, edgeWidth: 1.5);
 
 class _Canvas {
   final Map<FogTileId, FogMask> tiles = {};
