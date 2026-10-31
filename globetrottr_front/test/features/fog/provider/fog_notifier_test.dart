@@ -70,6 +70,7 @@ void main() {
 
       await notifier.setRecording(false);
       await pumpEventQueue();
+      await source.store.flush();
 
       expect(source.store.revision, 1);
     });

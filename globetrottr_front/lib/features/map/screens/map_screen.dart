@@ -9,6 +9,7 @@ import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/debug/widgets/dev_floating_button.dart';
 import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
+import 'package:globetrottr_front/features/map/provider/player_motion.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
@@ -69,10 +70,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       }
     });
 
-    final locationState = ref.watch(locationProvider);
+    final recording = ref.watch(locationProvider.select((s) => s.isRecording));
+    final motion = ref.watch(playerMotionProvider);
     final fog = ref.watch(fogProvider);
     final fogOptions = ref.watch(fogRenderOptionsProvider);
-    final position = locationState.currentPosition;
     final topSafeInset = MediaQuery.paddingOf(context).top;
 
     return NeumorphicTheme(
@@ -98,10 +99,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 BitmapFogLayer(
                   source: fog.value,
                   options: fogOptions,
-                  liveCenter: locationState.isRecording ? position : null,
+                  head: recording ? motion : null,
                 ),
                 if (DevConfig.isDevMode) const RecordedPointsLayer(),
-                if (position != null) PlayerMarkerLayer(position: position),
+                ListenableBuilder(
+                  listenable: motion,
+                  builder: (context, _) {
+                    final position = motion.value;
+                    if (position == null) return const SizedBox.shrink();
+                    return PlayerMarkerLayer(position: position);
+                  },
+                ),
               ],
             ),
 

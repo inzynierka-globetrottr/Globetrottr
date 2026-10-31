@@ -21,7 +21,7 @@ class EncodedFogTile {
 ///   top-left corner, with every row except the first replaced by its
 ///   difference from the row above (modulo 256), compressed with zlib
 ///   (RFC 1950). Decoding is a zlib inflate followed by a running sum down
-///   each column. Stored values are multiples of 16 (and 255).
+///   each column. Stored values are multiples of 8 (and 255).
 abstract final class FogTileCodec {
   static const int formatVersion = 2;
   static const int flagEmpty = 0;

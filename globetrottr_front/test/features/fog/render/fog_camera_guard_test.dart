@@ -86,7 +86,7 @@ void main() {
       final alpha = await renderAlpha(
         painterFor(
           _camera(zoom: double.nan),
-          liveCenter: const LatLng(krakowLat, krakowLng),
+          head: const LatLng(krakowLat, krakowLng),
         ),
       );
 

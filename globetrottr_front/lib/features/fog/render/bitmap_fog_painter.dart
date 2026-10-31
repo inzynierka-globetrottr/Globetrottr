@@ -1,7 +1,7 @@
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
@@ -9,79 +9,64 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
+import 'package:globetrottr_front/features/fog/render/fog_live_shapes.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:latlong2/latlong.dart';
 
-/// Paints the fog as a dark layer and subtracts the discovered coverage.
+/// Paints the fog from one layer of coverage, drawn as brightness on black.
 ///
-/// Every visible tile image holds the coverage in its alpha channel. The
-/// tiles are added together into one coverage layer ([BlendMode.plus]) which
-/// is then removed from the fog ([BlendMode.dstOut]), so partially covered
-/// rim pixels give a smooth edge and neighbouring tiles leave no seam. While a tile is not ready, a
-/// coarser or finer neighbour level stands in so the fog never flashes.
+/// Tile images go in first; neighbouring tiles are added ([BlendMode.plus]) so
+/// they leave no seam. What the images do not show yet is drawn over them as
+/// the very same values, so nothing changes on the screen when an image takes
+/// over. A colour filter then turns the layer into fog: it steepens the soft
+/// edge stored in the tiles to the width wanted on the screen, which keeps the
+/// edge smooth at any zoom. While a tile is not ready, a coarser or finer
+/// neighbour level stands in so the fog never flashes.
 class BitmapFogPainter extends CustomPainter {
   BitmapFogPainter({
     required this.camera,
     this.source,
-    this.liveCenter,
+    this.head,
     this.options = defaultOptions,
-  }) : super(repaint: source);
+  }) : super(repaint: Listenable.merge([source, head]));
 
   static const FogRenderOptions defaultOptions = FogRenderOptions();
   static const int _maxDrawnTiles = 96;
   static const double _tile = FogTileId.size + 0.0;
   static const double _minPixelLineSize = 6;
 
-  /// Upper bound of the edge blur in screen pixels, to keep drawing cheap.
-  static const double _maxBlurSigma = 3;
-
-  /// Width of the soft edge of a drawn tile, in pixels of its level: the
-  /// stored rim plus what smoothing between the pixels adds to it.
-  static const double _tileRimPixels = FogConfig.edgeWidthPixels + 1;
-
-  /// Blur that spreads a sharp edge about as wide as a linear ramp of width 1.
-  static const double _rimBlurPerWidth = 0.31;
+  /// Narrowest edge on the screen; a sharper one would show its pixels.
+  static const double _minEdgePixels = 1.5;
 
   final MapCamera camera;
   final FogTileSource? source;
 
-  /// Where the player is while recording; revealed instantly, without
-  /// waiting for the next tile update.
-  final LatLng? liveCenter;
+  /// The player while recording. Read at paint time, so the fog is revealed
+  /// up to where the marker is drawn in the same frame.
+  final ValueListenable<LatLng?>? head;
   final FogRenderOptions options;
 
   @override
   void paint(Canvas canvas, Size size) {
     final timer = Stopwatch()..start();
     final usable = camera.isUsableForFog;
-    final sigma = usable && !options.rawPixels ? _blurSigma() : null;
-    canvas.saveLayer(
-      Offset.zero & size,
-      Paint()
-        ..imageFilter = sigma == null
-            ? null
-            : ui.ImageFilter.blur(
-                sigmaX: sigma,
-                sigmaY: sigma,
-                tileMode: TileMode.clamp,
-              ),
-    );
+    canvas.saveLayer(Offset.zero & size, Paint());
     canvas.drawColor(
       AppColors.fog.withValues(alpha: FogConfig.fogOpacity),
       BlendMode.srcOver,
     );
-    // Coverage is first summed in its own layer and only then subtracted
-    // from the fog. Subtracting tile by tile would multiply the anti-aliased
-    // edges of two neighbouring tiles and leave a faint seam on rotated maps.
-    canvas.saveLayer(Offset.zero & size, Paint()..blendMode = BlendMode.dstOut);
-    if (usable) {
-      if (source != null) _drawTiles(canvas, source!);
-      if (!options.rawPixels) {
-        if (source != null) _drawTrail(canvas, source!);
-        _drawLiveDisc(canvas);
-      }
+    canvas.saveLayer(
+      Offset.zero & size,
+      Paint()
+        ..colorFilter = _coverageFilter(usable ? _edgeContrast() : 1)
+        ..blendMode = BlendMode.dstOut,
+    );
+    canvas.drawColor(Colors.black, BlendMode.src);
+    if (usable && source != null) {
+      _drawTiles(canvas, source!);
+      if (!options.rawPixels) _drawLive(canvas, source!, size);
     }
     canvas
       ..restore()
@@ -91,17 +76,33 @@ class BitmapFogPainter extends CustomPainter {
     source?.stats.record(timer.elapsedMicroseconds);
   }
 
-  double? _blurSigma() {
-    if (!options.softEdge) return null;
-    final groundResolution = metersPerPixel(
-      latitude: camera.center.latitude,
-      zoom: camera.zoom,
-    );
-    final sigma = math.min(
-      _maxBlurSigma,
-      options.softEdgeMeters / 2 / groundResolution,
-    );
-    return sigma < 0.4 ? null : sigma;
+  /// Turns brightness into the alpha that is removed from the fog. `contrast`
+  /// steepens the edge around its middle, which stays at the vision radius.
+  static ColorFilter _coverageFilter(double contrast) {
+    return ColorFilter.matrix(<double>[
+      0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, //
+      0, 0, 0, 0, 0, //
+      contrast, 0, 0, 0, (1 - contrast) * 127.5,
+    ]);
+  }
+
+  double _edgeContrast() {
+    if (options.rawPixels) return 1;
+    final wanted = options.softEdge
+        ? options.softEdgeMeters /
+              metersPerPixel(
+                latitude: camera.center.latitude,
+                zoom: camera.zoom,
+              )
+        : 0.0;
+    return math.max(1, _rimOnScreen / math.max(wanted, _minEdgePixels));
+  }
+
+  /// Width on the screen of the soft edge stored in the tiles.
+  double get _rimOnScreen {
+    final base = source?.store.baseZoom ?? FogConfig.baseZoom;
+    return FogConfig.edgeWidthPixels * math.pow(2, camera.zoom - base);
   }
 
   /// Thin lines between the fog pixels, drawn only when one pixel covers at
@@ -246,12 +247,11 @@ class BitmapFogPainter extends CustomPainter {
     Rect dest = const Rect.fromLTWH(0, 0, _tile, _tile),
   }) {
     final matrix = _tileMatrix(id);
-    final scale = math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
     final paint = Paint()
       ..blendMode = BlendMode.plus
       ..filterQuality = options.rawPixels
           ? FilterQuality.none
-          : (scale > 1.0 ? FilterQuality.high : FilterQuality.medium);
+          : FilterQuality.low;
     canvas
       ..save()
       ..transform(matrix)
@@ -292,68 +292,43 @@ class BitmapFogPainter extends CustomPainter {
     return Offset(point.x, point.y);
   }
 
-  /// Draws what is not in the tiles yet: the unflushed trail, and the stretch
-  /// from its newest point to the player, which waits for no storage write.
-  void _drawTrail(Canvas canvas, FogTileSource source) {
+  /// Draws what the tile images do not show yet: the points since the last
+  /// flush, and the stretch from the newest one to the player.
+  void _drawLive(Canvas canvas, FogTileSource source, Size size) {
     final store = source.store;
     final z = store.baseZoom;
-    final path = ui.Path();
-    var empty = true;
-    for (final segment in store.trail.segments) {
-      empty = false;
-      final from = _screen(segment.ax, segment.ay, z);
-      final to = _screen(segment.bx, segment.by, z);
-      path
-        ..moveTo(from.dx, from.dy)
-        ..lineTo(to.dx, to.dy);
-    }
-
-    final center = liveCenter;
-    final anchor = store.trail.anchor;
-    if (center != null &&
-        anchor != null &&
-        store.joinsTrail(center.latitude, center.longitude)) {
-      empty = false;
-      final from = _screen(anchor.x, anchor.y, z);
-      final to = camera.latLngToScreenPoint(center);
-      path
-        ..moveTo(from.dx, from.dy)
-        ..lineTo(to.x, to.y);
-    }
-    if (empty) return;
-
-    final width =
-        2 *
-        metersToPixels(
-          meters: FogConfig.visionRadiusMeters,
-          latitude: camera.center.latitude,
-          zoom: camera.zoom,
-        );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = width
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..blendMode = BlendMode.lighten
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          _tileRimWidth * _rimBlurPerWidth,
-        )
-        ..color = Colors.black.withValues(alpha: _trailOpacity(source)),
+    final shapes = FogLiveShapes(
+      canvas,
+      Offset.zero & size,
+      radius: metersToPixels(
+        meters: FogConfig.visionRadiusMeters,
+        latitude: camera.center.latitude,
+        zoom: camera.zoom,
+      ),
+      rim: math.max(_rimOnScreen, _minEdgePixels),
+      value: _liveValue(source),
     );
+    for (final segment in store.trail.segments) {
+      shapes.add(
+        _screen(segment.ax, segment.ay, z),
+        _screen(segment.bx, segment.by, z),
+      );
+    }
+
+    final position = head?.value;
+    if (position == null) return;
+    final point = camera.latLngToScreenPoint(position);
+    final end = Offset(point.x, point.y);
+    final anchor = store.trail.anchor;
+    final joined =
+        anchor != null &&
+        store.joinsTrail(position.latitude, position.longitude);
+    shapes.add(joined ? _screen(anchor.x, anchor.y, z) : end, end);
   }
 
-  /// Width on the screen of the soft edge of the tiles. It grows with the
-  /// magnification of their level, so vectors drawn with it look the same.
-  double get _tileRimWidth {
-    return _tileRimPixels * math.pow(2, camera.zoom - _drawnLevel());
-  }
-
-  /// Matches the strength of a thin route in the coarse tiles, so the trail
-  /// does not fade when they take over from it.
-  double _trailOpacity(FogTileSource source) {
+  /// Matches the strength of a thin route in the coarse tiles, so nothing
+  /// changes when they take over.
+  double _liveValue(FogTileSource source) {
     final level = source.levelFor(camera.zoom);
     final levelWidth =
         2 *
@@ -366,37 +341,11 @@ class BitmapFogPainter extends CustomPainter {
     return (floor + (levelWidth - 1) * (1 - floor)).clamp(floor, 1.0);
   }
 
-  void _drawLiveDisc(Canvas canvas) {
-    final center = liveCenter;
-    if (center == null) return;
-    final rim = _tileRimWidth;
-    // Ends inside the edge of the trail and the tiles, so that their soft
-    // edges do not add up to a brighter ring around the player.
-    final reach =
-        metersToPixels(
-          meters: FogConfig.visionRadiusMeters,
-          latitude: center.latitude,
-          zoom: camera.zoom,
-        ) -
-        rim / 2;
-    if (reach < 1) return;
-    final screen = camera.latLngToScreenPoint(center);
-    final paint = Paint()
-      ..blendMode = BlendMode.lighten
-      ..shader = ui.Gradient.radial(
-        Offset(screen.x, screen.y),
-        reach,
-        const [Colors.black, Colors.black, Colors.transparent],
-        [0, math.max(0, reach - rim) / reach, 1],
-      );
-    canvas.drawCircle(Offset(screen.x, screen.y), reach, paint);
-  }
-
   @override
   bool shouldRepaint(covariant BitmapFogPainter oldDelegate) {
     return oldDelegate.source != source ||
         oldDelegate.options != options ||
-        oldDelegate.liveCenter != liveCenter ||
+        oldDelegate.head != head ||
         oldDelegate.camera.center != camera.center ||
         oldDelegate.camera.zoom != camera.zoom ||
         oldDelegate.camera.rotation != camera.rotation;

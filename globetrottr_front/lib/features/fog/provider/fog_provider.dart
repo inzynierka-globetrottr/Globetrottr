@@ -7,10 +7,10 @@ import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/sqflite_fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
-import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
+import 'package:globetrottr_front/features/map/provider/player_motion.dart';
 
 final fogTileStorageProvider = Provider<FogTileStorage>((ref) {
   final storage = SqfliteFogTileStorage();
@@ -18,9 +18,9 @@ final fogTileStorageProvider = Provider<FogTileStorage>((ref) {
   return storage;
 });
 
-/// Owns the user's fog. It draws every position the location service logs,
-/// first catching up with whatever the track log holds that the tiles do not
-/// yet (after a crash or a first start).
+/// Owns the user's fog. It draws every logged position when the player reaches
+/// it on the map, first catching up with whatever the track log holds that the
+/// tiles do not yet (after a crash or a first start).
 ///
 /// The state is the [FogTileSource] the map layer paints from.
 class FogNotifier extends AsyncNotifier<FogTileSource> {
@@ -38,15 +38,18 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       previous,
       next,
     ) {
+      final stopped = (previous ?? false) && !next;
+      if (stopped) ref.read(playerMotionProvider).finish();
       _store?.endLivePath();
-      if ((previous ?? false) && !next) unawaited(_flushQuietly());
+      if (stopped) unawaited(_flushQuietly());
     });
 
     final store = await FogStore.open(ref.read(fogTileStorageProvider));
     final source = FogTileSource(store);
     _store = store;
 
-    final logged = ref.read(locationServiceProvider).loggedPoints.listen((e) {
+    final motion = ref.read(playerMotionProvider);
+    final logged = motion.passed.listen((e) {
       store
           .applyPoint(
             sessionId: e.sessionId,
@@ -60,7 +63,9 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
     });
     final lifecycle = AppLifecycleListener(
       onStateChange: (state) {
-        if (state != AppLifecycleState.resumed) unawaited(_flushQuietly());
+        if (state == AppLifecycleState.resumed) return;
+        motion.finish();
+        unawaited(_flushQuietly());
       },
     );
     ref.onDispose(() {

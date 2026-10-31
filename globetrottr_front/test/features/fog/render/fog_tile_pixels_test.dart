@@ -3,7 +3,7 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_pixels.dart';
 
 int _alpha(List<int> pixels, int x, int y) =>
-    pixels[(y * FogTilePixels.side + x) * 4 + 3];
+    pixels[(y * FogTilePixels.side + x) * 4];
 
 void main() {
   group('FogTilePixels.build', () {
@@ -14,7 +14,7 @@ void main() {
       expect(pixels.length, 258 * 258 * 4);
     });
 
-    test('puts the coverage in the alpha channel and keeps colour black', () {
+    test('draws the coverage as opaque grey', () {
       final mask = FogMask()
         ..data[0] = 255
         ..data[FogMask.size * 5 + 7] = 100;
@@ -25,7 +25,9 @@ void main() {
       expect(_alpha(pixels, 8, 6), 100);
       expect(_alpha(pixels, 100, 100), 0);
       for (var i = 0; i < pixels.length; i += 4) {
-        expect(pixels[i] + pixels[i + 1] + pixels[i + 2], 0);
+        expect(pixels[i + 1], pixels[i]);
+        expect(pixels[i + 2], pixels[i]);
+        expect(pixels[i + 3], 255);
       }
     });
 

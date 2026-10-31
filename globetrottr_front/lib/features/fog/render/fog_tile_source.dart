@@ -39,10 +39,6 @@ class FogTileSource extends ChangeNotifier {
   final LinkedHashMap<FogTileId, ui.Image> _images = LinkedHashMap();
   final Set<FogTileId> _stale = {};
   final Set<FogTileId> _building = {};
-
-  /// Images built for a flush, shown together when all of them are ready.
-  final Map<FogTileId, ui.Image> _held = {};
-  bool _holding = false;
   final List<Completer<void>> _idleWaiters = [];
   late final StreamSubscription<FogChange> _subscription;
 
@@ -167,7 +163,6 @@ class FogTileSource extends ChangeNotifier {
     }
 
     final written = change.trailWrittenUpTo;
-    if (written != null) _holding = true;
     final wanted = _lastRange?.expand(1);
     final refresh = <FogTileId>{...change.tiles};
     if (written != null) {
@@ -191,22 +186,13 @@ class FogTileSource extends ChangeNotifier {
     if (written != null) unawaited(_releaseTrail(written));
   }
 
-  /// Swaps in the images of a flush and drops the trail they replace in one
-  /// frame, so nothing is drawn twice on the way.
+  /// Drops the trail once the new images hold what it shows. Until then both
+  /// are drawn, which changes nothing: they are merged by their maximum.
   Future<void> _releaseTrail(int upToId) async {
     await whenIdle();
     if (_disposed) return;
-    _holding = false;
-    _held.forEach(_show);
-    _held.clear();
-    _evictImages();
     store.trail.forget(upToId);
     notifyListeners();
-  }
-
-  void _show(FogTileId id, ui.Image image) {
-    _images.remove(id)?.dispose();
-    _images[id] = image;
   }
 
   void _request(FogTileId id) {
@@ -230,15 +216,13 @@ class FogTileSource extends ChangeNotifier {
 
   void _finishBuild(FogTileId id, ui.Image image, int generation) {
     _building.remove(id);
-    if (generation != _generation) {
-      image.dispose();
-    } else if (_holding) {
-      _held.remove(id)?.dispose();
-      _held[id] = image;
-    } else {
-      _show(id, image);
+    if (generation == _generation) {
+      _images.remove(id)?.dispose();
+      _images[id] = image;
       _evictImages();
       notifyListeners();
+    } else {
+      image.dispose();
     }
     if (_stale.contains(id)) _request(id);
     _end();
@@ -256,12 +240,10 @@ class FogTileSource extends ChangeNotifier {
   }
 
   void _clearImages() {
-    for (final image in [..._images.values, ..._held.values]) {
+    for (final image in _images.values) {
       image.dispose();
     }
     _images.clear();
-    _held.clear();
-    _holding = false;
     _stale.clear();
     _generation++;
   }

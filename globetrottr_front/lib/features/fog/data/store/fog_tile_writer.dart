@@ -89,6 +89,9 @@ class FogTileWriter {
               parent: parentMask,
               quadX: child.x & 1,
               quadY: child.y & 1,
+              overviewFloor: z - 1 > FogConfig.overviewFloorMaxZoom
+                  ? 0
+                  : FogPyramid.defaultOverviewFloor,
             );
           }
         }

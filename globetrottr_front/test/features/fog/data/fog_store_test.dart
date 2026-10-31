@@ -454,7 +454,7 @@ void main() {
   });
 
   group('compact storage', () {
-    test('base tiles hold 16 levels and overview tiles 8', () async {
+    test('base and overview tiles are stored in coarse steps', () async {
       for (final e in walkEast('a', points: 40, stepMeters: 20)) {
         await _apply(store, 'a', e.latitude, e.longitude);
       }
@@ -464,7 +464,9 @@ void main() {
       var checked = 0;
       for (final tile in tiles) {
         final mask = FogTileCodec.decode(tile.flag, tile.bytes);
-        final step = tile.id.z == FogConfig.baseZoom ? 16 : 32;
+        final step = tile.id.z == FogConfig.baseZoom
+            ? FogConfig.baseQuantStep
+            : FogConfig.overviewQuantStep;
         for (final value in mask.data) {
           if (value == 255) continue;
           expect(value % step, 0, reason: 'level ${tile.id.z}');
@@ -486,7 +488,6 @@ void main() {
       final b = await FogStore.open(
         withIsolate,
         flushDelay: const Duration(hours: 1),
-        isolateEncodeThreshold: 4,
       );
 
       await a.importEntries(entries, useIsolate: false);

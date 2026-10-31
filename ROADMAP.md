@@ -18,7 +18,8 @@ Source of truth for the plan and the key design decisions of every part of the a
 - The fog is a set of Web Mercator tiles with 8-bit coverage per pixel, base level z15, plus a pyramid of coarser levels for zoomed-out views. Merging is a per-pixel `max`; drawing cost does not depend on how much has been discovered.
 - Each pair of consecutive points of one session reveals a stadium with a 50 m radius (`MapConfig.defaultVisionRadius`); points of different sessions are never connected.
 - A gap over 350 m between two points of a session breaks the path (the later point is a lone disc). Why: a long jump drew a strip across the whole distance and ran the app out of memory. A flat distance limit was chosen over a speed or time test: it needs no timestamps (about 1200 km/h at one fix per second; GPS lag is ignored).
-- Smooth edges are stored in the data (anti-aliased rim), not computed while drawing. No custom GPU shaders.
+- Tiles store a soft edge wide enough to be enlarged; a colour filter sets its width on the screen at every zoom, so the edge stays smooth. No custom GPU shaders.
+- The player moves on the map by gliding along the recorded fixes, and the marker and the fog read that one position in every frame, so they cannot be apart. A fix is stored at once but reaches the fog when the player gets there.
 - Rejected: polygons with `clipper2`, base levels z16 and z17 (more storage for detail a 50 m radius does not need), binary tiles with a GPU edge shader (kept in `git stash` "exp: binary fog tiles and GPU edge shader"), simplifying old sessions of the track log.
 
 **Invariants:**
@@ -41,7 +42,7 @@ Source of truth for the plan and the key design decisions of every part of the a
 - **Backend stops computing the fog:** raw routes are still uploaded and persisted for statistics; quests and statistics move to the bitmap fog (computed on the device, or the same rasterization on the server; to be decided).
 - **Restore on a new device:** from server tiles (lower resolution) or by syncing the track log and rebuilding locally; to be decided with the backend work.
 - **Store resilience after an out-of-memory (Done, one part open):** a tile cap per path and a replay that retries a failing step small and then skips it keep a bad stretch of the log from blocking every start; skipped entries show in the dev panel and a rebuild redraws them. Still to investigate: after an OOM the store queues did not recover (Clear fog / Clear track log did nothing).
-- **New fog as a vector trail (Done):** points waiting for a flush and the stretch to the player are drawn as vectors over the tiles, which take over when their images are ready. Why: the same result on every zoom without live pyramid updates. Rejected: refreshing the shown pyramid level with every point (more code, flicker when changing zoom).
+- **New fog as a copy of the future tiles (Done):** points waiting for a flush and the stretch to the player are drawn with exactly the values the tiles will hold, and merged with them by a maximum. Why: a flush changes nothing on the screen and new fog needs no live pyramid updates. Rejected: a differently drawn trail (visible jump at every flush), rebuilding tile images for every point (flicker on zoom changes, fog behind the marker), a disk write for every point (no gain).
 - **Fog migration for production (Planned):** a changed `drawVersion`, format or base level now just clears the tiles and rebuilds them from the track log.
 - **Gap limit that follows time (Idea):** `min(ceiling, v_max * dt)` instead of a flat 350 m, so tunnels and metro rides get revealed.
 - **Verify on phones:** smoothness while panning, zooming and rotating; import time of very long journeys; recording and crash recovery.

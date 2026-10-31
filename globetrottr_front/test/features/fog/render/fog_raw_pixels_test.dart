@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
@@ -13,12 +14,12 @@ BitmapFogPainter _painter(
   required bool raw,
   bool softEdge = false,
   dynamic source,
-  LatLng? liveCenter,
+  LatLng? head,
 }) {
   return BitmapFogPainter(
     camera: camera,
     source: source,
-    liveCenter: liveCenter,
+    head: head == null ? null : ValueNotifier<LatLng?>(head),
     options: FogRenderOptions(softEdge: softEdge, rawPixels: raw),
   );
 }
@@ -81,7 +82,7 @@ void main() {
         _painter(camera, raw: true, source: source),
       );
       final smooth = await renderAlpha(
-        _painter(camera, raw: false, source: source),
+        _painter(camera, raw: false, softEdge: true, source: source),
       );
       source.dispose();
       await store.dispose();
@@ -140,16 +141,20 @@ void main() {
       await store.dispose();
     });
 
-    test('does not draw the vector disc around the player', () async {
+    test('does not draw the live fog', () async {
       final camera = cameraAt();
       const player = LatLng(krakowLat, krakowLng);
+      final store = await openStore();
+      final source = await readySource(store, camera);
 
       final normal = await renderAlpha(
-        _painter(camera, raw: false, liveCenter: player),
+        _painter(camera, raw: false, source: source, head: player),
       );
       final raw = await renderAlpha(
-        _painter(camera, raw: true, liveCenter: player),
+        _painter(camera, raw: true, source: source, head: player),
       );
+      source.dispose();
+      await store.dispose();
 
       expect(normal(200, 400), 0);
       expect(raw(200, 400), closeTo(191, 1));
