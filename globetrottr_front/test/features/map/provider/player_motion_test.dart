@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
 import 'package:latlong2/latlong.dart';
@@ -170,5 +171,121 @@ void main() {
 
     expect(hidden.value, _north(14));
     expect(seen, [entry]);
+  });
+
+  group('step interval', () {
+    test('a walk moves at the slowest rate', () {
+      expect(PlayerMotion.stepInterval(1.4), MapConfig.playerSlowestStep);
+    });
+
+    test('follows the speed between the limits', () {
+      expect(
+        PlayerMotion.stepInterval(6),
+        const Duration(milliseconds: 50),
+      );
+    });
+
+    test('a drive moves at the fastest rate', () {
+      expect(PlayerMotion.stepInterval(14), MapConfig.playerFastestStep);
+    });
+
+    test('standing still is the slowest rate', () {
+      expect(PlayerMotion.stepInterval(0), MapConfig.playerSlowestStep);
+    });
+  });
+
+  group('stepping', () {
+    /// Lets [duration] pass the way the app does: timers fire and the frames
+    /// they asked for are drawn.
+    Future<int> pumpFor(WidgetTester tester, Duration duration) async {
+      var steps = 0;
+      void count() => steps++;
+      motion.addListener(count);
+      final end = tester.binding.clock.now().add(duration);
+      while (tester.binding.clock.now().isBefore(end)) {
+        await tester.pump(const Duration(milliseconds: 8));
+      }
+      motion.removeListener(count);
+      return steps;
+    }
+
+    testWidgets('a walk does not ask for a frame between steps', (
+      tester,
+    ) async {
+      final walking = PlayerMotion(animates: () => true, clock: () => now);
+      addTearDown(walking.dispose);
+      walking.moveTo(_start);
+      now += const Duration(seconds: 3);
+      walking.moveTo(_north(4));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+
+      expect(tester.binding.hasScheduledFrame, isFalse);
+
+      walking.finish();
+      await tester.pump(const Duration(milliseconds: 100));
+    });
+
+    testWidgets('a walk takes about one step in every 66 ms', (tester) async {
+      motion.moveTo(_start);
+      now += const Duration(seconds: 3);
+      motion.moveTo(_north(4));
+      await tester.pump();
+
+      final steps = await pumpFor(tester, const Duration(seconds: 1));
+
+      expect(steps, inInclusiveRange(13, 17));
+      motion.finish();
+      await tester.pump(const Duration(milliseconds: 100));
+    });
+
+    testWidgets('fixes are reached on time despite the longer steps', (
+      tester,
+    ) async {
+      motion.moveTo(_start);
+      final entry = _entry(1, _north(14));
+      fix(_north(14), entry: entry);
+      await tester.pump();
+
+      await pumpFor(tester, const Duration(milliseconds: 900));
+      expect(passed, isEmpty);
+
+      await pumpFor(tester, const Duration(milliseconds: 200));
+      expect(passed, [entry]);
+      expect(motion.value, _north(14));
+    });
+
+    testWidgets('stops when the route is done', (tester) async {
+      motion.moveTo(_start);
+      fix(_north(14));
+      await tester.pump();
+
+      await pumpFor(tester, const Duration(milliseconds: 1200));
+
+      expect(await pumpFor(tester, const Duration(milliseconds: 200)), 0);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
+    testWidgets('finish during a wait cancels the next step', (tester) async {
+      motion.moveTo(_start);
+      fix(_north(14));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+
+      motion.finish();
+
+      expect(await pumpFor(tester, const Duration(milliseconds: 200)), 0);
+    });
+
+    testWidgets('dispose during a wait leaves no timer behind', (tester) async {
+      final short = PlayerMotion(animates: () => true, clock: () => now);
+      short.moveTo(_start);
+      now += const Duration(seconds: 1);
+      short.moveTo(_north(14));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+
+      short.dispose();
+    });
   });
 }

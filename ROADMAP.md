@@ -19,7 +19,8 @@ Source of truth for the plan and the key design decisions of every part of the a
 - Each pair of consecutive points of one session reveals a stadium with a 50 m radius (`MapConfig.defaultVisionRadius`); points of different sessions are never connected.
 - A gap over 350 m between two points of a session breaks the path (the later point is a lone disc). Why: a long jump drew a strip across the whole distance and ran the app out of memory. A flat distance limit was chosen over a speed or time test: it needs no timestamps (about 1200 km/h at one fix per second; GPS lag is ignored).
 - Tiles store a soft edge wide enough to be enlarged; a colour filter sets its width on the screen at every zoom, so the edge stays smooth. No custom GPU shaders.
-- The player moves on the map by gliding along the recorded fixes, and the marker and the fog read that one position in every frame, so they cannot be apart. A fix is stored at once but reaches the fog when the player gets there.
+- The player moves on the map by gliding along the recorded fixes, and the marker and the fog read that one position, so they cannot be apart. A fix is stored at once but reaches the fog when the player gets there.
+- The glide runs at 15-30 steps per second depending on speed, and nothing asks for a frame between steps. Why: a walk moves a fraction of a pixel per frame, so a full frame rate only costs battery. Map gestures stay at the native rate. Rejected: ignoring ticks of a frame-driven timer (frames would still be drawn), reading the screen refresh rate (no visible gain).
 - Rejected: polygons with `clipper2`, base levels z16 and z17 (more storage for detail a 50 m radius does not need), binary tiles with a GPU edge shader (kept in `git stash` "exp: binary fog tiles and GPU edge shader"), simplifying old sessions of the track log.
 
 **Invariants:**
@@ -45,7 +46,7 @@ Source of truth for the plan and the key design decisions of every part of the a
 - **New fog as a copy of the future tiles (Done):** points waiting for a flush and the stretch to the player are drawn with exactly the values the tiles will hold, and merged with them by a maximum. Why: a flush changes nothing on the screen and new fog needs no live pyramid updates. Rejected: a differently drawn trail (visible jump at every flush), rebuilding tile images for every point (flicker on zoom changes, fog behind the marker), a disk write for every point (no gain).
 - **Fog migration for production (Planned):** a changed `drawVersion`, format or base level now just clears the tiles and rebuilds them from the track log.
 - **Gap limit that follows time (Idea):** `min(ceiling, v_max * dt)` instead of a flat 350 m, so tunnels and metro rides get revealed.
-- **Verify on phones:** smoothness while panning, zooming and rotating; import time of very long journeys; recording and crash recovery.
+- **Verify on phones:** smoothness while panning, zooming and rotating; the glide at 15-30 steps per second, also on 120 Hz screens and at the highest zoom; battery use; import time of very long journeys; recording and crash recovery.
 
 ---
 

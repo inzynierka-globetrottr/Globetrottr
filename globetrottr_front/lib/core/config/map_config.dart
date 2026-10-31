@@ -10,6 +10,12 @@ class MapConfig {
   /// longer gap means the device saw nothing in between.
   static const double maxPathGapMeters = 350;
 
+  /// How far the player moves between two redraws, about half a screen pixel
+  /// at [defaultZoom]; the limits below keep the rate between 15 and 30 Hz.
+  static const double playerStepMeters = 0.3;
+  static const Duration playerFastestStep = Duration(milliseconds: 33);
+  static const Duration playerSlowestStep = Duration(milliseconds: 66);
+
   static const LatLng initialCenter = LatLng(50.0614, 19.9383); // Kraków
 
   static const String _baseTileUrl =

@@ -19,12 +19,16 @@ class _Waypoint {
 }
 
 /// The position of the player as it is drawn. It glides along the recorded
-/// fixes frame by frame instead of jumping to each new one, and everything on
+/// fixes in small steps instead of jumping to each new one, and everything on
 /// the map that follows the player reads this one value, so the marker and
 /// the fog can never be apart.
 ///
+/// The steps follow the speed: most of a walk moves by a fraction of a pixel,
+/// so between steps nothing asks for a frame and the screen rests. A [Ticker]
+/// cannot do this, it asks for every frame even when a tick is ignored.
+///
 /// [ValueListenable] is Flutter's interface for "a value that tells you when
-/// it changed"; listeners are called once per animation frame.
+/// it changed"; listeners are called once per step.
 class PlayerMotion extends ChangeNotifier implements ValueListenable<LatLng?> {
   PlayerMotion({bool Function()? animates, this._clock})
     : _animates = animates ?? _appIsVisible;
@@ -34,6 +38,27 @@ class PlayerMotion extends ChangeNotifier implements ValueListenable<LatLng?> {
 
   /// Share of the newest gap between fixes in the running estimate.
   static const double _intervalWeight = 0.3;
+
+  /// The wait ends this long before the step is due, so the frame request
+  /// lands between two screen refreshes and every step takes the same time.
+  static const Duration _frameMargin = Duration(milliseconds: 8);
+
+  /// Time between two steps at the given speed.
+  static Duration stepInterval(double metersPerSecond) {
+    if (metersPerSecond <= 0) return MapConfig.playerSlowestStep;
+    final micros =
+        MapConfig.playerStepMeters /
+        metersPerSecond *
+        Duration.microsecondsPerSecond;
+    return Duration(
+      microseconds: micros
+          .clamp(
+            MapConfig.playerFastestStep.inMicroseconds.toDouble(),
+            MapConfig.playerSlowestStep.inMicroseconds.toDouble(),
+          )
+          .round(),
+    );
+  }
 
   static bool _appIsVisible() {
     return SchedulerBinding.instance.lifecycleState ==
@@ -54,8 +79,9 @@ class PlayerMotion extends ChangeNotifier implements ValueListenable<LatLng?> {
   double _metersPerSecond = 0;
   double _intervalSeconds = 1;
   Duration? _lastFix;
-  Ticker? _ticker;
-  Duration _lastTick = Duration.zero;
+  Timer? _wait;
+  int? _frameId;
+  Duration? _lastStep;
 
   @override
   LatLng? get value => _position;
@@ -83,7 +109,7 @@ class PlayerMotion extends ChangeNotifier implements ValueListenable<LatLng?> {
     if (last != null) _noteInterval(now - last);
     _route.add(_Waypoint(to, entry));
     _metersPerSecond = _metersLeft() / _intervalSeconds;
-    _startTicking();
+    if (_wait == null && _frameId == null) _requestStep();
   }
 
   void _noteInterval(Duration gap) {
@@ -106,7 +132,7 @@ class PlayerMotion extends ChangeNotifier implements ValueListenable<LatLng?> {
     return total;
   }
 
-  /// Moves the player along the route by the time of one frame.
+  /// Moves the player along the route by the time since the last step.
   void advance(Duration by) {
     if (_route.isEmpty) return;
     var left =
@@ -132,14 +158,13 @@ class PlayerMotion extends ChangeNotifier implements ValueListenable<LatLng?> {
     }
     _position = at;
     notifyListeners();
-    if (_route.isEmpty) _ticker?.stop();
   }
 
   /// Passes the rest of the route at once, for when no frames will follow or
   /// the recording ends.
   void finish() {
     if (_route.isEmpty) return;
-    _ticker?.stop();
+    _stopStepping();
     final route = _route.toList();
     _route.clear();
     for (final waypoint in route) {
@@ -150,22 +175,38 @@ class PlayerMotion extends ChangeNotifier implements ValueListenable<LatLng?> {
     notifyListeners();
   }
 
-  void _startTicking() {
-    final ticker = _ticker ??= Ticker(_onTick, debugLabel: 'PlayerMotion');
-    if (ticker.isActive) return;
-    _lastTick = Duration.zero;
-    unawaited(ticker.start().orCancel.catchError((Object _) {}));
+  void _requestStep() {
+    _wait = null;
+    _frameId = SchedulerBinding.instance.scheduleFrameCallback(_onStep);
   }
 
-  void _onTick(Duration elapsed) {
-    final by = elapsed - _lastTick;
-    _lastTick = elapsed;
-    advance(by);
+  void _onStep(Duration timeStamp) {
+    _frameId = null;
+    final last = _lastStep;
+    _lastStep = timeStamp;
+    advance(last == null ? Duration.zero : timeStamp - last);
+    if (_route.isEmpty) {
+      _lastStep = null;
+      return;
+    }
+    if (_wait != null || _frameId != null) return;
+    _wait = Timer(stepInterval(_metersPerSecond) - _frameMargin, _requestStep);
+  }
+
+  void _stopStepping() {
+    _wait?.cancel();
+    _wait = null;
+    final frameId = _frameId;
+    if (frameId != null) {
+      SchedulerBinding.instance.cancelFrameCallbackWithId(frameId);
+    }
+    _frameId = null;
+    _lastStep = null;
   }
 
   @override
   void dispose() {
-    _ticker?.dispose();
+    _stopStepping();
     unawaited(_passed.close());
     super.dispose();
   }
