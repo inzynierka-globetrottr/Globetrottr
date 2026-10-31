@@ -1,0 +1,61 @@
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+
+class FogChange {
+  const FogChange(
+    this.tiles, {
+    this.all = false,
+    this.onTrail = false,
+    this.trailWrittenUpTo,
+  });
+
+  /// Tiles whose content changed, on any level of the pyramid.
+  final Set<FogTileId> tiles;
+
+  /// True when the whole fog was replaced (cleared or rebuilt).
+  final bool all;
+
+  /// True when the change is drawn by the trail until the next flush, so the
+  /// images of its tiles need no rebuild yet.
+  final bool onTrail;
+
+  /// Set when the change was written to storage, so coarser levels were
+  /// refreshed too: the newest trail segment the write put into the tiles.
+  final int? trailWrittenUpTo;
+}
+
+class FogStoreDiagnostics {
+  const FogStoreDiagnostics({
+    required this.cachedTiles,
+    required this.dirtyTiles,
+    required this.revision,
+    required this.totalAreaM2,
+    required this.lastAppliedLogId,
+    required this.appliedPoints,
+    required this.lastApplyMicros,
+    required this.lastFlushMillis,
+    required this.lastFlushTiles,
+    required this.peakCachedTiles,
+    required this.skippedLogEntries,
+  });
+
+  final int cachedTiles;
+
+  /// Most tiles held in memory at once since the store was opened.
+  final int peakCachedTiles;
+  final int dirtyTiles;
+  final int revision;
+
+  /// Ground area revealed so far, in square meters, as of the last flush.
+  final double totalAreaM2;
+
+  /// Id of the newest track log entry already drawn into the tiles.
+  final int lastAppliedLogId;
+  final int appliedPoints;
+  final int lastApplyMicros;
+  final int lastFlushMillis;
+  final int lastFlushTiles;
+
+  /// Log entries a replay gave up on after repeated failures; a rebuild from
+  /// the track log draws them again.
+  final int skippedLogEntries;
+}

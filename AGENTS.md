@@ -13,20 +13,31 @@ The repository is organized as a monorepo:
 * **Backend (`globetrottr_backend/`)**: REST API built with Java 25 and Spring Boot 4.0.
 * **Database & Infrastructure (`docker-compose.yaml`, `db-init/`)**: PostgreSQL with PostGIS extension for spatial queries.
 
+### ROADMAP.md (mandatory)
+`ROADMAP.md` in the repository root is the **source of truth** for what the app is, what is planned and what is being built. Its purpose: any agent can read it first and understand the project, its direction and the reasons behind it from the first prompt.
+* **Read it first:** before starting any task, read `ROADMAP.md`.
+* **Keep it current:** every planned change, and every change an agent is currently introducing, must be added or updated there as part of the same task. A task is not complete until the roadmap reflects it.
+* **Record decisions:** write down the key design and architectural decisions together with the reasons (and rejected alternatives), not implementation detail or measurements.
+* **Keep it concise:** short entries, grouped per area, each with a status (Done, In progress, Planned, Idea). Remove or rewrite entries that became outdated.
+* **Mentions, not documentation:** one to three lines per decision or plan: what and why. No constant or class names, no mechanics, no numbers beyond the key one, no history of the bug. The explanation belongs in code comments and tests.
+* **Code wins:** if the code and the roadmap disagree, trust the code, fix the roadmap and report the discrepancy to the user.
+* **Binding decisions:** settled decisions are binding; changing one needs the owner's approval and a roadmap update.
+
 ---
 
 ## 2. Repository Structure
 
 ```text
 Globetrottr/
+├── ROADMAP.md                  # Source of truth: app scope, plans, key decisions (mandatory reading)
 ├── globetrottr_front/          # Flutter mobile application
 │   ├── lib/
 │   │   ├── core/               # Shared theme, routing, config, network, exceptions, widgets
 │   │   ├── features/           # Feature-first modularized code
 │   │   │   ├── auth/           # Login, registration, token handling
-│   │   │   ├── fog/            # Fog of war exploration & spatial polygons
+│   │   │   ├── fog/            # Fog of war: own fog as local bitmap tiles, friends' fog
 │   │   │   ├── friends/        # Social, friends lists, friend GeoJSON
-│   │   │   ├── map/            # Map UI, location tracking, pending GPS points storage
+│   │   │   ├── map/            # Map UI, location tracking, track log, pending GPS points outbox
 │   │   │   ├── profile/        # User stats, avatar, settings
 │   │   │   └── quests/         # Gamification quests, exp, achievements
 │   │   └── main.dart
@@ -146,6 +157,16 @@ Run all commands from within the `globetrottr_backend` directory:
 * **Routing:** Use `go_router` for declarative navigation and deep linking.
 * **Immutability:** Use immutable state models.
 * **Offline-first:** Respect offline storage layers (`sqflite` for offline GPS tracks / local data, `flutter_secure_storage` for credentials).
+
+### Fog of War (frontend)
+The user's own fog is computed, stored and drawn on the device only; the network never affects discovering or showing it.
+* **Track log is the source of truth:** every usable GPS fix goes to `track_log` (`tracks.db`, sessions + zlib delta blocks, see `track_block_codec.dart`) and to `pending_points` (`globetrottr.db`), which is only the outbox for `/api/map/sync` and is emptied after a sync.
+* **Fog is a derived cache:** Web Mercator tiles of 256x256 8-bit coverage in `fog.db`. Base level `FogConfig.baseZoom` (z15) plus a pyramid down to z4 for zoomed-out views. Each pair of consecutive points of one session is rasterized as a stadium with the vision radius (`MapConfig.defaultVisionRadius`, 50 m) and merged with `max`. The fog can always be rebuilt from the track log.
+* **Flow:** `LocationService` → `loggedPoints` → `PlayerMotion` (glides along the fixes in steps that follow the speed, one position for the marker and the fog) → `passed` → `FogNotifier` → `FogStore` (queue, LRU cache, batched writes, isolates for large work) → `FogTileSource` → `BitmapFogPainter`. `LocationNotifier` knows nothing about the fog.
+* **Drawing:** one layer of coverage as brightness on black: tile images, then `FogTrail` and the stretch to the player through `FogLiveShapes`, which draws the exact values the tiles will hold and merges them by a maximum. A flush must not change anything on the screen.
+* **Tile format:** codec v2 in `fog/bitmap/fog_tile_codec.dart` (documented to be readable from Java); each written tile gets a revision for future differential upload.
+* **Legacy still in place:** friends' fog is drawn from backend GeoJSON polygons (`FogLayer`, `FogPainter`, `friendFogProvider`), and the backend still builds its own fog polygon from synced points for quests and statistics. Every place that still has to be switched to the bitmap fog is marked with `TODO(fog)`. Do not extend these paths.
+* **Benchmarks:** `FOG_BENCH=1 flutter test test/benchmark/fog_benchmark_test.dart` (skipped by default).
 
 ### Backend (Java / Spring Boot)
 * **Architecture:** Adhere strictly to the Controller → Service → Repository layering.

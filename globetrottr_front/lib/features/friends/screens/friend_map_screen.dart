@@ -50,6 +50,8 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
               ),
               children: [
                 const AppTileLayer(),
+                // TODO(fog): draw the friend's fog with BitmapFogLayer and a
+                // remote tile source.
                 fogAsyncValue.when(
                   data: (holes) => FogLayer(
                     readyHoles: holes,

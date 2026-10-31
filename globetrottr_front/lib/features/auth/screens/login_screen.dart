@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/debug/widgets/dev_floating_button.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
@@ -52,6 +53,7 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
       darkTheme: const NeumorphicThemeData(baseColor: baseCanvasColor),
       child: Scaffold(
         backgroundColor: baseCanvasColor,
+        floatingActionButton: const DevFloatingButton(heroTag: 'login_dev_fab'),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),

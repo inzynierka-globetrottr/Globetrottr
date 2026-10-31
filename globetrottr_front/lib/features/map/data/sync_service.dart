@@ -10,6 +10,8 @@ class SyncService {
 
   SyncService(this._client, this._mapStorage);
 
+  // TODO(fog): the backend still builds its own fog from these points. Once it
+  // accepts tiles, also upload the tiles changed since the last synced rev.
   Future<bool> syncPendingPoints() async {
     final points = await _mapStorage.getPendingPoints();
 

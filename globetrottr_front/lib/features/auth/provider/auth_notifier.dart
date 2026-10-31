@@ -25,18 +25,34 @@ class AuthNotifier extends Notifier<AuthState> {
     return const AuthState();
   }
 
+  /// A session check never logs out a user who got in while it was running
+  /// (a login, or [enterWithoutLogin] while the backend is unreachable).
   Future<void> _checkExistingSession() async {
     try {
       final token = await _authService.refreshToken();
       state = state.copyWith(
-        isAuthenticated: token != null,
+        isAuthenticated: state.isAuthenticated || token != null,
         isInitializing: false,
       );
     } catch (e) {
       debugPrint('Session check did not authenticate: $e');
       final hasToken = await ref.read(tokenStoreProvider).getToken() != null;
-      state = state.copyWith(isAuthenticated: hasToken, isInitializing: false);
+      state = state.copyWith(
+        isAuthenticated: state.isAuthenticated || hasToken,
+        isInitializing: false,
+      );
     }
+  }
+
+  /// Developer shortcut: uses the app without an account or a backend.
+  /// Everything local works; calls to the backend fail as when offline.
+  void enterWithoutLogin() {
+    state = state.copyWith(
+      isAuthenticated: true,
+      isInitializing: false,
+      isLoading: false,
+      clearError: true,
+    );
   }
 
   void setMode(AuthMode mode) {
