@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/core/geo/earth.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
@@ -213,7 +214,6 @@ class PlayerMotion extends ChangeNotifier implements ValueListenable<LatLng?> {
 
   /// Plain flat-earth distance; the legs are only a few meters long.
   static double _metersBetween(LatLng a, LatLng b) {
-    const metersPerDegree = 111195.0;
     final north = (b.latitude - a.latitude) * metersPerDegree;
     final east =
         (b.longitude - a.longitude) *

@@ -1,8 +1,6 @@
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
-import 'package:globetrottr_front/core/config/map_config.dart';
-
 /// Tunables of the bitmap fog. Zoom 15 is about 2.9 m per pixel at 52 N,
 /// so the 50 m vision radius is a disc of roughly 17 px. Zoom 16 would be
 /// twice as sharp and take twice the space; at the usual walking zoom the
@@ -14,14 +12,9 @@ abstract final class FogConfig {
   /// Coarsest level of the display pyramid.
   static const int minZoom = 4;
 
-  static const double visionRadiusMeters = MapConfig.defaultVisionRadius;
-
-  /// Longest stretch joined into one path. About 1200 km/h at one fix per
-  /// second; a longer gap between two fixes starts a new path.
-  static const double maxSegmentMeters = MapConfig.maxPathGapMeters;
-
   /// Most base tiles one path may cover (about 4 MB of masks). A safety net
-  /// next to [maxSegmentMeters]; it only matters at extreme latitudes.
+  /// next to the gap limit of `MapConfig`; it only matters at extreme
+  /// latitudes.
   static const int maxTilesPerSegment = 64;
 
   /// Bumped whenever the way points are drawn changes, so tiles drawn by an

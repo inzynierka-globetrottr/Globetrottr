@@ -54,25 +54,6 @@ void main() {
       expect(state.isRecording, isFalse);
     });
 
-    test('ignores positions that are not real coordinates', () async {
-      final container = env.createContainer();
-      addTearDown(container.dispose);
-      final notifier = container.read(locationProvider.notifier);
-      await notifier.startTracking();
-      env.location.emit(50.0, 19.0);
-      await pumpEventQueue();
-
-      env.location.emit(double.nan, 19.0);
-      env.location.emit(50.0, double.infinity);
-      env.location.emit(95.0, 19.0);
-      await pumpEventQueue();
-
-      expect(
-        container.read(locationProvider).currentPosition,
-        const LatLng(50.0, 19.0),
-      );
-    });
-
     test('reports why tracking could not start', () async {
       env.location.startError = Exception('no permission');
       final container = env.createContainer();
@@ -118,23 +99,6 @@ void main() {
       await notifier.setRecording(true);
 
       expect(container.read(locationProvider).isRecording, isTrue);
-    });
-
-    test('stops following positions after tracking stops', () async {
-      final container = env.createContainer();
-      addTearDown(container.dispose);
-      final notifier = container.read(locationProvider.notifier);
-      await notifier.startTracking();
-      env.location.emit(50.0, 19.0);
-      await pumpEventQueue();
-
-      notifier.stopTracking();
-      env.location.emit(51.0, 20.0);
-      await pumpEventQueue();
-
-      final state = container.read(locationProvider);
-      expect(state.isTracking, isFalse);
-      expect(state.currentPosition, const LatLng(50.0, 19.0));
     });
   });
 }

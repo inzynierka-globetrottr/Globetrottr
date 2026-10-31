@@ -114,7 +114,7 @@ void main() {
 
     final meta = await storage.loadMeta();
     expect(meta['replayAttempts'], 1);
-    expect(reopened.lastAppliedLogId, 0);
+    expect(reopened.diagnostics.lastAppliedLogId, 0);
     await reopened.dispose();
   });
 
@@ -126,7 +126,7 @@ void main() {
     await store.replayFrom(log, useIsolate: false);
 
     expect(log.limits.first, FogConfig.retryStepEntries);
-    expect(store.lastAppliedLogId, _points);
+    expect(store.diagnostics.lastAppliedLogId, _points);
     expect(store.diagnostics.skippedLogEntries, 0);
     expect(await _coverageAtIndex(store, 10), 1);
     expect(await _coverageAtIndex(store, _points - 1), 1);
@@ -158,7 +158,7 @@ void main() {
 
     const skipped = FogConfig.retryStepEntries;
     expect(store.diagnostics.skippedLogEntries, skipped);
-    expect(store.lastAppliedLogId, _points);
+    expect(store.diagnostics.lastAppliedLogId, _points);
     expect(await _coverageAtIndex(store, 10), 0);
     expect(await _coverageAtIndex(store, skipped + 10), 1);
     expect(await _coverageAtIndex(store, _points - 1), 1);

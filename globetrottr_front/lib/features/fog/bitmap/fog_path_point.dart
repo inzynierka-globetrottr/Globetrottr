@@ -1,6 +1,6 @@
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 /// A point of a path in world pixels, with the vision radius in pixels at its
 /// latitude. Live drawing, imports and the trail all get their points from
@@ -13,7 +13,7 @@ class FogPathPoint {
       FogMercator.lngToX(longitude, zoom),
       FogMercator.latToY(latitude, zoom),
       metersToPixels(
-        meters: FogConfig.visionRadiusMeters,
+        meters: MapConfig.defaultVisionRadius,
         latitude: latitude,
         zoom: zoom.toDouble(),
       ),

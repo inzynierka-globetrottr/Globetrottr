@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
@@ -21,7 +22,7 @@ void main() {
       expect(
         point.radius,
         metersToPixels(
-          meters: FogConfig.visionRadiusMeters,
+          meters: MapConfig.defaultVisionRadius,
           latitude: 70,
           zoom: FogConfig.baseZoom.toDouble(),
         ),

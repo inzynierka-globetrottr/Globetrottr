@@ -5,49 +5,19 @@ usage: fog_handover.py <package> <lat> <lng> <dir> [--launch] [--heading=20]
 """
 import math
 import os
-import subprocess
 import sys
 import time
-from io import BytesIO
 
 import numpy as np
 from PIL import Image
 
-ADB = os.path.expandvars(r'%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe')
-DEVICE = ['-s', 'emulator-5554']
-RECORD = (980, 162)
-RECENTER = (980, 320)
-
-
-def adb(*args):
-    return subprocess.run([ADB, *DEVICE, *args], capture_output=True, text=True)
-
-
-def tap(x, y):
-    adb('shell', 'input', 'tap', str(x), str(y))
-
-
-def geo(lat, lng):
-    adb('emu', 'geo', 'fix', f'{lng:.7f}', f'{lat:.7f}')
-
-
-def shot():
-    data = subprocess.run([ADB, *DEVICE, 'exec-out', 'screencap', '-p'], capture_output=True).stdout
-    return np.asarray(Image.open(BytesIO(data)).convert('L')).astype(np.int16)
-
+from fog_common import RECENTER, RECORD, geo, launch, shot, tap
 
 package, lat, lng, out = sys.argv[1], float(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
 heading = math.radians(float(next((a[10:] for a in sys.argv if a.startswith('--heading=')), '20')))
 os.makedirs(out, exist_ok=True)
 if '--launch' in sys.argv:
-    adb('shell', 'am', 'force-stop', package)
-    time.sleep(1)
-    adb('shell', 'monkey', '-p', package, '-c', 'android.intent.category.LAUNCHER', '1')
-    time.sleep(6)
-    tap(867, 2217)
-    time.sleep(2)
-    tap(540, 313)
-    time.sleep(4)
+    launch(package)
 
 geo(lat, lng)
 time.sleep(2)

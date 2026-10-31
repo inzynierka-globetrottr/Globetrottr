@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
@@ -11,7 +12,7 @@ FogPathPoint _pixel(double lat, double lng) {
 
 void main() {
   const rule = FogSegmentRule(
-    radiusMeters: FogConfig.visionRadiusMeters,
+    radiusMeters: MapConfig.defaultVisionRadius,
     maxSegmentMeters: 350,
   );
 
@@ -49,7 +50,7 @@ void main() {
 
     test('breaks a path whose tiles exceed the safety cap', () {
       const loose = FogSegmentRule(
-        radiusMeters: FogConfig.visionRadiusMeters,
+        radiusMeters: MapConfig.defaultVisionRadius,
         maxSegmentMeters: 1000000,
       );
       final a = _pixel(krakowLat, krakowLng);

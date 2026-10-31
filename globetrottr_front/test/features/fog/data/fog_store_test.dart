@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
@@ -21,7 +22,7 @@ Future<FogStore> _open(
   int maxCachedTiles = 256,
   int maxDirtyTiles = 96,
   int baseZoom = FogConfig.baseZoom,
-  double maxSegmentMeters = FogConfig.maxSegmentMeters,
+  double maxSegmentMeters = MapConfig.maxPathGapMeters,
 }) {
   return FogStore.open(
     storage,
@@ -255,13 +256,13 @@ void main() {
     test('applying the same point twice changes nothing', () async {
       await _apply(store, 'a', krakowLat, krakowLng);
       await store.flush();
-      final area = store.totalAreaM2;
+      final area = store.diagnostics.totalAreaM2;
       final before = await decodeAllTiles(storage, FogConfig.baseZoom);
 
       await _apply(store, 'b', krakowLat, krakowLng);
       await store.flush();
 
-      expect(store.totalAreaM2, closeTo(area, 1e-6));
+      expect(store.diagnostics.totalAreaM2, closeTo(area, 1e-6));
       expect(
         sameMasks(before, await decodeAllTiles(storage, FogConfig.baseZoom)),
         isTrue,
@@ -288,7 +289,10 @@ void main() {
       }
       await sequential.flush();
 
-      expect(store.totalAreaM2, closeTo(sequential.totalAreaM2, 1e-6));
+      expect(
+        store.diagnostics.totalAreaM2,
+        closeTo(sequential.diagnostics.totalAreaM2, 1e-6),
+      );
       await sequential.dispose();
     });
 
@@ -296,7 +300,7 @@ void main() {
       'a disc whose soft rim just reaches the next tile is drawn there',
       () async {
         final radius = metersToPixels(
-          meters: FogConfig.visionRadiusMeters,
+          meters: MapConfig.defaultVisionRadius,
           latitude: krakowLat,
           zoom: FogConfig.baseZoom.toDouble(),
         );
@@ -327,7 +331,7 @@ void main() {
       await store.flush();
 
       const expected = math.pi * 50 * 50;
-      expect(store.totalAreaM2, closeTo(expected, expected * 0.03));
+      expect(store.diagnostics.totalAreaM2, closeTo(expected, expected * 0.03));
     });
 
     test('the area of a walk matches the capsule', () async {
@@ -337,7 +341,7 @@ void main() {
       await store.flush();
 
       const expected = 2 * 50 * 200 + math.pi * 50 * 50;
-      expect(store.totalAreaM2, closeTo(expected, expected * 0.03));
+      expect(store.diagnostics.totalAreaM2, closeTo(expected, expected * 0.03));
     });
   });
 
@@ -356,8 +360,8 @@ void main() {
       final meta = await storage.loadMeta();
       expect(meta['rev'], 1);
       expect(meta['baseZoom'], FogConfig.baseZoom);
-      expect(meta['totalAreaM2'], closeTo(store.totalAreaM2, 1e-6));
-      expect(store.revision, 1);
+      expect(meta['totalAreaM2'], closeTo(store.diagnostics.totalAreaM2, 1e-6));
+      expect(store.diagnostics.revision, 1);
     });
 
     test('a flush with nothing to write does not bump the revision', () async {
@@ -366,7 +370,7 @@ void main() {
       await store.flush();
       await store.flush();
 
-      expect(store.revision, 1);
+      expect(store.diagnostics.revision, 1);
     });
 
     test(
@@ -380,7 +384,7 @@ void main() {
 
         final changed = await storage.changedSince(1);
 
-        expect(store.revision, 2);
+        expect(store.diagnostics.revision, 2);
         expect(changed.every((t) => t.rev == 2), isTrue);
         expect(changed.any((t) => t.id.z == FogConfig.baseZoom), isTrue);
       },
@@ -392,7 +396,7 @@ void main() {
         await _apply(small, 'a', e.latitude, e.longitude);
       }
 
-      expect(small.revision, greaterThan(0));
+      expect(small.diagnostics.revision, greaterThan(0));
       expect(small.diagnostics.dirtyTiles, lessThan(3));
       await small.dispose();
     });
@@ -415,7 +419,10 @@ void main() {
         await reference.flush();
 
         expect(small.diagnostics.cachedTiles, lessThanOrEqualTo(12));
-        expect(small.totalAreaM2, closeTo(reference.totalAreaM2, 1e-3));
+        expect(
+          small.diagnostics.totalAreaM2,
+          closeTo(reference.diagnostics.totalAreaM2, 1e-3),
+        );
         expect(
           sameMasks(
             await decodeAllTiles(tiny, FogConfig.baseZoom),
@@ -495,7 +502,10 @@ void main() {
       await a.flush();
       await b.flush();
 
-      expect(b.totalAreaM2, closeTo(a.totalAreaM2, 1e-6));
+      expect(
+        b.diagnostics.totalAreaM2,
+        closeTo(a.diagnostics.totalAreaM2, 1e-6),
+      );
       final first = await inline.changedSince(0, limit: 1 << 20);
       final second = await withIsolate.changedSince(0, limit: 1 << 20);
       expect(second.length, first.length);
@@ -533,13 +543,13 @@ void main() {
         await _apply(store, 'a', e.latitude, e.longitude);
       }
       await store.flush();
-      final area = store.totalAreaM2;
+      final area = store.diagnostics.totalAreaM2;
 
       final reopened = await _open(storage);
       final point = offsetMeters(krakowLat, krakowLng, east: 150);
 
-      expect(reopened.totalAreaM2, closeTo(area, 1e-6));
-      expect(reopened.revision, store.revision);
+      expect(reopened.diagnostics.totalAreaM2, closeTo(area, 1e-6));
+      expect(reopened.diagnostics.revision, store.diagnostics.revision);
       expect(await coverageAt(reopened, point.lat, point.lng), 1);
       await reopened.dispose();
     });
@@ -550,7 +560,7 @@ void main() {
 
       final other = await _open(storage, baseZoom: FogConfig.baseZoom - 1);
 
-      expect(other.totalAreaM2, 0);
+      expect(other.diagnostics.totalAreaM2, 0);
       expect((await storage.stats()).tileCount, 0);
       await other.dispose();
     });
@@ -566,8 +576,8 @@ void main() {
 
       final other = await _open(storage);
 
-      expect(other.totalAreaM2, 0);
-      expect(other.lastAppliedLogId, 0);
+      expect(other.diagnostics.totalAreaM2, 0);
+      expect(other.diagnostics.lastAppliedLogId, 0);
       expect((await storage.stats()).tileCount, 0);
       await other.dispose();
     });
@@ -579,8 +589,8 @@ void main() {
       await store.clear();
 
       expect((await storage.stats()).tileCount, 0);
-      expect(store.totalAreaM2, 0);
-      expect(store.revision, 0);
+      expect(store.diagnostics.totalAreaM2, 0);
+      expect(store.diagnostics.revision, 0);
       expect(await coverageAt(store, krakowLat, krakowLng), 0);
     });
   });
@@ -655,7 +665,10 @@ void main() {
       final other = await _open(rebuilt);
       await other.rebuildFrom(log, useIsolate: false);
 
-      expect(other.totalAreaM2, closeTo(store.totalAreaM2, 1e-6));
+      expect(
+        other.diagnostics.totalAreaM2,
+        closeTo(store.diagnostics.totalAreaM2, 1e-6),
+      );
       expect(
         sameMasks(
           await decodeAllTiles(storage, FogConfig.baseZoom),
@@ -690,15 +703,18 @@ void main() {
       // The process dies here: the store is dropped without a flush.
 
       final recovered = await _open(storage);
-      expect(recovered.lastAppliedLogId, ids[19]);
+      expect(recovered.diagnostics.lastAppliedLogId, ids[19]);
       await recovered.replayFrom(log, useIsolate: false);
 
       final reference = InMemoryFogTileStorage();
       final expected = await _open(reference);
       await expected.rebuildFrom(log, useIsolate: false);
 
-      expect(recovered.lastAppliedLogId, ids.last);
-      expect(recovered.totalAreaM2, closeTo(expected.totalAreaM2, 1e-6));
+      expect(recovered.diagnostics.lastAppliedLogId, ids.last);
+      expect(
+        recovered.diagnostics.totalAreaM2,
+        closeTo(expected.diagnostics.totalAreaM2, 1e-6),
+      );
       expect(
         sameMasks(
           await decodeAllTiles(storage, FogConfig.baseZoom),
@@ -748,12 +764,12 @@ void main() {
         );
       }
       await store.flush();
-      final revision = store.revision;
+      final revision = store.diagnostics.revision;
 
       await store.replayFrom(log, useIsolate: false);
 
-      expect(store.revision, revision);
-      expect(store.lastAppliedLogId, ids.last);
+      expect(store.diagnostics.revision, revision);
+      expect(store.diagnostics.lastAppliedLogId, ids.last);
     });
   });
 
@@ -781,7 +797,7 @@ void main() {
       log.resume();
       await replay;
       await applied;
-      expect(store.lastAppliedLogId, live.id);
+      expect(store.diagnostics.lastAppliedLogId, live.id);
     });
 
     test(
@@ -863,7 +879,7 @@ void main() {
       await _applyLogged(store, live);
       await store.flush();
 
-      expect(store.lastAppliedLogId, 0);
+      expect(store.diagnostics.lastAppliedLogId, 0);
       final restarted = await _open(storage);
       await restarted.replayFrom(log, useIsolate: false);
       expect(await coverageAt(restarted, walked.lat, walked.lng), 1);
@@ -882,7 +898,7 @@ void main() {
       final live = await log.append(logEntry('b', 0, far));
       await _applyLogged(store, live);
 
-      expect(store.lastAppliedLogId, live.id);
+      expect(store.diagnostics.lastAppliedLogId, live.id);
     });
   });
 
@@ -902,7 +918,10 @@ void main() {
       await imported.importEntries(entries, useIsolate: false, chunkSize: 37);
       await imported.flush();
 
-      expect(imported.totalAreaM2, closeTo(store.totalAreaM2, 1e-3));
+      expect(
+        imported.diagnostics.totalAreaM2,
+        closeTo(store.diagnostics.totalAreaM2, 1e-3),
+      );
       expect(
         sameMasks(
           await decodeAllTiles(storage, FogConfig.baseZoom),
@@ -940,7 +959,10 @@ void main() {
         );
         await imported.flush();
 
-        expect(imported.totalAreaM2, closeTo(store.totalAreaM2, 1e-3));
+        expect(
+          imported.diagnostics.totalAreaM2,
+          closeTo(store.diagnostics.totalAreaM2, 1e-3),
+        );
         expect(
           sameMasks(
             await decodeAllTiles(storage, FogConfig.baseZoom),
@@ -962,7 +984,10 @@ void main() {
       await imported.flush();
 
       const expected = 2 * 50 * 59 * 15 + math.pi * 50 * 50;
-      expect(imported.totalAreaM2, closeTo(expected, expected * 0.03));
+      expect(
+        imported.diagnostics.totalAreaM2,
+        closeTo(expected, expected * 0.03),
+      );
       await imported.dispose();
     });
 
@@ -996,7 +1021,7 @@ void main() {
         await _apply(store, 'a', e.latitude, e.longitude);
       }
       await store.flush();
-      final revision = store.revision;
+      final revision = store.diagnostics.revision;
 
       for (final e in walkEast('b')) {
         await _apply(store, 'b', e.latitude, e.longitude);
@@ -1004,7 +1029,7 @@ void main() {
 
       expect(store.diagnostics.dirtyTiles, 0);
       await store.flush();
-      expect(store.revision, revision);
+      expect(store.diagnostics.revision, revision);
       expect(await storage.changedSince(revision), isEmpty);
     });
 
@@ -1013,14 +1038,14 @@ void main() {
         await _apply(store, 'a', e.latitude, e.longitude);
       }
       await store.flush();
-      final revision = store.revision;
+      final revision = store.diagnostics.revision;
 
       for (final e in walkEast('b', points: 30)) {
         await _apply(store, 'b', e.latitude, e.longitude);
       }
       await store.flush();
 
-      expect(store.revision, revision + 1);
+      expect(store.diagnostics.revision, revision + 1);
       expect(await storage.changedSince(revision), isNotEmpty);
     });
 
@@ -1040,14 +1065,14 @@ void main() {
       }
 
       await lap('a');
-      final afterFirst = store.revision;
+      final afterFirst = store.diagnostics.revision;
       await lap('b');
-      final afterSecond = store.revision;
+      final afterSecond = store.diagnostics.revision;
       await lap('c');
       await lap('d');
 
       expect(afterSecond, afterFirst);
-      expect(store.revision, afterFirst);
+      expect(store.diagnostics.revision, afterFirst);
     });
 
     test('no change is announced for an unchanged pass', () async {
@@ -1101,15 +1126,15 @@ void main() {
       await store.flush();
 
       expect((await storage.loadMeta())['lastAppliedLogId'], 2);
-      expect(store.lastAppliedLogId, 2);
+      expect(store.diagnostics.lastAppliedLogId, 2);
     });
 
     test('importing entries that are already drawn writes nothing', () async {
       final entries = walkEast('a', points: 60, stepMeters: 15);
       await store.importEntries(entries, useIsolate: false);
       await store.flush();
-      final revision = store.revision;
-      final area = store.totalAreaM2;
+      final revision = store.diagnostics.revision;
+      final area = store.diagnostics.totalAreaM2;
 
       await store.importEntries(
         walkEast('b', points: 60, stepMeters: 15),
@@ -1117,8 +1142,8 @@ void main() {
       );
       await store.flush();
 
-      expect(store.revision, revision);
-      expect(store.totalAreaM2, area);
+      expect(store.diagnostics.revision, revision);
+      expect(store.diagnostics.totalAreaM2, area);
       expect(store.diagnostics.dirtyTiles, 0);
     });
 
@@ -1126,15 +1151,15 @@ void main() {
       final log = InMemoryTrackLogStorage();
       await log.appendAll(walkEast('a', points: 40));
       await store.replayFrom(log, useIsolate: false);
-      final revision = store.revision;
+      final revision = store.diagnostics.revision;
       final tiles = (await storage.stats()).tileCount;
 
       final reopened = await _open(storage);
       await reopened.rebuildFrom(log, useIsolate: false);
-      final rebuilt = reopened.revision;
+      final rebuilt = reopened.diagnostics.revision;
       await reopened.replayFrom(log, useIsolate: false);
 
-      expect(reopened.revision, rebuilt);
+      expect(reopened.diagnostics.revision, rebuilt);
       expect((await storage.stats()).tileCount, tiles);
       expect(revision, greaterThan(0));
       await reopened.dispose();

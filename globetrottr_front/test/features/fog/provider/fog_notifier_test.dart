@@ -50,8 +50,11 @@ void main() {
       await source.store.flush();
 
       const expected = 2 * 50 * 110 + math.pi * 50 * 50;
-      expect(source.store.totalAreaM2, closeTo(expected, expected * 0.04));
-      expect(source.store.lastAppliedLogId, entries.last.id);
+      expect(
+        source.store.diagnostics.totalAreaM2,
+        closeTo(expected, expected * 0.04),
+      );
+      expect(source.store.diagnostics.lastAppliedLogId, entries.last.id);
     });
 
     test('flushes the fog when recording stops', () async {
@@ -66,13 +69,13 @@ void main() {
         env.location.logged.add(entry);
       }
       await pumpEventQueue();
-      expect(source.store.revision, 0);
+      expect(source.store.diagnostics.revision, 0);
 
       await notifier.setRecording(false);
       await pumpEventQueue();
       await source.store.flush();
 
-      expect(source.store.revision, 1);
+      expect(source.store.diagnostics.revision, 1);
     });
 
     test('recovers after a restart without duplicating anything', () async {
@@ -85,7 +88,7 @@ void main() {
       }
       await pumpEventQueue();
       await source.store.flush();
-      final after10 = source.store.totalAreaM2;
+      final after10 = source.store.diagnostics.totalAreaM2;
       expect(after10, greaterThan(0));
       first.dispose();
 
@@ -95,8 +98,11 @@ void main() {
       await restarted.store.whenCaughtUp();
 
       const expected = 2 * 50 * 290 + math.pi * 50 * 50;
-      expect(restarted.store.totalAreaM2, closeTo(expected, expected * 0.04));
-      expect(restarted.store.lastAppliedLogId, entries.last.id);
+      expect(
+        restarted.store.diagnostics.totalAreaM2,
+        closeTo(expected, expected * 0.04),
+      );
+      expect(restarted.store.diagnostics.lastAppliedLogId, entries.last.id);
     });
 
     test('imports entries and keeps them in the fog', () async {
@@ -111,7 +117,7 @@ void main() {
       );
 
       final source = container.read(fogProvider).requireValue;
-      expect(source.store.totalAreaM2, greaterThan(0));
+      expect(source.store.diagnostics.totalAreaM2, greaterThan(0));
       expect(await env.log.count(), 40);
     });
 
@@ -121,11 +127,11 @@ void main() {
       addTearDown(container.dispose);
       final source = await container.read(fogProvider.future);
       await source.store.whenCaughtUp();
-      expect(source.store.totalAreaM2, greaterThan(0));
+      expect(source.store.diagnostics.totalAreaM2, greaterThan(0));
 
       await container.read(fogProvider.notifier).clearFog();
 
-      expect(source.store.totalAreaM2, 0);
+      expect(source.store.diagnostics.totalAreaM2, 0);
       expect(await env.log.count(), 20);
     });
 
@@ -141,7 +147,7 @@ void main() {
       final restarted = await second.read(fogProvider.future);
       await restarted.store.whenCaughtUp();
 
-      expect(restarted.store.totalAreaM2, 0);
+      expect(restarted.store.diagnostics.totalAreaM2, 0);
       expect(await env.log.count(), 20);
     });
 
@@ -151,12 +157,12 @@ void main() {
       addTearDown(container.dispose);
       final source = await container.read(fogProvider.future);
       await source.store.whenCaughtUp();
-      final area = source.store.totalAreaM2;
+      final area = source.store.diagnostics.totalAreaM2;
       await container.read(fogProvider.notifier).clearFog();
 
       await container.read(fogProvider.notifier).rebuild(useIsolate: false);
 
-      expect(source.store.totalAreaM2, closeTo(area, 1e-6));
+      expect(source.store.diagnostics.totalAreaM2, closeTo(area, 1e-6));
     });
 
     test('a failed replay still shows the stored fog', () async {

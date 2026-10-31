@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/debug/explorer_route_generator.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../support/fog_test_helpers.dart';
+import '../support/explorer_route_generator.dart';
 
 Map<String, List<TrackLogEntry>> _bySession(List<TrackLogEntry> entries) {
   final map = <String, List<TrackLogEntry>>{};

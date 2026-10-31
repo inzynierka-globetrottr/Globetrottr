@@ -7,6 +7,7 @@ import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
+import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 
 /// Diagnostics and test tools of the bitmap fog, for the developer options.
@@ -94,9 +95,13 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
 
   String _storageLine(FogStorageStats storage) {
     final base = storage.tilesPerLevel[FogConfig.baseZoom] ?? 0;
-    final megabytes = (storage.totalBytes / 1048576).toStringAsFixed(2);
     return 'Tiles on disk: ${storage.tileCount} (base $base), '
-        'payload $megabytes MB';
+        'payload ${formatBytes(storage.totalBytes)}';
+  }
+
+  void _updateOptions(FogRenderOptions Function(FogRenderOptions) change) {
+    final notifier = ref.read(fogRenderOptionsProvider.notifier);
+    notifier.options = change(notifier.options);
   }
 
   @override
@@ -144,8 +149,7 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
           title: const Text('Soft fog edge'),
           value: options.softEdge,
           onChanged: (value) =>
-              ref.read(fogRenderOptionsProvider.notifier).options = options
-                  .copyWith(softEdge: value),
+              _updateOptions((o) => o.copyWith(softEdge: value)),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
@@ -164,13 +168,12 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
           contentPadding: EdgeInsets.zero,
           title: const Text('Raw fog pixels'),
           subtitle: const Text(
-            'The stored pixels as they are: no blur, no smoothing, no player '
-            'disc. Zoom in to see the lines between pixels',
+            'The stored pixels as they are: no blur, no smoothing, no live '
+            'fog. Zoom in to see the lines between pixels',
           ),
           value: options.rawPixels,
           onChanged: (value) =>
-              ref.read(fogRenderOptionsProvider.notifier).options = options
-                  .copyWith(rawPixels: value),
+              _updateOptions((o) => o.copyWith(rawPixels: value)),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
@@ -181,16 +184,14 @@ class _FogDevPanelState extends ConsumerState<FogDevPanel> {
           ),
           value: options.showGrid,
           onChanged: (value) =>
-              ref.read(fogRenderOptionsProvider.notifier).options = options
-                  .copyWith(showGrid: value),
+              _updateOptions((o) => o.copyWith(showGrid: value)),
         ),
         Text('Soft edge width: ${options.softEdgeMeters.toStringAsFixed(1)} m'),
         Slider(
           max: 12,
           value: options.softEdgeMeters.clamp(0, 12),
           onChanged: (value) =>
-              ref.read(fogRenderOptionsProvider.notifier).options = options
-                  .copyWith(softEdgeMeters: value),
+              _updateOptions((o) => o.copyWith(softEdgeMeters: value)),
         ),
         Row(
           children: [

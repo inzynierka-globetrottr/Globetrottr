@@ -184,7 +184,6 @@ void main() {
       await source.ensure(cameraAt());
 
       expect(source.points.length, 20);
-      expect(source.truncated, isTrue);
       source.dispose();
     });
 

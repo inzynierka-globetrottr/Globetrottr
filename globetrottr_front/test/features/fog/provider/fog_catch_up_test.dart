@@ -43,7 +43,7 @@ void main() {
       await store.whenCaughtUp();
 
       expect(done, isTrue);
-      expect(store.lastAppliedLogId, await log.lastId());
+      expect(store.diagnostics.lastAppliedLogId, await log.lastId());
       await store.dispose();
     });
 

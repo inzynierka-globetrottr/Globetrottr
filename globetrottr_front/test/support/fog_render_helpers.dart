@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
@@ -103,7 +104,7 @@ BitmapFogPainter painterFor(
 
 /// Radius of the vision disc in pixels of the base level, at Krakow.
 double get baseRadiusPixels => metersToPixels(
-  meters: FogConfig.visionRadiusMeters,
+  meters: MapConfig.defaultVisionRadius,
   latitude: krakowLat,
   zoom: FogConfig.baseZoom.toDouble(),
 );

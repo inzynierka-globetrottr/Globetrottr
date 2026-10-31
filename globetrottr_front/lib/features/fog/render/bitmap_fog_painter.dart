@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
@@ -301,7 +302,7 @@ class BitmapFogPainter extends CustomPainter {
       canvas,
       Offset.zero & size,
       radius: metersToPixels(
-        meters: FogConfig.visionRadiusMeters,
+        meters: MapConfig.defaultVisionRadius,
         latitude: camera.center.latitude,
         zoom: camera.zoom,
       ),
@@ -333,7 +334,7 @@ class BitmapFogPainter extends CustomPainter {
     final levelWidth =
         2 *
         metersToPixels(
-          meters: FogConfig.visionRadiusMeters,
+          meters: MapConfig.defaultVisionRadius,
           latitude: camera.center.latitude,
           zoom: level.toDouble(),
         );

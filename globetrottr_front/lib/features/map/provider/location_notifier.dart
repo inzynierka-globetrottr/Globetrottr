@@ -33,13 +33,6 @@ class LocationNotifier extends Notifier<TrackingState> {
     }
   }
 
-  void stopTracking() {
-    _locationService.stopTracking();
-    _positionStream?.cancel();
-    _positionStream = null;
-    state = state.copyWith(isTracking: false, isRecording: false);
-  }
-
   Future<void> setRecording(bool value) async {
     _locationService.setRecording(value);
     state = state.copyWith(isRecording: value);
@@ -50,9 +43,6 @@ class LocationNotifier extends Notifier<TrackingState> {
   }
 
   void _onPosition(Position position) {
-    // LocationService already drops such fixes; checking again keeps a bad
-    // value away from the map camera whatever stream feeds this notifier.
-    if (!LocationService.isUsablePosition(position)) return;
     state = state.copyWith(
       currentPosition: LatLng(position.latitude, position.longitude),
     );

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:globetrottr_front/core/async/serial_queue.dart';
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
@@ -25,10 +26,11 @@ export 'package:globetrottr_front/features/fog/data/store/fog_store_models.dart'
 
 /// The fog of one user as tiles of 8-bit coverage.
 ///
-/// New positions are rasterized into tiles immediately and written to
-/// [storage] in batches. Every write also refreshes the coarser pyramid
-/// levels used when the map is zoomed out. The tiles are a cache: the
-/// authoritative history is the track log, which can rebuild them.
+/// A new position joins the [trail] at once and is rasterized into the tiles
+/// in the queue; the tiles reach [storage] in batches. Every write also
+/// refreshes the coarser pyramid levels used when the map is zoomed out. The
+/// tiles are a cache: the authoritative history is the track log, which can
+/// rebuild them.
 ///
 /// Every operation that changes the fog runs through one queue, so they
 /// never interleave.
@@ -53,7 +55,7 @@ class FogStore {
   static Future<FogStore> open(
     FogTileStorage storage, {
     int baseZoom = FogConfig.baseZoom,
-    double maxSegmentMeters = FogConfig.maxSegmentMeters,
+    double maxSegmentMeters = MapConfig.maxPathGapMeters,
     int maxCachedTiles = FogConfig.maxCachedTiles,
     int maxDirtyTiles = FogConfig.maxDirtyTiles,
     int importTileBudget = FogConfig.importTileBudget,
@@ -121,7 +123,7 @@ class FogStore {
     isolateEncodeThreshold: isolateEncodeThreshold,
   );
   late final FogSegmentRule _segmentRule = FogSegmentRule(
-    radiusMeters: FogConfig.visionRadiusMeters,
+    radiusMeters: MapConfig.defaultVisionRadius,
     maxSegmentMeters: maxSegmentMeters,
   );
   late final FogImportPlanner _planner = FogImportPlanner(
@@ -140,7 +142,7 @@ class FogStore {
   bool _disposed = false;
 
   /// True after a replay failed: the log holds entries that are not drawn,
-  /// so new points must not move [lastAppliedLogId] past them.
+  /// so new points must not move the log position past them.
   bool _behindLog = false;
 
   int _revision;
@@ -154,8 +156,6 @@ class FogStore {
 
   /// Newest segment of the trail already drawn into the tiles.
   int _appliedTrailId = 0;
-
-  int get revision => _revision;
 
   /// What was revealed since the last flush, for drawing over the images.
   FogTrail get trail => _trail;
@@ -174,15 +174,10 @@ class FogStore {
   /// Recording stopped or started: the next position starts a new path.
   void endLivePath() => _trail.anchor = null;
 
-  /// Ground area revealed so far, in square meters, as of the last flush.
-  double get totalAreaM2 => _totalAreaM2;
-
-  /// Id of the newest track log entry already drawn into the tiles.
-  int get lastAppliedLogId => _lastAppliedLogId;
-
   Stream<FogChange> get changes => _changes.stream;
 
   /// Completes when no replay or rebuild is running.
+  @visibleForTesting
   Future<void> whenCaughtUp() => _replayTracker.whenIdle();
 
   FogStoreDiagnostics get diagnostics => FogStoreDiagnostics(
@@ -190,6 +185,7 @@ class FogStore {
     dirtyTiles: _tiles.dirty.length,
     revision: _revision,
     totalAreaM2: _totalAreaM2,
+    lastAppliedLogId: _lastAppliedLogId,
     appliedPoints: _appliedPoints,
     lastApplyMicros: _lastApplyMicros,
     lastFlushMillis: _lastFlushMillis,
@@ -262,8 +258,7 @@ class FogStore {
         )
         .ids
         .toList();
-    _tiles.pinned.addAll(needed);
-    try {
+    await _tiles.withPinned(needed, () async {
       await _tiles.ensureLoaded(needed);
       final created = <FogTileId>{};
       final changed = <FogTileId>{};
@@ -281,9 +276,7 @@ class FogStore {
       _noteApplied(logId);
       _appliedTrailId = trailId;
       if (changed.isNotEmpty) _emit(FogChange(changed, onTrail: true));
-    } finally {
-      _tiles.pinned.removeAll(needed);
-    }
+    });
     _appliedPoints++;
     _lastApplyMicros = timer.elapsedMicroseconds;
     await _flushIfNeeded();

@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:globetrottr_front/core/async/work_counter.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
@@ -39,11 +40,10 @@ class FogTileSource extends ChangeNotifier {
   final LinkedHashMap<FogTileId, ui.Image> _images = LinkedHashMap();
   final Set<FogTileId> _stale = {};
   final Set<FogTileId> _building = {};
-  final List<Completer<void>> _idleWaiters = [];
+  final WorkCounter _work = WorkCounter();
   late final StreamSubscription<FogChange> _subscription;
 
   FogTileRange? _lastRange;
-  int _pending = 0;
   bool _disposed = false;
 
   /// Grows when the images are thrown away, so a build started earlier knows
@@ -52,7 +52,7 @@ class FogTileSource extends ChangeNotifier {
 
   int get imageCount => _images.length;
 
-  int get pendingBuilds => _pending;
+  int get pendingBuilds => _work.count;
 
   /// The pyramid level whose tiles are about 1:1 with the screen at [zoom].
   int levelFor(double zoom) {
@@ -66,6 +66,7 @@ class FogTileSource extends ChangeNotifier {
     ensureRange(camera.visibleTiles(levelFor(camera.zoom)));
   }
 
+  @visibleForTesting
   void ensureRange(FogTileRange range) {
     if (_disposed || range == _lastRange) return;
     _lastRange = range;
@@ -78,7 +79,7 @@ class FogTileSource extends ChangeNotifier {
   }
 
   Future<void> _load(FogTileRange target) async {
-    _begin();
+    _work.begin();
     try {
       await store.prepare(target);
       if (_disposed) return;
@@ -86,7 +87,7 @@ class FogTileSource extends ChangeNotifier {
         if (store.peek(id) != null) _request(id);
       }
     } finally {
-      _end();
+      _work.end();
     }
   }
 
@@ -127,25 +128,7 @@ class FogTileSource extends ChangeNotifier {
   }
 
   /// Completes when no tile is being loaded or decoded.
-  Future<void> whenIdle() {
-    if (_pending == 0) return Future.value();
-    final waiter = Completer<void>();
-    _idleWaiters.add(waiter);
-    return waiter.future;
-  }
-
-  void _begin() => _pending++;
-
-  void _end() {
-    _pending--;
-    if (_pending <= 0) {
-      _pending = 0;
-      for (final waiter in _idleWaiters) {
-        if (!waiter.isCompleted) waiter.complete();
-      }
-      _idleWaiters.clear();
-    }
-  }
+  Future<void> whenIdle() => _work.whenIdle();
 
   void _onChange(FogChange change) {
     if (_disposed) return;
@@ -203,7 +186,7 @@ class FogTileSource extends ChangeNotifier {
 
     _stale.remove(id);
     _building.add(id);
-    _begin();
+    _work.begin();
     final pixels = FogTilePixels.build(
       mask,
       neighbor: (dx, dy) => store.peek(FogTileId(id.z, id.x + dx, id.y + dy)),
@@ -225,7 +208,7 @@ class FogTileSource extends ChangeNotifier {
       image.dispose();
     }
     if (_stale.contains(id)) _request(id);
-    _end();
+    _work.end();
   }
 
   void _evictImages() {
@@ -265,10 +248,7 @@ class FogTileSource extends ChangeNotifier {
     _disposed = true;
     unawaited(_subscription.cancel());
     _clearImages();
-    for (final waiter in _idleWaiters) {
-      if (!waiter.isCompleted) waiter.complete();
-    }
-    _idleWaiters.clear();
+    _work.release();
     super.dispose();
   }
 }

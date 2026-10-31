@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/debug/explorer_route_generator.dart';
 import 'package:globetrottr_front/features/map/data/track_log/sqflite_track_log_storage.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import '../../../support/explorer_route_generator.dart';
 
 TrackLogEntry _entry(
   String session,

@@ -6,8 +6,9 @@ class MapConfig {
   static const double defaultZoom = 16.0;
   static const int distanceFilter = 5;
 
-  /// Longest stretch between two fixes treated as one continuous path; a
-  /// longer gap means the device saw nothing in between.
+  /// Longest stretch between two fixes treated as one continuous path, about
+  /// 1200 km/h at one fix per second; a longer gap means the device saw
+  /// nothing in between.
   static const double maxPathGapMeters = 350;
 
   /// How far the player moves between two redraws, about half a screen pixel

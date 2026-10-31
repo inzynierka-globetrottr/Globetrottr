@@ -52,6 +52,19 @@ class FogTileCache {
     return entry != null && entry.mask == null;
   }
 
+  /// Keeps [ids] cached while [action] runs.
+  Future<T> withPinned<T>(
+    Iterable<FogTileId> ids,
+    Future<T> Function() action,
+  ) async {
+    pinned.addAll(ids);
+    try {
+      return await action();
+    } finally {
+      pinned.removeAll(ids);
+    }
+  }
+
   /// Marks [id] as the most recently used tile.
   void touch(FogTileId id) {
     final entry = _entries.remove(id);
@@ -109,8 +122,7 @@ class FogTileCache {
   Future<Set<FogTileId>> mergeMasks(Map<int, Uint8List> masks) async {
     final ids = [for (final key in masks.keys) FogTileId.fromKey(key)];
     final changedIds = <FogTileId>{};
-    pinned.addAll(ids);
-    try {
+    await withPinned(ids, () async {
       await ensureLoaded(ids);
       for (final id in ids) {
         touch(id);
@@ -128,9 +140,7 @@ class FogTileCache {
         dirty.add(id);
         changedIds.add(id);
       }
-    } finally {
-      pinned.removeAll(ids);
-    }
+    });
     return changedIds;
   }
 

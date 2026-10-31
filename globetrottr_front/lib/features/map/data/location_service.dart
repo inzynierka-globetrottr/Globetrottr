@@ -21,7 +21,6 @@ class LocationService {
   StreamSubscription<Position>? _dbSubscription;
   Stream<Position>? _broadcastStream;
 
-  late LocationSettings _locationSettings;
   bool _isRecording = false;
   String? _sessionId;
   Position? _lastPosition;
@@ -44,6 +43,7 @@ class LocationService {
     return lat.isFinite && lng.isFinite && lat.abs() <= 90 && lng.abs() <= 180;
   }
 
+  @visibleForTesting
   String? get sessionId => _sessionId;
 
   /// Every recorded position after it was stored in the permanent track log,
@@ -95,8 +95,9 @@ class LocationService {
       permission = await Geolocator.requestPermission();
     }
 
+    final LocationSettings locationSettings;
     if (defaultTargetPlatform == TargetPlatform.android) {
-      _locationSettings = AndroidSettings(
+      locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
         intervalDuration: const Duration(seconds: 1),
@@ -111,21 +112,21 @@ class LocationService {
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
-      _locationSettings = AppleSettings(
+      locationSettings = AppleSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
         activityType: ActivityType.fitness,
         showBackgroundLocationIndicator: true,
       );
     } else {
-      _locationSettings = const LocationSettings(
+      locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
       );
     }
 
     _broadcastStream = Geolocator.getPositionStream(
-      locationSettings: _locationSettings,
+      locationSettings: locationSettings,
     ).where(isUsablePosition).asBroadcastStream();
 
     _dbSubscription = _broadcastStream!.listen(recordPosition);
@@ -133,8 +134,6 @@ class LocationService {
 
   /// Stores a fix in the session that was recording when it arrived, even if
   /// recording stops while it is being written.
-  ///
-  /// Method is public for testing purposes, but should not be called from outside the service. (debatable decision)
   @visibleForTesting
   Future<void> recordPosition(Position position) async {
     _lastPosition = position;

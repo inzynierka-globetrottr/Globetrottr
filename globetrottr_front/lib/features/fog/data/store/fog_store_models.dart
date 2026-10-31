@@ -29,6 +29,7 @@ class FogStoreDiagnostics {
     required this.dirtyTiles,
     required this.revision,
     required this.totalAreaM2,
+    required this.lastAppliedLogId,
     required this.appliedPoints,
     required this.lastApplyMicros,
     required this.lastFlushMillis,
@@ -43,7 +44,12 @@ class FogStoreDiagnostics {
   final int peakCachedTiles;
   final int dirtyTiles;
   final int revision;
+
+  /// Ground area revealed so far, in square meters, as of the last flush.
   final double totalAreaM2;
+
+  /// Id of the newest track log entry already drawn into the tiles.
+  final int lastAppliedLogId;
   final int appliedPoints;
   final int lastApplyMicros;
   final int lastFlushMillis;

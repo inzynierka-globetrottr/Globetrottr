@@ -8,7 +8,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/debug/explorer_route_generator.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
@@ -22,6 +21,7 @@ import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../support/fog_render_helpers.dart';
 import '../support/in_memory_fog_tile_storage.dart';
+import '../support/explorer_route_generator.dart';
 
 final bool _enabled = Platform.environment['FOG_BENCH'] == '1';
 final double _journeyKm =
@@ -133,7 +133,7 @@ void main() {
         'P6 import 50000 points through an isolate: '
         '${timer.elapsedMilliseconds} ms, '
         'tiles ${stats.tileCount}, payload ${stats.totalBytes} bytes, '
-        'area ${(store.totalAreaM2 / 1e6).toStringAsFixed(4)} km2',
+        'area ${(store.diagnostics.totalAreaM2 / 1e6).toStringAsFixed(4)} km2',
       );
 
       await _paintTable('50k walk', store, center, [12, 14, 16]);
@@ -177,7 +177,7 @@ void main() {
         'avg ${payloadTiles == 0 ? 0 : (baseBytes / payloadTiles).round()} B per base tile',
       );
       _say(
-        'P3 discovered ${(store.totalAreaM2 / 1e6).toStringAsFixed(1)} km2, '
+        'P3 discovered ${(store.diagnostics.totalAreaM2 / 1e6).toStringAsFixed(1)} km2, '
         'per level: ${stats.tilesPerLevel}',
       );
       await store.dispose();
@@ -326,7 +326,7 @@ void main() {
           'base zoom $zoom: 60 km imported in ${timer.elapsedMilliseconds} ms, '
           'base tiles ${stats.tilesPerLevel[zoom]}, '
           'payload ${(stats.totalBytes / 1024).toStringAsFixed(0)} KB, '
-          'area ${(store.totalAreaM2 / 1e6).toStringAsFixed(3)} km2',
+          'area ${(store.diagnostics.totalAreaM2 / 1e6).toStringAsFixed(3)} km2',
         );
         await store.dispose();
       }

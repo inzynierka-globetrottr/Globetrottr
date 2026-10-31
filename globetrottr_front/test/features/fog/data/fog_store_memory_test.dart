@@ -48,7 +48,7 @@ void main() {
     await store.importEntries(entries, useIsolate: false);
     await store.flush();
 
-    expect(store.totalAreaM2, greaterThan(0));
+    expect(store.diagnostics.totalAreaM2, greaterThan(0));
     expect(
       store.diagnostics.peakCachedTiles,
       lessThanOrEqualTo(_maxCached + 3 * _budget),
@@ -63,7 +63,7 @@ void main() {
 
     await store.replayFrom(log, useIsolate: false);
 
-    expect(store.lastAppliedLogId, await log.lastId());
+    expect(store.diagnostics.lastAppliedLogId, await log.lastId());
     expect(
       store.diagnostics.peakCachedTiles,
       lessThanOrEqualTo(_maxCached + 3 * _budget),
@@ -83,7 +83,10 @@ void main() {
       await store.flush();
     }
 
-    expect(small.totalAreaM2, closeTo(whole.totalAreaM2, 1e-6));
+    expect(
+      small.diagnostics.totalAreaM2,
+      closeTo(whole.diagnostics.totalAreaM2, 1e-6),
+    );
     expect(
       sameMasks(
         await decodeAllTiles(smallTiles, FogConfig.baseZoom),

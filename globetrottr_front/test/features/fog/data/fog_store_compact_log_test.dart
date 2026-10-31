@@ -57,7 +57,10 @@ void main() {
       final rebuilt = await open(rebuiltTiles);
       await rebuilt.rebuildFrom(log, useIsolate: false);
 
-      expect(rebuilt.totalAreaM2, closeTo(live.totalAreaM2, 1e-6));
+      expect(
+        rebuilt.diagnostics.totalAreaM2,
+        closeTo(live.diagnostics.totalAreaM2, 1e-6),
+      );
       expect(
         sameMasks(
           await decodeAllTiles(liveTiles, FogConfig.baseZoom),
@@ -146,7 +149,7 @@ void main() {
         ),
         isTrue,
       );
-      expect(recovered.lastAppliedLogId, await log.lastId());
+      expect(recovered.diagnostics.lastAppliedLogId, await log.lastId());
       await store.dispose();
       await recovered.dispose();
       await expected.dispose();

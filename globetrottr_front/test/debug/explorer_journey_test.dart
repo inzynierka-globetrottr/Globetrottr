@@ -4,6 +4,7 @@ import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../support/fog_test_helpers.dart';
+import '../support/explorer_route_generator.dart';
 
 const _krakow = LatLng(50.0614, 19.9383);
 

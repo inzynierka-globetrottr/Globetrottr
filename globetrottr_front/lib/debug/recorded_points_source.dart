@@ -46,16 +46,11 @@ class RecordedPointsSource extends ChangeNotifier {
   final double padding;
 
   List<TrackLogEntry> _points = const [];
-  bool _truncated = false;
   _Box? _loaded;
   int _request = 0;
   bool _disposed = false;
 
   List<TrackLogEntry> get points => _points;
-
-  /// True when the area holds more points than [maxPoints] and some are left
-  /// out.
-  bool get truncated => _truncated;
 
   /// Loads the points for [camera] unless the area is already loaded.
   Future<void> ensure(MapCamera camera) async {
@@ -88,7 +83,6 @@ class RecordedPointsSource extends ChangeNotifier {
     );
     if (_disposed || request != _request) return;
     _points = found;
-    _truncated = found.length >= maxPoints;
     _loaded = box;
     notifyListeners();
   }
@@ -107,7 +101,6 @@ class RecordedPointsSource extends ChangeNotifier {
     _request++;
     final hadPoints = _points.isNotEmpty;
     _points = const [];
-    _truncated = false;
     _loaded = null;
     if (hadPoints && !_disposed) notifyListeners();
   }

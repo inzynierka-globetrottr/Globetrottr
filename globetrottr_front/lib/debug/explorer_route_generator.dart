@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:globetrottr_front/core/geo/earth.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -80,30 +81,6 @@ class ExplorerRegion {
       point.longitude <= east;
 }
 
-/// Synthetic journeys of a keen explorer: long motorway stretches, winding
-/// roads and city street grids, one session per trip, one trip per day.
-/// Used to stress the fog with realistic, connected, large amounts of data.
-abstract final class ExplorerRouteGenerator {
-  static List<TrackLogEntry> generate({
-    required LatLng start,
-    required double totalKm,
-    double spacingMeters = 10,
-    int seed = 7,
-  }) {
-    final journey = ExplorerJourney(
-      start: start,
-      totalKm: totalKm,
-      spacingMeters: spacingMeters,
-      seed: seed,
-    );
-    final entries = <TrackLogEntry>[];
-    while (!journey.isDone) {
-      entries.addAll(journey.next());
-    }
-    return entries;
-  }
-}
-
 /// An explorer journey produced chunk by chunk, so even 100 000 km (millions
 /// of fixes) never have to be held in memory at once.
 ///
@@ -130,7 +107,6 @@ class ExplorerJourney {
     _lng = from.longitude;
   }
 
-  static const double _metersPerDegree = 111319.49;
   static const double _arrivalMeters = 30000;
   static final int _firstDay = DateTime.utc(
     2026,
@@ -245,11 +221,11 @@ class ExplorerJourney {
       }
     }
 
-    _lat += math.cos(_heading) * step / _metersPerDegree;
+    _lat += math.cos(_heading) * step / metersPerDegree;
     _lng +=
         math.sin(_heading) *
         step /
-        (_metersPerDegree * math.cos(_lat * math.pi / 180));
+        (metersPerDegree * math.cos(_lat * math.pi / 180));
     final bounds = region;
     if (bounds != null) {
       _lat = _lat.clamp(bounds.south, bounds.north);
@@ -291,10 +267,10 @@ class ExplorerJourney {
   }
 
   double _metersTo(LatLng target) {
-    final dy = (target.latitude - _lat) * _metersPerDegree;
+    final dy = (target.latitude - _lat) * metersPerDegree;
     final dx =
         (target.longitude - _lng) *
-        _metersPerDegree *
+        metersPerDegree *
         math.cos(_lat * math.pi / 180);
     return math.sqrt(dx * dx + dy * dy);
   }
