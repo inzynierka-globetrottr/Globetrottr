@@ -2,7 +2,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapConfig {
-  static const double defaultVisionRadius = 30.0;
+  static const double defaultVisionRadius = 50.0;
   static const double defaultZoom = 16.0;
   static const int distanceFilter = 10;
 

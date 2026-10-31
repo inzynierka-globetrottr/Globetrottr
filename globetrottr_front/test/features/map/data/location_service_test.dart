@@ -146,6 +146,75 @@ void main() {
     });
   });
 
+  group('LocationService start of a recording', () {
+    late _GatedMapStorage mapStorage;
+    late InMemoryTrackLogStorage trackLog;
+    late LocationService service;
+
+    setUp(() {
+      mapStorage = _GatedMapStorage()..gate.complete(1);
+      trackLog = InMemoryTrackLogStorage();
+      service = LocationService(mapStorage, trackLog);
+    });
+
+    test('stores the last known position at once', () async {
+      await service.recordPosition(_at(50.06, 19.94));
+      final emitted = service.loggedPoints.first;
+      final pressed = DateTime.now().millisecondsSinceEpoch;
+
+      service.setRecording(true);
+      final first = await emitted;
+
+      expect(first.sessionId, service.sessionId);
+      expect(first.latitude, 50.06);
+      expect(first.longitude, 19.94);
+      expect(first.timestampMs, greaterThanOrEqualTo(pressed));
+      expect(mapStorage.inserted.single.timestamp, first.timestampMs);
+    });
+
+    test('stores nothing while the position is unknown', () async {
+      service.setRecording(true);
+      await pumpEventQueue();
+
+      expect(await trackLog.count(), 0);
+    });
+
+    test('stores it once while recording stays enabled', () async {
+      await service.recordPosition(_at(50.06, 19.94));
+
+      service.setRecording(true);
+      service.setRecording(true);
+      await pumpEventQueue();
+
+      expect(await trackLog.count(), 1);
+    });
+
+    test('every new session starts at the last known position', () async {
+      await service.recordPosition(_at(50.06, 19.94));
+      service.setRecording(true);
+      await pumpEventQueue();
+      final first = service.sessionId;
+      service.setRecording(false);
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+
+      service.setRecording(true);
+      await pumpEventQueue();
+
+      final sessions = (await trackLog.entriesAfter(0)).map((e) => e.sessionId);
+      expect(sessions, [first, service.sessionId]);
+    });
+
+    test('forgets the position when tracking stops', () async {
+      await service.recordPosition(_at(50.06, 19.94));
+
+      service.stopTracking();
+      service.setRecording(true);
+      await pumpEventQueue();
+
+      expect(await trackLog.count(), 0);
+    });
+  });
+
   group('LocationService.isUsablePosition', () {
     test('accepts ordinary coordinates', () {
       expect(LocationService.isUsablePosition(_at(50.06, 19.94)), isTrue);

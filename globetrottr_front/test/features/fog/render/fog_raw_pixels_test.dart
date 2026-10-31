@@ -91,9 +91,9 @@ void main() {
     test('shows blocky pixels where the normal view is smooth', () async {
       final (raw, smooth) = await bothViews();
 
-      // The trail edge is about 20 fog pixels (108 rows) above the middle.
-      final rawChanges = _changesDown(raw, 200, 240, 340);
-      final smoothChanges = _changesDown(smooth, 200, 240, 340);
+      // The trail edge is about 33 fog pixels (172 rows) above the middle.
+      final rawChanges = _changesDown(raw, 200, 180, 280);
+      final smoothChanges = _changesDown(smooth, 200, 180, 280);
 
       expect(rawChanges, greaterThan(0));
       expect(rawChanges, lessThanOrEqualTo(6));
@@ -104,7 +104,7 @@ void main() {
       final (raw, _) = await bothViews();
 
       final changeRows = [
-        for (var y = 241; y <= 340; y++)
+        for (var y = 181; y <= 280; y++)
           if (raw(200, y) != raw(200, y - 1)) y,
       ];
       expect(changeRows.length, greaterThan(1));

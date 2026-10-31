@@ -49,7 +49,7 @@ void main() {
       await pumpEventQueue();
       await source.store.flush();
 
-      const expected = 2 * 30 * 110 + math.pi * 30 * 30;
+      const expected = 2 * 50 * 110 + math.pi * 50 * 50;
       expect(source.store.totalAreaM2, closeTo(expected, expected * 0.04));
       expect(source.store.lastAppliedLogId, entries.last.id);
     });
@@ -93,7 +93,7 @@ void main() {
       final restarted = await second.read(fogProvider.future);
       await restarted.store.whenCaughtUp();
 
-      const expected = 2 * 30 * 290 + math.pi * 30 * 30;
+      const expected = 2 * 50 * 290 + math.pi * 50 * 50;
       expect(restarted.store.totalAreaM2, closeTo(expected, expected * 0.04));
       expect(restarted.store.lastAppliedLogId, entries.last.id);
     });

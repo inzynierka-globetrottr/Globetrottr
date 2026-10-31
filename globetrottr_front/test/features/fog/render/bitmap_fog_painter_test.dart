@@ -47,7 +47,7 @@ void main() {
       },
     );
 
-    test('the cleared disc matches the 30 m vision radius', () async {
+    test('the cleared disc matches the 50 m vision radius', () async {
       final store = await openStore();
       await store.applyPoint(
         sessionId: 'a',
@@ -59,10 +59,10 @@ void main() {
       final source = await readySource(store, camera);
       final alpha = await renderAlpha(painterFor(camera, source: source));
 
-      final east25 = offsetMeters(krakowLat, krakowLng, east: 25);
-      final east36 = offsetMeters(krakowLat, krakowLng, east: 36);
-      final inside = screenOf(camera, east25.lat, east25.lng);
-      final outside = screenOf(camera, east36.lat, east36.lng);
+      final east45 = offsetMeters(krakowLat, krakowLng, east: 45);
+      final east56 = offsetMeters(krakowLat, krakowLng, east: 56);
+      final inside = screenOf(camera, east45.lat, east45.lng);
+      final outside = screenOf(camera, east56.lat, east56.lng);
 
       expect(alpha(inside.dx.round(), inside.dy.round()), lessThan(10));
       expect(alpha(outside.dx.round(), outside.dy.round()), greaterThan(180));

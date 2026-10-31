@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:globetrottr_front/core/config/map_config.dart';
 
 /// Tunables of the bitmap fog. Zoom 16 is about 1.47 m per pixel at 52 N,
-/// so the 30 m vision radius is a disc of roughly 20 px. Zoom 17 would be
+/// so the 50 m vision radius is a disc of roughly 34 px. Zoom 17 would be
 /// twice as sharp and take twice the space; at the usual walking zoom the
 /// difference on screen is small.
 abstract final class FogConfig {
@@ -26,7 +26,7 @@ abstract final class FogConfig {
 
   /// Bumped whenever the way points are drawn changes, so tiles drawn by an
   /// older rule are dropped and rebuilt from the track log.
-  static const int drawVersion = 2;
+  static const int drawVersion = 4;
 
   /// Width of the anti-aliased rim of every stored shape, in base pixels.
   static const double edgeWidthPixels = 1.5;

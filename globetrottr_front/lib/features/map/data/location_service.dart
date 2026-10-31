@@ -24,6 +24,7 @@ class LocationService {
   late LocationSettings _locationSettings;
   bool _isRecording = false;
   String? _sessionId;
+  Position? _lastPosition;
 
   Stream<Position> get positionStream {
     if (_broadcastStream == null) {
@@ -54,8 +55,14 @@ class LocationService {
     if (!value) {
       _sessionId = null;
       unawaited(_compactLog());
-    } else {
-      _sessionId ??= DateTime.now().millisecondsSinceEpoch.toString();
+    } else if (_sessionId == null) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final sessionId = now.toString();
+      _sessionId = sessionId;
+      // The stream is silent until the user moves, so the recording starts
+      // from the position the map shows, at the moment it was started.
+      final start = _lastPosition;
+      if (start != null) unawaited(_store(sessionId, start, now));
     }
   }
 
@@ -130,21 +137,34 @@ class LocationService {
   /// Method is public for testing purposes, but should not be called from outside the service. (debatable decision)
   @visibleForTesting
   Future<void> recordPosition(Position position) async {
+    _lastPosition = position;
     final sessionId = _sessionId;
     if (!_isRecording || sessionId == null) return;
 
+    await _store(
+      sessionId,
+      position,
+      position.timestamp.millisecondsSinceEpoch,
+    );
+  }
+
+  Future<void> _store(
+    String sessionId,
+    Position position,
+    int timestampMs,
+  ) async {
     final point = PendingPoint(
       sessionId: sessionId,
       latitude: position.latitude,
       longitude: position.longitude,
-      timestamp: position.timestamp.millisecondsSinceEpoch,
+      timestamp: timestampMs,
     );
     try {
       await _mapStorage.insertPendingPoint(point);
     } on Object catch (error) {
       debugPrint('Pending point write failed: $error');
     }
-    await _logPosition(sessionId, position);
+    await _logPosition(sessionId, position, timestampMs);
   }
 
   /// Packs the newest points of the track log when a recording ends.
@@ -156,12 +176,16 @@ class LocationService {
     }
   }
 
-  Future<void> _logPosition(String sessionId, Position position) async {
+  Future<void> _logPosition(
+    String sessionId,
+    Position position,
+    int timestampMs,
+  ) async {
     try {
       final stored = await _trackLog.append(
         TrackLogEntry(
           sessionId: sessionId,
-          timestampMs: position.timestamp.millisecondsSinceEpoch,
+          timestampMs: timestampMs,
           latitude: position.latitude,
           longitude: position.longitude,
           accuracy: position.accuracy > 0 ? position.accuracy : null,
@@ -180,6 +204,7 @@ class LocationService {
     _broadcastStream = null;
     _sessionId = null;
     _isRecording = false;
+    _lastPosition = null;
     unawaited(_compactLog());
   }
 

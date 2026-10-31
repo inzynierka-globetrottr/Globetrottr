@@ -115,8 +115,8 @@ void main() {
     test('a point reveals a disc of the vision radius', () async {
       await _apply(store, 'a', krakowLat, krakowLng);
 
-      final inside = offsetMeters(krakowLat, krakowLng, north: 25);
-      final outside = offsetMeters(krakowLat, krakowLng, north: 36);
+      final inside = offsetMeters(krakowLat, krakowLng, north: 45);
+      final outside = offsetMeters(krakowLat, krakowLng, north: 56);
 
       expect(await coverageAt(store, krakowLat, krakowLng), 1);
       expect(
@@ -296,7 +296,7 @@ void main() {
       'a disc whose soft rim just reaches the next tile is drawn there',
       () async {
         final radius = metersToPixels(
-          meters: 30,
+          meters: FogConfig.visionRadiusMeters,
           latitude: krakowLat,
           zoom: FogConfig.baseZoom.toDouble(),
         );
@@ -326,7 +326,7 @@ void main() {
       await _apply(store, 'a', krakowLat, krakowLng);
       await store.flush();
 
-      const expected = math.pi * 30 * 30;
+      const expected = math.pi * 50 * 50;
       expect(store.totalAreaM2, closeTo(expected, expected * 0.03));
     });
 
@@ -336,7 +336,7 @@ void main() {
       }
       await store.flush();
 
-      const expected = 2 * 30 * 200 + math.pi * 30 * 30;
+      const expected = 2 * 50 * 200 + math.pi * 50 * 50;
       expect(store.totalAreaM2, closeTo(expected, expected * 0.03));
     });
   });
@@ -960,7 +960,7 @@ void main() {
       await imported.importEntries(entries, chunkSize: 25);
       await imported.flush();
 
-      const expected = 2 * 30 * 59 * 15 + math.pi * 30 * 30;
+      const expected = 2 * 50 * 59 * 15 + math.pi * 50 * 50;
       expect(imported.totalAreaM2, closeTo(expected, expected * 0.03));
       await imported.dispose();
     });
