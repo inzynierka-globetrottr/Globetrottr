@@ -60,24 +60,28 @@ class FogLiveShapes {
     );
   }
 
+  // Built in screen coordinates on purpose: under a rotated canvas the
+  // gradient lands a fraction of a pixel off on Android, which shows as a
+  // jump of the fog edge when the tiles take over.
   void _band(Offset a, Offset b) {
     final along = b - a;
+    final side = Offset(-along.dy, along.dx) * (_outer / along.distance);
     final edge = (_outer - _inner) / (2 * _outer);
-    canvas
-      ..save()
-      ..translate(a.dx, a.dy)
-      ..rotate(along.direction)
-      ..drawRect(
-        Rect.fromLTRB(0, -_outer, along.distance, _outer),
-        Paint()
-          ..blendMode = BlendMode.lighten
-          ..shader = ui.Gradient.linear(
-            Offset(0, -_outer),
-            Offset(0, _outer),
-            [Colors.black, _full, _full, Colors.black],
-            [0, edge, 1 - edge, 1],
-          ),
-      )
-      ..restore();
+    canvas.drawPath(
+      ui.Path()
+        ..moveTo(a.dx - side.dx, a.dy - side.dy)
+        ..lineTo(b.dx - side.dx, b.dy - side.dy)
+        ..lineTo(b.dx + side.dx, b.dy + side.dy)
+        ..lineTo(a.dx + side.dx, a.dy + side.dy)
+        ..close(),
+      Paint()
+        ..blendMode = BlendMode.lighten
+        ..shader = ui.Gradient.linear(
+          a - side,
+          a + side,
+          [Colors.black, _full, _full, Colors.black],
+          [0, edge, 1 - edge, 1],
+        ),
+    );
   }
 }
