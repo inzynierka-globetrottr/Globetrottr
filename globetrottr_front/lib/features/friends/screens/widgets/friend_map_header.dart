@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
@@ -36,7 +37,7 @@ class FriendMapHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                'Player fog: $friendUsername',
+                context.l10n.friendsPlayerFog(friendUsername),
                 style: AppTextStyles.rulesetTitle,
                 overflow: TextOverflow.ellipsis,
               ),

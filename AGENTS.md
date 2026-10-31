@@ -144,11 +144,13 @@ Run all commands from within the `globetrottr_backend` directory:
 * **Active cleanup:** If you encounter existing AI-smell comments while inspecting or editing code, remove them immediately. Write self-documenting code with clear variable and function names.
 
 ### Frontend (Flutter / Dart)
-* **Language & Localization Direction:**
-  * **English in code:** All source code, variable names, comments, and commit messages must be in English.
-  * **No scope creep on existing strings:** Do not proactively rewrite existing strings (e.g. in `debug/` screens) during unrelated tasks.
-  * **Current error handling:** Data and service layers currently use `AppException` subclasses carrying English user-facing messages.
-  * **Target architecture (planned):** Full i18n support (English `en` and Polish `pl` via `.arb` files) is planned for a dedicated PR. Once `flutter_localizations` is configured, all user-facing UI labels and error mappings will migrate to `.arb` files.
+* **Language & Mandatory Localization (i18n):**
+  * **English in code:** All source code, variable names, ARB keys, comments, and commit messages must be in English.
+  * **No hardcoded UI strings:** Never hardcode user-facing strings (labels, button texts, titles, dialog messages, placeholders) in widgets. Access them strictly via `context.l10n.<key>`.
+  * **Dual-locale definition:** All user-facing strings must be defined in both English (`lib/l10n/app_en.arb`) and Polish (`lib/l10n/app_pl.arb`).
+  * **Active cleanup of existing strings:** If hardcoded user-facing strings are encountered anywhere in non-debug screens or components, migrate them to both `.arb` files and replace them with `context.l10n.<key>`.
+  * **Exemptions:** Developer-only screens (e.g. `lib/debug/`) and internal console/debug logging are exempt.
+  * **Error localization:** Map exceptions and domain errors to localized messages via localization extension methods or ARB mappings.
 * **Widget granularity & sizing:** Widgets must be small, focused, and reusable. If any widget or file becomes large (>150-200 lines or deep nesting), propose splitting it into smaller, reusable components under `core/widgets/` or `features/<feature>/screens/widgets/`.
 * **Configurable theme:** All styling (colors, text styles, margins, corner radiuses, button styles) must be centrally configurable. Never hardcode colors or styles inside widgets. If hardcoded styling is discovered, flag it to the user and ask for permission to migrate it to the theme files under `core/theme/`.
 * **State Management:** Use `flutter_riverpod` (v3). Keep UI widgets lightweight and dumb; encapsulate business logic and state in Riverpod providers/notifiers.

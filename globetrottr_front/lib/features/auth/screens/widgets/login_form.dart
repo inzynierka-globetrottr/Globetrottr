@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/validators.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
@@ -26,6 +28,8 @@ class LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Form(
       key: formKey,
       child: Column(
@@ -33,29 +37,29 @@ class LoginForm extends StatelessWidget {
         children: [
           NeuTextField(
             controller: usernameController,
-            placeholder: 'Username',
+            placeholder: l10n.authUsernamePlaceholder,
             keyboardType: TextInputType.name,
-            validator: validateUsername,
+            validator: (value) => validateUsername(value, l10n),
           ),
 
           if (state.mode == AuthMode.register)
             NeuTextField(
               controller: emailController,
-              placeholder: 'Email',
+              placeholder: l10n.authEmailPlaceholder,
               keyboardType: TextInputType.emailAddress,
-              validator: validateEmail,
+              validator: (value) => validateEmail(value, l10n),
             ),
 
           NeuTextField(
             controller: passwordController,
-            placeholder: 'Password',
+            placeholder: l10n.authPasswordPlaceholder,
             obscureText: true,
-            validator: validatePassword,
+            validator: (value) => validatePassword(value, l10n),
           ),
 
           if (state.errorMessage != null)
             Text(
-              state.errorMessage!,
+              context.localizeErrorMessage(state.errorMessage),
               style: AppTextStyles.descriptiveStatusAction.copyWith(
                 color: Colors.redAccent,
               ),
@@ -64,8 +68,10 @@ class LoginForm extends StatelessWidget {
 
           NeuPrimaryButton(
             label: state.isLoading
-                ? 'Loading...'
-                : (state.mode == AuthMode.login ? 'Sign in' : 'Sign up'),
+                ? l10n.authLoading
+                : (state.mode == AuthMode.login
+                      ? l10n.authSignIn
+                      : l10n.authSignUp),
             onPressed: state.isLoading ? null : onSubmit,
           ),
         ],

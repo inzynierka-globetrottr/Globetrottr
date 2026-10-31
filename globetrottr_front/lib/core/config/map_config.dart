@@ -19,24 +19,21 @@ class MapConfig {
 
   static const LatLng initialCenter = LatLng(50.0614, 19.9383); // Kraków
 
-  static const String _baseTileUrl =
-      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png';
+  static const String tileUserAgentPackageName = 'com.globetrottr.app';
 
   static String get tileUrlTemplate {
-    final apiKey = dotenv.isInitialized
-        ? dotenv.maybeGet('CARTO_API_KEY')
-        : null;
-    return buildTileUrlTemplate(apiKey: apiKey);
-  }
-
-  static String buildTileUrlTemplate({String? apiKey}) {
-    final trimmedKey = apiKey?.trim();
-    if (trimmedKey != null && trimmedKey.isNotEmpty) {
-      return '$_baseTileUrl?key=$trimmedKey';
+    final cartoKey = dotenv.isInitialized ? dotenv.env['CARTO_API_KEY'] : null;
+    if (cartoKey != null && cartoKey.isNotEmpty) {
+      return 'https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=$cartoKey';
     }
-    return _baseTileUrl;
+    return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
   }
 
-  static const List<String> tileSubdomains = ['a', 'b', 'c', 'd'];
-  static const String tileUserAgentPackageName = 'com.globetrottr.app';
+  static List<String> get tileSubdomains {
+    final cartoKey = dotenv.isInitialized ? dotenv.env['CARTO_API_KEY'] : null;
+    if (cartoKey != null && cartoKey.isNotEmpty) {
+      return const ['a', 'b', 'c', 'd'];
+    }
+    return const [];
+  }
 }

@@ -25,6 +25,7 @@ class NeuPrimaryButton extends StatelessWidget {
     return NeumorphicButton(
       onPressed: onPressed,
       style: NeumorphicStyle(
+        color: AppColors.background,
         boxShape: NeumorphicBoxShape.roundRect(
           const BorderRadius.all(Radius.circular(24)),
         ),

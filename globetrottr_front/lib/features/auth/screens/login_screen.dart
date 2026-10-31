@@ -1,5 +1,6 @@
 import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/debug/widgets/dev_floating_button.dart';
@@ -60,9 +61,12 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
               child: Column(
                 spacing: 18,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: Text('globetrottr', style: AppTextStyles.appLogo),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      context.l10n.appLogo,
+                      style: AppTextStyles.appLogo,
+                    ),
                   ),
 
                   AuthModeSwitcher(
