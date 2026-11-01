@@ -17,6 +17,12 @@ class DevFloatingButton extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+      color: AppColors.devButtonText,
+      fontWeight: FontWeight.w900,
+      letterSpacing: 1.0,
+    );
+
     return FloatingActionButton.extended(
       heroTag: heroTag,
       backgroundColor: AppColors.devButton,
@@ -31,15 +37,7 @@ class DevFloatingButton extends StatelessWidget {
         size: 20,
         color: AppColors.devButtonText,
       ),
-      label: const Text(
-        'DEV MODE',
-        style: TextStyle(
-          color: AppColors.devButtonText,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.0,
-          fontSize: 12,
-        ),
-      ),
+      label: Text('DEV MODE', style: labelStyle),
       onPressed: () => context.push('/dev'),
     );
   }
