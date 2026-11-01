@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sniezynki.agh.globetrottr.region.RegionType;
 
+// TODO(fog): areas come from the server fog polygon; align them with the client's
+// bitmap fog (computed on the device or from uploaded tiles).
 public interface UserRegionStatisticsRepository extends JpaRepository<UserRegionStatistics, Long> {
 
     Optional<UserRegionStatistics> findByUser_UserIdAndRegion_Id(UUID userId, Long regionId);

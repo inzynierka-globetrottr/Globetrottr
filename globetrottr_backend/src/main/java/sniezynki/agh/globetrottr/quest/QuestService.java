@@ -63,6 +63,8 @@ public class QuestService {
                 .toList();
     }
 
+    // TODO(fog): progress is computed from the server polygon, which differs from the
+    // fog shown in the app; base it on the client's bitmap fog.
     public double calculateProgress(UserFog userFog, Quest quest) {
         if (userFog == null || userFog.getFogArea() == null || quest.getQuestGeometry() == null) {
             return 0.0;

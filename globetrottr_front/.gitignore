@@ -65,3 +65,6 @@ repomix-output.xml
 # My (marcel) project scraping scripts to use as context for AI models, to assist in debugging
 scraper.py
 combined_flutter_code.txt
+
+# Flutter DevTools options
+devtools_options.yaml

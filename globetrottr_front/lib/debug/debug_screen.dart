@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
-import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/data/pending_point.dart';
+import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
@@ -16,9 +16,7 @@ class DebugScreen extends ConsumerStatefulWidget {
 }
 
 class _DebugScreenState extends ConsumerState<DebugScreen> {
-  late final LocationService _locationService;
   List<PendingPoint> _points = [];
-  bool _isTracking = false;
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -28,7 +26,6 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   @override
   void initState() {
     super.initState();
-    _locationService = ref.read(locationServiceProvider);
     _refreshDb();
     _checkSavedToken();
   }
@@ -56,8 +53,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   }
 
   Future<void> _logout() async {
-    _locationService.stopTracking();
-    setState(() => _isTracking = false);
+    await ref.read(locationProvider.notifier).setRecording(false);
 
     await ref.read(mapStorageProvider).clearPendingPoints();
     await _refreshDb();
@@ -86,7 +82,6 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
 
   @override
   void dispose() {
-    _locationService.stopTracking();
     _usernameController.dispose();
     _passwordController.dispose();
     _emailController.dispose();
@@ -95,6 +90,8 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final recording = ref.watch(locationProvider.select((s) => s.isRecording));
+
     return Scaffold(
       appBar: AppBar(title: const Text('Test GPS, SQLite & Auth')),
       body: Column(
@@ -263,35 +260,39 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: _isTracking
+                        onPressed: recording
                             ? null
                             : () async {
-                                try {
-                                  await _locationService.startTracking();
-                                  _locationService.setRecording(true);
-                                  if (!context.mounted) return;
-                                  setState(() => _isTracking = true);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Tracking started!'),
-                                    ),
-                                  );
-                                } catch (e) {
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Error: $e')),
-                                  );
+                                final notifier = ref.read(
+                                  locationProvider.notifier,
+                                );
+                                await notifier.startTracking();
+                                if (!context.mounted) return;
+                                final error = ref
+                                    .read(locationProvider)
+                                    .errorMessage;
+                                if (error == null) {
+                                  await notifier.setRecording(true);
                                 }
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      error == null
+                                          ? 'Tracking started!'
+                                          : 'Error: $error',
+                                    ),
+                                  ),
+                                );
                               },
                         child: const Text('Start GPS'),
                       ),
                       ElevatedButton(
-                        onPressed: !_isTracking
+                        onPressed: !recording
                             ? null
-                            : () {
-                                _locationService.stopTracking();
-                                setState(() => _isTracking = false);
-                              },
+                            : () => ref
+                                  .read(locationProvider.notifier)
+                                  .setRecording(false),
                         child: const Text('Stop GPS'),
                       ),
                       ElevatedButton(
