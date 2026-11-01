@@ -8,16 +8,15 @@ class FogService {
 
   FogService(this._client);
 
-  Future<List<List<LatLng>>> getMyFog() async {
-    final response = await _client.get('/api/fog/me');
-    return _parseMultiPolygon(response.body);
-  }
-
+  // TODO(fog): fetch the friend's fog as bitmap tiles (levels up to z15, on
+  // demand for the visible area) instead of one GeoJSON polygon.
   Future<List<List<LatLng>>> getFriendFog(String friendUsername) async {
     final response = await _client.get('/api/fog/$friendUsername');
     return _parseMultiPolygon(response.body);
   }
 
+  // TODO(fog): interior rings become holes here, so an undiscovered island
+  // inside a discovered area is drawn as discovered. Goes away with tiles.
   List<List<LatLng>> _parseMultiPolygon(String responseBody) {
     final Map<String, dynamic> data = jsonDecode(responseBody);
 

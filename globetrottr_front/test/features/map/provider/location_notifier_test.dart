@@ -1,55 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/features/fog/data/fog_service.dart';
-import 'package:globetrottr_front/features/map/data/location_service.dart';
-import 'package:globetrottr_front/features/map/data/map_storage.dart';
-import 'package:globetrottr_front/features/map/data/pending_point.dart';
-import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/data/quest_service.dart';
 import 'package:latlong2/latlong.dart';
 
-class _FakeLocationService implements LocationService {
-  @override
-  void setRecording(bool value) {}
+import '../../../support/fake_location_service.dart';
 
-  @override
-  void stopTracking() {}
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _FakeMapStorage implements MapStorage {
-  @override
-  Future<List<PendingPoint>> getPendingPoints() async => [];
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _FakeFogService implements FogService {
-  @override
-  Future<List<List<LatLng>>> getMyFog() async => [];
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _FakeSyncService implements SyncService {
-  _FakeSyncService({required this.succeeds});
-
-  final bool succeeds;
-
-  @override
-  Future<bool> syncPendingPoints() async => succeeds;
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _FakeQuestService implements QuestService {
+class _FakeQuestService extends Fake implements QuestService {
   int fetchCount = 0;
 
   @override
@@ -57,34 +15,128 @@ class _FakeQuestService implements QuestService {
     fetchCount++;
     return [];
   }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
+  late FogTestEnvironment env;
   late _FakeQuestService questService;
 
-  ProviderContainer createContainer({required bool syncSucceeds}) {
+  setUp(() {
+    env = FogTestEnvironment();
     questService = _FakeQuestService();
+  });
+
+  tearDown(() => env.location.positions.close());
+
+  ProviderContainer createContainer() {
     final container = ProviderContainer(
       overrides: [
-        locationServiceProvider.overrideWithValue(_FakeLocationService()),
-        mapStorageProvider.overrideWithValue(_FakeMapStorage()),
-        fogServiceProvider.overrideWithValue(_FakeFogService()),
-        syncServiceProvider.overrideWithValue(
-          _FakeSyncService(succeeds: syncSucceeds),
-        ),
+        ...env.overrides,
         questServiceProvider.overrideWithValue(questService),
       ],
     );
+    container.listen(locationProvider, (_, _) {});
     addTearDown(container.dispose);
     return container;
   }
 
-  group('LocationNotifier.setRecording', () {
+  group('LocationNotifier', () {
+    test('starts without tracking or recording', () {
+      final container = createContainer();
+
+      final state = container.read(locationProvider);
+
+      expect(state.isTracking, isFalse);
+      expect(state.isRecording, isFalse);
+      expect(state.currentPosition, isNull);
+    });
+
+    test('follows the position once tracking has started', () async {
+      final container = createContainer();
+      final notifier = container.read(locationProvider.notifier);
+
+      await notifier.startTracking();
+      env.location.emit(50.0, 19.0);
+      await pumpEventQueue();
+
+      final state = container.read(locationProvider);
+      expect(state.isTracking, isTrue);
+      expect(state.currentPosition, const LatLng(50.0, 19.0));
+    });
+
+    test('keeps the position moving while it is not recording', () async {
+      final container = createContainer();
+      final notifier = container.read(locationProvider.notifier);
+      await notifier.startTracking();
+
+      env.location.emit(50.0, 19.0);
+      env.location.emit(50.1, 19.1);
+      await pumpEventQueue();
+
+      final state = container.read(locationProvider);
+      expect(state.currentPosition, const LatLng(50.1, 19.1));
+      expect(state.isRecording, isFalse);
+    });
+
+    test('starting twice follows every position once', () async {
+      final container = createContainer();
+      final notifier = container.read(locationProvider.notifier);
+      await notifier.startTracking();
+      await notifier.startTracking();
+      var updates = 0;
+      container.listen(locationProvider, (_, _) => updates++);
+
+      env.location.emit(50.0, 19.0);
+      await pumpEventQueue();
+
+      expect(updates, 1);
+    });
+
+    test('reports why tracking could not start', () async {
+      env.location.startError = Exception('no permission');
+      final container = createContainer();
+
+      await container.read(locationProvider.notifier).startTracking();
+
+      final state = container.read(locationProvider);
+      expect(state.isTracking, isFalse);
+      expect(state.errorMessage, contains('no permission'));
+    });
+
+    test('turning recording on does not sync', () async {
+      final container = createContainer();
+
+      await container.read(locationProvider.notifier).setRecording(true);
+
+      expect(container.read(locationProvider).isRecording, isTrue);
+      expect(env.sync.calls, 0);
+    });
+
+    test('turning recording off syncs the pending points once', () async {
+      final container = createContainer();
+      final notifier = container.read(locationProvider.notifier);
+      await notifier.setRecording(true);
+
+      await notifier.setRecording(false);
+
+      expect(container.read(locationProvider).isRecording, isFalse);
+      expect(env.sync.calls, 1);
+    });
+
+    test('a failed sync does not break recording', () async {
+      env.sync.succeeds = false;
+      final container = createContainer();
+      final notifier = container.read(locationProvider.notifier);
+
+      await notifier.setRecording(true);
+      await notifier.setRecording(false);
+      await notifier.setRecording(true);
+
+      expect(container.read(locationProvider).isRecording, isTrue);
+    });
+
     test('reloads quests after recording stops and sync succeeds', () async {
-      final container = createContainer(syncSucceeds: true);
+      final container = createContainer();
       final notifier = container.read(locationProvider.notifier);
 
       await notifier.setRecording(true);
@@ -94,7 +146,8 @@ void main() {
     });
 
     test('does not reload quests when sync fails', () async {
-      final container = createContainer(syncSucceeds: false);
+      env.sync.succeeds = false;
+      final container = createContainer();
       final notifier = container.read(locationProvider.notifier);
 
       await notifier.setRecording(true);
@@ -104,7 +157,7 @@ void main() {
     });
 
     test('does not reload quests when recording starts', () async {
-      final container = createContainer(syncSucceeds: true);
+      final container = createContainer();
 
       await container.read(locationProvider.notifier).setRecording(true);
 

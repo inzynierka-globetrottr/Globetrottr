@@ -7,19 +7,24 @@ import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/features/map/data/map_storage.dart';
 import 'package:globetrottr_front/features/map/data/pending_point.dart';
+import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
+import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LocationService {
-  LocationService(this._mapStorage);
+  LocationService(this._mapStorage, this._trackLog);
 
   final MapStorage _mapStorage;
+  final TrackLogStorage _trackLog;
+  final StreamController<TrackLogEntry> _logged =
+      StreamController<TrackLogEntry>.broadcast();
 
   StreamSubscription<Position>? _dbSubscription;
   Stream<Position>? _broadcastStream;
 
-  late LocationSettings _locationSettings;
   bool _isRecording = false;
   String? _sessionId;
+  Position? _lastPosition;
 
   Stream<Position> get positionStream {
     if (_broadcastStream == null) {
@@ -30,10 +35,35 @@ class LocationService {
     return _broadcastStream!;
   }
 
+  /// False for fixes that are not real coordinates (NaN, infinite or out of
+  /// range). Such a value would break the map camera and the fog tile maths,
+  /// so it never leaves this service.
+  static bool isUsablePosition(Position position) {
+    final lat = position.latitude;
+    final lng = position.longitude;
+    return lat.isFinite && lng.isFinite && lat.abs() <= 90 && lng.abs() <= 180;
+  }
+
+  @visibleForTesting
+  String? get sessionId => _sessionId;
+
+  /// Every recorded position after it was stored in the permanent track log,
+  /// with its log id assigned.
+  Stream<TrackLogEntry> get loggedPoints => _logged.stream;
+
   void setRecording(bool value) {
     _isRecording = value;
-    if (value && _sessionId == null) {
-      _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+    if (!value) {
+      _sessionId = null;
+      unawaited(_compactLog());
+    } else if (_sessionId == null) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final sessionId = now.toString();
+      _sessionId = sessionId;
+      // The stream is silent until the user moves, so the recording starts
+      // from the position the map shows, at the moment it was started.
+      final start = _lastPosition;
+      if (start != null) unawaited(_store(sessionId, start, now));
     }
   }
 
@@ -66,8 +96,9 @@ class LocationService {
       permission = await Geolocator.requestPermission();
     }
 
+    final LocationSettings locationSettings;
     if (defaultTargetPlatform == TargetPlatform.android) {
-      _locationSettings = AndroidSettings(
+      locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
         intervalDuration: const Duration(seconds: 1),
@@ -85,38 +116,100 @@ class LocationService {
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
-      _locationSettings = AppleSettings(
+      locationSettings = AppleSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
         activityType: ActivityType.fitness,
         showBackgroundLocationIndicator: true,
       );
     } else {
-      _locationSettings = const LocationSettings(
+      locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
       );
     }
 
-    _broadcastStream = Geolocator.getPositionStream(
-      locationSettings: _locationSettings,
-    ).asBroadcastStream();
+    followPositions(
+      Geolocator.getPositionStream(locationSettings: locationSettings),
+    );
+  }
 
-    _dbSubscription = _broadcastStream!.listen((Position position) async {
-      if (_isRecording && _sessionId != null) {
-        final point = PendingPoint(
-          sessionId: _sessionId!,
+  /// Takes [fixes] as the source of positions, without the unusable ones.
+  @visibleForTesting
+  void followPositions(Stream<Position> fixes) {
+    _broadcastStream = fixes.where(isUsablePosition).asBroadcastStream();
+    _dbSubscription = _broadcastStream!.listen(recordPosition);
+  }
+
+  /// Stores a fix in the session that was recording when it arrived, even if
+  /// recording stops while it is being written.
+  @visibleForTesting
+  Future<void> recordPosition(Position position) async {
+    _lastPosition = position;
+    final sessionId = _sessionId;
+    if (!_isRecording || sessionId == null) return;
+
+    await _store(
+      sessionId,
+      position,
+      position.timestamp.millisecondsSinceEpoch,
+    );
+  }
+
+  Future<void> _store(
+    String sessionId,
+    Position position,
+    int timestampMs,
+  ) async {
+    final point = PendingPoint(
+      sessionId: sessionId,
+      latitude: position.latitude,
+      longitude: position.longitude,
+      timestamp: timestampMs,
+    );
+    // The fog waits only for the track log, not for the sync outbox.
+    final outbox = _savePending(point);
+    await _logPosition(sessionId, position, timestampMs);
+    await outbox;
+  }
+
+  Future<void> _savePending(PendingPoint point) async {
+    try {
+      await _mapStorage.insertPendingPoint(point);
+    } on Object catch (error) {
+      debugPrint('Pending point write failed: $error');
+    }
+  }
+
+  /// Packs the newest points of the track log when a recording ends.
+  Future<void> _compactLog() async {
+    try {
+      await _trackLog.compact();
+    } on Object catch (error) {
+      debugPrint('Track log compaction failed: $error');
+    }
+  }
+
+  Future<void> _logPosition(
+    String sessionId,
+    Position position,
+    int timestampMs,
+  ) async {
+    try {
+      final stored = await _trackLog.append(
+        TrackLogEntry(
+          sessionId: sessionId,
+          timestampMs: timestampMs,
           latitude: position.latitude,
           longitude: position.longitude,
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-        );
-
-        await _mapStorage.insertPendingPoint(point);
-        debugPrint(
-          'Location saved locally: ${point.latitude}, ${point.longitude}',
-        );
-      }
-    });
+          accuracy: position.accuracy > 0 ? position.accuracy : null,
+          speed: position.speed >= 0 ? position.speed : null,
+        ),
+      );
+      if (!_logged.isClosed) _logged.add(stored);
+    } on Object catch (error) {
+      debugPrint('Track log write failed: $error');
+    }
   }
 
   void stopTracking() {
@@ -125,9 +218,21 @@ class LocationService {
     _broadcastStream = null;
     _sessionId = null;
     _isRecording = false;
+    _lastPosition = null;
+    unawaited(_compactLog());
+  }
+
+  Future<void> dispose() async {
+    stopTracking();
+    await _logged.close();
   }
 }
 
 final locationServiceProvider = Provider<LocationService>((ref) {
-  return LocationService(ref.watch(mapStorageProvider));
+  final service = LocationService(
+    ref.watch(mapStorageProvider),
+    ref.watch(trackLogStorageProvider),
+  );
+  ref.onDispose(service.dispose);
+  return service;
 });

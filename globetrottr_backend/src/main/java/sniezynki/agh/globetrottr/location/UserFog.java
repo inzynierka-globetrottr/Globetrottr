@@ -10,6 +10,8 @@ import sniezynki.agh.globetrottr.user.User;
 @Table(name = "user_fog")
 @Getter
 @Setter
+// TODO(fog): replace with fog_tiles(user_id, z, x, y, rev, flag, data) once clients
+// upload bitmap tiles.
 public class UserFog {
 
     @Id

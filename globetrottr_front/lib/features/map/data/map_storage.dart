@@ -43,6 +43,14 @@ class MapStorage {
     return result.map(PendingPoint.fromMap).toList();
   }
 
+  Future<int> getPendingPointsCount() async {
+    final db = await database;
+    final count = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM pending_points'),
+    );
+    return count ?? 0;
+  }
+
   Future<void> clearPendingPoints() async {
     final db = await database;
     await db.delete('pending_points');

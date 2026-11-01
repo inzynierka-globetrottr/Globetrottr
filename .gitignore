@@ -2,3 +2,5 @@
 .vscode
 .idea
 graphify-out/
+.private/
+CLAUDE.local.md
