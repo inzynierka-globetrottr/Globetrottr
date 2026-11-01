@@ -48,6 +48,8 @@
   "questsTypeFollowRoute": "Przejdź trasą",
   "questsTypeVisitPoints": "Odwiedź punkty",
   "questsNoDescription": "Brak opisu.",
+  "distanceMeters": "{meters} m",
+  "distanceKilometers": "{kilometers} km",
 
   "settingsTitle": "Ustawienia",
   "settingsLanguage": "Język",

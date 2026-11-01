@@ -160,6 +160,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get questsNoDescription => 'No description yet.';
 
   @override
+  String distanceMeters(int meters) {
+    return '$meters m';
+  }
+
+  @override
+  String distanceKilometers(String kilometers) {
+    return '$kilometers km';
+  }
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

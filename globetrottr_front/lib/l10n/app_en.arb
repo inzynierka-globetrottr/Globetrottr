@@ -111,6 +111,22 @@
   "questsTypeFollowRoute": "Follow the route",
   "questsTypeVisitPoints": "Visit the points",
   "questsNoDescription": "No description yet.",
+  "distanceMeters": "{meters} m",
+  "@distanceMeters": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKilometers": "{kilometers} km",
+  "@distanceKilometers": {
+    "placeholders": {
+      "kilometers": {
+        "type": "String"
+      }
+    }
+  },
 
   "settingsTitle": "Settings",
   "settingsLanguage": "Language",

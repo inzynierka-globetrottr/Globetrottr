@@ -160,6 +160,16 @@ class AppLocalizationsPl extends AppLocalizations {
   String get questsNoDescription => 'Brak opisu.';
 
   @override
+  String distanceMeters(int meters) {
+    return '$meters m';
+  }
+
+  @override
+  String distanceKilometers(String kilometers) {
+    return '$kilometers km';
+  }
+
+  @override
   String get settingsTitle => 'Ustawienia';
 
   @override

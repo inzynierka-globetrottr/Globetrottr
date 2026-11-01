@@ -6,12 +6,14 @@ import 'package:globetrottr_front/core/widgets/neu_container.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_distance_label.dart';
 
 class QuestCard extends StatelessWidget {
   final Quest quest;
   final QuestZone zone;
   final VoidCallback? onStart;
   final VoidCallback? onTap;
+  final String? distanceLabel;
 
   const QuestCard({
     super.key,
@@ -19,6 +21,7 @@ class QuestCard extends StatelessWidget {
     required this.zone,
     this.onStart,
     this.onTap,
+    this.distanceLabel,
   });
 
   @override
@@ -52,20 +55,27 @@ class QuestCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
-                          if (zone == QuestZone.inProgress)
-                            Text(
-                              l10n.questsProgressPercent(
-                                (quest.progress * 100).toInt(),
-                              ),
-                              style: AppTextStyles.descriptiveStatusAction
-                                  .copyWith(color: AppColors.accentBlue),
-                            ),
-                          if (zone == QuestZone.completed)
-                            Text(
-                              l10n.questsCompletedStatus,
-                              style: AppTextStyles.descriptiveStatusAction
-                                  .copyWith(color: AppColors.accentGreen),
-                            ),
+                          Wrap(
+                            spacing: 12,
+                            children: [
+                              if (zone == QuestZone.inProgress)
+                                Text(
+                                  l10n.questsProgressPercent(
+                                    (quest.progress * 100).toInt(),
+                                  ),
+                                  style: AppTextStyles.descriptiveStatusAction
+                                      .copyWith(color: AppColors.accentBlue),
+                                ),
+                              if (zone == QuestZone.completed)
+                                Text(
+                                  l10n.questsCompletedStatus,
+                                  style: AppTextStyles.descriptiveStatusAction
+                                      .copyWith(color: AppColors.accentGreen),
+                                ),
+                              if (distanceLabel case final String label)
+                                QuestDistanceLabel(label: label),
+                            ],
+                          ),
                         ],
                       ),
                     ),

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/distance_format.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
+import 'package:globetrottr_front/features/quests/provider/quest_board_provider.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_details_sheet.dart';
 
 class QuestAccordionSection extends StatelessWidget {
   final String title;
   final QuestZone zone;
-  final List<Quest> quests;
+  final List<QuestBoardEntry> entries;
   final IconData icon;
   final bool isExpanded;
   final VoidCallback onToggle;
@@ -20,7 +21,7 @@ class QuestAccordionSection extends StatelessWidget {
     super.key,
     required this.title,
     required this.zone,
-    required this.quests,
+    required this.entries,
     required this.icon,
     required this.isExpanded,
     required this.onToggle,
@@ -74,7 +75,7 @@ class QuestAccordionSection extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           child: isExpanded
-              ? (quests.isEmpty
+              ? (entries.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         child: Text(
@@ -83,19 +84,25 @@ class QuestAccordionSection extends StatelessWidget {
                         ),
                       )
                     : Column(
-                        children: quests
-                            .map(
-                              (q) => QuestCard(
-                                quest: q,
-                                zone: zone,
-                                onStart: () => onStartQuest(q.id),
-                                onTap: () => showQuestDetailsSheet(
-                                  context,
-                                  questId: q.id,
+                        children: [
+                          for (final entry in entries)
+                            QuestCard(
+                              quest: entry.quest,
+                              zone: zone,
+                              distanceLabel: switch (entry.distanceMeters) {
+                                final double meters => formatDistance(
+                                  meters,
+                                  context.l10n,
                                 ),
+                                null => null,
+                              },
+                              onStart: () => onStartQuest(entry.quest.id),
+                              onTap: () => showQuestDetailsSheet(
+                                context,
+                                questId: entry.quest.id,
                               ),
-                            )
-                            .toList(),
+                            ),
+                        ],
                       ))
               : const SizedBox.shrink(),
         ),

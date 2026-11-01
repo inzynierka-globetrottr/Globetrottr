@@ -362,6 +362,18 @@ abstract class AppLocalizations {
   /// **'No description yet.'**
   String get questsNoDescription;
 
+  /// No description provided for @distanceMeters.
+  ///
+  /// In en, this message translates to:
+  /// **'{meters} m'**
+  String distanceMeters(int meters);
+
+  /// No description provided for @distanceKilometers.
+  ///
+  /// In en, this message translates to:
+  /// **'{kilometers} km'**
+  String distanceKilometers(String kilometers);
+
   /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:

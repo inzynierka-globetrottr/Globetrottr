@@ -5,6 +5,7 @@ import 'package:globetrottr_front/core/localization/app_error_localizations.dart
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/features/quests/provider/quest_board_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_state.dart';
 import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
@@ -98,19 +99,15 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
       );
     }
 
-    final unstarted = state.quests.where((q) => !q.isStarted).toList();
-    final inProgress = state.quests
-        .where((q) => q.isStarted && !q.isCompleted)
-        .toList();
-    final completed = state.quests.where((q) => q.isCompleted).toList();
+    final board = ref.watch(questBoardProvider);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       children: [
         QuestAccordionSection(
-          title: l10n.questsAvailableSection(unstarted.length),
+          title: l10n.questsAvailableSection(board.unstarted.length),
           zone: QuestZone.unstarted,
-          quests: unstarted,
+          entries: board.unstarted,
           icon: Icons.explore_outlined,
           isExpanded: _expandedZone == QuestZone.unstarted,
           onToggle: () => setState(() => _expandedZone = QuestZone.unstarted),
@@ -118,9 +115,9 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
         ),
         const SizedBox(height: 16),
         QuestAccordionSection(
-          title: l10n.questsInProgressSection(inProgress.length),
+          title: l10n.questsInProgressSection(board.inProgress.length),
           zone: QuestZone.inProgress,
-          quests: inProgress,
+          entries: board.inProgress,
           icon: Icons.run_circle_outlined,
           isExpanded: _expandedZone == QuestZone.inProgress,
           onToggle: () => setState(() => _expandedZone = QuestZone.inProgress),
@@ -128,9 +125,9 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
         ),
         const SizedBox(height: 16),
         QuestAccordionSection(
-          title: l10n.questsCompletedSection(completed.length),
+          title: l10n.questsCompletedSection(board.completed.length),
           zone: QuestZone.completed,
-          quests: completed,
+          entries: board.completed,
           icon: Icons.emoji_events_outlined,
           isExpanded: _expandedZone == QuestZone.completed,
           onToggle: () => setState(() => _expandedZone = QuestZone.completed),
