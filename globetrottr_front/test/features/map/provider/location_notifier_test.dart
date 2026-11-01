@@ -1,41 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
-import 'package:globetrottr_front/features/quests/data/quest.dart';
-import 'package:globetrottr_front/features/quests/data/quest_service.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../support/fake_location_service.dart';
 
-class _FakeQuestService extends Fake implements QuestService {
-  int fetchCount = 0;
-
-  @override
-  Future<List<Quest>> fetchUserQuests() async {
-    fetchCount++;
-    return [];
-  }
-}
-
 void main() {
   late FogTestEnvironment env;
-  late _FakeQuestService questService;
 
   setUp(() {
     env = FogTestEnvironment();
-    questService = _FakeQuestService();
   });
 
   tearDown(() => env.location.positions.close());
 
   ProviderContainer createContainer() {
-    final container = ProviderContainer(
-      overrides: [
-        ...env.overrides,
-        questServiceProvider.overrideWithValue(questService),
-      ],
-    );
-    container.listen(locationProvider, (_, _) {});
+    final container = env.createContainer();
     addTearDown(container.dispose);
     return container;
   }
@@ -142,7 +122,7 @@ void main() {
       await notifier.setRecording(true);
       await notifier.setRecording(false);
 
-      expect(questService.fetchCount, 1);
+      expect(env.quests.fetchCount, 1);
     });
 
     test('does not reload quests when sync fails', () async {
@@ -153,7 +133,7 @@ void main() {
       await notifier.setRecording(true);
       await notifier.setRecording(false);
 
-      expect(questService.fetchCount, 0);
+      expect(env.quests.fetchCount, 0);
     });
 
     test('does not reload quests when recording starts', () async {
@@ -161,7 +141,7 @@ void main() {
 
       await container.read(locationProvider.notifier).setRecording(true);
 
-      expect(questService.fetchCount, 0);
+      expect(env.quests.fetchCount, 0);
     });
   });
 }
