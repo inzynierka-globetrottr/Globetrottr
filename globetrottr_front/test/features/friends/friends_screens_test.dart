@@ -14,6 +14,7 @@ import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/weekly_person.dart';
 import 'package:globetrottr_front/features/profile/data/profile_service.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 FriendshipResponse _person(String name, {bool incoming = false}) =>
     FriendshipResponse(
@@ -138,6 +139,60 @@ void main() {
     expect(find.text('You'), findsOneWidget);
   });
 
+  testWidgets('without friends one card replaces the strip and the list', (
+    tester,
+  ) async {
+    await pump(tester, const FriendsScreen());
+
+    expect(find.byType(WeeklyPerson), findsNothing);
+    expect(find.text('This week'.toUpperCase()), findsNothing);
+    expect(find.textContaining('Your friends'), findsNothing);
+    expect(find.text('No friends yet'), findsOneWidget);
+    expect(find.text('Add a friend'), findsOneWidget);
+  });
+
+  testWidgets('the empty card sends the user to adding a friend', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const FriendsScreen()),
+        GoRoute(
+          path: '/friends/add',
+          builder: (_, _) => const Text('add-screen'),
+        ),
+      ],
+    );
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          friendsServiceProvider.overrideWithValue(friends),
+          profileServiceProvider.overrideWithValue(_FakeProfileService()),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.light,
+          routerConfig: router,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add a friend').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('add-screen'), findsOneWidget);
+  });
+
   testWidgets('a sent invite appears under the form', (tester) async {
     await pump(tester, const AddFriendScreen());
 
@@ -169,6 +224,7 @@ void main() {
       for (var i = 0; i < 6; i++)
         WeeklyEntry(username: 'p$i', weeklyKm2: 1.0 - i / 10, ringFill: 1),
     ];
+    friends.friends = [_person('p1')];
     await pump(tester, const FriendsScreen(), weekly: weekly);
 
     final screenWidth = tester.view.physicalSize.width / 3;

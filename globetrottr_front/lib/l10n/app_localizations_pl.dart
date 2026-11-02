@@ -302,8 +302,11 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
-  String get friendsNoFriends =>
-      'Nie masz jeszcze znajomych. Dodaj kogoś po nicku.';
+  String get friendsEmptyTitle => 'Nie masz jeszcze znajomych';
+
+  @override
+  String get friendsEmptyBody =>
+      'Dodaj kogoś po nicku, żeby zobaczyć, jak daleko zaszedł.';
 
   @override
   String friendsOpen(String username) {

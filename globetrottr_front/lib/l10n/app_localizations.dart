@@ -602,11 +602,17 @@ abstract class AppLocalizations {
   /// **'Your friends · {count}'**
   String friendsYourFriends(int count);
 
-  /// No description provided for @friendsNoFriends.
+  /// No description provided for @friendsEmptyTitle.
   ///
   /// In en, this message translates to:
-  /// **'No friends yet. Add someone by their nickname.'**
-  String get friendsNoFriends;
+  /// **'No friends yet'**
+  String get friendsEmptyTitle;
+
+  /// No description provided for @friendsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add someone by their nickname to see how far they have explored.'**
+  String get friendsEmptyBody;
 
   /// No description provided for @friendsOpen.
   ///

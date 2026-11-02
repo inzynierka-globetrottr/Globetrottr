@@ -78,7 +78,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - Password reset is UI only until the backend has an endpoint for it: "Send code" says it is not available yet and the code screen is built but not reachable.
 - The auth screens are nested routes under the login screen, so going back follows the routes and one redirect takes the user to the map once they are in.
 - Placeholders for missing data are neutral ("— km²", empty rings, level "–", no invite details), never sample numbers, because they show next to real friends in release.
-- "This week" shows the user and every friend with discovered area that week, largest first; with more than four the row scrolls and the next person peeks in at the edge.
+- "This week" shows the user and every friend with discovered area that week, largest first; with more than four the row scrolls and the next person peeks in at the edge. With no friends the strip and the list give way to one empty card with an "Add a friend" action, because a lone avatar looked broken (the mock-up has no such state; owner approval pending).
 - Received invites live in a folding card on the Friends screen and sent ones on the Add friend screen; the separate invites screen and user search are gone. Until the comparison screen is approved, a friend's arrow opens their map.
 - The map always keeps north up and has no compass, as in the mock-up.
 - The layers sheet lists every planned view; only the fog can be chosen, the others say they are coming.

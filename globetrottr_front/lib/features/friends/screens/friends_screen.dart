@@ -14,6 +14,7 @@ import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_action.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_row.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/friends_empty_card.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/invites_card.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/weekly_strip.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
@@ -94,14 +95,15 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                   context.localizeErrorMessage(state.errorMessage),
                 ),
               ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 10,
-              children: [
-                side(SectionHeader(l10n.friendsThisWeek)),
-                const WeeklyStrip(sidePadding: _side),
-              ],
-            ),
+            if (state.friends.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 10,
+                children: [
+                  side(SectionHeader(l10n.friendsThisWeek)),
+                  const WeeklyStrip(sidePadding: _side),
+                ],
+              ),
             if (state.receivedInvites.isNotEmpty)
               side(
                 InvitesCard(
@@ -116,15 +118,17 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                   ),
                 ),
               ),
-            side(
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 10,
-                children: [
-                  SectionHeader(l10n.friendsYourFriends(state.friends.length)),
-                  if (state.friends.isEmpty)
-                    Text(l10n.friendsNoFriends, style: context.typography.note)
-                  else
+            if (state.friends.isEmpty)
+              side(FriendsEmptyCard(onAdd: () => context.go('/friends/add')))
+            else
+              side(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 10,
+                  children: [
+                    SectionHeader(
+                      l10n.friendsYourFriends(state.friends.length),
+                    ),
                     NeuListCard(
                       rows: [
                         for (final friend in state.friends)
@@ -135,9 +139,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           ),
                       ],
                     ),
-                ],
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),

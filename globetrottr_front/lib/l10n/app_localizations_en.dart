@@ -300,8 +300,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get friendsNoFriends =>
-      'No friends yet. Add someone by their nickname.';
+  String get friendsEmptyTitle => 'No friends yet';
+
+  @override
+  String get friendsEmptyBody =>
+      'Add someone by their nickname to see how far they have explored.';
 
   @override
   String friendsOpen(String username) {
