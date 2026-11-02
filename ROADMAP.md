@@ -54,10 +54,10 @@ Source of truth for the plan and the key design decisions of every part of the a
 
 The app moves from the current dark neumorphic look to a light neumorphic style with one configurable accent colour. The reference is the HTML mock-up `globetrotttr-neo-neumorphic.html` (branch `design/neo-mockup`); screens in its "Locked in" group are approved, the rest are still being iterated.
 
-**Current frontend (before the port):** dark neumorphic theme built on `flutter_neumorphic_plus`, colours as static constants, the declared font is not bundled. Login and registration share one screen; there is no e-mail verification screen and a registration is treated as a login although the backend returns no token until the e-mail is verified. Friends: list, invite hub, friend's map. Quests live only in a drawer on the map; the Quests tab leads nowhere.
+**Current frontend:** the whole app uses the light theme tokens, the bundled Manrope font and the shared neumorphic components; the bottom navigation follows the mock-up and Quests is a tab with the old quest list. Screen layouts are still the old ones: login and registration share one screen, there is no e-mail verification screen and a registration is treated as a login although the backend returns no token until the e-mail is verified. Friends: list, invite hub, friend's map.
 
 **Stages** (each ends with a review by the owner):
-1. Theme tokens, bundled Manrope font, shared components, bottom navigation, fog colour (Planned).
+1. Theme tokens, bundled Manrope font, shared components, bottom navigation, fog colour (Done; not yet checked on a phone).
 2. Auth: login, registration, e-mail verification, password reset (Planned).
 3. Friends and adding a friend (Planned).
 4. Map: area pill, recording, quest flag with its card, layers sheet (Planned).
@@ -68,6 +68,9 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - Light theme first. The architecture supports a dark mode and a different accent (components read them from the theme); the switch itself is Planned. Accent for now: one teal colour.
 - Own shadow implementation in the shared components instead of `flutter_neumorphic_plus`. Why: the package does not reproduce the mock-up shadows and forces a neumorphic theme wrapper on every screen.
 - Manrope is bundled with the app, not downloaded at run time (offline-first).
+- Icons are the mock-up's own SVG drawings, not Material Icons, which look different.
+- Shadows follow one scale of five depths taken from the mock-up instead of a value per element. Why: the mock-up's small differences in shadow opacity are not visible and one scale keeps components consistent.
+- The fog colour and opacity come from the theme palette like every other colour.
 - Dev and release builds differ only by the dev button and its tools. Missing data is shown as placeholders from providers, marked `TODO(data)`, in both builds.
 - Guest mode in release: "Skip" on the login screen enters the app without an account; everything local works, backend features fail as offline.
 - Registration goes through e-mail verification (the backend already supports it); password rules follow the backend, not the mock-up text.

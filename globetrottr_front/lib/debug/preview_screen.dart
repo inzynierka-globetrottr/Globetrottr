@@ -1,10 +1,18 @@
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/widgets/neu_container.dart';
+import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/app_icons.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/app_icon.dart';
+import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
+import 'package:globetrottr_front/core/widgets/neu_button.dart';
+import 'package:globetrottr_front/core/widgets/neu_divider.dart';
+import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
+import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 
+/// Gallery of the shared components, for checking them against the mock-up.
 class PreviewScreen extends StatefulWidget {
   const PreviewScreen({super.key});
 
@@ -17,83 +25,85 @@ class _PreviewScreenState extends State<PreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const baseCanvasColor = AppColors.background;
+    final shadows = context.shadows;
+    final typography = context.typography;
 
-    return NeumorphicTheme(
-      themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(
-        baseColor: baseCanvasColor,
-        shadowLightColor: AppColors.neuLight,
-        shadowDarkColor: AppColors.neuShadow,
-      ),
-      child: Scaffold(
-        backgroundColor: baseCanvasColor,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: Column(
+    return Scaffold(
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(28),
+          children: [
+            Text('globetrottr', style: typography.display),
+            Text('Headline', style: typography.headline),
+            Text('SECTION LABEL', style: typography.sectionLabel),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                for (final depth in NeoDepth.values)
+                  NeuSurface(
+                    shadows: shadows.raised(depth),
+                    borderRadius: BorderRadius.circular(18),
+                    width: 44,
+                    height: 44,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                for (final depth in NeoDepth.values)
+                  NeuSurface(
+                    shadows: shadows.inset(depth),
+                    borderRadius: BorderRadius.circular(18),
+                    width: 44,
+                    height: 44,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const NeuTextField(
+              label: 'Login lub nick',
+              placeholder: 'np. odkrywca',
+            ),
+            const SizedBox(height: 18),
+            NeuPrimaryButton(label: 'Zaloguj się', onPressed: () {}),
+            const SizedBox(height: 18),
+            const NeuDivider(),
+            const SizedBox(height: 18),
+            NeuButton(
+              onPressed: () {},
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const NeuContainer(
-                    elevation: NeuElevation.floating,
-                    child: Text(''),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  const NeuContainer(
-                    elevation: NeuElevation.inset,
-                    child: Text(''),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  const NeuContainer(
-                    elevation: NeuElevation.raised,
-                    child: Text(''),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  const NeuTextField(
-                    label: 'Email',
-                    placeholder: 'example@domain.com',
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  const NeuTextField(
-                    label: 'Password',
-                    placeholder: '••••••••',
-                    obscureText: true,
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  NeuPrimaryButton(label: 'Zaloguj się', onPressed: () {}),
-
-                  const SizedBox(height: 32),
-
-                  NeuSegmentedControl<String>(
+                spacing: 10,
+                children: [AppIcon(AppIcons.google), Text('Google')],
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                NeuIconButton(
+                  onPressed: () {},
+                  child: const AppIcon(AppIcons.navProfile, size: 18),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: NeuSegmentedControl<String>(
                     selected: _selectedTab,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedTab = value;
-                      });
-                    },
+                    onChanged: (value) => setState(() => _selectedTab = value),
                     segments: const [
                       NeuSegment(label: 'Logowanie', value: 'login'),
                       NeuSegment(label: 'Rejestracja', value: 'register'),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
+          ],
         ),
       ),
+      bottomNavigationBar: const NeuBottomNavbar(activeItem: NavbarItem.map),
     );
   }
 }

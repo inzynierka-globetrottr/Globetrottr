@@ -158,7 +158,7 @@ Run all commands from within the `globetrottr_backend` directory:
   * Screens are only assembled from ready-made components. A screen contains layout and wiring, never its own colors, shadows, text styles or decorations. If a screen needs a new look, build or extend a component first.
   * Components read colors and styles from the theme through `BuildContext`, not from static constants, so the light/dark mode and the accent color can be switched without touching widgets.
 * **Dev and release builds:** They differ only by the dev button and the tools behind it. Everything else (screens, guest mode, placeholders) is the same in both.
-* **Placeholders for missing data:** Data the backend or the app does not provide yet is shown as a placeholder value supplied by a provider (not hardcoded in a widget) and marked with a `TODO(data)` comment saying what has to be integrated. Unconnected actions are stubs marked the same way.
+* **Placeholders for missing data:** Data the backend or the app does not provide yet is shown as a placeholder value supplied by a provider (not hardcoded in a widget) and marked with a `TODO(data)` comment saying what has to be integrated. Unconnected actions are stubs marked the same way. A temporary screen kept until its mock-up is approved is marked `TODO(neo)`.
 * **State Management:** Use `flutter_riverpod` (v3). Keep UI widgets lightweight and dumb; encapsulate business logic and state in Riverpod providers/notifiers.
 * **Routing:** Use `go_router` for declarative navigation and deep linking.
 * **Immutability:** Use immutable state models.

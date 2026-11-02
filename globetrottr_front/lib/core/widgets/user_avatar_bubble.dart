@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:globetrottr_front/core/extensions/string_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_container.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 class UserAvatarBubble extends StatelessWidget {
   final String username;
@@ -27,10 +26,15 @@ class UserAvatarBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final double dimension = useContainerChrome
         ? size - (ringPadding * 2)
         : double.infinity;
     final bool hasAvatar = avatarUrl != null && avatarUrl!.isNotEmpty;
+    final progress = CircularProgressIndicator(
+      strokeWidth: 2,
+      color: palette.accent,
+    );
 
     final content = ClipOval(
       child: Stack(
@@ -42,34 +46,22 @@ class UserAvatarBubble extends StatelessWidget {
               width: dimension,
               height: dimension,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => _buildFallback(),
+              errorBuilder: (context, error, stackTrace) =>
+                  _buildFallback(context),
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
-                return const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.accentBlue,
-                    ),
-                  ),
-                );
+                return Center(child: progress);
               },
             )
           else
-            _buildFallback(),
+            _buildFallback(context),
           if (isUploading)
-            Container(
-              decoration: const BoxDecoration(
-                color: Colors.black54,
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: palette.background.withValues(alpha: 0.6),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.accentBlue,
-                  ),
-                ),
-              ),
+              child: Center(child: progress),
             ),
         ],
       ),
@@ -77,25 +69,21 @@ class UserAvatarBubble extends StatelessWidget {
 
     if (!useContainerChrome) return content;
 
-    return NeuContainer(
-      elevation: NeuElevation.inset,
-      width: size,
-      height: size,
-      child: Padding(
-        padding: EdgeInsets.all(ringPadding),
-        child: content,
-      ),
+    return NeuSurface.circle(
+      shadows: context.shadows.inset(NeoDepth.sm),
+      size: size,
+      padding: EdgeInsets.all(ringPadding),
+      child: content,
     );
   }
 
-  Widget _buildFallback() {
+  Widget _buildFallback(BuildContext context) {
     return Center(
       child: Text(
         username.initialOrFallback,
-        style: AppTextStyles.actionButtonText.copyWith(
-          color: AppColors.accentBlue,
+        style: context.typography.value.copyWith(
+          color: context.palette.accent,
           fontSize: fallbackFontSize,
-          fontWeight: FontWeight.w800,
         ),
       ),
     );

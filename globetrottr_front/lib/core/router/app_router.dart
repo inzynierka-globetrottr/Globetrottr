@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/debug/debug_screen.dart';
@@ -13,6 +13,7 @@ import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/invite_hub_screen.dart';
 import 'package:globetrottr_front/features/map/screens/map_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
+import 'package:globetrottr_front/features/quests/screens/quests_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthNotifierListenable extends ChangeNotifier {
@@ -47,6 +48,10 @@ final appRouter = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
+      GoRoute(
+        path: '/quests',
+        builder: (context, state) => const QuestsScreen(),
+      ),
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),

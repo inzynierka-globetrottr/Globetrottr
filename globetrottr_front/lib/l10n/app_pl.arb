@@ -3,6 +3,11 @@
   "appTitle": "Globetrottr",
   "appLogo": "globetrottr",
 
+  "navMap": "Mapa",
+  "navQuests": "Questy",
+  "navFriends": "Znajomi",
+  "navProfile": "Profil",
+
   "authSignIn": "Zaloguj się",
   "authSignUp": "Zarejestruj się",
   "authUsernamePlaceholder": "Nazwa użytkownika",

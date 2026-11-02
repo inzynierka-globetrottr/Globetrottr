@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
+import 'package:globetrottr_front/core/theme/app_icons.dart';
+import 'package:globetrottr_front/core/widgets/app_icon.dart';
+import 'package:globetrottr_front/core/widgets/neu_button.dart';
 
 class GoogleLoginSection extends StatelessWidget {
   final bool isLoading;
@@ -16,24 +16,14 @@ class GoogleLoginSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NeuPrimaryButton(
+    return NeuButton(
       onPressed: isLoading ? null : onGooglePressed,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 10,
         children: [
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: AppColors.accentRed,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text('G', style: AppTextStyles.rulesetTitle),
-          ),
-          const SizedBox(width: 14),
-          Text(
-            context.l10n.authGoogleAccount,
-            style: AppTextStyles.actionButtonText,
-          ),
+          const AppIcon(AppIcons.google),
+          Text(context.l10n.authGoogleAccount),
         ],
       ),
     );

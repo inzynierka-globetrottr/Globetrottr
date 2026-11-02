@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 
@@ -19,7 +19,9 @@ class RecordingToggleButton extends ConsumerWidget {
       },
       child: Icon(
         state.isRecording ? Icons.radio_button_checked : Icons.radio_button_off,
-        color: state.isRecording ? AppColors.accentRed : AppColors.textLight,
+        color: state.isRecording
+            ? context.palette.danger
+            : context.palette.textMuted,
         size: 22,
       ),
     );

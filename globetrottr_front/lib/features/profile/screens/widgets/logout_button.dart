@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_button.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 
 class LogoutButton extends ConsumerWidget {
@@ -17,33 +16,33 @@ class LogoutButton extends ConsumerWidget {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.background,
-        title: Text(
-          l10n.profileUnsyncedTripsTitle,
-          style: const TextStyle(color: AppColors.text),
-        ),
-        content: Text(
-          l10n.profileUnsyncedTripsMessage,
-          style: const TextStyle(color: AppColors.textLight),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              l10n.profileCancel,
-              style: const TextStyle(color: AppColors.accentBlue),
-            ),
+      builder: (context) {
+        final palette = context.palette;
+        final typography = context.typography;
+        return AlertDialog(
+          title: Text(l10n.profileUnsyncedTripsTitle, style: typography.title),
+          content: Text(
+            l10n.profileUnsyncedTripsMessage,
+            style: typography.body,
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              l10n.profileLogOutAnyway,
-              style: const TextStyle(color: AppColors.accentRed),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                l10n.profileCancel,
+                style: typography.action.copyWith(color: palette.accent),
+              ),
             ),
-          ),
-        ],
-      ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                l10n.profileLogOutAnyway,
+                style: typography.action.copyWith(color: palette.danger),
+              ),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed ?? false) {
@@ -53,28 +52,19 @@ class LogoutButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return NeuPrimaryButton(
+    final danger = context.palette.danger;
+    return NeuButton(
       onPressed: () => _logout(context, ref),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.logout_rounded,
-              color: AppColors.accentRed,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              context.l10n.profileLogOut,
-              style: AppTextStyles.actionButtonText.copyWith(
-                color: AppColors.accentRed,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 10,
+        children: [
+          Icon(Icons.logout_rounded, color: danger, size: 20),
+          Text(
+            context.l10n.profileLogOut,
+            style: TextStyle(color: danger),
+          ),
+        ],
       ),
     );
   }

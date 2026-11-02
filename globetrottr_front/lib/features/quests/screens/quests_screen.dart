@@ -3,21 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
+import 'package:globetrottr_front/core/widgets/neu_divider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_state.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_accordion_section.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
 
-class QuestDrawer extends ConsumerStatefulWidget {
-  const QuestDrawer({super.key});
+// TODO(neo): temporary list until the Quests tab of the mock-up is approved.
+class QuestsScreen extends ConsumerStatefulWidget {
+  const QuestsScreen({super.key});
 
   @override
-  ConsumerState<QuestDrawer> createState() => _QuestDrawerState();
+  ConsumerState<QuestsScreen> createState() => _QuestsScreenState();
 }
 
-class _QuestDrawerState extends ConsumerState<QuestDrawer> {
+class _QuestsScreenState extends ConsumerState<QuestsScreen> {
   QuestZone _expandedZone = QuestZone.unstarted;
 
   @override
@@ -30,60 +32,56 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
     try {
       await ref.read(questsProvider.notifier).startQuest(questId);
     } on AppException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.localizeErrorMessage(e.message)),
-            backgroundColor: AppColors.accentRed,
-          ),
-        );
-      }
+      if (mounted) _showError(context.localizeErrorMessage(e.message));
     } catch (e) {
       debugPrint('Unexpected error starting quest: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.errorSomethingWentWrongTryAgain),
-            backgroundColor: AppColors.accentRed,
-          ),
-        );
-      }
+      if (mounted) _showError(context.l10n.errorSomethingWentWrongTryAgain);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: context.palette.danger,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final state = ref.watch(questsProvider);
 
-    return Drawer(
-      backgroundColor: AppColors.background,
-      child: SafeArea(
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
               child: Text(
-                l10n.questsBoardTitle,
-                style: AppTextStyles.screenHeaderLarge,
+                context.l10n.questsBoardTitle,
+                style: context.typography.headline,
               ),
             ),
-            const Divider(color: AppColors.neuShadow, thickness: 2),
+            const NeuDivider(),
             Expanded(child: _buildBody(state)),
           ],
         ),
+      ),
+      bottomNavigationBar: const NeuBottomNavbar(
+        activeItem: NavbarItem.quests,
       ),
     );
   }
 
   Widget _buildBody(QuestsState state) {
     final l10n = context.l10n;
+    final palette = context.palette;
 
     if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.accentBlue),
-      );
+      return Center(child: CircularProgressIndicator(color: palette.accent));
     }
     if (state.errorMessage != null) {
       return Center(
@@ -91,7 +89,7 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
           padding: const EdgeInsets.all(16.0),
           child: Text(
             context.localizeErrorMessage(state.errorMessage),
-            style: const TextStyle(color: AppColors.accentRed),
+            style: context.typography.body.copyWith(color: palette.danger),
             textAlign: TextAlign.center,
           ),
         ),
@@ -105,7 +103,7 @@ class _QuestDrawerState extends ConsumerState<QuestDrawer> {
     final completed = state.quests.where((q) => q.isCompleted).toList();
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
       children: [
         QuestAccordionSection(
           title: l10n.questsAvailableSection(unstarted.length),

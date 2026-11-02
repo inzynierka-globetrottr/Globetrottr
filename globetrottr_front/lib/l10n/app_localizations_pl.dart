@@ -15,6 +15,18 @@ class AppLocalizationsPl extends AppLocalizations {
   String get appLogo => 'globetrottr';
 
   @override
+  String get navMap => 'Mapa';
+
+  @override
+  String get navQuests => 'Questy';
+
+  @override
+  String get navFriends => 'Znajomi';
+
+  @override
+  String get navProfile => 'Profil';
+
+  @override
   String get authSignIn => 'Zaloguj się';
 
   @override

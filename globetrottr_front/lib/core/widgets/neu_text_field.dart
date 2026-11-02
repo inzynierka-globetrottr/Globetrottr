@@ -1,101 +1,111 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_container.dart';
+import 'package:globetrottr_front/core/theme/app_icons.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/app_icon.dart';
+import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
+/// A labelled input sunk into the page, with an optional icon in front and
+/// a widget at the end (for example a button showing the password).
 class NeuTextField extends StatefulWidget {
-  final String? label;
-  final String? placeholder;
-  final bool obscureText;
-  final TextEditingController? controller;
-  final TextInputType keyboardType;
-  final TextStyle? labelStyle;
-  final TextStyle? inputStyle;
-  final TextStyle? placeholderStyle;
-  final double width;
-  final double height;
-  final String? Function(String?)? validator;
-
   const NeuTextField({
     super.key,
     this.label,
     this.placeholder,
+    this.leadingIcon,
+    this.trailing,
     this.obscureText = false,
     this.controller,
     this.keyboardType = TextInputType.text,
-    this.labelStyle,
-    this.inputStyle,
-    this.placeholderStyle,
-    this.width = double.infinity,
-    this.height = 48,
     this.validator,
   });
+
+  static const _height = 58.0;
+
+  final String? label;
+  final String? placeholder;
+  final AppIcons? leadingIcon;
+  final Widget? trailing;
+  final bool obscureText;
+  final TextEditingController? controller;
+  final TextInputType keyboardType;
+  final String? Function(String?)? validator;
 
   @override
   State<NeuTextField> createState() => _NeuTextFieldState();
 }
 
 class _NeuTextFieldState extends State<NeuTextField> {
-  String? _localErrorText;
+  String? _errorText;
+
+  String? _validate(String? value) {
+    final result = widget.validator?.call(value);
+    if (result != _errorText) setState(() => _errorText = result);
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final typography = context.typography;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 8,
       children: [
-        if (widget.label != null) ...[
-          Text(
-            widget.label!,
-            style: widget.labelStyle ?? AppTextStyles.inputLabel,
+        if (widget.label != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 6),
+            child: Text(widget.label!, style: typography.label),
           ),
-          const SizedBox(height: 6),
-        ],
-        NeuContainer(
-          elevation: NeuElevation.inset,
-          width: widget.width,
-          height: widget.height,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextFormField(
-              controller: widget.controller,
-              obscureText: widget.obscureText,
-              keyboardType: widget.keyboardType,
-              validator: (value) {
-                if (widget.validator != null) {
-                  final result = widget.validator!(value);
-                  setState(() {
-                    _localErrorText = result;
-                  });
-                  return result;
-                }
-                return null;
-              },
-              style: widget.inputStyle ?? AppTextStyles.actionButtonText,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                errorBorder: InputBorder.none,
-                focusedErrorBorder: InputBorder.none,
-                hintText: widget.placeholder,
-                hintStyle: widget.placeholderStyle ?? AppTextStyles.inputLabel,
-                errorStyle: const TextStyle(height: 0, fontSize: 0),
+        NeuSurface(
+          shadows: context.shadows.inset(NeoDepth.md),
+          borderRadius: BorderRadius.circular(22),
+          height: NeuTextField._height,
+          padding: EdgeInsets.only(
+            left: 18,
+            right: widget.trailing == null ? 18 : 6,
+          ),
+          child: Row(
+            spacing: 10,
+            children: [
+              if (widget.leadingIcon != null)
+                AppIcon(
+                  widget.leadingIcon!,
+                  size: 20,
+                  color: palette.textMuted,
+                ),
+              Expanded(
+                child: TextFormField(
+                  controller: widget.controller,
+                  obscureText: widget.obscureText,
+                  keyboardType: widget.keyboardType,
+                  validator: widget.validator == null ? null : _validate,
+                  style: typography.input,
+                  cursorColor: palette.accent,
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    border: InputBorder.none,
+                    hintText: widget.placeholder,
+                    hintStyle: typography.input.copyWith(
+                      color: palette.placeholder,
+                    ),
+                    errorStyle: const TextStyle(height: 0, fontSize: 0),
+                  ),
+                ),
               ),
-            ),
+              ?widget.trailing,
+            ],
           ),
         ),
-
-        if (_localErrorText != null) ...[
-          const SizedBox(height: 6), // Gentle spacing below the container
+        if (_errorText != null)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.only(left: 6),
             child: Text(
-              _localErrorText!,
-              style: const TextStyle(
-                color: Colors.redAccent,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+              _errorText!,
+              style: typography.note.copyWith(color: palette.danger),
             ),
           ),
-        ],
       ],
     );
   }

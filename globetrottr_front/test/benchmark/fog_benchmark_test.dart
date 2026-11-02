@@ -60,13 +60,14 @@ Future<void> _paintTable(
     await source.whenIdle();
     final painter = BitmapFogPainter(
       camera: camera,
+      color: fogColor,
       source: source,
       options: BitmapFogPainter.defaultOptions.copyWith(softEdge: false),
     );
     _paintMillis(painter, 3);
     final plain = _paintMillis(painter, 30);
     final soft = _paintMillis(
-      BitmapFogPainter(camera: camera, source: source),
+      BitmapFogPainter(camera: camera, color: fogColor, source: source),
       30,
     );
     final tiles = camera.visibleTiles(source.levelFor(zoom)).cellCount;

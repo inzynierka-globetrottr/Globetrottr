@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_container.dart';
-import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_button.dart';
+import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 class ProfileBio extends StatefulWidget {
   final String initialBio;
@@ -72,30 +72,29 @@ class _ProfileBioState extends State<ProfileBio> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
+    final typography = context.typography;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        NeuContainer(
-          elevation: NeuElevation.inset,
-          width: double.infinity,
+        NeuSurface(
+          shadows: context.shadows.inset(NeoDepth.md),
+          borderRadius: BorderRadius.circular(22),
           height: 110,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: TextField(
-              controller: _controller,
-              maxLines: 3,
-              maxLength: 150,
-              onChanged: _onChanged,
-              style: AppTextStyles.actionButtonText,
-              decoration: InputDecoration(
-                hintText: l10n.profileBioPlaceholder,
-                hintStyle: AppTextStyles.inputLabel.copyWith(
-                  color: AppColors.textLight.withValues(alpha: 0.6),
-                ),
-                counterText: '',
-                border: InputBorder.none,
-              ),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+          child: TextField(
+            controller: _controller,
+            maxLines: 3,
+            maxLength: 150,
+            onChanged: _onChanged,
+            style: typography.input,
+            cursorColor: palette.accent,
+            decoration: InputDecoration(
+              hintText: l10n.profileBioPlaceholder,
+              hintStyle: typography.input.copyWith(color: palette.placeholder),
+              counterText: '',
+              border: InputBorder.none,
             ),
           ),
         ),
@@ -107,31 +106,32 @@ class _ProfileBioState extends State<ProfileBio> {
               TextButton(
                 onPressed: _cancel,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.textLight,
-                  textStyle: AppTextStyles.inputLabel.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  foregroundColor: palette.textMuted,
+                  textStyle: typography.action,
                 ),
                 child: Text(l10n.profileCancel),
               ),
               const SizedBox(width: 12),
-              NeuPrimaryButton(
-                label: widget.isUpdatingBio ? '' : l10n.profileSave,
+              NeuButton(
                 width: 90,
                 height: 38,
+                depth: NeoDepth.sm,
                 onPressed: widget.isUpdatingBio ? null : _save,
                 child: widget.isUpdatingBio
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.accentBlue,
-                          ),
+                          color: palette.accent,
                         ),
                       )
-                    : null,
+                    : Text(
+                        l10n.profileSave,
+                        style: typography.action.copyWith(
+                          color: palette.accent,
+                        ),
+                      ),
               ),
             ],
           ),

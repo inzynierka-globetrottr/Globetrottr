@@ -18,10 +18,11 @@ Future<int Function(int x, int y)> _capture(GlobalKey key) async {
   final ui.Image image = await boundary.toImage();
   final bytes = (await image.toByteData())!;
   // The map paints an opaque light grey (224) under the fog, so the fog
-  // strength is read from how much that grey was darkened.
+  // strength is read from how far that grey moved towards the fog colour.
+  final fogRed = (fogColor.r * 255).round();
   return (int x, int y) {
     final red = bytes.getUint8((y * image.width + x) * 4);
-    return ((224 - red) / 224 * 255).round();
+    return ((224 - red) / (224 - fogRed) * 255).round();
   };
 }
 
@@ -75,8 +76,8 @@ void main() {
 
       final alpha = await _capture(key);
 
-      expect(alpha(200, 400), closeTo(191, 1));
-      expect(alpha(5, 5), closeTo(191, 1));
+      expect(alpha(200, 400), closeTo(fogAlpha, 1));
+      expect(alpha(5, 5), closeTo(fogAlpha, 1));
     });
   });
 
@@ -96,7 +97,7 @@ void main() {
 
       final onTrail = await _capture(key);
       expect(onTrail(200, 400), lessThan(10));
-      expect(onTrail(200, 400 + 120), closeTo(191, 1));
+      expect(onTrail(200, 400 + 120), closeTo(fogAlpha, 1));
 
       final away = offsetMeters(krakowLat, krakowLng, north: 3000);
       controller.move(
@@ -107,7 +108,7 @@ void main() {
       await _settle(tester, source);
 
       final awayFromTrail = await _capture(key);
-      expect(awayFromTrail(200, 400), closeTo(191, 1));
+      expect(awayFromTrail(200, 400), closeTo(fogAlpha, 1));
 
       controller.move(
         const LatLng(krakowLat, krakowLng),
@@ -142,7 +143,7 @@ void main() {
       await _settle(tester, source);
 
       final alpha = await _capture(key);
-      var strongest = 191;
+      var strongest = fogAlpha;
       for (var dx = -6; dx <= 6; dx++) {
         for (var dy = -6; dy <= 6; dy++) {
           final value = alpha(200 + dx, 400 + dy);

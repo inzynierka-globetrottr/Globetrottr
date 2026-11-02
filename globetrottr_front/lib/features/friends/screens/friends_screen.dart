@@ -1,8 +1,7 @@
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_card.dart';
@@ -29,57 +28,52 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     final l10n = context.l10n;
     final state = ref.watch(friendsProvider);
 
-    return NeumorphicTheme(
-      themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                child: Center(
-                  child: Text(
-                    l10n.friendsTitle,
-                    style: AppTextStyles.screenHeaderLarge,
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              child: Center(
+                child: Text(
+                  l10n.friendsTitle,
+                  style: context.typography.headline,
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  const SearchSendRow(),
+
+                  const SizedBox(height: 24),
+                  InviteHubBanner(
+                    receivedCount: state.receivedInvites.length,
+                    onTap: () => context.push('/friends/invites'),
                   ),
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  children: [
-                    const SearchSendRow(),
 
-                    const SizedBox(height: 24),
-                    InviteHubBanner(
-                      receivedCount: state.receivedInvites.length,
-                      onTap: () => context.push('/friends/invites'),
+                  const SizedBox(height: 24),
+                  Text(
+                    l10n.friendsYourFriendsHeader(state.friends.length),
+                    style: context.typography.sectionLabel,
+                  ),
+                  const SizedBox(height: 14),
+                  ...state.friends.map(
+                    (f) => Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: FriendCard(friend: f),
                     ),
-
-                    const SizedBox(height: 24),
-                    Text(
-                      l10n.friendsYourFriendsHeader(state.friends.length),
-                      style: AppTextStyles.sectionTitle,
-                    ),
-                    const SizedBox(height: 14),
-                    ...state.friends.map(
-                      (f) => Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: FriendCard(friend: f),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        bottomNavigationBar: const NeuBottomNavbar(
-          activeItem: NavbarItem.friends,
-        ),
+      ),
+      bottomNavigationBar: const NeuBottomNavbar(
+        activeItem: NavbarItem.friends,
       ),
     );
   }

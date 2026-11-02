@@ -63,7 +63,7 @@ void main() {
           painterFor(entry.value, source: source),
         );
 
-        expect(alpha(200, 400), closeTo(191, 1));
+        expect(alpha(200, 400), closeTo(fogAlpha, 1));
         source.dispose();
         await store.dispose();
       });
@@ -90,7 +90,7 @@ void main() {
         ),
       );
 
-      expect(alpha(200, 400), closeTo(191, 1));
+      expect(alpha(200, 400), closeTo(fogAlpha, 1));
     });
   });
 }

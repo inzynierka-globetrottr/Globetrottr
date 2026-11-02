@@ -1,9 +1,10 @@
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 import 'package:globetrottr_front/core/widgets/user_avatar_bubble.dart';
 
-class ProfileAvatar extends ConsumerWidget {
+class ProfileAvatar extends StatelessWidget {
   final String? avatarUrl;
   final String username;
   final bool isUploading;
@@ -18,7 +19,9 @@ class ProfileAvatar extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final shadows = context.shadows;
+
     return GestureDetector(
       onTap: onAvatarTap,
       child: Center(
@@ -29,16 +32,9 @@ class ProfileAvatar extends ConsumerWidget {
             clipBehavior: Clip.none,
             children: [
               Positioned.fill(
-                child: Neumorphic(
+                child: NeuSurface.circle(
+                  shadows: shadows.inset(NeoDepth.md),
                   padding: const EdgeInsets.all(6),
-                  style: const NeumorphicStyle(
-                    boxShape: NeumorphicBoxShape.circle(),
-                    depth: -4,
-                    intensity: 1,
-                    shadowLightColorEmboss: AppColors.neuLight,
-                    shadowDarkColorEmboss: AppColors.neuShadow,
-                    color: AppColors.background,
-                  ),
                   child: UserAvatarBubble(
                     username: username,
                     avatarUrl: avatarUrl,
@@ -48,24 +44,16 @@ class ProfileAvatar extends ConsumerWidget {
                   ),
                 ),
               ),
-
               Positioned(
                 bottom: -2,
                 right: -2,
-                child: Neumorphic(
-                  style: const NeumorphicStyle(
-                    boxShape: NeumorphicBoxShape.circle(),
-                    depth: 3,
-                    intensity: 0.9,
-                    shadowLightColor: AppColors.neuLight,
-                    shadowDarkColor: AppColors.neuShadow,
-                    color: AppColors.background,
-                  ),
+                child: NeuSurface.circle(
+                  shadows: shadows.raised(NeoDepth.sm),
                   padding: const EdgeInsets.all(8),
-                  child: const Icon(
+                  child: Icon(
                     Icons.camera_alt_rounded,
                     size: 18,
-                    color: AppColors.text,
+                    color: context.palette.text,
                   ),
                 ),
               ),

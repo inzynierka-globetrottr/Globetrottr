@@ -110,6 +110,30 @@ abstract class AppLocalizations {
   /// **'globetrottr'**
   String get appLogo;
 
+  /// No description provided for @navMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get navMap;
+
+  /// No description provided for @navQuests.
+  ///
+  /// In en, this message translates to:
+  /// **'Quests'**
+  String get navQuests;
+
+  /// No description provided for @navFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get navFriends;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get navProfile;
+
   /// No description provided for @authSignIn.
   ///
   /// In en, this message translates to:

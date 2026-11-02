@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
+import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
@@ -16,6 +17,10 @@ import 'fog_test_helpers.dart';
 import 'in_memory_fog_tile_storage.dart';
 
 const Size viewSize = Size(400, 800);
+
+/// Colour of the undiscovered area and its alpha on a rendered image.
+final Color fogColor = AppPalette.light.fog;
+final int fogAlpha = (fogColor.a * 255).round();
 
 MapCamera cameraAt({
   double? zoom,
@@ -96,6 +101,7 @@ BitmapFogPainter painterFor(
 }) {
   return BitmapFogPainter(
     camera: camera,
+    color: fogColor,
     source: source,
     head: head == null ? null : ValueNotifier<LatLng?>(head),
     options: BitmapFogPainter.defaultOptions.copyWith(softEdge: softEdge),

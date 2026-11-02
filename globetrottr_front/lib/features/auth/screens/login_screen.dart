@@ -1,9 +1,8 @@
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/debug/widgets/dev_floating_button.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_mode.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
@@ -38,8 +37,6 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const baseCanvasColor = AppColors.background;
-
     final state = ref.watch(authProvider);
     final notifier = ref.read(authProvider.notifier);
 
@@ -49,61 +46,56 @@ class _LoginScreenWidget extends ConsumerState<LoginScreen> {
       }
     });
 
-    return NeumorphicTheme(
-      themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(baseColor: baseCanvasColor),
-      child: Scaffold(
-        backgroundColor: baseCanvasColor,
-        floatingActionButton: DevConfig.isDevMode
-            ? const DevFloatingButton(heroTag: 'login_dev_fab')
-            : null,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: Column(
-                spacing: 18,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      context.l10n.appLogo,
-                      style: AppTextStyles.appLogo,
-                    ),
+    return Scaffold(
+      floatingActionButton: DevConfig.isDevMode
+          ? const DevFloatingButton(heroTag: 'login_dev_fab')
+          : null,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Column(
+              spacing: 18,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    context.l10n.appLogo,
+                    style: context.typography.display,
                   ),
+                ),
 
-                  AuthModeSwitcher(
-                    currentMode: state.mode,
-                    onModeChanged: notifier.setMode,
-                  ),
+                AuthModeSwitcher(
+                  currentMode: state.mode,
+                  onModeChanged: notifier.setMode,
+                ),
 
-                  LoginForm(
-                    formKey: _formKey,
-                    state: state,
-                    usernameController: _usernameController,
-                    emailController: _emailController,
-                    passwordController: _passwordController,
-                    onSubmit: () {
-                      if (_formKey.currentState!.validate()) {
-                        notifier.submit(
-                          username: _usernameController.text,
-                          password: _passwordController.text,
-                          email: state.mode == AuthMode.register
-                              ? _emailController.text
-                              : null,
-                        );
-                      }
-                    },
-                  ),
+                LoginForm(
+                  formKey: _formKey,
+                  state: state,
+                  usernameController: _usernameController,
+                  emailController: _emailController,
+                  passwordController: _passwordController,
+                  onSubmit: () {
+                    if (_formKey.currentState!.validate()) {
+                      notifier.submit(
+                        username: _usernameController.text,
+                        password: _passwordController.text,
+                        email: state.mode == AuthMode.register
+                            ? _emailController.text
+                            : null,
+                      );
+                    }
+                  },
+                ),
 
-                  const FormDivider(),
+                const FormDivider(),
 
-                  GoogleLoginSection(
-                    isLoading: state.isLoading,
-                    onGooglePressed: notifier.signInWithGoogle,
-                  ),
-                ],
-              ),
+                GoogleLoginSection(
+                  isLoading: state.isLoading,
+                  onGooglePressed: notifier.signInWithGoogle,
+                ),
+              ],
             ),
           ),
         ),

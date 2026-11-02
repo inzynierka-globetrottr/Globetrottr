@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_container.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
+import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
 
 class SearchSendRow extends ConsumerStatefulWidget {
@@ -67,6 +66,7 @@ class _SearchSendRowState extends ConsumerState<SearchSendRow> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final palette = context.palette;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,38 +74,15 @@ class _SearchSendRowState extends ConsumerState<SearchSendRow> {
         Row(
           children: [
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: NeuContainer(
-                  elevation: NeuElevation.inset,
-                  height: 48,
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TextField(
-                      controller: _controller,
-                      style: AppTextStyles.actionButtonText,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: l10n.friendsSearchPlaceholder,
-                        hintStyle: AppTextStyles.inputLabel,
-                      ),
-                    ),
-                  ),
-                ),
+              child: NeuTextField(
+                controller: _controller,
+                placeholder: l10n.friendsSearchPlaceholder,
               ),
             ),
             const SizedBox(width: 12),
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: NeuIconButton(
-                onPressed: _isSending ? null : _onSend,
-                child: const Icon(
-                  Icons.send,
-                  color: AppColors.accentBlue,
-                  size: 18,
-                ),
-              ),
+            NeuIconButton(
+              onPressed: _isSending ? null : _onSend,
+              child: Icon(Icons.send, color: palette.accent),
             ),
           ],
         ),
@@ -115,9 +92,8 @@ class _SearchSendRowState extends ConsumerState<SearchSendRow> {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
               _feedbackMessage!,
-              style: AppTextStyles.inputLabel.copyWith(
-                color: _isSuccess ? AppColors.accentGreen : AppColors.accentRed,
-                fontSize: 12,
+              style: context.typography.caption.copyWith(
+                color: _isSuccess ? palette.accent : palette.danger,
               ),
             ),
           ),

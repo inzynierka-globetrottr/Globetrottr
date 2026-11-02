@@ -1,49 +1,26 @@
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_pressable.dart';
 
+/// The main action of a screen: a full-width pill filled with the accent.
 class NeuPrimaryButton extends StatelessWidget {
-  final String? label;
-  final Widget? child;
-  final VoidCallback? onPressed;
-  final double width;
-  final double height;
-  final TextStyle? labelStyle;
+  const NeuPrimaryButton({super.key, required this.label, this.onPressed});
 
-  const NeuPrimaryButton({
-    super.key,
-    this.label,
-    this.child,
-    this.onPressed,
-    this.width = double.infinity,
-    this.height = 48,
-    this.labelStyle,
-  });
+  static const _height = 60.0;
+
+  final String label;
+  final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
-    return NeumorphicButton(
-      onPressed: onPressed,
-      style: NeumorphicStyle(
-        color: AppColors.background,
-        boxShape: NeumorphicBoxShape.roundRect(
-          const BorderRadius.all(Radius.circular(24)),
-        ),
-        depth: 4,
-        intensity: 1,
-        shadowLightColor: AppColors.neuLight,
-        shadowDarkColor: AppColors.neuShadow,
-      ),
-      padding: EdgeInsets.zero,
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: Center(
-          child:
-              child ??
-              Text(label!, style: labelStyle ?? AppTextStyles.submitButtonText),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => NeuPressable(
+    onPressed: onPressed,
+    shadows: context.shadows.raisedAccent(NeoDepth.xl),
+    depth: NeoDepth.md,
+    color: context.palette.accent,
+    width: double.infinity,
+    height: _height,
+    borderRadius: BorderRadius.circular(_height / 2),
+    child: Text(label, style: context.typography.button),
+  );
 }

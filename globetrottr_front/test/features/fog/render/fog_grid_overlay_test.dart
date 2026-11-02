@@ -18,6 +18,7 @@ BitmapFogPainter _painter(
 }) {
   return BitmapFogPainter(
     camera: camera,
+    color: fogColor,
     source: source,
     options: FogRenderOptions(softEdge: false, showGrid: grid),
   );
@@ -81,7 +82,7 @@ void main() {
 
       expect(
         _alphaAtCorner(off, camera, FogConfig.baseZoom, cornerX, cornerY),
-        closeTo(191, 1),
+        closeTo(fogAlpha, 1),
       );
       expect(
         _alphaAtCorner(on, camera, FogConfig.baseZoom, cornerX, cornerY),
@@ -104,7 +105,7 @@ void main() {
       );
       expect(
         on(at.dx.round() + 60, at.dy.round() + 70),
-        closeTo(191, 1),
+        closeTo(fogAlpha, 1),
         reason: 'away from lines and labels',
       );
     });
@@ -189,7 +190,7 @@ void main() {
 
       final on = await renderAlpha(_painter(broken, grid: true));
 
-      expect(on(200, 400), closeTo(191, 1));
+      expect(on(200, 400), closeTo(fogAlpha, 1));
     });
 
     test('is skipped when too many tiles would be drawn', () async {

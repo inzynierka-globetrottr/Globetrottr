@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/validators.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
@@ -60,8 +60,8 @@ class LoginForm extends StatelessWidget {
           if (state.errorMessage != null)
             Text(
               context.localizeErrorMessage(state.errorMessage),
-              style: AppTextStyles.descriptiveStatusAction.copyWith(
-                color: Colors.redAccent,
+              style: context.typography.note.copyWith(
+                color: context.palette.danger,
               ),
               textAlign: TextAlign.center,
             ),

@@ -18,6 +18,7 @@ BitmapFogPainter _painter(
 }) {
   return BitmapFogPainter(
     camera: camera,
+    color: fogColor,
     source: source,
     head: head == null ? null : ValueNotifier<LatLng?>(head),
     options: FogRenderOptions(softEdge: softEdge, rawPixels: raw),
@@ -34,11 +35,14 @@ int _changesDown(int Function(int x, int y) alpha, int x, int from, int to) {
 }
 
 /// Number of separate groups of consecutive pixels brighter than the fog.
+/// A pixel line is brighter than the plain fog around it.
+bool _onLine(int alpha) => alpha > fogAlpha + 4;
+
 int _brightRuns(List<int> row) {
   var runs = 0;
   var inside = false;
   for (final value in row) {
-    final bright = value > 195;
+    final bright = _onLine(value);
     if (bright && !inside) runs++;
     inside = bright;
   }
@@ -157,7 +161,7 @@ void main() {
       await store.dispose();
 
       expect(normal(200, 400), 0);
-      expect(raw(200, 400), closeTo(191, 1));
+      expect(raw(200, 400), closeTo(fogAlpha, 1));
     });
 
     test('draws lines between fog pixels once they are big enough', () async {
@@ -181,7 +185,7 @@ void main() {
       final alpha = await renderAlpha(_painter(camera, raw: true));
 
       for (var x = 0; x < 80; x++) {
-        expect(alpha(x, 300), closeTo(191, 1));
+        expect(alpha(x, 300), closeTo(fogAlpha, 1));
       }
     });
 
@@ -192,7 +196,7 @@ void main() {
 
       var bright = 0;
       for (var x = 0; x < 400; x++) {
-        if (alpha(x, 300) > 200) bright++;
+        if (_onLine(alpha(x, 300))) bright++;
       }
       expect(bright, greaterThan(20));
     });
@@ -202,7 +206,7 @@ void main() {
         _painter(cameraAt(zoom: double.nan), raw: true),
       );
 
-      expect(alpha(200, 400), closeTo(191, 1));
+      expect(alpha(200, 400), closeTo(fogAlpha, 1));
     });
 
     test('repaints when the option changes', () {
