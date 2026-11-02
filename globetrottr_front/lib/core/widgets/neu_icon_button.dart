@@ -10,18 +10,20 @@ class NeuIconButton extends StatelessWidget {
     required this.child,
     this.onPressed,
     this.size = 46,
+    this.depth = NeoDepth.sm,
     this.semanticLabel,
   });
 
   final Widget child;
   final VoidCallback? onPressed;
   final double size;
+  final NeoDepth depth;
   final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) => NeuPressable(
     onPressed: onPressed,
-    shadows: context.shadows.raised(NeoDepth.sm),
+    shadows: context.shadows.raised(depth),
     depth: NeoDepth.xs,
     width: size,
     semanticLabel: semanticLabel,

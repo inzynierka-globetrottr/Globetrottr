@@ -39,7 +39,12 @@ String translateErrorMessage(String message, AppLocalizations l10n) {
     'Failed to upload avatar.' => l10n.errorFailedToUploadAvatar,
     'Something went wrong. Failed to load quests.' =>
       l10n.errorFailedToLoadQuests,
-    'Email is required' => l10n.validationEmailRequired,
+    'Invalid username or password' => l10n.errorInvalidCredentials,
+    'Email not verified' => l10n.errorEmailNotVerified,
+    'Invalid mail or verification code' => l10n.errorInvalidCode,
+    'Verification code expired' => l10n.errorCodeExpired,
+    'Email already exists' => l10n.errorEmailTaken,
+    'Username already exists' => l10n.errorUsernameTaken,
     'Google authentication failed.' => l10n.errorGoogleAuthFailed,
     'Location services are disabled. Please enable them in your device settings.' =>
       l10n.errorLocationDisabled,

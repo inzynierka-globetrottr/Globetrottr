@@ -56,13 +56,30 @@ class AuthService {
     return _extractAndSaveToken(response);
   }
 
-  Future<String> register(RegisterRequest request) async {
+  /// The account stays locked until the e-mail is verified, so no token
+  /// comes back.
+  Future<void> register(RegisterRequest request) async {
+    await _client.post('/api/auth/register', body: request.toJson());
+  }
+
+  Future<String> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
     final response = await _client.post(
-      '/api/auth/register',
-      body: request.toJson(),
+      '/api/auth/verify',
+      body: {'email': email, 'code': code},
     );
     return _extractAndSaveToken(response);
   }
+
+  Future<void> resendVerificationCode(String email) async {
+    await _client.post('/api/auth/resend-code', body: {'email': email});
+  }
+
+  Future<bool> isGuest() => _tokenStore.isGuest();
+
+  Future<void> startGuestSession() => _tokenStore.saveGuest();
 
   Future<String?> refreshToken() async {
     if (await _tokenStore.getToken() == null) return null;
@@ -79,7 +96,10 @@ class AuthService {
     }
   }
 
-  Future<void> logout() => _tokenStore.deleteToken();
+  Future<void> logout() async {
+    await _tokenStore.deleteToken();
+    await _tokenStore.deleteGuest();
+  }
 }
 
 final authServiceProvider = Provider<AuthService>(

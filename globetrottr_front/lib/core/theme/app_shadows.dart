@@ -81,6 +81,9 @@ class AppShadows extends ThemeExtension<AppShadows> {
 
   List<NeoShadow> inset(NeoDepth depth) => _pair(depth, 0.5, 0.9, inset: true);
 
+  /// Only the dark side of [raised], for thin filled bars.
+  List<NeoShadow> shade(NeoDepth depth) => [_pair(depth, 0.5, 0.95).first];
+
   /// A surface filled with the accent: a little darker outside and lit from
   /// the inside.
   List<NeoShadow> raisedAccent(NeoDepth depth) {
@@ -95,6 +98,20 @@ class AppShadows extends ThemeExtension<AppShadows> {
       ),
     ];
   }
+
+  /// The globe of the logo, lit from the top left.
+  List<NeoShadow> get logo => [
+    NeoShadow(
+      offset: const Offset(5, 7),
+      blur: 10,
+      color: dark.withValues(alpha: 0.5),
+    ),
+    NeoShadow(
+      offset: const Offset(-4, -4),
+      blur: 8,
+      color: light.withValues(alpha: 0.9),
+    ),
+  ];
 
   /// Controls floating over the map.
   List<NeoShadow> get mapControl => _drop(8, 22, 0.35);

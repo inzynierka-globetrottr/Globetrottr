@@ -134,53 +134,221 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get navProfile;
 
+  /// No description provided for @commonBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get commonBack;
+
+  /// No description provided for @authSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get authSkip;
+
+  /// No description provided for @authLoginLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Login or nickname'**
+  String get authLoginLabel;
+
+  /// No description provided for @authNicknamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. explorer'**
+  String get authNicknamePlaceholder;
+
+  /// No description provided for @authPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get authPasswordLabel;
+
+  /// No description provided for @authShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get authShowPassword;
+
+  /// No description provided for @authHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get authHidePassword;
+
+  /// No description provided for @authForgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your password?'**
+  String get authForgotPassword;
+
   /// No description provided for @authSignIn.
   ///
   /// In en, this message translates to:
   /// **'Sign in'**
   String get authSignIn;
 
-  /// No description provided for @authSignUp.
+  /// No description provided for @authOr.
   ///
   /// In en, this message translates to:
-  /// **'Sign up'**
-  String get authSignUp;
+  /// **'or'**
+  String get authOr;
 
-  /// No description provided for @authUsernamePlaceholder.
+  /// No description provided for @authContinueWithGoogle.
   ///
   /// In en, this message translates to:
-  /// **'Username'**
-  String get authUsernamePlaceholder;
+  /// **'Continue with Google'**
+  String get authContinueWithGoogle;
+
+  /// No description provided for @authNoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'No account yet?'**
+  String get authNoAccount;
+
+  /// No description provided for @authCreateOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Create one'**
+  String get authCreateOne;
+
+  /// No description provided for @authRegisterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get authRegisterTitle;
+
+  /// No description provided for @authNicknameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get authNicknameLabel;
+
+  /// No description provided for @authEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'E-mail'**
+  String get authEmailLabel;
 
   /// No description provided for @authEmailPlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'Email'**
+  /// **'address@mail.com'**
   String get authEmailPlaceholder;
 
-  /// No description provided for @authPasswordPlaceholder.
+  /// No description provided for @authPasswordStrength.
   ///
   /// In en, this message translates to:
-  /// **'Password'**
-  String get authPasswordPlaceholder;
+  /// **'Password strength:'**
+  String get authPasswordStrength;
 
-  /// No description provided for @authLoading.
+  /// No description provided for @authPasswordWeak.
   ///
   /// In en, this message translates to:
-  /// **'Loading...'**
-  String get authLoading;
+  /// **'weak'**
+  String get authPasswordWeak;
 
-  /// No description provided for @authOrContinueWith.
+  /// No description provided for @authPasswordGood.
   ///
   /// In en, this message translates to:
-  /// **'OR CONTINUE WITH'**
-  String get authOrContinueWith;
+  /// **'good'**
+  String get authPasswordGood;
 
-  /// No description provided for @authGoogleAccount.
+  /// No description provided for @authPasswordStrong.
   ///
   /// In en, this message translates to:
-  /// **'Google Account'**
-  String get authGoogleAccount;
+  /// **'strong'**
+  String get authPasswordStrong;
+
+  /// No description provided for @authPasswordRules.
+  ///
+  /// In en, this message translates to:
+  /// **'min. 6 characters, lower and upper case letter, digit, special character'**
+  String get authPasswordRules;
+
+  /// No description provided for @authCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get authCreateAccount;
+
+  /// No description provided for @authHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get authHaveAccount;
+
+  /// No description provided for @authVerifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox'**
+  String get authVerifyTitle;
+
+  /// No description provided for @authCodeSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to'**
+  String get authCodeSentTo;
+
+  /// No description provided for @authCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code'**
+  String get authCodeLabel;
+
+  /// No description provided for @authCodeValidity.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, one{The code is valid for 1 minute.} other{The code is valid for {minutes} minutes.}}'**
+  String authCodeValidity(int minutes);
+
+  /// No description provided for @authVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get authVerify;
+
+  /// No description provided for @authResendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {time}'**
+  String authResendIn(String time);
+
+  /// No description provided for @authResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend the code'**
+  String get authResend;
+
+  /// No description provided for @authSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get authSendCode;
+
+  /// No description provided for @authResetUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset will be available soon.'**
+  String get authResetUnavailable;
+
+  /// No description provided for @authNewPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a new password'**
+  String get authNewPasswordTitle;
+
+  /// No description provided for @authNewPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get authNewPasswordLabel;
+
+  /// No description provided for @authChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get authChangePassword;
 
   /// No description provided for @profileDefaultUsername.
   ///
@@ -535,6 +703,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Location permission is required to track your trips.'**
   String get errorLocationPermissionRequired;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong login or password.'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @errorEmailNotVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your e-mail address before signing in.'**
+  String get errorEmailNotVerified;
+
+  /// No description provided for @errorInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong code.'**
+  String get errorInvalidCode;
+
+  /// No description provided for @errorCodeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The code has expired. Send a new one.'**
+  String get errorCodeExpired;
+
+  /// No description provided for @errorEmailTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This e-mail is already in use.'**
+  String get errorEmailTaken;
+
+  /// No description provided for @errorUsernameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This nickname is already taken.'**
+  String get errorUsernameTaken;
+
+  /// No description provided for @validationCodeIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter all 6 digits of the code.'**
+  String get validationCodeIncomplete;
 
   /// No description provided for @errorGoogleAuthFailed.
   ///

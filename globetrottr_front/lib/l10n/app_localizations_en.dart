@@ -27,28 +27,123 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navProfile => 'Profile';
 
   @override
+  String get commonBack => 'Back';
+
+  @override
+  String get authSkip => 'Skip';
+
+  @override
+  String get authLoginLabel => 'Login or nickname';
+
+  @override
+  String get authNicknamePlaceholder => 'e.g. explorer';
+
+  @override
+  String get authPasswordLabel => 'Password';
+
+  @override
+  String get authShowPassword => 'Show password';
+
+  @override
+  String get authHidePassword => 'Hide password';
+
+  @override
+  String get authForgotPassword => 'Forgot your password?';
+
+  @override
   String get authSignIn => 'Sign in';
 
   @override
-  String get authSignUp => 'Sign up';
+  String get authOr => 'or';
 
   @override
-  String get authUsernamePlaceholder => 'Username';
+  String get authContinueWithGoogle => 'Continue with Google';
 
   @override
-  String get authEmailPlaceholder => 'Email';
+  String get authNoAccount => 'No account yet?';
 
   @override
-  String get authPasswordPlaceholder => 'Password';
+  String get authCreateOne => 'Create one';
 
   @override
-  String get authLoading => 'Loading...';
+  String get authRegisterTitle => 'Create an account';
 
   @override
-  String get authOrContinueWith => 'OR CONTINUE WITH';
+  String get authNicknameLabel => 'Nickname';
 
   @override
-  String get authGoogleAccount => 'Google Account';
+  String get authEmailLabel => 'E-mail';
+
+  @override
+  String get authEmailPlaceholder => 'address@mail.com';
+
+  @override
+  String get authPasswordStrength => 'Password strength:';
+
+  @override
+  String get authPasswordWeak => 'weak';
+
+  @override
+  String get authPasswordGood => 'good';
+
+  @override
+  String get authPasswordStrong => 'strong';
+
+  @override
+  String get authPasswordRules =>
+      'min. 6 characters, lower and upper case letter, digit, special character';
+
+  @override
+  String get authCreateAccount => 'Create account';
+
+  @override
+  String get authHaveAccount => 'Already have an account?';
+
+  @override
+  String get authVerifyTitle => 'Check your inbox';
+
+  @override
+  String get authCodeSentTo => 'We sent a 6-digit code to';
+
+  @override
+  String get authCodeLabel => 'Verification code';
+
+  @override
+  String authCodeValidity(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'The code is valid for $minutes minutes.',
+      one: 'The code is valid for 1 minute.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get authVerify => 'Verify';
+
+  @override
+  String authResendIn(String time) {
+    return 'Resend in $time';
+  }
+
+  @override
+  String get authResend => 'Resend the code';
+
+  @override
+  String get authSendCode => 'Send code';
+
+  @override
+  String get authResetUnavailable => 'Password reset will be available soon.';
+
+  @override
+  String get authNewPasswordTitle => 'Set a new password';
+
+  @override
+  String get authNewPasswordLabel => 'New password';
+
+  @override
+  String get authChangePassword => 'Change password';
 
   @override
   String get profileDefaultUsername => 'Traveler';
@@ -255,6 +350,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorLocationPermissionRequired =>
       'Location permission is required to track your trips.';
+
+  @override
+  String get errorInvalidCredentials => 'Wrong login or password.';
+
+  @override
+  String get errorEmailNotVerified =>
+      'Confirm your e-mail address before signing in.';
+
+  @override
+  String get errorInvalidCode => 'Wrong code.';
+
+  @override
+  String get errorCodeExpired => 'The code has expired. Send a new one.';
+
+  @override
+  String get errorEmailTaken => 'This e-mail is already in use.';
+
+  @override
+  String get errorUsernameTaken => 'This nickname is already taken.';
+
+  @override
+  String get validationCodeIncomplete => 'Enter all 6 digits of the code.';
 
   @override
   String get errorGoogleAuthFailed => 'Google authentication failed.';

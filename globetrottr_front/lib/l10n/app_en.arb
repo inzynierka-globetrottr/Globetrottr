@@ -8,14 +8,52 @@
   "navFriends": "Friends",
   "navProfile": "Profile",
 
+  "commonBack": "Back",
+  "authSkip": "Skip",
+  "authLoginLabel": "Login or nickname",
+  "authNicknamePlaceholder": "e.g. explorer",
+  "authPasswordLabel": "Password",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
+  "authForgotPassword": "Forgot your password?",
   "authSignIn": "Sign in",
-  "authSignUp": "Sign up",
-  "authUsernamePlaceholder": "Username",
-  "authEmailPlaceholder": "Email",
-  "authPasswordPlaceholder": "Password",
-  "authLoading": "Loading...",
-  "authOrContinueWith": "OR CONTINUE WITH",
-  "authGoogleAccount": "Google Account",
+  "authOr": "or",
+  "authContinueWithGoogle": "Continue with Google",
+  "authNoAccount": "No account yet?",
+  "authCreateOne": "Create one",
+  "authRegisterTitle": "Create an account",
+  "authNicknameLabel": "Nickname",
+  "authEmailLabel": "E-mail",
+  "authEmailPlaceholder": "address@mail.com",
+  "authPasswordStrength": "Password strength:",
+  "authPasswordWeak": "weak",
+  "authPasswordGood": "good",
+  "authPasswordStrong": "strong",
+  "authPasswordRules": "min. 6 characters, lower and upper case letter, digit, special character",
+  "authCreateAccount": "Create account",
+  "authHaveAccount": "Already have an account?",
+  "authVerifyTitle": "Check your inbox",
+  "authCodeSentTo": "We sent a 6-digit code to",
+  "authCodeLabel": "Verification code",
+  "authCodeValidity": "{minutes, plural, one{The code is valid for 1 minute.} other{The code is valid for {minutes} minutes.}}",
+  "authVerify": "Verify",
+  "authResendIn": "Resend in {time}",
+  "authResend": "Resend the code",
+  "authSendCode": "Send code",
+  "authResetUnavailable": "Password reset will be available soon.",
+  "authNewPasswordTitle": "Set a new password",
+  "authNewPasswordLabel": "New password",
+  "authChangePassword": "Change password",
+  "@authCodeValidity": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "@authResendIn": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
 
   "profileDefaultUsername": "Traveler",
   "profileBioPlaceholder": "Tell others about your journeys...",
@@ -151,6 +189,13 @@
   "errorFailedToLoadQuests": "Something went wrong. Failed to load quests.",
   "errorLocationDisabled": "Location services are disabled. Please enable them in your device settings.",
   "errorLocationPermissionRequired": "Location permission is required to track your trips.",
+  "errorInvalidCredentials": "Wrong login or password.",
+  "errorEmailNotVerified": "Confirm your e-mail address before signing in.",
+  "errorInvalidCode": "Wrong code.",
+  "errorCodeExpired": "The code has expired. Send a new one.",
+  "errorEmailTaken": "This e-mail is already in use.",
+  "errorUsernameTaken": "This nickname is already taken.",
+  "validationCodeIncomplete": "Enter all 6 digits of the code.",
   "errorGoogleAuthFailed": "Google authentication failed.",
   "locationNotificationText": "Recording your route in the background..."
 }

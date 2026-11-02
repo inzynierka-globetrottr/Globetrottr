@@ -40,7 +40,7 @@ void main() {
     expect(find.textContaining('SQLite', skipOffstage: false), findsNothing);
   });
 
-  testWidgets('continuing without login authenticates the app', (
+  testWidgets('continuing as a guest lets the user into the app', (
     tester,
   ) async {
     final env = FogTestEnvironment();
@@ -58,12 +58,12 @@ void main() {
       ),
     );
     await tester.pump();
-    final button = find.text('Continue without login');
+    final button = find.text('Continue as guest');
     expect(button, findsOneWidget);
 
     await tester.tap(button);
     await tester.pump();
 
-    expect(container.read(authProvider).isAuthenticated, isTrue);
+    expect(container.read(authProvider).canEnterApp, isTrue);
   });
 }

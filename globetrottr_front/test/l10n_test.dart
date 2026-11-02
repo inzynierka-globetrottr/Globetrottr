@@ -12,8 +12,9 @@ void main() {
       expect(l10n.appTitle, 'Globetrottr');
       expect(l10n.appLogo, 'globetrottr');
       expect(l10n.authSignIn, 'Sign in');
-      expect(l10n.authSignUp, 'Sign up');
-      expect(l10n.authUsernamePlaceholder, 'Username');
+      expect(l10n.authCreateAccount, 'Create account');
+      expect(l10n.authLoginLabel, 'Login or nickname');
+      expect(l10n.authCodeValidity(15), 'The code is valid for 15 minutes.');
       expect(l10n.profileDefaultUsername, 'Traveler');
       expect(l10n.profileLogOut, 'Log Out');
       expect(l10n.friendsTitle, 'Friends');
@@ -40,8 +41,10 @@ void main() {
       expect(l10n.appTitle, 'Globetrottr');
       expect(l10n.appLogo, 'globetrottr');
       expect(l10n.authSignIn, 'Zaloguj się');
-      expect(l10n.authSignUp, 'Zarejestruj się');
-      expect(l10n.authUsernamePlaceholder, 'Nazwa użytkownika');
+      expect(l10n.authCreateAccount, 'Utwórz konto');
+      expect(l10n.authLoginLabel, 'Login lub nick');
+      expect(l10n.authCodeValidity(15), 'Kod jest ważny 15 minut.');
+      expect(l10n.authCodeValidity(2), 'Kod jest ważny 2 minuty.');
       expect(l10n.profileDefaultUsername, 'Podróżnik');
       expect(l10n.profileLogOut, 'Wyloguj się');
       expect(l10n.friendsTitle, 'Znajomi');
@@ -60,6 +63,21 @@ void main() {
         'Logowanie przez Google nie powiodło się.',
       );
       expect(l10n.errorServer(500), 'Błąd serwera (500)');
+    });
+
+    test('auth errors of the backend are translated', () {
+      expect(
+        translateErrorDart('Email not verified', locale: 'pl'),
+        'Potwierdź adres e-mail, zanim się zalogujesz.',
+      );
+      expect(
+        translateErrorDart('Invalid username or password'),
+        'Wrong login or password.',
+      );
+      expect(
+        translateErrorDart('Verification code expired', locale: 'pl'),
+        'Kod wygasł. Wyślij nowy.',
+      );
     });
 
     test('Dart error translations map strings properly', () {

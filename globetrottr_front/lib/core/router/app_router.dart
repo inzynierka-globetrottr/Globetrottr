@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
+import 'package:globetrottr_front/core/router/auth_redirect.dart';
+import 'package:globetrottr_front/core/router/auth_routes.dart';
 import 'package:globetrottr_front/debug/debug_screen.dart';
 import 'package:globetrottr_front/debug/dev_options_screen.dart';
 import 'package:globetrottr_front/debug/friend_debug_screen.dart';
 import 'package:globetrottr_front/debug/preview_screen.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
-import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/invite_hub_screen.dart';
@@ -27,7 +28,7 @@ final appRouter = Provider<GoRouter>((ref) {
   final listenable = AuthNotifierListenable(ref);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: AuthRoutes.login,
     refreshListenable: listenable,
     redirect: (context, state) {
       if ((DevConfig.isDevMode || kDebugMode) &&
@@ -35,18 +36,10 @@ final appRouter = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final authState = ref.read(authProvider);
-
-      if (authState.isInitializing) return null;
-
-      final onLoginPage = state.matchedLocation == '/login';
-      if (authState.isAuthenticated && onLoginPage) return '/map';
-      if (!authState.isAuthenticated && !onLoginPage) return '/login';
-
-      return null;
+      return authRedirect(ref.read(authProvider), state.matchedLocation);
     },
     routes: [
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      authRoute,
       GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
       GoRoute(
         path: '/quests',

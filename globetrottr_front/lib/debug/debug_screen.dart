@@ -140,18 +140,17 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                               email: _emailController.text,
                               password: _passwordController.text,
                             );
-                            final token = await ref
+                            await ref
                                 .read(authServiceProvider)
                                 .register(request);
 
                             if (!context.mounted) return;
 
-                            setState(() {
-                              _jwtToken = token;
-                            });
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Registered and Logged in!'),
+                                content: Text(
+                                  'Registered, the code is in the e-mail',
+                                ),
                               ),
                             );
                           } catch (e) {

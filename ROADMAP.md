@@ -54,11 +54,11 @@ Source of truth for the plan and the key design decisions of every part of the a
 
 The app moves from the current dark neumorphic look to a light neumorphic style with one configurable accent colour. The reference is the HTML mock-up `globetrotttr-neo-neumorphic.html` (branch `design/neo-mockup`); screens in its "Locked in" group are approved, the rest are still being iterated.
 
-**Current frontend:** the whole app uses the light theme tokens, the bundled Manrope font and the shared neumorphic components; the bottom navigation follows the mock-up and Quests is a tab with the old quest list. Screen layouts are still the old ones: login and registration share one screen, there is no e-mail verification screen and a registration is treated as a login although the backend returns no token until the e-mail is verified. Friends: list, invite hub, friend's map.
+**Current frontend:** the whole app uses the light theme tokens, the bundled Manrope font and the shared neumorphic components; the bottom navigation follows the mock-up and Quests is a tab with the old quest list. The auth screens follow the mock-up. Friends (list, invite hub, friend's map), the map overlays and the profile still have their old layouts.
 
 **Stages** (each ends with a review by the owner):
 1. Theme tokens, bundled Manrope font, shared components, bottom navigation, fog colour (Done; not yet checked on a phone).
-2. Auth: login, registration, e-mail verification, password reset (Planned).
+2. Auth: login, registration, e-mail verification, password reset (Done; not yet checked on a phone or against the backend).
 3. Friends and adding a friend (Planned).
 4. Map: area pill, recording, quest flag with its card, layers sheet (Planned).
 
@@ -72,14 +72,16 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - Shadows follow one scale of five depths taken from the mock-up instead of a value per element. Why: the mock-up's small differences in shadow opacity are not visible and one scale keeps components consistent.
 - The fog colour and opacity come from the theme palette like every other colour.
 - Dev and release builds differ only by the dev button and its tools. Missing data is shown as placeholders from providers, marked `TODO(data)`, in both builds.
-- Guest mode in release: "Skip" on the login screen enters the app without an account; everything local works, backend features fail as offline.
+- Guest mode in release: "Skip" on the login screen enters the app without an account and is remembered across restarts until the user leaves it from the profile; everything local works, backend features fail as offline.
 - Registration goes through e-mail verification (the backend already supports it); password rules follow the backend, not the mock-up text.
-- Password reset is UI only until the backend has an endpoint for it.
+- Signing in to an account whose e-mail is not verified only shows a message. Why: the backend needs the address to send a code and the user may have typed the nickname. Known gap: such an account can be verified only right after registering.
+- Password reset is UI only until the backend has an endpoint for it: "Send code" says it is not available yet and the code screen is built but not reachable.
+- The auth screens are nested routes under the login screen, so going back follows the routes and one redirect takes the user to the map once they are in.
 - Until the Quests tab is designed it shows the existing quest list; the map card shows the first started quest. Quests have no map points yet, so the point marker and distance are placeholders.
 - Product decisions from the mock-up: one active quest at a time, its next point is shown on the map without navigation; friends are added by exact nickname, without suggestions; the profile has no map; the "passing through" feature is dropped.
 
 **Open questions:**
-- Guest data after signing in: the fog stays (it is per installation), but should points recorded as a guest be uploaded to the new account?
+- Guest data after signing in: the fog stays (it is per installation), but should points recorded as a guest be uploaded to the new account? For now leaving guest mode keeps them in the upload queue, so the first sync after signing in sends them.
 
 **Ideas:**
 - **Configurable profile widgets:** the profile (own and a friend's) is assembled from widgets the user picks and orders. Candidates from the mock-up: metric tiles, discovery per month chart, cities with % rings, countries with km² bars, completed quests carousel. The mock-up keeps a fixed layout until then.

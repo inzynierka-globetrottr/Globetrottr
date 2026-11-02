@@ -10,13 +10,6 @@ import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import '../../support/fake_auth_service.dart';
 import '../../support/fake_location_service.dart';
 
-class _LoggingOutAuthService extends FakeAuthService {
-  int logouts = 0;
-
-  @override
-  Future<void> logout() async => logouts++;
-}
-
 /// Pending points can be tens of thousands after a long offline trip, so
 /// logout must only count them.
 class _CountingMapStorage extends MapStorage {
@@ -37,7 +30,7 @@ class _CountingMapStorage extends MapStorage {
 }
 
 void main() {
-  late _LoggingOutAuthService auth;
+  late FakeAuthService auth;
   late FakeSyncService sync;
 
   ProviderContainer containerWith(_CountingMapStorage storage) {
@@ -54,7 +47,7 @@ void main() {
   }
 
   setUp(() {
-    auth = _LoggingOutAuthService();
+    auth = FakeAuthService();
     sync = FakeSyncService();
   });
 

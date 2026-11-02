@@ -4,6 +4,16 @@ enum AppIcons {
   navQuests('nav_quests'),
   navFriends('nav_friends'),
   navProfile('nav_profile'),
+  fieldUser('field_user'),
+  fieldMail('field_mail'),
+  fieldLock('field_lock'),
+  eye('eye'),
+  eyeOff('eye_off'),
+  chevronLeft('chevron_left'),
+  chevronRight('chevron_right'),
+
+  /// The globe of the logo, drawn over a disc in the accent colour.
+  globe('globe', tintable: false),
 
   /// Brand logo; keeps its own colours.
   google('google', tintable: false);
