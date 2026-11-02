@@ -1,11 +1,10 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/localization/area_format.dart';
+import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
+import 'package:globetrottr_front/core/widgets/progress_ring.dart';
 import 'package:globetrottr_front/core/widgets/user_avatar_bubble.dart';
 import 'package:globetrottr_front/features/friends/provider/weekly_ranking.dart';
 
@@ -41,11 +40,11 @@ class WeeklyPerson extends StatelessWidget {
                 ? shadows.inset(NeoDepth.md)
                 : shadows.raised(NeoDepth.lg),
             size: _circle,
-            child: CustomPaint(
-              painter: _RingPainter(
-                fill: entry.ringFill,
-                color: isMe ? palette.gold : palette.accent,
-              ),
+            child: ProgressRing(
+              fill: entry.ringFill,
+              color: isMe ? palette.gold : palette.accent,
+              radiusRatio: 28 / _circle,
+              strokeRatio: 4 / _circle,
               child: Center(
                 child: SizedBox.square(
                   dimension: _avatar,
@@ -78,37 +77,4 @@ class WeeklyPerson extends StatelessWidget {
       ),
     );
   }
-}
-
-class _RingPainter extends CustomPainter {
-  _RingPainter({required this.fill, required this.color});
-
-  final double fill;
-  final Color color;
-
-  static const _stroke = 4.0;
-
-  /// Distance of the ring from the centre in a 64 px circle.
-  static const _radiusRatio = 28 / 64;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (fill <= 0) return;
-    final radius = size.width * _radiusRatio;
-    canvas.drawArc(
-      Rect.fromCircle(center: size.center(Offset.zero), radius: radius),
-      -math.pi / 2,
-      2 * math.pi * fill.clamp(0, 1),
-      false,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _stroke
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_RingPainter old) =>
-      old.fill != fill || old.color != color;
 }

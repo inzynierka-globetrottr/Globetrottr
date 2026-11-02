@@ -30,6 +30,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBack => 'Back';
 
   @override
+  String get commonClose => 'Close';
+
+  @override
+  String mapPercent(String value) {
+    return '$value%';
+  }
+
+  @override
+  String get mapUnknownRegion => 'Your area';
+
+  @override
+  String mapNewArea(String area) {
+    return '+$area km²';
+  }
+
+  @override
+  String get mapNewAreaLabel => 'new ground';
+
+  @override
+  String get mapStartWalk => 'Start the walk';
+
+  @override
+  String get mapStopWalk => 'Stop the walk';
+
+  @override
+  String get mapLayers => 'Map layers';
+
+  @override
+  String get mapRecenter => 'Center on my position';
+
+  @override
+  String get mapViewFog => 'Fog';
+
+  @override
+  String get mapViewStreets => 'Streets only';
+
+  @override
+  String get mapViewHeatmap => 'Heatmap';
+
+  @override
+  String get mapViewVoronoi => 'Voronoi';
+
+  @override
+  String get mapViewUnavailable => 'This view will be available soon.';
+
+  @override
+  String questActive(String title) {
+    return 'Active quest: $title';
+  }
+
+  @override
+  String get questDetails => 'Quest details';
+
+  @override
+  String questProgressShort(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String questPointLabel(String distance) {
+    return 'Quest · $distance';
+  }
+
+  @override
   String get authSkip => 'Skip';
 
   @override

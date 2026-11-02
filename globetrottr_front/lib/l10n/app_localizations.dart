@@ -140,6 +140,114 @@ abstract class AppLocalizations {
   /// **'Back'**
   String get commonBack;
 
+  /// No description provided for @commonClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get commonClose;
+
+  /// No description provided for @mapPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}%'**
+  String mapPercent(String value);
+
+  /// No description provided for @mapUnknownRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Your area'**
+  String get mapUnknownRegion;
+
+  /// No description provided for @mapNewArea.
+  ///
+  /// In en, this message translates to:
+  /// **'+{area} km²'**
+  String mapNewArea(String area);
+
+  /// No description provided for @mapNewAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'new ground'**
+  String get mapNewAreaLabel;
+
+  /// No description provided for @mapStartWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the walk'**
+  String get mapStartWalk;
+
+  /// No description provided for @mapStopWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop the walk'**
+  String get mapStopWalk;
+
+  /// No description provided for @mapLayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Map layers'**
+  String get mapLayers;
+
+  /// No description provided for @mapRecenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Center on my position'**
+  String get mapRecenter;
+
+  /// No description provided for @mapViewFog.
+  ///
+  /// In en, this message translates to:
+  /// **'Fog'**
+  String get mapViewFog;
+
+  /// No description provided for @mapViewStreets.
+  ///
+  /// In en, this message translates to:
+  /// **'Streets only'**
+  String get mapViewStreets;
+
+  /// No description provided for @mapViewHeatmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Heatmap'**
+  String get mapViewHeatmap;
+
+  /// No description provided for @mapViewVoronoi.
+  ///
+  /// In en, this message translates to:
+  /// **'Voronoi'**
+  String get mapViewVoronoi;
+
+  /// No description provided for @mapViewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This view will be available soon.'**
+  String get mapViewUnavailable;
+
+  /// No description provided for @questActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active quest: {title}'**
+  String questActive(String title);
+
+  /// No description provided for @questDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest details'**
+  String get questDetails;
+
+  /// No description provided for @questProgressShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String questProgressShort(String percent);
+
+  /// No description provided for @questPointLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest · {distance}'**
+  String questPointLabel(String distance);
+
   /// No description provided for @authSkip.
   ///
   /// In en, this message translates to:

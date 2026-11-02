@@ -31,9 +31,9 @@ class NeuIconButton extends StatelessWidget {
     final shadows = context.shadows;
     return NeuPressable(
       onPressed: onPressed,
-      shadows: fill == NeuFill.accent
-          ? shadows.raisedAccent(depth)
-          : shadows.raised(depth),
+      shadows: fill == NeuFill.page
+          ? shadows.raised(depth)
+          : shadows.raisedAccent(depth),
       depth: NeoDepth.xs,
       width: size,
       color: switch (fill) {

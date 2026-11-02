@@ -54,13 +54,13 @@ Source of truth for the plan and the key design decisions of every part of the a
 
 The app moves from the current dark neumorphic look to a light neumorphic style with one configurable accent colour. The reference is the HTML mock-up `globetrotttr-neo-neumorphic.html` (branch `design/neo-mockup`); screens in its "Locked in" group are approved, the rest are still being iterated.
 
-**Current frontend:** the whole app uses the light theme tokens, the bundled Manrope font and the shared neumorphic components; the bottom navigation follows the mock-up and Quests is a tab with the old quest list. The auth, Friends and Add friend screens follow the mock-up; numbers the backend does not provide yet are neutral placeholders. The friend's map, the map overlays and the profile still have their old layouts.
+**Current frontend:** the whole app uses the light theme tokens, the bundled Manrope font and the shared neumorphic components; the bottom navigation follows the mock-up and Quests is a tab with the old quest list. The auth, Friends, Add friend and map screens follow the mock-up; numbers the backend does not provide yet are neutral placeholders. The friend's map and the profile still have their old layouts.
 
 **Stages** (each ends with a review by the owner):
 1. Theme tokens, bundled Manrope font, shared components, bottom navigation, fog colour (Done; not yet checked on a phone).
 2. Auth: login, registration, e-mail verification, password reset (Done; not yet checked on a phone or against the backend).
 3. Friends and adding a friend (Done; not yet checked on a phone or against the backend).
-4. Map: area pill, recording, quest flag with its card, layers sheet (Planned).
+4. Map: area pill, recording, quest flag with its card, layers sheet (Done; not yet checked on a phone).
 
 **Decisions:**
 - Port in stages, cheapest visual gain first. Screens outside the "Locked in" group (comparison with a friend, statistics, countries, regions, cities, badges) wait for approval and data.
@@ -80,7 +80,9 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - Placeholders for missing data are neutral ("— km²", empty rings, level "–", no invite details), never sample numbers, because they show next to real friends in release.
 - "This week" shows the user and every friend with discovered area that week, largest first; with more than four the row scrolls and the next person peeks in at the edge.
 - Received invites live in a folding card on the Friends screen and sent ones on the Add friend screen; the separate invites screen and user search are gone. Until the comparison screen is approved, a friend's arrow opens their map.
-- Until the Quests tab is designed it shows the existing quest list; the map card shows the first started quest. Quests have no map points yet, so the point marker and distance are placeholders.
+- The map always keeps north up and has no compass, as in the mock-up.
+- The layers sheet lists every planned view; only the fog can be chosen, the others say they are coming.
+- Until the Quests tab is designed it shows the existing quest list; the map card shows the first started quest with its progress. Quests have no map points yet, so the point marker, its distance and the bar of points wait for that data.
 - Product decisions from the mock-up: one active quest at a time, its next point is shown on the map without navigation; friends are added by exact nickname, without suggestions; the profile has no map; the "passing through" feature is dropped.
 
 **Open questions:**

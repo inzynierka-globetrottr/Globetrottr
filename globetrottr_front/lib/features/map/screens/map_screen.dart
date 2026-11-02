@@ -5,19 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/features/map/camera_health.dart';
-import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
-import 'package:globetrottr_front/debug/widgets/dev_floating_button.dart';
 import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
-import 'package:globetrottr_front/features/map/screens/widgets/compass_button.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_layer.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/layers_sheet.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/map_overlay.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker_layer.dart';
-import 'package:globetrottr_front/features/map/screens/widgets/recenter_button.dart';
-import 'package:globetrottr_front/features/map/screens/widgets/recording_toggle_button.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_point_layer.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -31,11 +30,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   final MapController _mapController = MapController();
   StreamSubscription<MapEvent>? _cameraWatch;
   String? _lastCameraProblem;
+  bool _questOpen = false;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(locationProvider.notifier).startTracking());
+    Future.microtask(() {
+      ref.read(locationProvider.notifier).startTracking();
+      ref.read(questsProvider.notifier).loadQuests();
+    });
     _cameraWatch = _mapController.mapEventStream.listen(_logCameraProblem);
   }
 
@@ -50,6 +53,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         '(${event.source}): $problem',
       );
     }
+  }
+
+  void _recenter() {
+    final position = ref.read(locationProvider).currentPosition;
+    if (position != null) _mapController.move(position, MapConfig.defaultZoom);
   }
 
   @override
@@ -71,7 +79,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final motion = ref.watch(playerMotionProvider);
     final fog = ref.watch(fogProvider);
     final fogOptions = ref.watch(fogRenderOptionsProvider);
-    final topSafeInset = MediaQuery.paddingOf(context).top;
 
     return Scaffold(
       body: Stack(
@@ -81,9 +88,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             options: const MapOptions(
               initialCenter: MapConfig.initialCenter,
               initialZoom: MapConfig.defaultZoom,
+              // North stays up, as in the mock-up, which has no compass.
               interactionOptions: InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                 enableMultiFingerGestureRace: true,
-                rotationThreshold: 10.0,
               ),
             ),
             children: [
@@ -102,40 +110,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   return PlayerMarkerLayer(position: position);
                 },
               ),
+              QuestPointLayer(
+                selected: _questOpen,
+                onTap: () => setState(() => _questOpen = true),
+              ),
             ],
           ),
-
-          if (DevConfig.isDevMode)
-            Positioned(
-              top: topSafeInset + 16.0,
-              left: 16.0,
-              child: const DevFloatingButton(heroTag: 'map_dev_fab'),
-            ),
-
-          Positioned(
-            top: topSafeInset + 16.0,
-            right: 16.0,
-            child: const RecordingToggleButton(),
-          ),
-          Positioned(
-            top: topSafeInset + 76.0,
-            right: 16.0,
-            child: RecenterButton(mapController: _mapController),
-          ),
-          Positioned(
-            top: topSafeInset + 136.0,
-            right: 16.0,
-            child: CompassButton(mapController: _mapController),
-          ),
-
-          const Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: NeuBottomNavbar(
-              activeItem: NavbarItem.map,
-              overMap: true,
-            ),
+          MapOverlay(
+            questOpen: _questOpen,
+            onQuestToggle: () => setState(() => _questOpen = !_questOpen),
+            onLayers: () => showLayersSheet(context),
+            onRecenter: _recenter,
           ),
         ],
       ),

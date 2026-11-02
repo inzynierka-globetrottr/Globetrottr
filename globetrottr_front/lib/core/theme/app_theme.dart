@@ -29,6 +29,14 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       ),
+      // Sheets draw their own surface and shadow; the map stays undimmed.
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.transparent,
+        modalBackgroundColor: Colors.transparent,
+        modalBarrierColor: Colors.transparent,
+        elevation: 0,
+        modalElevation: 0,
+      ),
       iconTheme: IconThemeData(color: palette.text),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,

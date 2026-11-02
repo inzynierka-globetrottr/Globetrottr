@@ -14,6 +14,11 @@ enum AppIcons {
   plus('plus'),
   close('close'),
   check('check'),
+  play('play'),
+  stop('stop'),
+  layers('layers'),
+  recenter('recenter'),
+  flag('flag'),
 
   /// The globe of the logo, drawn over a disc in the accent colour.
   globe('globe', tintable: false),

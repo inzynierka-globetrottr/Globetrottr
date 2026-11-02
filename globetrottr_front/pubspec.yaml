@@ -59,6 +59,7 @@ flutter:
     assets:
         - .env
         - assets/icons/
+        - assets/illustrations/
 
     # Static instances of the Manrope variable font (OFL, see assets/fonts/manrope/OFL.txt).
     fonts:

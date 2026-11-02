@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/core/localization/area_format.dart';
+import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';

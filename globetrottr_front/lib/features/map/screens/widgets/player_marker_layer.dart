@@ -14,8 +14,8 @@ class PlayerMarkerLayer extends StatelessWidget {
       markers: [
         Marker(
           point: position,
-          width: 20,
-          height: 20,
+          width: PlayerMarker.size,
+          height: PlayerMarker.size,
           child: const PlayerMarker(),
         ),
       ],

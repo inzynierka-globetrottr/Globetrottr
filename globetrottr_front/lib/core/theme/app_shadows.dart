@@ -122,6 +122,9 @@ class AppShadows extends ThemeExtension<AppShadows> {
   /// Small labels on the map.
   List<NeoShadow> get mapLabel => _drop(4, 12, 0.35);
 
+  /// Markers drawn on the map.
+  List<NeoShadow> get marker => _drop(3, 6, 0.35);
+
   /// A sheet sliding up over the map.
   List<NeoShadow> get sheet => _drop(-10, 30, 0.25);
 
