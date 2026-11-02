@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
-import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 /// A raised surface that sinks in while pressed. The common part of every
@@ -10,7 +9,7 @@ class NeuPressable extends StatefulWidget {
     super.key,
     required this.onPressed,
     required this.shadows,
-    required this.depth,
+    required this.pressedShadows,
     required this.child,
     this.color,
     this.width,
@@ -25,8 +24,8 @@ class NeuPressable extends StatefulWidget {
   /// Shadows while not pressed.
   final List<NeoShadow> shadows;
 
-  /// Depth of the inset shadows while pressed.
-  final NeoDepth depth;
+  /// Shadows while pressed.
+  final List<NeoShadow> pressedShadows;
   final Widget child;
   final Color? color;
   final double? width;
@@ -53,9 +52,7 @@ class _NeuPressableState extends State<NeuPressable> {
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null;
-    final shadows = _pressed
-        ? context.shadows.inset(widget.depth)
-        : widget.shadows;
+    final shadows = _pressed ? widget.pressedShadows : widget.shadows;
     final content = Opacity(
       opacity: enabled ? 1 : _disabledOpacity,
       child: Center(child: widget.child),

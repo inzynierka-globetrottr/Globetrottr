@@ -26,7 +26,7 @@ class NeuButton extends StatelessWidget {
   Widget build(BuildContext context) => NeuPressable(
     onPressed: onPressed,
     shadows: context.shadows.raised(depth),
-    depth: NeoDepth.sm,
+    pressedShadows: context.shadows.inset(NeoDepth.sm),
     width: width,
     height: height,
     borderRadius: BorderRadius.circular(height / 2),

@@ -26,7 +26,7 @@ class NeuPrimaryButton extends StatelessWidget {
     return NeuPressable(
       onPressed: isLoading ? () {} : onPressed,
       shadows: context.shadows.raisedAccent(NeoDepth.xl),
-      depth: NeoDepth.md,
+      pressedShadows: context.shadows.insetAccent(NeoDepth.md),
       color: palette.accent,
       width: double.infinity,
       height: _height,

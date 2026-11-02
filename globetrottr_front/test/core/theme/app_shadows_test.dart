@@ -8,6 +8,7 @@ void main() {
     dark: Color(0xFF8C8374),
     light: Color(0xFFFFFFFF),
     overlay: Color(0xFF14120F),
+    pressed: Color(0xFF000000),
   );
 
   group('NeoShadow', () {
@@ -77,6 +78,19 @@ void main() {
       expect(accent.where((s) => s.inset), hasLength(1));
     });
 
+    test(
+      'a pressed accent fill sinks into darkness, not into the page tint',
+      () {
+        final pressed = shadows.insetAccent(NeoDepth.md);
+
+        expect(pressed.every((s) => s.inset), isTrue);
+        expect(pressed[0].offset, const Offset(5, 5));
+        expect(pressed[0].color, Colors.black.withValues(alpha: 0.42));
+        expect(pressed[1].offset, const Offset(-3, -3));
+        expect(pressed[1].color.a, closeTo(0.16, 0.01));
+      },
+    );
+
     test('elements over the map cast one soft shadow straight down', () {
       expect(shadows.mapControl.single.offset, const Offset(0, 8));
       expect(shadows.mapControl.single.blur, 22);
@@ -88,6 +102,7 @@ void main() {
 
       expect(fromPalette.dark, AppPalette.light.shadowDark);
       expect(fromPalette.light, AppPalette.light.shadowLight);
+      expect(fromPalette.pressed, AppPalette.light.shadowPressed);
     });
   });
 }

@@ -29,24 +29,23 @@ class NeuIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final shadows = context.shadows;
+    final (color, iconColor) = switch (fill) {
+      NeuFill.page => (null, palette.text),
+      NeuFill.accent => (palette.accent, palette.onAccent),
+      NeuFill.danger => (palette.danger, palette.onAccent),
+    };
+    final page = fill == NeuFill.page;
     return NeuPressable(
       onPressed: onPressed,
-      shadows: fill == NeuFill.page
-          ? shadows.raised(depth)
-          : shadows.raisedAccent(depth),
-      depth: NeoDepth.xs,
+      shadows: page ? shadows.raised(depth) : shadows.raisedAccent(depth),
+      pressedShadows: page
+          ? shadows.inset(NeoDepth.xs)
+          : shadows.insetAccent(NeoDepth.xs),
       width: size,
-      color: switch (fill) {
-        NeuFill.page => null,
-        NeuFill.accent => palette.accent,
-        NeuFill.danger => palette.danger,
-      },
+      color: color,
       semanticLabel: semanticLabel,
       child: IconTheme.merge(
-        data: IconThemeData(
-          color: fill == NeuFill.page ? palette.text : palette.onAccent,
-          size: 18,
-        ),
+        data: IconThemeData(color: iconColor, size: 18),
         child: child,
       ),
     );

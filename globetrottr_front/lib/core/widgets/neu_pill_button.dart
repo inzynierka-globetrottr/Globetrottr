@@ -40,7 +40,7 @@ class NeuPillButton extends StatelessWidget {
     return NeuPressable(
       onPressed: onPressed,
       shadows: context.shadows.raised(size.depth),
-      depth: NeoDepth.xs,
+      pressedShadows: context.shadows.inset(NeoDepth.xs),
       height: size.height,
       borderRadius: BorderRadius.circular(size.height / 2),
       padding: EdgeInsets.only(

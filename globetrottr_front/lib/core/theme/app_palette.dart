@@ -20,6 +20,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.shadowDark,
     required this.shadowLight,
     required this.shadowOverlay,
+    required this.shadowPressed,
     required this.fog,
   });
 
@@ -38,6 +39,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     shadowDark: Color(0xFF8C8374),
     shadowLight: Color(0xFFFFFFFF),
     shadowOverlay: Color(0xFF14120F),
+    shadowPressed: Color(0xFF000000),
     fog: Color(0xDB383633),
   );
 
@@ -73,6 +75,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Shadow of the elements that float over the map.
   final Color shadowOverlay;
 
+  /// The shade a pressed [accent] or [danger] fill sinks into.
+  final Color shadowPressed;
+
   /// Undiscovered area, opacity included.
   final Color fog;
 
@@ -92,6 +97,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? shadowDark,
     Color? shadowLight,
     Color? shadowOverlay,
+    Color? shadowPressed,
     Color? fog,
   }) => AppPalette(
     background: background ?? this.background,
@@ -108,6 +114,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     shadowDark: shadowDark ?? this.shadowDark,
     shadowLight: shadowLight ?? this.shadowLight,
     shadowOverlay: shadowOverlay ?? this.shadowOverlay,
+    shadowPressed: shadowPressed ?? this.shadowPressed,
     fog: fog ?? this.fog,
   );
 
@@ -130,6 +137,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
       shadowDark: mix(shadowDark, other.shadowDark),
       shadowLight: mix(shadowLight, other.shadowLight),
       shadowOverlay: mix(shadowOverlay, other.shadowOverlay),
+      shadowPressed: mix(shadowPressed, other.shadowPressed),
       fog: mix(fog, other.fog),
     );
   }
