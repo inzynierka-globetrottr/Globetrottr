@@ -50,6 +50,19 @@ Source of truth for the plan and the key design decisions of every part of the a
 
 ---
 
+## UI redesign "Neo · Neumorphic" (In progress)
+
+The app moves from the current dark neumorphic look to a light neumorphic style with one configurable accent colour. The reference is the HTML mock-up `globetrotttr-neo-neumorphic.html` (branch `design/neo-mockup`); screens in its "Locked in" group are approved, the rest are still being iterated.
+
+**Decisions:**
+- Port in stages, cheapest visual gain first: palette, font and the shared neumorphic widgets; then auth, friends and profile; then the map overlays and Quests as a full tab instead of a drawer. Screens that need data the app does not have yet (comparison with a friend, statistics, countries, regions, cities, badge tiers) wait for that data.
+- Product decisions from the mock-up: one active quest at a time, its next point is shown on the map without navigation; friends are added by exact nickname, without suggestions; the profile has no map; the "passing through" feature is dropped.
+
+**Ideas:**
+- **Configurable profile widgets:** the profile (own and a friend's) is assembled from widgets the user picks and orders. Candidates from the mock-up: metric tiles, discovery per month chart, cities with % rings, countries with km² bars, completed quests carousel. The mock-up keeps a fixed layout until then.
+
+---
+
 ## Map views (Planned)
 
 Besides the classic fog, the user can switch between several views of what they have discovered.
