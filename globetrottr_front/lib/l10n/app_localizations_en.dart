@@ -250,7 +250,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileUnsyncedTripsTitle => 'Unsynced trips';
 
   @override
-  String get profileUnsyncedTripsMessage => 'Some of your recorded points could not be uploaded. If you log out now, they will be lost.';
+  String get profileUnsyncedTripsMessage =>
+      'Some of your recorded points could not be uploaded. If you log out now, they will be lost.';
 
   @override
   String get profileLogOutAnyway => 'Log out anyway';
@@ -302,7 +303,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendsEmptyTitle => 'No friends yet';
 
   @override
-  String get friendsEmptyBody => 'Add someone by their nickname to see how far they have explored.';
+  String get friendsEmptyBody =>
+      'Add someone by their nickname to see how far they have explored.';
 
   @override
   String friendsOpen(String username) {
@@ -396,7 +398,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationUsernameRequired => 'Login is required';
 
   @override
-  String get validationUsernameLength => 'Login must be between 3 and 50 characters';
+  String get validationUsernameLength =>
+      'Login must be between 3 and 50 characters';
 
   @override
   String get validationEmailRequired => 'Email is required';
@@ -408,10 +411,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationPasswordRequired => 'Password is required';
 
   @override
-  String get validationPasswordLength => 'Password must be between 6 and 50 characters';
+  String get validationPasswordLength =>
+      'Password must be between 6 and 50 characters';
 
   @override
-  String get validationPasswordComplexity => 'Password must contain an uppercase letter, a lowercase letter, a digit and a special character';
+  String get validationPasswordComplexity =>
+      'Password must contain an uppercase letter, a lowercase letter, a digit and a special character';
 
   @override
   String get errorNetwork => 'Network error. Please check your connection.';
@@ -443,10 +448,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorSomethingWentWrong => 'Something went wrong.';
 
   @override
-  String get errorSomethingWentWrongTryAgain => 'Something went wrong. Please try again.';
+  String get errorSomethingWentWrongTryAgain =>
+      'Something went wrong. Please try again.';
 
   @override
-  String get errorFailedToLoadProfile => 'Something went wrong. Failed to load profile.';
+  String get errorFailedToLoadProfile =>
+      'Something went wrong. Failed to load profile.';
 
   @override
   String get errorFailedToUpdateBio => 'Failed to update bio.';
@@ -455,19 +462,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorFailedToUploadAvatar => 'Failed to upload avatar.';
 
   @override
-  String get errorFailedToLoadQuests => 'Something went wrong. Failed to load quests.';
+  String get errorFailedToLoadQuests =>
+      'Something went wrong. Failed to load quests.';
 
   @override
-  String get errorLocationDisabled => 'Location services are disabled. Please enable them in your device settings.';
+  String get errorLocationDisabled =>
+      'Location services are disabled. Please enable them in your device settings.';
 
   @override
-  String get errorLocationPermissionRequired => 'Location permission is required to track your trips.';
+  String get errorLocationPermissionRequired =>
+      'Location permission is required to track your trips.';
 
   @override
   String get errorInvalidCredentials => 'Wrong login or password.';
 
   @override
-  String get errorEmailNotVerified => 'Confirm your e-mail address before signing in.';
+  String get errorEmailNotVerified =>
+      'Confirm your e-mail address before signing in.';
 
   @override
   String get errorInvalidCode => 'Wrong code.';
@@ -494,7 +505,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorAlreadyFriends => 'You are already friends.';
 
   @override
-  String get errorInviteAlreadySent => 'An invite is already waiting for an answer.';
+  String get errorInviteAlreadySent =>
+      'An invite is already waiting for an answer.';
 
   @override
   String get errorCannotInvite => 'This user cannot be invited.';
@@ -503,5 +515,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorGoogleAuthFailed => 'Google authentication failed.';
 
   @override
-  String get locationNotificationText => 'Recording your route in the background...';
+  String get locationNotificationText =>
+      'Recording your route in the background...';
 }

@@ -14,6 +14,13 @@ void main() {
 
   test('nothing moves while the session is being checked', () {
     expect(authRedirect(const AuthState(), '/map'), isNull);
+    expect(authRedirect(const AuthState(), AuthRoutes.start), isNull);
+  });
+
+  test('the start screen leads to the map or to the login', () {
+    expect(authRedirect(signedIn, AuthRoutes.start), '/map');
+    expect(authRedirect(guest, AuthRoutes.start), '/map');
+    expect(authRedirect(signedOut, AuthRoutes.start), AuthRoutes.login);
   });
 
   test('a signed-out user may open every auth screen but verification', () {

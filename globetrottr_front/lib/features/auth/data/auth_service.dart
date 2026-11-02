@@ -79,6 +79,8 @@ class AuthService {
 
   Future<bool> isGuest() => _tokenStore.isGuest();
 
+  Future<bool> hasStoredToken() async => await _tokenStore.getToken() != null;
+
   Future<void> startGuestSession() => _tokenStore.saveGuest();
 
   Future<void> endGuestSession() => _tokenStore.deleteGuest();

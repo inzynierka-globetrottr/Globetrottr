@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/auth_config.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
-import 'package:globetrottr_front/core/network/token_store.dart';
 import 'package:globetrottr_front/core/time/clock.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/data/login_request.dart';
@@ -28,22 +29,53 @@ class AuthNotifier extends Notifier<AuthState> {
 
   DateTime get _now => ref.read(clockProvider)();
 
-  /// A session check never logs out a user who got in while it was running
-  /// (a login, or a guest while the backend is unreachable).
+  /// Decides from the device alone, so the app opens without waiting for
+  /// the network; the stored token is refreshed afterwards. A session check
+  /// never logs out a user who got in while it was running.
   Future<void> _checkExistingSession() async {
-    if (await _storedGuest()) {
+    final guest = await _storedGuest();
+    if (!ref.mounted) return;
+    if (guest) {
       state = state.copyWith(isGuest: true, isInitializing: false);
       return;
     }
-    try {
-      final token = await _authService.refreshToken();
-      if (token != null) await _enterAccount();
-    } catch (e) {
-      debugPrint('Session check did not authenticate: $e');
-      final hasToken = await ref.read(tokenStoreProvider).getToken() != null;
-      if (hasToken) await _enterAccount();
-    }
+    final hasToken = await _storedToken();
+    if (!ref.mounted) return;
+    if (hasToken) await _enterAccount();
+    if (!ref.mounted) return;
     state = state.copyWith(isInitializing: false);
+    if (hasToken) unawaited(_refreshSession());
+  }
+
+  /// Offline the stored token keeps the user in; only the backend rejecting
+  /// it ends the session.
+  Future<void> _refreshSession() async {
+    try {
+      await _authService.refreshToken();
+    } on UnauthorizedException {
+      await _endRejectedSession();
+    } on ForbiddenException {
+      await _endRejectedSession();
+    } catch (e) {
+      debugPrint('Could not refresh the session: $e');
+    }
+  }
+
+  /// Pending points stay for the next sign-in, as the backend cannot take
+  /// them without a valid token.
+  Future<void> _endRejectedSession() async {
+    if (!ref.mounted || !state.isAuthenticated) return;
+    await _stopRecording();
+    await _signOut();
+  }
+
+  Future<bool> _storedToken() async {
+    try {
+      return await _authService.hasStoredToken();
+    } catch (e) {
+      debugPrint('Could not read the stored token: $e');
+      return false;
+    }
   }
 
   /// An account wins over a guest chosen in the meantime, so the two never
@@ -177,12 +209,7 @@ class AuthNotifier extends Notifier<AuthState> {
   /// A guest has nothing to sync; a signed-in user's pending points are sent
   /// first unless [discardUnsyncedPoints].
   Future<bool> logout({bool discardUnsyncedPoints = false}) async {
-    final locationState = ref.read(locationProvider);
-    final notifier = ref.read(locationProvider.notifier);
-
-    if (locationState.isRecording) {
-      await notifier.setRecording(false);
-    }
+    await _stopRecording();
 
     if (!state.isGuest) {
       if (!discardUnsyncedPoints) {
@@ -198,6 +225,17 @@ class AuthNotifier extends Notifier<AuthState> {
       }
       await ref.read(mapStorageProvider).clearPendingPoints();
     }
+    await _signOut();
+    return true;
+  }
+
+  Future<void> _stopRecording() async {
+    if (ref.read(locationProvider).isRecording) {
+      await ref.read(locationProvider.notifier).setRecording(false);
+    }
+  }
+
+  Future<void> _signOut() async {
     await _authService.logout();
 
     ref.invalidate(locationProvider);
@@ -207,6 +245,5 @@ class AuthNotifier extends Notifier<AuthState> {
     ref.invalidate(questsProvider);
 
     state = const AuthState(isInitializing: false);
-    return true;
   }
 }

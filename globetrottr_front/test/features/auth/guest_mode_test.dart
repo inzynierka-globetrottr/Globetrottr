@@ -97,12 +97,15 @@ void main() {
   });
 
   test('an account found after skipping replaces the guest', () async {
+    auth
+      ..storedToken = true
+      ..storageGate = Completer<void>();
     final container = start();
     container.read(authProvider);
-    // The check is now waiting for the backend.
+    // The check is now reading the stored token.
     await settle();
     await container.read(authProvider.notifier).continueAsGuest();
-    auth.sessionCheck.complete('token');
+    auth.storageGate!.complete();
     await settle();
 
     final state = container.read(authProvider);

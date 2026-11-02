@@ -27,7 +27,7 @@ final appRouter = Provider<GoRouter>((ref) {
   final listenable = AuthNotifierListenable(ref);
 
   return GoRouter(
-    initialLocation: AuthRoutes.login,
+    initialLocation: AuthRoutes.start,
     refreshListenable: listenable,
     redirect: (context, state) {
       if ((DevConfig.isDevMode || kDebugMode) &&
@@ -38,6 +38,7 @@ final appRouter = Provider<GoRouter>((ref) {
       return authRedirect(ref.read(authProvider), state.matchedLocation);
     },
     routes: [
+      startRoute,
       authRoute,
       GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
       GoRoute(

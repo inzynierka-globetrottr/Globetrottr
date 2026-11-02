@@ -251,7 +251,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileUnsyncedTripsTitle => 'Niezsynchronizowane trasy';
 
   @override
-  String get profileUnsyncedTripsMessage => 'Niektóre z zarejestrowanych punktów nie mogły zostać przesłane. Jeśli wylogujesz się teraz, zostaną utracone.';
+  String get profileUnsyncedTripsMessage =>
+      'Niektóre z zarejestrowanych punktów nie mogły zostać przesłane. Jeśli wylogujesz się teraz, zostaną utracone.';
 
   @override
   String get profileLogOutAnyway => 'Wyloguj mimo to';
@@ -304,7 +305,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String get friendsEmptyTitle => 'Nie masz jeszcze znajomych';
 
   @override
-  String get friendsEmptyBody => 'Dodaj kogoś po nicku, żeby zobaczyć, jak daleko zaszedł.';
+  String get friendsEmptyBody =>
+      'Dodaj kogoś po nicku, żeby zobaczyć, jak daleko zaszedł.';
 
   @override
   String friendsOpen(String username) {
@@ -413,7 +415,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String get validationPasswordLength => 'Hasło musi mieć od 6 do 50 znaków';
 
   @override
-  String get validationPasswordComplexity => 'Hasło musi zawierać wielką literę, małą literę, cyfrę i znak specjalny';
+  String get validationPasswordComplexity =>
+      'Hasło musi zawierać wielką literę, małą literę, cyfrę i znak specjalny';
 
   @override
   String get errorNetwork => 'Błąd sieci. Sprawdź swoje połączenie.';
@@ -434,7 +437,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String get errorTimeout => 'Upłynął limit czasu żądania. Spróbuj ponownie.';
 
   @override
-  String get errorBackendNotConfigured => 'Adres URL serwera nie jest skonfigurowany.';
+  String get errorBackendNotConfigured =>
+      'Adres URL serwera nie jest skonfigurowany.';
 
   @override
   String errorServer(int statusCode) {
@@ -445,10 +449,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get errorSomethingWentWrong => 'Coś poszło nie tak.';
 
   @override
-  String get errorSomethingWentWrongTryAgain => 'Coś poszło nie tak. Spróbuj ponownie.';
+  String get errorSomethingWentWrongTryAgain =>
+      'Coś poszło nie tak. Spróbuj ponownie.';
 
   @override
-  String get errorFailedToLoadProfile => 'Coś poszło nie tak. Nie udało się załadować profilu.';
+  String get errorFailedToLoadProfile =>
+      'Coś poszło nie tak. Nie udało się załadować profilu.';
 
   @override
   String get errorFailedToUpdateBio => 'Nie udało się zaktualizować biogramu.';
@@ -457,19 +463,23 @@ class AppLocalizationsPl extends AppLocalizations {
   String get errorFailedToUploadAvatar => 'Nie udało się przesłać awatara.';
 
   @override
-  String get errorFailedToLoadQuests => 'Coś poszło nie tak. Nie udało się załadować zadań.';
+  String get errorFailedToLoadQuests =>
+      'Coś poszło nie tak. Nie udało się załadować zadań.';
 
   @override
-  String get errorLocationDisabled => 'Usługi lokalizacji są wyłączone. Włącz je w ustawieniach urządzenia.';
+  String get errorLocationDisabled =>
+      'Usługi lokalizacji są wyłączone. Włącz je w ustawieniach urządzenia.';
 
   @override
-  String get errorLocationPermissionRequired => 'Uprawnienia lokalizacji są wymagane do śledzenia podróży.';
+  String get errorLocationPermissionRequired =>
+      'Uprawnienia lokalizacji są wymagane do śledzenia podróży.';
 
   @override
   String get errorInvalidCredentials => 'Nieprawidłowy login lub hasło.';
 
   @override
-  String get errorEmailNotVerified => 'Potwierdź adres e-mail, zanim się zalogujesz.';
+  String get errorEmailNotVerified =>
+      'Potwierdź adres e-mail, zanim się zalogujesz.';
 
   @override
   String get errorInvalidCode => 'Nieprawidłowy kod.';
@@ -502,7 +512,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String get errorCannotInvite => 'Tego użytkownika nie można zaprosić.';
 
   @override
-  String get errorGoogleAuthFailed => 'Logowanie przez Google nie powiodło się.';
+  String get errorGoogleAuthFailed =>
+      'Logowanie przez Google nie powiodło się.';
 
   @override
   String get locationNotificationText => 'Nagrywanie trasy w tle...';
