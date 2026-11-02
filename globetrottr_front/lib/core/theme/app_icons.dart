@@ -11,6 +11,9 @@ enum AppIcons {
   eyeOff('eye_off'),
   chevronLeft('chevron_left'),
   chevronRight('chevron_right'),
+  plus('plus'),
+  close('close'),
+  check('check'),
 
   /// The globe of the logo, drawn over a disc in the accent colour.
   globe('globe', tintable: false),

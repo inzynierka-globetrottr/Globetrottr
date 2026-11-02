@@ -7,21 +7,15 @@ import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/core/widgets/neu_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_divider.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
+import 'package:globetrottr_front/core/widgets/neu_pill_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
-import 'package:globetrottr_front/core/widgets/neu_segmented_control.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
+import 'package:globetrottr_front/core/widgets/section_header.dart';
 
 /// Gallery of the shared components, for checking them against the mock-up.
-class PreviewScreen extends StatefulWidget {
+class PreviewScreen extends StatelessWidget {
   const PreviewScreen({super.key});
-
-  @override
-  State<PreviewScreen> createState() => _PreviewScreenState();
-}
-
-class _PreviewScreenState extends State<PreviewScreen> {
-  String _selectedTab = 'login';
 
   @override
   Widget build(BuildContext context) {
@@ -35,37 +29,27 @@ class _PreviewScreenState extends State<PreviewScreen> {
           children: [
             Text('globetrottr', style: typography.display),
             Text('Headline', style: typography.headline),
-            Text('SECTION LABEL', style: typography.sectionLabel),
+            const SectionHeader('Section header'),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (final depth in NeoDepth.values)
-                  NeuSurface(
-                    shadows: shadows.raised(depth),
-                    borderRadius: BorderRadius.circular(18),
-                    width: 44,
-                    height: 44,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (final depth in NeoDepth.values)
-                  NeuSurface(
-                    shadows: shadows.inset(depth),
-                    borderRadius: BorderRadius.circular(18),
-                    width: 44,
-                    height: 44,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 24),
+            for (final depthShadows in [shadows.raised, shadows.inset]) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (final depth in NeoDepth.values)
+                    NeuSurface(
+                      shadows: depthShadows(depth),
+                      borderRadius: BorderRadius.circular(18),
+                      width: 44,
+                      height: 44,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
             const NeuTextField(
               label: 'Login lub nick',
               placeholder: 'np. odkrywca',
+              leadingIcon: AppIcons.fieldUser,
             ),
             const SizedBox(height: 18),
             NeuPrimaryButton(label: 'Zaloguj się', onPressed: () {}),
@@ -82,22 +66,15 @@ class _PreviewScreenState extends State<PreviewScreen> {
             ),
             const SizedBox(height: 18),
             Row(
+              spacing: 18,
               children: [
-                NeuIconButton(
-                  onPressed: () {},
-                  child: const AppIcon(AppIcons.navProfile, size: 18),
-                ),
-                const SizedBox(width: 18),
-                Expanded(
-                  child: NeuSegmentedControl<String>(
-                    selected: _selectedTab,
-                    onChanged: (value) => setState(() => _selectedTab = value),
-                    segments: const [
-                      NeuSegment(label: 'Logowanie', value: 'login'),
-                      NeuSegment(label: 'Rejestracja', value: 'register'),
-                    ],
+                for (final fill in NeuFill.values)
+                  NeuIconButton(
+                    fill: fill,
+                    onPressed: () {},
+                    child: const AppIcon(AppIcons.check, size: 18),
                   ),
-                ),
+                NeuPillButton(label: 'Pomiń', onPressed: () {}),
               ],
             ),
           ],

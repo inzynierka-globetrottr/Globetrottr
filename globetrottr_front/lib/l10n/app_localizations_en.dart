@@ -191,29 +191,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendsTitle => 'Friends';
 
   @override
-  String get friendsSearchPlaceholder => 'Enter friend\'s username...';
+  String get friendsAdd => 'Add a friend';
 
   @override
-  String get friendsRequestsBanner => 'Friend requests';
+  String get friendsThisWeek => 'This week';
 
   @override
-  String friendsYourFriendsHeader(int count) {
-    return 'YOUR FRIENDS ($count)';
+  String get friendsYou => 'You';
+
+  @override
+  String friendsInvites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invites',
+      one: '1 invite',
+    );
+    return '$_temp0';
   }
 
   @override
-  String friendsInviteSent(String username) {
-    return 'Invite sent to $username!';
+  String friendsAccept(String username) {
+    return 'Accept the invite from $username';
   }
 
   @override
-  String get friendsRequestsTitle => 'Friend Requests';
+  String friendsReject(String username) {
+    return 'Reject the invite from $username';
+  }
 
   @override
-  String get friendsTabReceived => 'Received';
+  String friendsYourFriends(int count) {
+    return 'Your friends · $count';
+  }
 
   @override
-  String get friendsTabSent => 'Sent';
+  String get friendsNoFriends =>
+      'No friends yet. Add someone by their nickname.';
+
+  @override
+  String friendsOpen(String username) {
+    return 'Open $username';
+  }
+
+  @override
+  String get friendsLevelUnknown => '–';
+
+  @override
+  String friendsArea(String area) {
+    return '$area km²';
+  }
+
+  @override
+  String get friendsNicknameLabel => 'Nickname';
+
+  @override
+  String get friendsNicknamePlaceholder => 'e.g. explorer';
+
+  @override
+  String get friendsSendInvite => 'Send invite';
+
+  @override
+  String get friendsSent => 'Sent';
+
+  @override
+  String get friendsPending => 'Pending';
+
+  @override
+  String get friendsUndo => 'Undo';
 
   @override
   String friendsPlayerFog(String username) {
@@ -372,6 +417,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationCodeIncomplete => 'Enter all 6 digits of the code.';
+
+  @override
+  String get errorInviteSelf => 'You cannot invite yourself.';
+
+  @override
+  String get errorUserNotFound => 'There is no user with this nickname.';
+
+  @override
+  String get errorAlreadyFriends => 'You are already friends.';
+
+  @override
+  String get errorInviteAlreadySent =>
+      'An invite is already waiting for an answer.';
+
+  @override
+  String get errorCannotInvite => 'This user cannot be invited.';
 
   @override
   String get errorGoogleAuthFailed => 'Google authentication failed.';

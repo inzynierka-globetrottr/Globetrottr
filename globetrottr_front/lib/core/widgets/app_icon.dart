@@ -3,8 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 
-/// An icon of the design in one colour (text colour by default), or in its
-/// own colours when it is not tintable.
+/// An icon of the design in one colour, or in its own colours when it is not
+/// tintable. Without [color] it takes the colour of the surrounding
+/// [IconTheme], as a Material icon would (buttons set it).
 class AppIcon extends StatelessWidget {
   const AppIcon(this.icon, {super.key, this.size = 22, this.color});
 
@@ -18,7 +19,10 @@ class AppIcon extends StatelessWidget {
     width: size,
     height: size,
     colorFilter: icon.tintable
-        ? ColorFilter.mode(color ?? context.palette.text, BlendMode.srcIn)
+        ? ColorFilter.mode(
+            color ?? IconTheme.of(context).color ?? context.palette.text,
+            BlendMode.srcIn,
+          )
         : null,
   );
 }

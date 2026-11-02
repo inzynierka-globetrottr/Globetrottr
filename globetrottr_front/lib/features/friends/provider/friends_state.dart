@@ -4,7 +4,6 @@ class FriendsState {
   final List<FriendshipResponse> friends;
   final List<FriendshipResponse> receivedInvites;
   final List<FriendshipResponse> sentInvites;
-  final List<FriendshipResponse> searchResults;
   final bool isLoading;
   final String? errorMessage;
 
@@ -12,7 +11,6 @@ class FriendsState {
     this.friends = const [],
     this.receivedInvites = const [],
     this.sentInvites = const [],
-    this.searchResults = const [],
     this.isLoading = false,
     this.errorMessage,
   });
@@ -21,7 +19,6 @@ class FriendsState {
     List<FriendshipResponse>? friends,
     List<FriendshipResponse>? receivedInvites,
     List<FriendshipResponse>? sentInvites,
-    List<FriendshipResponse>? searchResults,
     bool? isLoading,
     String? errorMessage,
     bool clearError = false,
@@ -29,7 +26,6 @@ class FriendsState {
     friends: friends ?? this.friends,
     receivedInvites: receivedInvites ?? this.receivedInvites,
     sentInvites: sentInvites ?? this.sentInvites,
-    searchResults: searchResults ?? this.searchResults,
     isLoading: isLoading ?? this.isLoading,
     errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
   );

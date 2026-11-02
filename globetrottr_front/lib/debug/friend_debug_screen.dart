@@ -13,7 +13,6 @@ class FriendDebugScreen extends ConsumerStatefulWidget {
 class _FriendDebugScreenState extends ConsumerState<FriendDebugScreen> {
   late final FriendsService _service;
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _searchController = TextEditingController();
 
   String _output = 'Output will appear here...';
   bool _isLoading = false;
@@ -27,7 +26,6 @@ class _FriendDebugScreenState extends ConsumerState<FriendDebugScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -175,33 +173,6 @@ class _FriendDebugScreenState extends ConsumerState<FriendDebugScreen> {
                 );
               }),
               child: const Text('DELETE /api/friends/{username}'),
-            ),
-
-            const SizedBox(height: 24),
-            const Text('SEARCH', style: TextStyle(fontWeight: FontWeight.bold)),
-            const Divider(),
-
-            TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: 'Search query (min 3 chars)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // --- SEARCH USERS ---
-            ElevatedButton(
-              onPressed: () => _run(() async {
-                final result = await _service.searchUsers(
-                  _searchController.text.trim(),
-                );
-                _setOutput(
-                  'searchUsers("${_searchController.text.trim()}"):\n${_formatList(result)}',
-                );
-              }),
-              child: const Text('GET /api/friends/search?query='),
             ),
           ],
         ),

@@ -434,47 +434,107 @@ abstract class AppLocalizations {
   /// **'Friends'**
   String get friendsTitle;
 
-  /// No description provided for @friendsSearchPlaceholder.
+  /// No description provided for @friendsAdd.
   ///
   /// In en, this message translates to:
-  /// **'Enter friend\'s username...'**
-  String get friendsSearchPlaceholder;
+  /// **'Add a friend'**
+  String get friendsAdd;
 
-  /// No description provided for @friendsRequestsBanner.
+  /// No description provided for @friendsThisWeek.
   ///
   /// In en, this message translates to:
-  /// **'Friend requests'**
-  String get friendsRequestsBanner;
+  /// **'This week'**
+  String get friendsThisWeek;
 
-  /// No description provided for @friendsYourFriendsHeader.
+  /// No description provided for @friendsYou.
   ///
   /// In en, this message translates to:
-  /// **'YOUR FRIENDS ({count})'**
-  String friendsYourFriendsHeader(int count);
+  /// **'You'**
+  String get friendsYou;
 
-  /// No description provided for @friendsInviteSent.
+  /// No description provided for @friendsInvites.
   ///
   /// In en, this message translates to:
-  /// **'Invite sent to {username}!'**
-  String friendsInviteSent(String username);
+  /// **'{count, plural, one{1 invite} other{{count} invites}}'**
+  String friendsInvites(int count);
 
-  /// No description provided for @friendsRequestsTitle.
+  /// No description provided for @friendsAccept.
   ///
   /// In en, this message translates to:
-  /// **'Friend Requests'**
-  String get friendsRequestsTitle;
+  /// **'Accept the invite from {username}'**
+  String friendsAccept(String username);
 
-  /// No description provided for @friendsTabReceived.
+  /// No description provided for @friendsReject.
   ///
   /// In en, this message translates to:
-  /// **'Received'**
-  String get friendsTabReceived;
+  /// **'Reject the invite from {username}'**
+  String friendsReject(String username);
 
-  /// No description provided for @friendsTabSent.
+  /// No description provided for @friendsYourFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Your friends · {count}'**
+  String friendsYourFriends(int count);
+
+  /// No description provided for @friendsNoFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'No friends yet. Add someone by their nickname.'**
+  String get friendsNoFriends;
+
+  /// No description provided for @friendsOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {username}'**
+  String friendsOpen(String username);
+
+  /// No description provided for @friendsLevelUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'–'**
+  String get friendsLevelUnknown;
+
+  /// No description provided for @friendsArea.
+  ///
+  /// In en, this message translates to:
+  /// **'{area} km²'**
+  String friendsArea(String area);
+
+  /// No description provided for @friendsNicknameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get friendsNicknameLabel;
+
+  /// No description provided for @friendsNicknamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. explorer'**
+  String get friendsNicknamePlaceholder;
+
+  /// No description provided for @friendsSendInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Send invite'**
+  String get friendsSendInvite;
+
+  /// No description provided for @friendsSent.
   ///
   /// In en, this message translates to:
   /// **'Sent'**
-  String get friendsTabSent;
+  String get friendsSent;
+
+  /// No description provided for @friendsPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get friendsPending;
+
+  /// No description provided for @friendsUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get friendsUndo;
 
   /// No description provided for @friendsPlayerFog.
   ///
@@ -745,6 +805,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter all 6 digits of the code.'**
   String get validationCodeIncomplete;
+
+  /// No description provided for @errorInviteSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot invite yourself.'**
+  String get errorInviteSelf;
+
+  /// No description provided for @errorUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no user with this nickname.'**
+  String get errorUserNotFound;
+
+  /// No description provided for @errorAlreadyFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already friends.'**
+  String get errorAlreadyFriends;
+
+  /// No description provided for @errorInviteAlreadySent.
+  ///
+  /// In en, this message translates to:
+  /// **'An invite is already waiting for an answer.'**
+  String get errorInviteAlreadySent;
+
+  /// No description provided for @errorCannotInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'This user cannot be invited.'**
+  String get errorCannotInvite;
 
   /// No description provided for @errorGoogleAuthFailed.
   ///

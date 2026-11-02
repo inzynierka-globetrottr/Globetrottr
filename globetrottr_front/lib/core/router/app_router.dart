@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/core/router/auth_redirect.dart';
@@ -9,9 +8,9 @@ import 'package:globetrottr_front/debug/dev_options_screen.dart';
 import 'package:globetrottr_front/debug/friend_debug_screen.dart';
 import 'package:globetrottr_front/debug/preview_screen.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
+import 'package:globetrottr_front/features/friends/screens/add_friend_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
-import 'package:globetrottr_front/features/friends/screens/invite_hub_screen.dart';
 import 'package:globetrottr_front/features/map/screens/map_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
 import 'package:globetrottr_front/features/quests/screens/quests_screen.dart';
@@ -52,25 +51,12 @@ final appRouter = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/friends',
         builder: (context, state) => const FriendsScreen(),
-      ),
-      GoRoute(
-        path: '/friends/invites',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          child: const InviteHubScreen(),
-          transitionDuration: const Duration(milliseconds: 200),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0, 1),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
-                  ),
-              child: child,
-            );
-          },
-        ),
+        routes: [
+          GoRoute(
+            path: 'add',
+            builder: (context, state) => const AddFriendScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: '/friends/:username/map',

@@ -11,6 +11,7 @@ class AppTheme {
   /// A dark mode or another accent is just another palette.
   static ThemeData from(AppPalette palette) {
     final brightness = ThemeData.estimateBrightnessForColor(palette.background);
+    final typography = AppTypography.fromPalette(palette);
     return ThemeData(
       brightness: brightness,
       scaffoldBackgroundColor: palette.background,
@@ -28,11 +29,18 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       ),
+      iconTheme: IconThemeData(color: palette.text),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: palette.text,
+        contentTextStyle: typography.body.copyWith(color: palette.background),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
       fontFamily: AppTypography.fontFamily,
       useMaterial3: true,
       extensions: [
         palette,
-        AppTypography.fromPalette(palette),
+        typography,
         AppShadows.fromPalette(palette),
       ],
     );

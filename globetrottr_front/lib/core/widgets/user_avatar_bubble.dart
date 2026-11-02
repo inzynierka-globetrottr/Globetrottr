@@ -4,6 +4,8 @@ import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
+/// A user's picture in a sunken circle, or the first letter of the name when
+/// there is no picture.
 class UserAvatarBubble extends StatelessWidget {
   final String username;
   final String? avatarUrl;
@@ -11,7 +13,9 @@ class UserAvatarBubble extends StatelessWidget {
   final double? fallbackFontSize;
   final bool isUploading;
   final bool useContainerChrome;
-  final double ringPadding;
+
+  /// Colour of the fallback letter; the text colour by default.
+  final Color? fallbackColor;
 
   const UserAvatarBubble({
     super.key,
@@ -21,16 +25,16 @@ class UserAvatarBubble extends StatelessWidget {
     this.fallbackFontSize,
     this.isUploading = false,
     this.useContainerChrome = true,
-    this.ringPadding = 4,
+    this.fallbackColor,
   });
+
+  /// The letter grows with the circle, as in the mock-up (17 px at 44 px).
+  static const _letterScale = 0.39;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final double dimension = useContainerChrome
-        ? size - (ringPadding * 2)
-        : double.infinity;
-    final bool hasAvatar = avatarUrl != null && avatarUrl!.isNotEmpty;
+    final hasAvatar = avatarUrl != null && avatarUrl!.isNotEmpty;
     final progress = CircularProgressIndicator(
       strokeWidth: 2,
       color: palette.accent,
@@ -38,13 +42,11 @@ class UserAvatarBubble extends StatelessWidget {
 
     final content = ClipOval(
       child: Stack(
-        alignment: Alignment.center,
+        fit: StackFit.expand,
         children: [
           if (hasAvatar)
             Image.network(
               avatarUrl!,
-              width: dimension,
-              height: dimension,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
                   _buildFallback(context),
@@ -72,7 +74,6 @@ class UserAvatarBubble extends StatelessWidget {
     return NeuSurface.circle(
       shadows: context.shadows.inset(NeoDepth.sm),
       size: size,
-      padding: EdgeInsets.all(ringPadding),
       child: content,
     );
   }
@@ -82,8 +83,8 @@ class UserAvatarBubble extends StatelessWidget {
       child: Text(
         username.initialOrFallback,
         style: context.typography.value.copyWith(
-          color: context.palette.accent,
-          fontSize: fallbackFontSize,
+          color: fallbackColor,
+          fontSize: fallbackFontSize ?? size * _letterScale,
         ),
       ),
     );

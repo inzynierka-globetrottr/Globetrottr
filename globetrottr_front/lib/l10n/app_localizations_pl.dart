@@ -192,29 +192,75 @@ class AppLocalizationsPl extends AppLocalizations {
   String get friendsTitle => 'Znajomi';
 
   @override
-  String get friendsSearchPlaceholder => 'Wpisz nazwę użytkownika...';
+  String get friendsAdd => 'Dodaj znajomego';
 
   @override
-  String get friendsRequestsBanner => 'Zaproszenia do znajomych';
+  String get friendsThisWeek => 'W tym tygodniu';
 
   @override
-  String friendsYourFriendsHeader(int count) {
-    return 'TWOI ZNAJOMI ($count)';
+  String get friendsYou => 'Ty';
+
+  @override
+  String friendsInvites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count zaproszeń',
+      few: '$count zaproszenia',
+      one: '1 zaproszenie',
+    );
+    return '$_temp0';
   }
 
   @override
-  String friendsInviteSent(String username) {
-    return 'Wysłano zaproszenie do $username!';
+  String friendsAccept(String username) {
+    return 'Przyjmij zaproszenie od $username';
   }
 
   @override
-  String get friendsRequestsTitle => 'Zaproszenia do znajomych';
+  String friendsReject(String username) {
+    return 'Odrzuć zaproszenie od $username';
+  }
 
   @override
-  String get friendsTabReceived => 'Odebrane';
+  String friendsYourFriends(int count) {
+    return 'Twoi znajomi · $count';
+  }
 
   @override
-  String get friendsTabSent => 'Wysłane';
+  String get friendsNoFriends =>
+      'Nie masz jeszcze znajomych. Dodaj kogoś po nicku.';
+
+  @override
+  String friendsOpen(String username) {
+    return 'Otwórz $username';
+  }
+
+  @override
+  String get friendsLevelUnknown => '–';
+
+  @override
+  String friendsArea(String area) {
+    return '$area km²';
+  }
+
+  @override
+  String get friendsNicknameLabel => 'Nick';
+
+  @override
+  String get friendsNicknamePlaceholder => 'np. odkrywca';
+
+  @override
+  String get friendsSendInvite => 'Wyślij zaproszenie';
+
+  @override
+  String get friendsSent => 'Wysłane';
+
+  @override
+  String get friendsPending => 'Oczekuje';
+
+  @override
+  String get friendsUndo => 'Cofnij';
 
   @override
   String friendsPlayerFog(String username) {
@@ -372,6 +418,21 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get validationCodeIncomplete => 'Wpisz wszystkie 6 cyfr kodu.';
+
+  @override
+  String get errorInviteSelf => 'Nie możesz zaprosić samego siebie.';
+
+  @override
+  String get errorUserNotFound => 'Nie ma użytkownika o takim nicku.';
+
+  @override
+  String get errorAlreadyFriends => 'Jesteście już znajomymi.';
+
+  @override
+  String get errorInviteAlreadySent => 'Zaproszenie już czeka na odpowiedź.';
+
+  @override
+  String get errorCannotInvite => 'Tego użytkownika nie można zaprosić.';
 
   @override
   String get errorGoogleAuthFailed =>

@@ -18,8 +18,8 @@ void main() {
       expect(l10n.profileDefaultUsername, 'Traveler');
       expect(l10n.profileLogOut, 'Log Out');
       expect(l10n.friendsTitle, 'Friends');
-      expect(l10n.friendsYourFriendsHeader(5), 'YOUR FRIENDS (5)');
-      expect(l10n.friendsInviteSent('alice'), 'Invite sent to alice!');
+      expect(l10n.friendsYourFriends(5), 'Your friends · 5');
+      expect(l10n.friendsInvites(2), '2 invites');
       expect(l10n.questsBoardTitle, 'Quest Board');
       expect(l10n.questsAvailableSection(3), 'Available Quests (3)');
       expect(l10n.questsProgressPercent(42), '42% progress');
@@ -48,8 +48,10 @@ void main() {
       expect(l10n.profileDefaultUsername, 'Podróżnik');
       expect(l10n.profileLogOut, 'Wyloguj się');
       expect(l10n.friendsTitle, 'Znajomi');
-      expect(l10n.friendsYourFriendsHeader(5), 'TWOI ZNAJOMI (5)');
-      expect(l10n.friendsInviteSent('alice'), 'Wysłano zaproszenie do alice!');
+      expect(l10n.friendsYourFriends(5), 'Twoi znajomi · 5');
+      expect(l10n.friendsInvites(1), '1 zaproszenie');
+      expect(l10n.friendsInvites(2), '2 zaproszenia');
+      expect(l10n.friendsInvites(5), '5 zaproszeń');
       expect(l10n.questsBoardTitle, 'Tablica zadań');
       expect(l10n.questsAvailableSection(3), 'Dostępne zadania (3)');
       expect(l10n.questsProgressPercent(42), 'Postęp: 42%');

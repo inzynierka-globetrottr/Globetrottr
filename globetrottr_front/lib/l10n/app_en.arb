@@ -77,27 +77,29 @@
   },
 
   "friendsTitle": "Friends",
-  "friendsSearchPlaceholder": "Enter friend's username...",
-  "friendsRequestsBanner": "Friend requests",
-  "friendsYourFriendsHeader": "YOUR FRIENDS ({count})",
-  "@friendsYourFriendsHeader": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "friendsInviteSent": "Invite sent to {username}!",
-  "@friendsInviteSent": {
-    "placeholders": {
-      "username": {
-        "type": "String"
-      }
-    }
-  },
-  "friendsRequestsTitle": "Friend Requests",
-  "friendsTabReceived": "Received",
-  "friendsTabSent": "Sent",
+  "friendsAdd": "Add a friend",
+  "friendsThisWeek": "This week",
+  "friendsYou": "You",
+  "friendsInvites": "{count, plural, one{1 invite} other{{count} invites}}",
+  "friendsAccept": "Accept the invite from {username}",
+  "friendsReject": "Reject the invite from {username}",
+  "friendsYourFriends": "Your friends · {count}",
+  "friendsNoFriends": "No friends yet. Add someone by their nickname.",
+  "friendsOpen": "Open {username}",
+  "friendsLevelUnknown": "–",
+  "friendsArea": "{area} km²",
+  "friendsNicknameLabel": "Nickname",
+  "friendsNicknamePlaceholder": "e.g. explorer",
+  "friendsSendInvite": "Send invite",
+  "friendsSent": "Sent",
+  "friendsPending": "Pending",
+  "friendsUndo": "Undo",
+  "@friendsInvites": {"placeholders": {"count": {"type": "int"}}},
+  "@friendsAccept": {"placeholders": {"username": {"type": "String"}}},
+  "@friendsReject": {"placeholders": {"username": {"type": "String"}}},
+  "@friendsYourFriends": {"placeholders": {"count": {"type": "int"}}},
+  "@friendsOpen": {"placeholders": {"username": {"type": "String"}}},
+  "@friendsArea": {"placeholders": {"area": {"type": "String"}}},
   "friendsPlayerFog": "Player fog: {username}",
   "@friendsPlayerFog": {
     "placeholders": {
@@ -196,6 +198,11 @@
   "errorEmailTaken": "This e-mail is already in use.",
   "errorUsernameTaken": "This nickname is already taken.",
   "validationCodeIncomplete": "Enter all 6 digits of the code.",
+  "errorInviteSelf": "You cannot invite yourself.",
+  "errorUserNotFound": "There is no user with this nickname.",
+  "errorAlreadyFriends": "You are already friends.",
+  "errorInviteAlreadySent": "An invite is already waiting for an answer.",
+  "errorCannotInvite": "This user cannot be invited.",
   "errorGoogleAuthFailed": "Google authentication failed.",
   "locationNotificationText": "Recording your route in the background..."
 }
