@@ -106,6 +106,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPasswordLabel => 'Password';
 
   @override
+  String get authPasswordPlaceholder => '••••••••';
+
+  @override
   String get authShowPassword => 'Show password';
 
   @override
@@ -142,20 +145,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authEmailPlaceholder => 'address@mail.com';
 
   @override
-  String get authPasswordStrength => 'Password strength:';
+  String authRuleLength(int min, int max) {
+    return '$min–$max characters';
+  }
 
   @override
-  String get authPasswordWeak => 'weak';
+  String get authRuleLowercase => 'a–z';
 
   @override
-  String get authPasswordGood => 'good';
+  String get authRuleUppercase => 'A–Z';
 
   @override
-  String get authPasswordStrong => 'strong';
+  String get authRuleDigit => '0–9';
 
   @override
-  String get authPasswordRules =>
-      'min. 6 characters, lower and upper case letter, digit, special character';
+  String get authRuleSpecial => '!@#';
+
+  @override
+  String get authRuleMet => 'met';
+
+  @override
+  String get authRuleNotMet => 'not met';
 
   @override
   String get authCreateAccount => 'Create account';

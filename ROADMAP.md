@@ -73,7 +73,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - The fog colour and opacity come from the theme palette like every other colour.
 - Dev and release builds differ only by the dev button and its tools. Missing data is shown as placeholders from providers, marked `TODO(data)`, in both builds.
 - Guest mode in release: "Skip" on the login screen enters the app without an account and is remembered across restarts until the user leaves it from the profile; everything local works, backend features fail as offline.
-- Registration goes through e-mail verification (the backend already supports it); password rules follow the backend, not the mock-up text.
+- Registration goes through e-mail verification (the backend already supports it); password rules follow the backend. Instead of the mock-up's strength bar the registration shows each rule as a pill that is ticked once met (owner's decision: a password is either good or not, and symbols read faster than a sentence).
 - Signing in to an account whose e-mail is not verified only shows a message. Why: the backend needs the address to send a code and the user may have typed the nickname. Known gap: such an account can be verified only right after registering.
 - Password reset is UI only until the backend has an endpoint for it: "Send code" says it is not available yet and the code screen is built but not reachable.
 - The auth screens are nested routes under the login screen, so going back follows the routes and one redirect takes the user to the map once they are in.

@@ -272,6 +272,12 @@ abstract class AppLocalizations {
   /// **'Password'**
   String get authPasswordLabel;
 
+  /// No description provided for @authPasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'••••••••'**
+  String get authPasswordPlaceholder;
+
   /// No description provided for @authShowPassword.
   ///
   /// In en, this message translates to:
@@ -344,35 +350,47 @@ abstract class AppLocalizations {
   /// **'address@mail.com'**
   String get authEmailPlaceholder;
 
-  /// No description provided for @authPasswordStrength.
+  /// No description provided for @authRuleLength.
   ///
   /// In en, this message translates to:
-  /// **'Password strength:'**
-  String get authPasswordStrength;
+  /// **'{min}–{max} characters'**
+  String authRuleLength(int min, int max);
 
-  /// No description provided for @authPasswordWeak.
+  /// No description provided for @authRuleLowercase.
   ///
   /// In en, this message translates to:
-  /// **'weak'**
-  String get authPasswordWeak;
+  /// **'a–z'**
+  String get authRuleLowercase;
 
-  /// No description provided for @authPasswordGood.
+  /// No description provided for @authRuleUppercase.
   ///
   /// In en, this message translates to:
-  /// **'good'**
-  String get authPasswordGood;
+  /// **'A–Z'**
+  String get authRuleUppercase;
 
-  /// No description provided for @authPasswordStrong.
+  /// No description provided for @authRuleDigit.
   ///
   /// In en, this message translates to:
-  /// **'strong'**
-  String get authPasswordStrong;
+  /// **'0–9'**
+  String get authRuleDigit;
 
-  /// No description provided for @authPasswordRules.
+  /// No description provided for @authRuleSpecial.
   ///
   /// In en, this message translates to:
-  /// **'min. 6 characters, lower and upper case letter, digit, special character'**
-  String get authPasswordRules;
+  /// **'!@#'**
+  String get authRuleSpecial;
+
+  /// No description provided for @authRuleMet.
+  ///
+  /// In en, this message translates to:
+  /// **'met'**
+  String get authRuleMet;
+
+  /// No description provided for @authRuleNotMet.
+  ///
+  /// In en, this message translates to:
+  /// **'not met'**
+  String get authRuleNotMet;
 
   /// No description provided for @authCreateAccount.
   ///

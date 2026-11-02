@@ -5,7 +5,8 @@ import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 
-/// A password input with a button that shows or hides the password.
+/// A password input with dots as its hint and a button that shows or hides
+/// the password.
 class NeuPasswordField extends StatefulWidget {
   const NeuPasswordField({
     super.key,
@@ -34,6 +35,7 @@ class _NeuPasswordFieldState extends State<NeuPasswordField> {
     final l10n = context.l10n;
     return NeuTextField(
       label: widget.label,
+      placeholder: l10n.authPasswordPlaceholder,
       leadingIcon: AppIcons.fieldLock,
       obscureText: _obscured,
       controller: widget.controller,

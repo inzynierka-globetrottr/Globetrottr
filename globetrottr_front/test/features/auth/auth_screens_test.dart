@@ -98,7 +98,8 @@ void main() {
     await tester.enterText(fields.at(1), 'Odkrywca@Poczta.pl');
     await tester.enterText(fields.at(2), 'Szlak26!');
     await tester.pump();
-    expect(find.textContaining('good'), findsOneWidget);
+    expect(find.bySemanticsLabel('6–50 characters, met'), findsOneWidget);
+    expect(find.bySemanticsLabel('!@#, met'), findsOneWidget);
 
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();

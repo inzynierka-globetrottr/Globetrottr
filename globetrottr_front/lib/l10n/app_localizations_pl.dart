@@ -106,6 +106,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get authPasswordLabel => 'Hasło';
 
   @override
+  String get authPasswordPlaceholder => '••••••••';
+
+  @override
   String get authShowPassword => 'Pokaż hasło';
 
   @override
@@ -142,20 +145,27 @@ class AppLocalizationsPl extends AppLocalizations {
   String get authEmailPlaceholder => 'adres@poczta.pl';
 
   @override
-  String get authPasswordStrength => 'Siła hasła:';
+  String authRuleLength(int min, int max) {
+    return '$min–$max znaków';
+  }
 
   @override
-  String get authPasswordWeak => 'słabe';
+  String get authRuleLowercase => 'a–z';
 
   @override
-  String get authPasswordGood => 'dobre';
+  String get authRuleUppercase => 'A–Z';
 
   @override
-  String get authPasswordStrong => 'silne';
+  String get authRuleDigit => '0–9';
 
   @override
-  String get authPasswordRules =>
-      'min. 6 znaków, mała i wielka litera, cyfra, znak specjalny';
+  String get authRuleSpecial => '!@#';
+
+  @override
+  String get authRuleMet => 'spełnione';
+
+  @override
+  String get authRuleNotMet => 'niespełnione';
 
   @override
   String get authCreateAccount => 'Utwórz konto';

@@ -15,7 +15,7 @@ import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/auth_footer_prompt.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/google_sign_in_button.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/or_divider.dart';
-import 'package:globetrottr_front/features/auth/screens/widgets/password_strength_meter.dart';
+import 'package:globetrottr_front/features/auth/screens/widgets/password_rules_checklist.dart';
 import 'package:go_router/go_router.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -110,9 +110,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               ValueListenableBuilder(
                 valueListenable: _passwordController,
-                builder: (context, value, _) => PasswordStrengthMeter(
-                  strength: passwordStrength(value.text),
-                ),
+                builder: (context, value, _) =>
+                    PasswordRulesChecklist(password: value.text),
               ),
               if (state.errorMessage != null)
                 FormMessage.error(
