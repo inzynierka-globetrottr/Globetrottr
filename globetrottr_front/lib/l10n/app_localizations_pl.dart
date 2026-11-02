@@ -366,7 +366,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get questsNoQuestsInCategory => 'Brak zadań w tej kategorii.';
 
   @override
-  String questsProgressPercent(int percent) {
+  String questsProgressPercent(String percent) {
     return 'Postęp: $percent%';
   }
 

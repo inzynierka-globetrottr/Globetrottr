@@ -37,7 +37,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     super.initState();
     Future.microtask(() {
       ref.read(locationProvider.notifier).startTracking();
-      ref.read(questsProvider.notifier).loadQuests();
+      ref.read(questsProvider.notifier).loadQuestsOnce();
     });
     _cameraWatch = _mapController.mapEventStream.listen(_logCameraProblem);
   }

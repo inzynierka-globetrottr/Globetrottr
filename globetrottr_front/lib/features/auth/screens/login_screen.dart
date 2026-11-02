@@ -16,6 +16,7 @@ import 'package:globetrottr_front/core/widgets/neu_text_field.dart';
 import 'package:globetrottr_front/core/widgets/text_link.dart';
 import 'package:globetrottr_front/debug/widgets/dev_floating_button.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
+import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/auth_footer_prompt.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/google_sign_in_button.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/or_divider.dart';
@@ -62,6 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final state = ref.watch(authProvider);
     final notifier = ref.read(authProvider.notifier);
     final top = MediaQuery.paddingOf(context).top;
+    final error = state.errorFor(AuthForm.login);
 
     return Scaffold(
       floatingActionButton: DevConfig.isDevMode
@@ -106,10 +108,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ],
                   ),
-                  if (state.errorMessage != null)
-                    FormMessage.error(
-                      context.localizeErrorMessage(state.errorMessage),
-                    ),
+                  if (error != null)
+                    FormMessage.error(context.localizeErrorMessage(error)),
                   NeuPrimaryButton(
                     label: l10n.authSignIn,
                     isLoading: state.isLoading,
@@ -119,7 +119,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   GoogleSignInButton(
                     onPressed: state.isLoading
                         ? null
-                        : notifier.signInWithGoogle,
+                        : () => notifier.signInWithGoogle(AuthForm.login),
                   ),
                   AuthFooterPrompt(
                     prompt: l10n.authNoAccount,
@@ -136,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: NeuPillButton(
               label: l10n.authSkip,
               trailingIcon: AppIcons.chevronRight,
-              onPressed: notifier.continueAsGuest,
+              onPressed: state.isLoading ? null : notifier.continueAsGuest,
             ),
           ),
         ],

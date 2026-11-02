@@ -4,6 +4,7 @@ import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/form_message.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/core/widgets/neu_divider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
@@ -40,12 +41,9 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: context.palette.danger,
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -87,10 +85,8 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Text(
+          child: FormMessage.error(
             context.localizeErrorMessage(state.errorMessage),
-            style: context.typography.body.copyWith(color: palette.danger),
-            textAlign: TextAlign.center,
           ),
         ),
       );

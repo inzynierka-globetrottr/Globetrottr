@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
+import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_button.dart';
@@ -52,7 +53,7 @@ class QuestCard extends StatelessWidget {
                       if (zone == QuestZone.inProgress)
                         Text(
                           l10n.questsProgressPercent(
-                            (quest.progress * 100).toInt(),
+                            formatPercent(quest.progress),
                           ),
                           style: typography.caption.copyWith(
                             color: palette.accent,

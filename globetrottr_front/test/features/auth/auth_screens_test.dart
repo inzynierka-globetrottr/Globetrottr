@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/router/auth_redirect.dart';
 import 'package:globetrottr_front/core/router/auth_routes.dart';
 import 'package:globetrottr_front/core/time/clock.dart';
@@ -131,6 +134,64 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(auth.verifications.single.code, '482193');
+    expect(find.text('map'), findsOneWidget);
+  });
+
+  Future<void> fillRegistration(WidgetTester tester) async {
+    final fields = find.byType(TextField);
+    await tester.enterText(fields.at(0), 'odkrywca');
+    await tester.enterText(fields.at(1), 'odkrywca@poczta.pl');
+    await tester.enterText(fields.at(2), 'Szlak26!');
+  }
+
+  testWidgets('registering again with the same address shows the code again', (
+    tester,
+  ) async {
+    final router = await pumpApp(tester, AuthRoutes.register);
+    await fillRegistration(tester);
+    await tester.tap(find.text('Create account'));
+    await tester.pumpAndSettle();
+    router.pop();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Create account'));
+    await tester.pumpAndSettle();
+
+    expect(auth.registrations, hasLength(2));
+    expect(find.text('Check your inbox'), findsOneWidget);
+  });
+
+  testWidgets('an error of the registration stays off the login screen', (
+    tester,
+  ) async {
+    await pumpApp(tester, AuthRoutes.register);
+    await fillRegistration(tester);
+    auth.failWith = const ServerException('Email already exists', 409);
+    await tester.tap(find.text('Create account'));
+    await tester.pumpAndSettle();
+    expect(find.text('This e-mail is already in use.'), findsOneWidget);
+
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.text('This e-mail is already in use.'), findsNothing);
+  });
+
+  testWidgets('skip waits while signing in', (tester) async {
+    await pumpApp(tester, AuthRoutes.login);
+    auth.loginGate = Completer<void>();
+    await tester.enterText(find.byType(TextField).at(0), 'odkrywca');
+    await tester.enterText(find.byType(TextField).at(1), 'Szlak26!');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+
+    await tester.tap(find.text('Skip'));
+    await tester.pump();
+
+    expect(auth.guest, isFalse);
+    auth.loginGate!.complete();
+    await tester.pumpAndSettle();
     expect(find.text('map'), findsOneWidget);
   });
 }

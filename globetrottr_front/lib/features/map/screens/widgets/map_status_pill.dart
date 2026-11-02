@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
@@ -97,6 +98,18 @@ class _RecordButton extends ConsumerWidget {
 
   final bool recording;
 
+  Future<void> _toggle(BuildContext context, WidgetRef ref) async {
+    final notifier = ref.read(locationProvider.notifier);
+    if (recording) return notifier.setRecording(false);
+    if (await notifier.startRecording() || !context.mounted) return;
+    final reason = ref.read(locationProvider).errorMessage;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(
+      SnackBar(content: Text(context.localizeErrorMessage(reason))),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -104,8 +117,7 @@ class _RecordButton extends ConsumerWidget {
       size: 52,
       fill: recording ? NeuFill.danger : NeuFill.accent,
       semanticLabel: recording ? l10n.mapStopWalk : l10n.mapStartWalk,
-      onPressed: () =>
-          ref.read(locationProvider.notifier).setRecording(!recording),
+      onPressed: () => _toggle(context, ref),
       child: recording
           ? const AppIcon(AppIcons.stop, size: 15)
           : const Padding(

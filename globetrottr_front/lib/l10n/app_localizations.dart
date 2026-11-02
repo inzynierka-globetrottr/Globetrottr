@@ -708,7 +708,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{percent}% progress'**
-  String questsProgressPercent(int percent);
+  String questsProgressPercent(String percent);
 
   /// No description provided for @questsCompletedStatus.
   ///

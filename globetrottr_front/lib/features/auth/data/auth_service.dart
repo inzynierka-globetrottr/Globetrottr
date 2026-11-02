@@ -81,6 +81,8 @@ class AuthService {
 
   Future<void> startGuestSession() => _tokenStore.saveGuest();
 
+  Future<void> endGuestSession() => _tokenStore.deleteGuest();
+
   Future<String?> refreshToken() async {
     if (await _tokenStore.getToken() == null) return null;
     try {

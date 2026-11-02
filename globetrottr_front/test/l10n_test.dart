@@ -22,7 +22,7 @@ void main() {
       expect(l10n.friendsInvites(2), '2 invites');
       expect(l10n.questsBoardTitle, 'Quest Board');
       expect(l10n.questsAvailableSection(3), 'Available Quests (3)');
-      expect(l10n.questsProgressPercent(42), '42% progress');
+      expect(l10n.questsProgressPercent('42'), '42% progress');
       expect(l10n.questsRewardXp(150), '150 XP');
       expect(l10n.settingsTitle, 'Settings');
       expect(l10n.settingsLanguage, 'Language');
@@ -54,7 +54,7 @@ void main() {
       expect(l10n.friendsInvites(5), '5 zaproszeń');
       expect(l10n.questsBoardTitle, 'Tablica zadań');
       expect(l10n.questsAvailableSection(3), 'Dostępne zadania (3)');
-      expect(l10n.questsProgressPercent(42), 'Postęp: 42%');
+      expect(l10n.questsProgressPercent('42'), 'Postęp: 42%');
       expect(l10n.questsRewardXp(150), '150 XP');
       expect(l10n.settingsTitle, 'Ustawienia');
       expect(l10n.settingsLanguage, 'Język');

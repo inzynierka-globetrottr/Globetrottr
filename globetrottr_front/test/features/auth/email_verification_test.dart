@@ -28,7 +28,7 @@ void main() {
     addTearDown(container.dispose);
   });
 
-  Future<void> register() => container
+  Future<bool> register() => container
       .read(authProvider.notifier)
       .register(
         username: 'odkrywca',
@@ -38,7 +38,7 @@ void main() {
 
   group('registration', () {
     test('waits for the e-mail code instead of signing in', () async {
-      await register();
+      expect(await register(), isTrue);
 
       final state = current();
       expect(auth.registrations.single.email, 'Odkrywca@Poczta.pl');
@@ -61,11 +61,13 @@ void main() {
       () async {
         auth.failWith = const ServerException('Email already exists', 409);
 
-        await register();
+        expect(await register(), isFalse);
 
         final state = current();
         expect(state.pendingVerificationEmail, isNull);
         expect(state.errorMessage, 'Email already exists');
+        expect(state.errorFor(AuthForm.register), 'Email already exists');
+        expect(state.errorFor(AuthForm.login), isNull);
       },
     );
   });

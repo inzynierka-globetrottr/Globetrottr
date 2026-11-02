@@ -8,6 +8,7 @@ import 'package:globetrottr_front/core/widgets/form_message.dart';
 import 'package:globetrottr_front/core/widgets/neu_code_field.dart';
 import 'package:globetrottr_front/core/widgets/neu_primary_button.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
+import 'package:globetrottr_front/features/auth/provider/auth_state.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/auth_centered_layout.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/code_sent_header.dart';
 import 'package:globetrottr_front/features/auth/screens/widgets/resend_countdown.dart';
@@ -41,11 +42,12 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     final l10n = context.l10n;
     final state = ref.watch(authProvider);
     final notifier = ref.read(authProvider.notifier);
+    final stateError = state.errorFor(AuthForm.verify);
     final error = _incomplete
         ? l10n.validationCodeIncomplete
-        : state.errorMessage == null
+        : stateError == null
         ? null
-        : context.localizeErrorMessage(state.errorMessage);
+        : context.localizeErrorMessage(stateError);
 
     return AuthCenteredLayout(
       children: [

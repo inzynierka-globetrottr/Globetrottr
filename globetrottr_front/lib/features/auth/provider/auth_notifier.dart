@@ -37,18 +37,26 @@ class AuthNotifier extends Notifier<AuthState> {
     }
     try {
       final token = await _authService.refreshToken();
-      state = state.copyWith(
-        isAuthenticated: state.isAuthenticated || token != null,
-        isInitializing: false,
-      );
+      if (token != null) await _enterAccount();
     } catch (e) {
       debugPrint('Session check did not authenticate: $e');
       final hasToken = await ref.read(tokenStoreProvider).getToken() != null;
-      state = state.copyWith(
-        isAuthenticated: state.isAuthenticated || hasToken,
-        isInitializing: false,
-      );
+      if (hasToken) await _enterAccount();
     }
+    state = state.copyWith(isInitializing: false);
+  }
+
+  /// An account wins over a guest chosen in the meantime, so the two never
+  /// hold at once and a logout still syncs and clears the account's points.
+  Future<void> _enterAccount() async {
+    if (state.isGuest) {
+      try {
+        await _authService.endGuestSession();
+      } catch (e) {
+        debugPrint('Could not forget the guest choice: $e');
+      }
+    }
+    state = state.copyWith(isAuthenticated: true, isGuest: false);
   }
 
   Future<bool> _storedGuest() async {
@@ -61,8 +69,10 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   /// Uses the app without an account, also after a restart. Everything local
-  /// works; calls to the backend fail as when offline.
+  /// works; calls to the backend fail as when offline. Ignored while signing
+  /// in.
   Future<void> continueAsGuest() async {
+    if (state.isLoading || state.isAuthenticated) return;
     try {
       await _authService.startGuestSession();
     } catch (e) {
@@ -81,19 +91,20 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> login({required String login, required String password}) =>
-      _run(() async {
+      _run(AuthForm.login, () async {
         await _authService.login(
           LoginRequest(login: login.trim(), password: password),
         );
-        state = state.copyWith(isAuthenticated: true);
+        await _enterAccount();
       });
 
   /// A new account is locked until its e-mail is verified with a code.
-  Future<void> register({
+  /// Returns whether the code was sent.
+  Future<bool> register({
     required String username,
     required String email,
     required String password,
-  }) => _run(() async {
+  }) => _run(AuthForm.register, () async {
     await _authService.register(
       RegisterRequest(
         username: username.trim(),
@@ -111,9 +122,10 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> verifyEmail(String code) async {
     final email = state.pendingVerificationEmail;
     if (email == null) return;
-    await _run(() async {
+    await _run(AuthForm.verify, () async {
       await _authService.verifyEmail(email: email, code: code);
-      state = state.copyWith(isAuthenticated: true, clearVerification: true);
+      state = state.copyWith(clearVerification: true);
+      await _enterAccount();
     });
   }
 
@@ -123,7 +135,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final availableAt = state.resendAvailableAt;
     if (email == null) return;
     if (availableAt != null && _now.isBefore(availableAt)) return;
-    await _run(() async {
+    await _run(AuthForm.verify, () async {
       await _authService.resendVerificationCode(email);
       state = state.copyWith(
         resendAvailableAt: _now.add(AuthConfig.resendCooldown),
@@ -131,27 +143,35 @@ class AuthNotifier extends Notifier<AuthState> {
     });
   }
 
-  Future<void> signInWithGoogle() => _run(() async {
+  /// [form] is the screen that shows a failure.
+  Future<void> signInWithGoogle(AuthForm form) => _run(form, () async {
     final token = await _authService.signInWithGoogle();
-    if (token != null) state = state.copyWith(isAuthenticated: true);
+    if (token != null) await _enterAccount();
   });
 
   /// Shows progress while [action] runs and turns its failure into an error
-  /// message.
-  Future<void> _run(Future<void> Function() action) async {
+  /// message of [form]. Returns whether it succeeded.
+  Future<bool> _run(AuthForm form, Future<void> Function() action) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       await action();
       state = state.copyWith(isLoading: false);
+      return true;
     } on AppException catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.message);
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.message,
+        errorForm: form,
+      );
     } catch (e) {
       debugPrint('Unexpected auth error: $e');
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Something went wrong. Please try again.',
+        errorForm: form,
       );
     }
+    return false;
   }
 
   /// A guest has nothing to sync; a signed-in user's pending points are sent

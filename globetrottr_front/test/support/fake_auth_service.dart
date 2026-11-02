@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
+import 'package:globetrottr_front/features/auth/data/login_request.dart';
 import 'package:globetrottr_front/features/auth/data/register_request.dart';
 
 /// An auth service without a backend. The session check started when the
@@ -16,6 +17,10 @@ class FakeAuthService implements AuthService {
   /// Thrown by the next backend call instead of succeeding.
   AppException? failWith;
 
+  /// When set, a login waits for it instead of succeeding at once.
+  Completer<void>? loginGate;
+
+  final List<LoginRequest> logins = [];
   final List<RegisterRequest> registrations = [];
   final List<({String email, String code})> verifications = [];
   final List<String> resentTo = [];
@@ -29,6 +34,17 @@ class FakeAuthService implements AuthService {
 
   @override
   Future<void> startGuestSession() async => guest = true;
+
+  @override
+  Future<void> endGuestSession() async => guest = false;
+
+  @override
+  Future<String> login(LoginRequest request) async {
+    _maybeFail();
+    logins.add(request);
+    await loginGate?.future;
+    return 'token';
+  }
 
   @override
   Future<void> register(RegisterRequest request) async {

@@ -72,8 +72,9 @@ void main() {
     WidgetTester tester,
     Widget screen, {
     List<WeeklyEntry>? weekly,
+    Size size = const Size(1170, 2532),
   }) async {
-    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -232,4 +233,27 @@ void main() {
     expect(fifth.left, lessThan(screenWidth));
     expect(fifth.right, greaterThan(screenWidth));
   });
+
+  for (final people in [3, 6]) {
+    testWidgets('$people people fit a narrow screen without overlapping', (
+      tester,
+    ) async {
+      final weekly = [
+        for (var i = 0; i < people; i++)
+          WeeklyEntry(username: 'p$i', weeklyKm2: 1.0 - i / 10, ringFill: 1),
+      ];
+      friends.friends = [_person('p1')];
+      await pump(
+        tester,
+        const FriendsScreen(),
+        weekly: weekly,
+        size: const Size(960, 2079),
+      );
+
+      expect(tester.takeException(), isNull);
+      final first = tester.getRect(find.byType(WeeklyPerson).at(0));
+      final second = tester.getRect(find.byType(WeeklyPerson).at(1));
+      expect(second.left, greaterThanOrEqualTo(first.right));
+    });
+  }
 }

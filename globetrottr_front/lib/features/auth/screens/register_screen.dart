@@ -45,15 +45,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    ref
+    final sent = await ref
         .read(authProvider.notifier)
         .register(
           username: _nickController.text,
           email: _emailController.text,
           password: _passwordController.text,
         );
+    if (sent && mounted) context.go(AuthRoutes.verify);
   }
 
   @override
@@ -61,13 +62,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final l10n = context.l10n;
     final state = ref.watch(authProvider);
     final top = MediaQuery.paddingOf(context).top;
-
-    ref.listen<AuthState>(authProvider, (previous, next) {
-      final email = next.pendingVerificationEmail;
-      if (email != null && email != previous?.pendingVerificationEmail) {
-        context.go(AuthRoutes.verify);
-      }
-    });
+    final error = state.errorFor(AuthForm.register);
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -113,10 +108,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 builder: (context, value, _) =>
                     PasswordRulesChecklist(password: value.text),
               ),
-              if (state.errorMessage != null)
-                FormMessage.error(
-                  context.localizeErrorMessage(state.errorMessage),
-                ),
+              if (error != null)
+                FormMessage.error(context.localizeErrorMessage(error)),
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: NeuPrimaryButton(
@@ -129,7 +122,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               GoogleSignInButton(
                 onPressed: state.isLoading
                     ? null
-                    : ref.read(authProvider.notifier).signInWithGoogle,
+                    : () => ref
+                          .read(authProvider.notifier)
+                          .signInWithGoogle(AuthForm.register),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 2),

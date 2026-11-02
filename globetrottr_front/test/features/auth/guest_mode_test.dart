@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
@@ -92,5 +94,36 @@ void main() {
     expect(auth.guest, isFalse);
     expect(sync.calls, 0);
     expect(container.read(authProvider).canEnterApp, isFalse);
+  });
+
+  test('an account found after skipping replaces the guest', () async {
+    final container = start();
+    container.read(authProvider);
+    // The check is now waiting for the backend.
+    await settle();
+    await container.read(authProvider.notifier).continueAsGuest();
+    auth.sessionCheck.complete('token');
+    await settle();
+
+    final state = container.read(authProvider);
+    expect(state.isAuthenticated, isTrue);
+    expect(state.isGuest, isFalse);
+    expect(auth.guest, isFalse);
+  });
+
+  test('skipping is ignored while signing in', () async {
+    final container = start();
+    final notifier = container.read(authProvider.notifier);
+    auth.loginGate = Completer<void>();
+
+    final signingIn = notifier.login(login: 'odkrywca', password: 'Szlak26!');
+    await notifier.continueAsGuest();
+    auth.loginGate!.complete();
+    await signingIn;
+
+    final state = container.read(authProvider);
+    expect(state.isAuthenticated, isTrue);
+    expect(state.isGuest, isFalse);
+    expect(auth.guest, isFalse);
   });
 }
