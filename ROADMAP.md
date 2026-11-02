@@ -57,6 +57,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 **Decisions:**
 - Port in stages, cheapest visual gain first: palette, font and the shared neumorphic widgets; then auth, friends and profile; then the map overlays and Quests as a full tab instead of a drawer. Screens that need data the app does not have yet (comparison with a friend, statistics, countries, regions, cities, badge tiers) wait for that data.
 - Product decisions from the mock-up: one active quest at a time, its next point is shown on the map without navigation; friends are added by exact nickname, without suggestions; the profile has no map; the "passing through" feature is dropped.
+- Quests tab from the mock-up: the active quest card on top (points as steps, a route as a progress bar, an empty dashed card when none is active), below it the available quests grouped by type (places, routes) with no time estimates. A quest opens into a map preview with one button that starts it, or swaps it in after a warning that the active quest and its progress are lost. Completed quests are not listed; the level row opens their history.
 
 **Ideas:**
 - **Configurable profile widgets:** the profile (own and a friend's) is assembled from widgets the user picks and orders. Candidates from the mock-up: metric tiles, discovery per month chart, cities with % rings, countries with km² bars, completed quests carousel. The mock-up keeps a fixed layout until then.
