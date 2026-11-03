@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
@@ -155,6 +157,12 @@ final regionDetailProvider = FutureProvider.family<RegionDetailData, int>((
   final statsStorage = ref.watch(statisticsStorageProvider);
   final regionStorage = ref.watch(regionStorageProvider);
 
+  final currentLocale = ref.watch(localeProvider);
+  final isPolish =
+      (currentLocale?.languageCode ??
+          WidgetsBinding.instance.platformDispatcher.locale.languageCode) ==
+      'pl';
+
   final region = await regionStorage.findRegionById(regionId);
   final stat = await statsStorage.getRegionStats(regionId);
 
@@ -217,8 +225,8 @@ final regionDetailProvider = FutureProvider.family<RegionDetailData, int>((
     citiesCount: citiesCount,
     streetsCount: 0,
     subregions: subregions,
-    firstVisit: _formatVisitDate(stat?.firstVisitMs),
-    lastVisit: _formatVisitDate(stat?.lastVisitMs),
+    firstVisit: _formatVisitDate(stat?.firstVisitMs, isPolish: isPolish),
+    lastVisit: _formatVisitDate(stat?.lastVisitMs, isPolish: isPolish),
     highestPoint: highestStr,
   );
 });
@@ -261,6 +269,12 @@ final cityDetailProvider = FutureProvider.family<CityDetailData, int>((
   final statsStorage = ref.watch(statisticsStorageProvider);
   final regionStorage = ref.watch(regionStorageProvider);
 
+  final currentLocale = ref.watch(localeProvider);
+  final isPolish =
+      (currentLocale?.languageCode ??
+          WidgetsBinding.instance.platformDispatcher.locale.languageCode) ==
+      'pl';
+
   final city = await regionStorage.findRegionById(cityId);
   final stat = await statsStorage.getRegionStats(cityId);
 
@@ -275,6 +289,14 @@ final cityDetailProvider = FutureProvider.family<CityDetailData, int>((
       if (a.type == RegionType.state || a.type == RegionType.county) {
         regionName = a.name;
         break;
+      }
+    }
+    if (regionName == '–') {
+      for (final a in ancestors) {
+        if (a.type == RegionType.country) {
+          regionName = a.name;
+          break;
+        }
       }
     }
   }
@@ -305,40 +327,58 @@ final cityDetailProvider = FutureProvider.family<CityDetailData, int>((
     streetsCount: 0,
     routesCount: stat?.visitsCount ?? 0,
     districts: districts,
-    firstVisit: _formatVisitDate(stat?.firstVisitMs),
-    lastVisit: _formatVisitDate(stat?.lastVisitMs),
+    firstVisit: _formatVisitDate(stat?.firstVisitMs, isPolish: isPolish),
+    lastVisit: _formatVisitDate(stat?.lastVisitMs, isPolish: isPolish),
     mostVisitedPlace: stat != null && stat.visitsCount > 0 ? cityName : '–',
     timeSpent: timeSpentHours,
   );
 });
 
-String _formatVisitDate(int? timestampMs) {
+String _formatVisitDate(int? timestampMs, {bool isPolish = false}) {
   if (timestampMs == null || timestampMs <= 0) return '–';
   final dt = DateTime.fromMillisecondsSinceEpoch(timestampMs);
   final now = DateTime.now();
   if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
-    return 'Dziś';
+    return isPolish ? 'Dziś' : 'Today';
   }
   final yesterday = now.subtract(const Duration(days: 1));
   if (dt.year == yesterday.year &&
       dt.month == yesterday.month &&
       dt.day == yesterday.day) {
-    return 'Wczoraj';
+    return isPolish ? 'Wczoraj' : 'Yesterday';
   }
-  const months = [
-    'stycznia',
-    'lutego',
-    'marca',
-    'kwietnia',
-    'maja',
-    'czerwca',
-    'lipca',
-    'sierpnia',
-    'września',
-    'października',
-    'listopada',
-    'grudnia',
+  if (isPolish) {
+    const months = [
+      'stycznia',
+      'lutego',
+      'marca',
+      'kwietnia',
+      'maja',
+      'czerwca',
+      'lipca',
+      'sierpnia',
+      'września',
+      'października',
+      'listopada',
+      'grudnia',
+    ];
+    final mStr = (dt.month >= 1 && dt.month <= 12) ? months[dt.month - 1] : '';
+    return '${dt.day} $mStr ${dt.year}';
+  }
+  const monthsEn = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
-  final mStr = (dt.month >= 1 && dt.month <= 12) ? months[dt.month - 1] : '';
-  return '${dt.day} $mStr ${dt.year}';
+  final mStr = (dt.month >= 1 && dt.month <= 12) ? monthsEn[dt.month - 1] : '';
+  return '$mStr ${dt.day}, ${dt.year}';
 }

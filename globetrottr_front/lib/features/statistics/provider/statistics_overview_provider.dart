@@ -32,6 +32,10 @@ class StatsOverviewState {
     required this.records,
     required this.discoveredCities,
     required this.mostVisitedPlaces,
+    this.openStreakDays = 0,
+    this.maxOpenStreakDays = 0,
+    this.recordingStreakDays = 0,
+    this.maxRecordingStreakDays = 0,
   });
 
   final StatsPeriod period;
@@ -50,6 +54,10 @@ class StatsOverviewState {
   final List<RecordTileItem> records;
   final List<DiscoveryRowItem> discoveredCities;
   final List<MostVisitedItem> mostVisitedPlaces;
+  final int openStreakDays;
+  final int maxOpenStreakDays;
+  final int recordingStreakDays;
+  final int maxRecordingStreakDays;
 
   StatsOverviewState copyWith({
     StatsPeriod? period,
@@ -68,6 +76,10 @@ class StatsOverviewState {
     List<RecordTileItem>? records,
     List<DiscoveryRowItem>? discoveredCities,
     List<MostVisitedItem>? mostVisitedPlaces,
+    int? openStreakDays,
+    int? maxOpenStreakDays,
+    int? recordingStreakDays,
+    int? maxRecordingStreakDays,
   }) {
     return StatsOverviewState(
       period: period ?? this.period,
@@ -87,6 +99,11 @@ class StatsOverviewState {
       records: records ?? this.records,
       discoveredCities: discoveredCities ?? this.discoveredCities,
       mostVisitedPlaces: mostVisitedPlaces ?? this.mostVisitedPlaces,
+      openStreakDays: openStreakDays ?? this.openStreakDays,
+      maxOpenStreakDays: maxOpenStreakDays ?? this.maxOpenStreakDays,
+      recordingStreakDays: recordingStreakDays ?? this.recordingStreakDays,
+      maxRecordingStreakDays:
+          maxRecordingStreakDays ?? this.maxRecordingStreakDays,
     );
   }
 }
@@ -393,6 +410,8 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       }
     }
 
+    final streakStats = await statsStorage.loadStreakStats();
+
     return StatsOverviewState(
       period: period,
       selectedDate: date,
@@ -410,6 +429,10 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       records: records,
       discoveredCities: discoveredCities,
       mostVisitedPlaces: mostVisitedPlaces,
+      openStreakDays: streakStats.currentOpenStreak,
+      maxOpenStreakDays: streakStats.maxOpenStreak,
+      recordingStreakDays: streakStats.currentRecordingStreak,
+      maxRecordingStreakDays: streakStats.maxRecordingStreak,
     );
   }
 

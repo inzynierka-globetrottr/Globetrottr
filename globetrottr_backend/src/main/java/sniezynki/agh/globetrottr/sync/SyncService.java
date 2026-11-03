@@ -14,6 +14,7 @@ import sniezynki.agh.globetrottr.location.UserFogRepository;
 import sniezynki.agh.globetrottr.location.dto.PointDto;
 import sniezynki.agh.globetrottr.quest.QuestService;
 import sniezynki.agh.globetrottr.statistics.StatisticsSyncService;
+import sniezynki.agh.globetrottr.sync.dto.SyncRequest;
 import sniezynki.agh.globetrottr.user.User;
 import sniezynki.agh.globetrottr.user.UserRepository;
 
@@ -30,12 +31,22 @@ public class SyncService {
 
     @Transactional
     public void processPoints(List<PointDto> points, String username) {
+        processSync(new SyncRequest(points, null), username);
+    }
+
+    @Transactional
+    public void processSync(SyncRequest syncRequest, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow();
+
+        if (syncRequest.statistics() != null) {
+            statisticsSyncService.updateUserStatistics(user, syncRequest.statistics());
+        }
+
+        List<PointDto> points = syncRequest.points();
         if (points == null || points.isEmpty()) {
-            log.warn("No points received");
             return;
         }
 
-        User user = userRepository.findByUsername(username).orElseThrow();
         UserFog userFog =
                 userFogRepository
                         .findByUser_UserId(user.getUserId())
@@ -48,10 +59,6 @@ public class SyncService {
 
         Geometry currentFog = userFog.getFogArea();
         Geometry batchNewArea = null;
-
-        // TODO(fog): legacy server-side fog. A 0.0002 deg buffer is an ellipse of
-        // about 22 x 14 m in Krakow, while the app reveals a 30 m circle. Target: keep
-        // the raw points for statistics and merge fog tiles uploaded by the client.
         double distance = 0.0002;
 
         Map<String, List<PointDto>> groupedPoints =
@@ -97,7 +104,7 @@ public class SyncService {
         log.info("Updated fog for user: {}", username);
         questService.checkAndCompleteQuests(user, userFog);
 
-        if (batchNewArea != null) {
+        if (syncRequest.statistics() == null && batchNewArea != null) {
             statisticsSyncService.recalculateStatsForNewFog(user, batchNewArea);
         }
     }

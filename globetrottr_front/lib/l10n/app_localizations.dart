@@ -1273,6 +1273,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No visited places yet'**
   String get statsNoVisitedPlaces;
+
+  /// No description provided for @statsStreaksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaks'**
+  String get statsStreaksTitle;
+
+  /// No description provided for @statsAppOpenStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'App opened'**
+  String get statsAppOpenStreak;
+
+  /// No description provided for @statsRecordingStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get statsRecordingStreak;
+
+  /// No description provided for @statsStreakDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String statsStreakDays(int count);
+
+  /// No description provided for @statsStreakMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Max: {count, plural, =1{1 day} other{{count} days}}'**
+  String statsStreakMax(int count);
 }
 
 class _AppLocalizationsDelegate

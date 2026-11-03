@@ -672,4 +672,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsNoVisitedPlaces => 'No visited places yet';
+
+  @override
+  String get statsStreaksTitle => 'Streaks';
+
+  @override
+  String get statsAppOpenStreak => 'App opened';
+
+  @override
+  String get statsRecordingStreak => 'Recording';
+
+  @override
+  String statsStreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsStreakMax(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return 'Max: $_temp0';
+  }
 }

@@ -27,6 +27,7 @@ import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metr
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metrics_row.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_most_visited_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_period_tabs.dart';
+import 'package:globetrottr_front/features/statistics/screens/widgets/stats_streaks_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_records_grid.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_weekly_chart.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
@@ -212,7 +213,14 @@ class _FakeStatisticsStorage implements StatisticsStorage {
   @override
   Future<void> close() async {}
   @override
-  Future<UserStreakStats> loadStreakStats() async => UserStreakStats.empty;
+  Future<UserStreakStats> loadStreakStats() async => const UserStreakStats(
+    currentOpenStreak: 5,
+    maxOpenStreak: 12,
+    lastOpenDate: '2026-11-03',
+    currentRecordingStreak: 3,
+    maxRecordingStreak: 7,
+    lastRecordingDate: '2026-11-03',
+  );
   @override
   Future<void> saveStreakStats(UserStreakStats stats) async {}
 
@@ -330,6 +338,11 @@ void main() {
       expect(find.byType(StatsPeriodTabs), findsOneWidget);
       expect(find.byType(StatsDateNavigator), findsOneWidget);
       expect(find.byType(StatsMetricTile), findsNWidgets(4));
+      expect(find.byType(StatsStreaksCard), findsOneWidget);
+      expect(find.text('App opened'), findsOneWidget);
+      expect(find.text('Recording'), findsOneWidget);
+      expect(find.text('5 days'), findsOneWidget);
+      expect(find.text('3 days'), findsOneWidget);
       expect(find.byType(StatsWeeklyChart), findsOneWidget);
       expect(find.byType(StatsCountriesBanner), findsOneWidget);
       expect(find.byType(StatsActivitySection), findsOneWidget);
@@ -371,6 +384,11 @@ void main() {
       expect(find.text('Dystans'), findsOneWidget);
       expect(find.text('Nowe ulice'), findsOneWidget);
       expect(find.text('Questy'), findsOneWidget);
+      expect(find.byType(StatsStreaksCard), findsOneWidget);
+      expect(find.text('Otwarcie aplikacji'), findsOneWidget);
+      expect(find.text('Nagrywanie'), findsOneWidget);
+      expect(find.text('5 dni'), findsOneWidget);
+      expect(find.text('3 dni'), findsOneWidget);
     });
   });
 

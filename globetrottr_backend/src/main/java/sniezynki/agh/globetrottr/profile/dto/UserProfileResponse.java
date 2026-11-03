@@ -17,6 +17,7 @@ public record UserProfileResponse(
         int visitedCountriesCount,
         int completedQuestsCount,
         int currentStreak,
+        int appStreak,
 
         // User regions
         List<RegionStatisticDto> regions) {}

@@ -71,7 +71,7 @@ class RegionDetailScreen extends ConsumerWidget {
                   metrics: [
                     StatMetricItem(
                       value:
-                          '${formatKm2(data.discoveredAreaKm2, locale, decimals: 1)} km²',
+                          '${formatKm2(data.discoveredAreaKm2, locale, decimals: data.discoveredAreaKm2 > 0 && data.discoveredAreaKm2 < 0.1 ? 2 : 1)} km²',
                       label: l10n.statsMetricDiscovered,
                     ),
                     StatMetricItem(

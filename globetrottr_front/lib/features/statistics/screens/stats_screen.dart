@@ -14,6 +14,7 @@ import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metr
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_most_visited_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_period_tabs.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_records_grid.dart';
+import 'package:globetrottr_front/features/statistics/screens/widgets/stats_streaks_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_weekly_chart.dart';
 import 'package:go_router/go_router.dart';
 
@@ -115,6 +116,13 @@ class StatsScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 12),
+                StatsStreaksCard(
+                  openStreakDays: state.openStreakDays,
+                  maxOpenStreakDays: state.maxOpenStreakDays,
+                  recordingStreakDays: state.recordingStreakDays,
+                  maxRecordingStreakDays: state.maxRecordingStreakDays,
                 ),
                 const SizedBox(height: 16),
                 StatsWeeklyChart(bars: state.weeklyBars),

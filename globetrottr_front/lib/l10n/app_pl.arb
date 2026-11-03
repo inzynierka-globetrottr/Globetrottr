@@ -226,5 +226,20 @@
     }
   },
   "statsNoDiscoveredCities": "Brak odkrytych miast",
-  "statsNoVisitedPlaces": "Brak odwiedzonych miejsc"
+  "statsNoVisitedPlaces": "Brak odwiedzonych miejsc",
+  "statsStreaksTitle": "Serie",
+  "statsAppOpenStreak": "Otwarcie aplikacji",
+  "statsRecordingStreak": "Nagrywanie",
+  "statsStreakDays": "{count, plural, =1{1 dzień} few{{count} dni} many{{count} dni} other{{count} dni}}",
+  "@statsStreakDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "statsStreakMax": "Maks: {count, plural, =1{1 dzień} few{{count} dni} many{{count} dni} other{{count} dni}}",
+  "@statsStreakMax": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

@@ -105,7 +105,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - Rebuildable: clearing or recalculating statistics replays all stored fog tiles against the local boundary index in under 200 ms.
 - Dual streaks are tracked in local SQLite: app open streak (daily app launches) and recording streak (daily track recordings with distance/area).
 - Streets count is tracked per city by recording unique traversed OpenStreetMap road names matched from vector road tiles.
-- Backend receives aggregated scalar statistics upon sync for friend comparisons and leaderboards; PostGIS fog processing is removed.
+- Backend statistics ingestion & dual streaks: backend accepts StatisticsSyncDto (scalar area, countries, dual streaks, and region percentage breakdowns) on /api/map/sync avoiding heavy PostGIS spatial calculations on sync; statistics screen displays both app open streak and recording streak with current and max day counts in neumorphic styling.
 - Screens follow the Neo Neumorphic design (`globetrotttr-neo-neumorphic.html`): `Neo · Statystyki`, `Neo · Kraje`, `Neo · Region`, and `Neo · Miasto`. Reusable components built under `lib/features/statistics/screens/widgets/` (`StatsPeriodTabs`, `StatsDateNavigator`, `StatsMetricTile`, `StatsWeeklyChart`, `StatsCountriesBanner`, `StatsActivitySection`, `StatsRecordsGrid`, `StatsDiscoveryCard`, `StatsMostVisitedCard`, `StatsDetailProgressCard`, `StatsMetricsRow`, `StatsMetadataCard`, `CountryFlagChip`, `CountryAccordionCard`).
 - Dual Polish and English localization across all statistics screens and sub-pages.
 - GoRouter navigation registered under `/profile/statistics`, `/profile/statistics/countries`, `/profile/statistics/region/:id`, and `/profile/statistics/city/:id`.

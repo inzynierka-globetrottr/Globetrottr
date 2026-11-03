@@ -304,5 +304,20 @@
     }
   },
   "statsNoDiscoveredCities": "No discovered cities yet",
-  "statsNoVisitedPlaces": "No visited places yet"
+  "statsNoVisitedPlaces": "No visited places yet",
+  "statsStreaksTitle": "Streaks",
+  "statsAppOpenStreak": "App opened",
+  "statsRecordingStreak": "Recording",
+  "statsStreakDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsStreakDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "statsStreakMax": "Max: {count, plural, =1{1 day} other{{count} days}}",
+  "@statsStreakMax": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

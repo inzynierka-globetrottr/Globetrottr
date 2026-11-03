@@ -11,7 +11,7 @@ class DiscoveryRowItem {
   const DiscoveryRowItem({
     this.id,
     required this.name,
-    required this.percentage, // 0.0 to 100.0 (or share 0.0 to 1.0)
+    required this.percentage,
     this.onTap,
   });
 
@@ -71,12 +71,13 @@ class StatsDiscoveryCard extends StatelessWidget {
     final typography = context.typography;
     final locale = Localizations.localeOf(context).toString();
 
-    // Support both percentage values 0-100 and fractions 0-1
-    final percentValue = item.percentage <= 1.0
-        ? item.percentage * 100
-        : item.percentage;
-    final fillFraction = (percentValue / 100).clamp(0.01, 1.0);
-    final formattedPercent = '${formatKm2(percentValue, locale, decimals: 1)}%';
+    final percentValue = item.percentage.clamp(0.0, 100.0);
+    final fillFraction = (percentValue / 100).clamp(
+      percentValue > 0 ? 0.01 : 0.0,
+      1.0,
+    );
+    final formattedPercent =
+        '${formatKm2(percentValue, locale, decimals: percentValue > 0 && percentValue < 1 ? 2 : 1)}%';
 
     final content = Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),

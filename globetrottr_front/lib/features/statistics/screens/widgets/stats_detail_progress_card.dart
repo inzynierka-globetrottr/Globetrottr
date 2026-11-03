@@ -8,7 +8,7 @@ class StatsDetailProgressCard extends StatelessWidget {
   const StatsDetailProgressCard({
     super.key,
     required this.title,
-    required this.percentage, // 0.0 to 100.0 (or share 0.0 to 1.0)
+    required this.percentage,
   });
 
   final String title;
@@ -20,10 +20,13 @@ class StatsDetailProgressCard extends StatelessWidget {
     final typography = context.typography;
     final locale = Localizations.localeOf(context).toString();
 
-    final percentValue = percentage <= 1.0 ? percentage * 100 : percentage;
-    final fillFraction = (percentValue / 100).clamp(0.01, 1.0);
+    final percentValue = percentage.clamp(0.0, 100.0);
+    final fillFraction = (percentValue / 100).clamp(
+      percentValue > 0 ? 0.01 : 0.0,
+      1.0,
+    );
     final formattedPercent =
-        '${formatKm2(percentValue, locale, decimals: percentValue < 1 ? 2 : 1)}%';
+        '${formatKm2(percentValue, locale, decimals: percentValue > 0 && percentValue < 1 ? 2 : 1)}%';
 
     return NeuSurface(
       shadows: context.shadows.raised(NeoDepth.xl),

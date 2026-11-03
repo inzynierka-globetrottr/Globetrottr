@@ -672,4 +672,39 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get statsNoVisitedPlaces => 'Brak odwiedzonych miejsc';
+
+  @override
+  String get statsStreaksTitle => 'Serie';
+
+  @override
+  String get statsAppOpenStreak => 'Otwarcie aplikacji';
+
+  @override
+  String get statsRecordingStreak => 'Nagrywanie';
+
+  @override
+  String statsStreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dni',
+      many: '$count dni',
+      few: '$count dni',
+      one: '1 dzień',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsStreakMax(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dni',
+      many: '$count dni',
+      few: '$count dni',
+      one: '1 dzień',
+    );
+    return 'Maks: $_temp0';
+  }
 }

@@ -140,6 +140,7 @@ public class UserProfileService {
                 .completedQuestsCount(globalStats.getCompletedQuestsCount())
                 .currentStreak(
                         globalStats.getCurrentStreak() != null ? globalStats.getCurrentStreak() : 0)
+                .appStreak(globalStats.getAppStreak() != null ? globalStats.getAppStreak() : 0)
                 .regions(userRegions)
                 .build();
     }
