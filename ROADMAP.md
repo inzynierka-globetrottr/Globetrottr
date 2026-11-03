@@ -120,7 +120,7 @@ Subtle motion across the app, in the language of the mock-up: short transitions 
 1. Motion tokens and the reduced-motion setting (Done).
 2. Shared components: pressed buttons, counting numbers, filling rings, bars and quest steps, appearing form and field errors (Done; not yet checked on a phone).
 3. Navigation: one persistent bottom navigation, tab and screen transitions, back behaviour (Done; not yet checked on a phone).
-4. Screens: map pill, friends, quests, dialogs, list entrances (Planned).
+4. Screens: map pill, rows and sections coming and going, password rules, dialogs (Done; not yet checked on a phone).
 5. Reward moments: a reached quest point, a completed quest, a new region (Idea).
 
 **Decisions:**
@@ -137,6 +137,9 @@ Subtle motion across the app, in the language of the mock-up: short transitions 
 - System back on a deeper screen goes one level up, on a tab other than the map returns to the map, and on the map leaves the app (owner's decision).
 - The map opens on an overview and the camera comes down to the player once the first position arrives, unless the user has moved the map first. Why: the jump to the player looked abrupt (owner's feedback).
 - The navigation keeps a fixed gap above the system navigation (gesture bar or buttons) instead of resting on it.
+- Rows and sections that come with the data or go away unfold and fold in their place, in every list card and on the Friends and Quests tabs; the first data on an empty tab only fades in, and the empty-state cards wait until the data has been asked for, so they never flash before it arrives (owner's choice after trying the unfolding version). They are clipped only while moving, so card shadows are not cut once in place.
+- Dialogs fade in while growing a little, like the deeper screens zoom in (owner's decision).
+- Left out (owner's decisions): an appearing animation of the player marker, loading skeletons, a shake of a wrong verification code.
 - Built-in Flutter animations first; no animation packages or Lottie/Rive assets until a design needs them.
 
 ---

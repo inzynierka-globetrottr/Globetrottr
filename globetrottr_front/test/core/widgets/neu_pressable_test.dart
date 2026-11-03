@@ -101,6 +101,37 @@ void main() {
     expect(shown(tester), raised);
   });
 
+  testWidgets('a new fill colour blends in', (tester) async {
+    Widget button(Color color) => MaterialApp(
+      theme: AppTheme.light,
+      home: Center(
+        child: NeuPressable(
+          onPressed: () {},
+          shadows: raised,
+          pressedShadows: sunk,
+          color: color,
+          width: 60,
+          height: 60,
+          child: const SizedBox(),
+        ),
+      ),
+    );
+    Color shownColor() =>
+        tester.widget<NeuSurface>(find.byType(NeuSurface)).color!;
+    const from = Color(0xFF00897B);
+    const to = Color(0xFFD32F2F);
+
+    await tester.pumpWidget(button(from));
+    expect(shownColor(), from);
+
+    await tester.pumpWidget(button(to));
+    await tester.pump(AppMotion.standard.short ~/ 2);
+    expect(shownColor(), isNot(anyOf(from, to)));
+
+    await tester.pumpAndSettle();
+    expect(shownColor(), to);
+  });
+
   testWidgets('without animations a press sinks it at once', (tester) async {
     final gesture = await press(tester, disableAnimations: true);
     await tester.pump();
