@@ -9,6 +9,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     required this.medium,
     required this.long,
     required this.flight,
+    required this.pressHold,
     required this.curve,
     required this.flightCurve,
   });
@@ -18,6 +19,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     medium: Duration(milliseconds: 240),
     long: Duration(milliseconds: 280),
     flight: Duration(milliseconds: 450),
+    pressHold: Duration(milliseconds: 100),
     curve: Curves.ease,
     flightCurve: Curves.easeInOut,
   );
@@ -33,6 +35,11 @@ class AppMotion extends ThemeExtension<AppMotion> {
 
   /// The map camera travelling to a place.
   final Duration flight;
+
+  /// The shortest time a pressed button stays sunk in. A quick tap in a
+  /// scrolling list is reported as pressed and released in one frame, which
+  /// would never show the press. Not a movement, so reduced motion keeps it.
+  final Duration pressHold;
 
   final Curve curve;
   final Curve flightCurve;
@@ -52,6 +59,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     Duration? medium,
     Duration? long,
     Duration? flight,
+    Duration? pressHold,
     Curve? curve,
     Curve? flightCurve,
   }) => AppMotion(
@@ -59,6 +67,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     medium: medium ?? this.medium,
     long: long ?? this.long,
     flight: flight ?? this.flight,
+    pressHold: pressHold ?? this.pressHold,
     curve: curve ?? this.curve,
     flightCurve: flightCurve ?? this.flightCurve,
   );
@@ -74,10 +83,11 @@ class AppMotion extends ThemeExtension<AppMotion> {
       other.medium == medium &&
       other.long == long &&
       other.flight == flight &&
+      other.pressHold == pressHold &&
       other.curve == curve &&
       other.flightCurve == flightCurve;
 
   @override
   int get hashCode =>
-      Object.hash(short, medium, long, flight, curve, flightCurve);
+      Object.hash(short, medium, long, flight, pressHold, curve, flightCurve);
 }

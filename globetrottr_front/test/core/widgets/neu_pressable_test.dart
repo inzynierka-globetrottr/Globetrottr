@@ -61,7 +61,7 @@ void main() {
 
   testWidgets('a released surface rises back gradually', (tester) async {
     final gesture = await press(tester);
-    await tester.pump();
+    await tester.pump(AppMotion.standard.pressHold);
     await gesture.up();
     await tester.pump();
 
@@ -69,6 +69,34 @@ void main() {
     expect(shown(tester).single.inset, isTrue);
     expect(shown(tester).single.offset.dx, lessThan(4));
 
+    await tester.pumpAndSettle();
+    expect(shown(tester), raised);
+  });
+
+  testWidgets('a quick tap in a scrolling list is still seen', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: ListView(
+          children: [
+            NeuPressable(
+              onPressed: () {},
+              shadows: raised,
+              pressedShadows: sunk,
+              width: 60,
+              height: 60,
+              child: const SizedBox(),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(NeuPressable));
+    await tester.pump();
+    expect(shown(tester), sunk);
+
+    await tester.pump(AppMotion.standard.pressHold);
     await tester.pumpAndSettle();
     expect(shown(tester), raised);
   });

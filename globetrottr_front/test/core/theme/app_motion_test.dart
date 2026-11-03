@@ -47,6 +47,10 @@ void main() {
     expect(reduced.flight, Duration.zero);
   });
 
+  test('reduced motion still shows a press, as it is not a movement', () {
+    expect(AppMotion.standard.reduced.pressHold, AppMotion.standard.pressHold);
+  });
+
   test('the app theme carries the motion', () {
     final theme = AppTheme.from(AppPalette.light);
 
