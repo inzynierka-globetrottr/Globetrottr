@@ -21,9 +21,11 @@ Page<void> fadePage(BuildContext context, GoRouterState state, Widget child) {
     transitionDuration: motion.short,
     reverseTransitionDuration: motion.short,
     child: child,
+    // The builder runs on every frame of both animations, so the curves are
+    // driven by tweens, which leave no listeners on the route's animations.
     transitionsBuilder: (context, animation, secondaryAnimation, child) =>
         FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: motion.curve),
+          opacity: animation.drive(CurveTween(curve: motion.curve)),
           child: _belowDeeper(
             motion.deeperTransition,
             secondaryAnimation,
@@ -41,17 +43,15 @@ Widget _belowDeeper(
   Widget child,
 ) => switch (transition) {
   DeeperTransition.slide => SlideTransition(
-    position: Tween(
-      begin: Offset.zero,
-      end: const Offset(-1 / 3, 0),
-    ).animate(CurvedAnimation(parent: covered, curve: Curves.linearToEaseOut)),
+    position: covered
+        .drive(CurveTween(curve: Curves.linearToEaseOut))
+        .drive(Tween(begin: Offset.zero, end: const Offset(-1 / 3, 0))),
     child: child,
   ),
   DeeperTransition.zoom => ScaleTransition(
-    scale: Tween(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(parent: covered, curve: Curves.fastOutSlowIn)),
+    scale: covered
+        .drive(CurveTween(curve: Curves.fastOutSlowIn))
+        .drive(Tween(begin: 1.0, end: 1.05)),
     child: child,
   ),
   DeeperTransition.rise || DeeperTransition.platform => child,

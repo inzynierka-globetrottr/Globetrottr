@@ -163,4 +163,41 @@ void main() {
 
     expect(tester.element(find.byType(Checkbox)), same(box));
   });
+
+  testWidgets('a child can carry a global key', (tester) async {
+    final key = GlobalKey();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AnimatedColumn(
+            children: [SizedBox(key: key, height: 40)],
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(key.currentContext, isNotNull);
+  });
+
+  testWidgets('a child keyed by a number does not clash with a position', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AnimatedColumn(
+            children: [
+              Text('unkeyed'),
+              Text('keyed', key: ValueKey(0)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('unkeyed'), findsOneWidget);
+    expect(find.text('keyed'), findsOneWidget);
+  });
 }

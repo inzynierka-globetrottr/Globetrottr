@@ -24,7 +24,7 @@ Future<T?> showNeuDialog<T>({
     transitionDuration: motion.short,
     pageBuilder: (context, _, _) => SafeArea(child: Builder(builder: builder)),
     transitionBuilder: (context, animation, _, child) {
-      final curved = CurvedAnimation(parent: animation, curve: motion.curve);
+      final curved = animation.drive(CurveTween(curve: motion.curve));
       return FadeTransition(
         opacity: curved,
         child: ScaleTransition(

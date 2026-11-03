@@ -61,7 +61,10 @@ class _AnimatedColumnState extends State<AnimatedColumn>
     with TickerProviderStateMixin {
   List<_Entry> _entries = [];
 
-  static Key _keyOf(Widget child, int index) => child.key ?? ValueKey(index);
+  /// Wraps the child's key, so the wrapper never carries the child's own
+  /// global key and a child keyed by a number never takes a position's key.
+  static Key _keyOf(Widget child, int index) =>
+      ValueKey((child.key, child.key == null ? index : null));
 
   _Entry _entry(Widget child, int index, {required bool shown}) {
     final motion = context.motion;
