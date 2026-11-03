@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
+import 'package:globetrottr_front/features/heatmap/provider/heatmap_provider.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
@@ -99,17 +100,20 @@ class FogTestEnvironment {
     FakeQuestService? quests,
     InMemoryTrackLogStorage? log,
     InMemoryFogTileStorage? tiles,
+    InMemoryFogTileStorage? heatTiles,
   }) : location = location ?? FakeLocationService(),
        sync = sync ?? FakeSyncService(),
        quests = quests ?? FakeQuestService(),
        log = log ?? InMemoryTrackLogStorage(),
-       tiles = tiles ?? InMemoryFogTileStorage();
+       tiles = tiles ?? InMemoryFogTileStorage(),
+       heatTiles = heatTiles ?? InMemoryFogTileStorage();
 
   final FakeLocationService location;
   final FakeSyncService sync;
   final FakeQuestService quests;
   final InMemoryTrackLogStorage log;
   final InMemoryFogTileStorage tiles;
+  final InMemoryFogTileStorage heatTiles;
 
   List<Override> get overrides => [
     locationServiceProvider.overrideWithValue(location),
@@ -117,6 +121,7 @@ class FogTestEnvironment {
     questServiceProvider.overrideWithValue(quests),
     trackLogStorageProvider.overrideWithValue(log),
     fogTileStorageProvider.overrideWithValue(tiles),
+    heatTileStorageProvider.overrideWithValue(heatTiles),
   ];
 
   ProviderContainer createContainer() {

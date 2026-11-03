@@ -13,10 +13,9 @@ import 'package:globetrottr_front/features/map/provider/player_locator.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
-import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
-import 'package:globetrottr_front/features/fog/render/bitmap_fog_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/layers_sheet.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/map_overlay.dart';
+import 'package:globetrottr_front/features/map/screens/widgets/map_view_layer.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker_layer.dart';
 import 'package:globetrottr_front/features/quests/provider/active_quest.dart';
 import 'package:globetrottr_front/features/quests/provider/quest_map_focus.dart';
@@ -149,10 +148,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
       }
     });
 
-    final recording = ref.watch(locationProvider.select((s) => s.isRecording));
     final motion = ref.watch(playerMotionProvider);
-    final fog = ref.watch(fogProvider);
-    final fogOptions = ref.watch(fogRenderOptionsProvider);
 
     return Scaffold(
       body: Stack(
@@ -170,11 +166,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
             ),
             children: [
               const AppTileLayer(),
-              BitmapFogLayer(
-                source: fog.value,
-                options: fogOptions,
-                head: recording ? motion : null,
-              ),
+              const MapViewLayer(),
               if (DevConfig.isDevMode) const RecordedPointsLayer(),
               const QuestRouteLayer(),
               ListenableBuilder(

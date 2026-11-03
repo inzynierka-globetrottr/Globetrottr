@@ -8,12 +8,18 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 class FogPathPoint {
   const FogPathPoint(this.x, this.y, this.radius);
 
-  factory FogPathPoint.at(double latitude, double longitude, int zoom) {
+  /// [radiusMeters] is the vision radius unless a layer draws narrower.
+  factory FogPathPoint.at(
+    double latitude,
+    double longitude,
+    int zoom, {
+    double radiusMeters = MapConfig.defaultVisionRadius,
+  }) {
     return FogPathPoint(
       FogMercator.lngToX(longitude, zoom),
       FogMercator.latToY(latitude, zoom),
       metersToPixels(
-        meters: MapConfig.defaultVisionRadius,
+        meters: radiusMeters,
         latitude: latitude,
         zoom: zoom.toDouble(),
       ),

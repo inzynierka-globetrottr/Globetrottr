@@ -6,7 +6,8 @@ class FogChange {
     this.all = false,
     this.onTrail = false,
     this.trailWrittenUpTo,
-  });
+    bool written = false,
+  }) : written = written || trailWrittenUpTo != null;
 
   /// Tiles whose content changed, on any level of the pyramid.
   final Set<FogTileId> tiles;
@@ -18,8 +19,12 @@ class FogChange {
   /// images of its tiles need no rebuild yet.
   final bool onTrail;
 
-  /// Set when the change was written to storage, so coarser levels were
-  /// refreshed too: the newest trail segment the write put into the tiles.
+  /// True when the change was written to storage, so coarser levels were
+  /// refreshed too and the images around the tiles need a rebuild.
+  final bool written;
+
+  /// Set when a write put the trail into the tiles: the newest trail segment
+  /// it holds.
   final int? trailWrittenUpTo;
 }
 

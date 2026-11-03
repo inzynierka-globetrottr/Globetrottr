@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
@@ -92,13 +93,25 @@ Map<int, Uint8List> rasterizeChunk(FogChunkJob job) {
 /// Cuts track log entries into chunks and turns them into jobs for
 /// [rasterizeChunk].
 class FogImportPlanner {
-  FogImportPlanner({required this.segmentRule, required this.rasterizer});
+  FogImportPlanner({
+    required this.segmentRule,
+    required this.rasterizer,
+    this.radiusMeters = MapConfig.defaultVisionRadius,
+  });
 
   final FogSegmentRule segmentRule;
   final FogRasterizer rasterizer;
 
+  /// Radius of the drawn path; layers other than the fog may draw narrower.
+  final double radiusMeters;
+
   FogPathPoint _pointOf(TrackLogEntry entry) {
-    return FogPathPoint.at(entry.latitude, entry.longitude, rasterizer.zoom);
+    return FogPathPoint.at(
+      entry.latitude,
+      entry.longitude,
+      rasterizer.zoom,
+      radiusMeters: radiusMeters,
+    );
   }
 
   /// End (exclusive) of the chunk starting at [from]: at most [maxPoints]

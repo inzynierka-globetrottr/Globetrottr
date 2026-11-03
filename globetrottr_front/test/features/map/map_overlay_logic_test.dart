@@ -47,11 +47,19 @@ void main() {
       expect(container.read(mapViewProvider), MapView.fog);
     });
 
-    test('only the fog can be chosen until the other views exist', () {
+    test('views that do not exist yet cannot be chosen', () {
       final notifier = container.read(mapViewProvider.notifier);
 
-      expect(notifier.select(MapView.heatmap), isFalse);
+      expect(notifier.select(MapView.voronoi), isFalse);
+      expect(notifier.select(MapView.streets), isFalse);
       expect(container.read(mapViewProvider), MapView.fog);
+    });
+
+    test('the heatmap can be chosen', () {
+      final notifier = container.read(mapViewProvider.notifier);
+
+      expect(notifier.select(MapView.heatmap), isTrue);
+      expect(container.read(mapViewProvider), MapView.heatmap);
       expect(notifier.select(MapView.fog), isTrue);
     });
   });

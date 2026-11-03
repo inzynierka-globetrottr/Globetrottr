@@ -9,10 +9,13 @@ import 'package:sqflite/sqflite.dart';
 /// Fog tiles in their own database file, so clearing or rebuilding the fog
 /// can never touch the track log or the pending points.
 class SqfliteFogTileStorage implements FogTileStorage {
-  SqfliteFogTileStorage({this.path});
+  SqfliteFogTileStorage({this.path, this.fileName = 'fog.db'});
 
-  /// Database location; null uses `fog.db` in the default databases folder.
+  /// Database location; null uses [fileName] in the default databases folder.
   final String? path;
+
+  /// The heatmap keeps the same tables in its own file.
+  final String fileName;
 
   Database? _database;
 
@@ -21,7 +24,7 @@ class SqfliteFogTileStorage implements FogTileStorage {
   Future<Database> get _db async => _database ??= await _open();
 
   Future<String> _location() async =>
-      path ?? join(await getDatabasesPath(), 'fog.db');
+      path ?? join(await getDatabasesPath(), fileName);
 
   @override
   Future<int> fileBytes() async => databaseFileBytes(await _location());

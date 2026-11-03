@@ -7,12 +7,12 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/theme/dev_style.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
-import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/render/fog_live_shapes.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
+import 'package:globetrottr_front/features/fog/render/fog_tile_drawer.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -35,14 +35,14 @@ class BitmapFogPainter extends CustomPainter {
   }) : super(repaint: Listenable.merge([source, head]));
 
   static const FogRenderOptions defaultOptions = FogRenderOptions();
-  static const int _maxDrawnTiles = 96;
-  static const double _tile = FogTileId.size + 0.0;
+  static const double _tile = FogTileDrawer.tile;
   static const double _minPixelLineSize = 6;
 
   /// Narrowest edge on the screen; a sharper one would show its pixels.
   static const double _minEdgePixels = 1.5;
 
   final MapCamera camera;
+  late final FogTileDrawer _drawer = FogTileDrawer(camera);
 
   /// Colour of the undiscovered area, opacity included.
   final Color color;
@@ -67,7 +67,11 @@ class BitmapFogPainter extends CustomPainter {
     );
     canvas.drawColor(Colors.black, BlendMode.src);
     if (usable && source != null) {
-      _drawTiles(canvas, source!);
+      _drawer.drawTiles(
+        canvas,
+        source!,
+        quality: options.rawPixels ? FilterQuality.none : FilterQuality.low,
+      );
       if (!options.rawPixels) _drawLive(canvas, source!, size);
     }
     canvas
@@ -115,7 +119,7 @@ class BitmapFogPainter extends CustomPainter {
     final pixelSize = math.pow(2, camera.zoom - level).toDouble();
     if (pixelSize < _minPixelLineSize) return;
     final range = camera.visibleTiles(level);
-    if (range.cellCount > _maxDrawnTiles) return;
+    if (range.cellCount > FogTileDrawer.maxDrawnTiles) return;
 
     final lines = ui.Path();
     for (var i = 0; i <= _tile; i++) {
@@ -132,7 +136,7 @@ class BitmapFogPainter extends CustomPainter {
     for (final id in range.ids) {
       canvas
         ..save()
-        ..transform(_tileMatrix(id))
+        ..transform(_drawer.tileMatrix(id))
         ..drawPath(lines, paint)
         ..restore();
     }
@@ -148,7 +152,7 @@ class BitmapFogPainter extends CustomPainter {
   void _drawGrid(Canvas canvas) {
     final source = this.source;
     final range = camera.visibleTiles(_drawnLevel());
-    if (range.cellCount > _maxDrawnTiles) return;
+    if (range.cellCount > FogTileDrawer.maxDrawnTiles) return;
 
     final line = Paint()
       ..style = PaintingStyle.stroke
@@ -161,10 +165,14 @@ class BitmapFogPainter extends CustomPainter {
         _ => DevColors.gridLoading,
       };
       line.color = color;
-      final origin = _screen(id.x * _tile, id.y * _tile, id.z);
-      final right = _screen((id.x + 1) * _tile, id.y * _tile, id.z);
-      final corner = _screen((id.x + 1) * _tile, (id.y + 1) * _tile, id.z);
-      final down = _screen(id.x * _tile, (id.y + 1) * _tile, id.z);
+      final origin = _drawer.screen(id.x * _tile, id.y * _tile, id.z);
+      final right = _drawer.screen((id.x + 1) * _tile, id.y * _tile, id.z);
+      final corner = _drawer.screen(
+        (id.x + 1) * _tile,
+        (id.y + 1) * _tile,
+        id.z,
+      );
+      final down = _drawer.screen(id.x * _tile, (id.y + 1) * _tile, id.z);
       canvas.drawPath(
         ui.Path()
           ..moveTo(origin.dx, origin.dy)
@@ -190,105 +198,6 @@ class BitmapFogPainter extends CustomPainter {
     painter.dispose();
   }
 
-  void _drawTiles(Canvas canvas, FogTileSource source) {
-    final level = source.levelFor(camera.zoom);
-    final range = camera.visibleTiles(level);
-    if (range.cellCount > _maxDrawnTiles) return;
-    for (final id in range.ids) {
-      final image = source.imageFor(id);
-      if (image != null) {
-        _drawImage(canvas, id, image, const Rect.fromLTWH(1, 1, _tile, _tile));
-      } else if (!source.isAbsent(id)) {
-        _drawFallback(canvas, source, id);
-      }
-    }
-  }
-
-  void _drawFallback(Canvas canvas, FogTileSource source, FogTileId id) {
-    final ancestor = source.fallbackFor(id);
-    if (ancestor != null) {
-      final span = 1 << (id.z - ancestor.id.z);
-      final side = _tile / span;
-      final src = Rect.fromLTWH(
-        1 + (id.x % span) * side,
-        1 + (id.y % span) * side,
-        side,
-        side,
-      );
-      _drawImage(canvas, id, ancestor.image, src);
-      return;
-    }
-    for (final child in source.childrenFor(id)) {
-      const half = _tile / 2;
-      final dest = Rect.fromLTWH(
-        (child.id.x - id.x * 2) * half,
-        (child.id.y - id.y * 2) * half,
-        half,
-        half,
-      );
-      _drawImage(
-        canvas,
-        id,
-        child.image,
-        const Rect.fromLTWH(1, 1, _tile, _tile),
-        dest: dest,
-      );
-    }
-  }
-
-  void _drawImage(
-    Canvas canvas,
-    FogTileId id,
-    ui.Image image,
-    Rect src, {
-    Rect dest = const Rect.fromLTWH(0, 0, _tile, _tile),
-  }) {
-    final matrix = _tileMatrix(id);
-    final paint = Paint()
-      ..blendMode = BlendMode.plus
-      ..filterQuality = options.rawPixels
-          ? FilterQuality.none
-          : FilterQuality.low;
-    canvas
-      ..save()
-      ..transform(matrix)
-      ..drawImageRect(image, src, dest, paint)
-      ..restore();
-  }
-
-  /// Maps tile pixels to the screen using the projected corners, so rotation
-  /// and any camera state are handled by the map itself.
-  Float64List _tileMatrix(FogTileId id) {
-    final origin = _screen(id.x * _tile, id.y * _tile, id.z);
-    final right = _screen((id.x + 1) * _tile, id.y * _tile, id.z);
-    final down = _screen(id.x * _tile, (id.y + 1) * _tile, id.z);
-    return Float64List.fromList([
-      (right.dx - origin.dx) / _tile,
-      (right.dy - origin.dy) / _tile,
-      0,
-      0,
-      (down.dx - origin.dx) / _tile,
-      (down.dy - origin.dy) / _tile,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      origin.dx,
-      origin.dy,
-      0,
-      1,
-    ]);
-  }
-
-  Offset _screen(double worldX, double worldY, int z) {
-    final point = camera.latLngToScreenPoint(
-      LatLng(FogMercator.yToLat(worldY, z), FogMercator.xToLng(worldX, z)),
-    );
-    return Offset(point.x, point.y);
-  }
-
   /// Draws what the tile images do not show yet: the points since the last
   /// flush, and the stretch from the newest one to the player.
   void _drawLive(Canvas canvas, FogTileSource source, Size size) {
@@ -307,8 +216,8 @@ class BitmapFogPainter extends CustomPainter {
     );
     for (final segment in store.trail.segments) {
       shapes.add(
-        _screen(segment.ax, segment.ay, z),
-        _screen(segment.bx, segment.by, z),
+        _drawer.screen(segment.ax, segment.ay, z),
+        _drawer.screen(segment.bx, segment.by, z),
       );
     }
 
@@ -320,7 +229,7 @@ class BitmapFogPainter extends CustomPainter {
     final joined =
         anchor != null &&
         store.joinsTrail(position.latitude, position.longitude);
-    shapes.add(joined ? _screen(anchor.x, anchor.y, z) : end, end);
+    shapes.add(joined ? _drawer.screen(anchor.x, anchor.y, z) : end, end);
   }
 
   /// Matches the strength of a thin route in the coarse tiles, so nothing

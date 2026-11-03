@@ -11,6 +11,7 @@ import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/data/fog_tile_layer.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_replay_tracker.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_batch_drawing.dart';
@@ -34,7 +35,7 @@ export 'package:globetrottr_front/features/fog/data/store/fog_store_models.dart'
 ///
 /// Every operation that changes the fog runs through one queue, so they
 /// never interleave.
-class FogStore {
+class FogStore implements TrailedTileLayer {
   FogStore._(
     this.storage, {
     required this.baseZoom,
@@ -93,6 +94,7 @@ class FogStore {
   }
 
   final FogTileStorage storage;
+  @override
   final int baseZoom;
 
   /// Longest stretch of one session drawn as a path; a longer gap between two
@@ -177,6 +179,7 @@ class FogStore {
   /// Recording stopped or started: the next position starts a new path.
   void endLivePath() => _trail.anchor = null;
 
+  @override
   Stream<FogChange> get changes => _changes.stream;
 
   /// Completes when no replay or rebuild is running.
@@ -575,12 +578,18 @@ class FogStore {
   }
 
   /// Loads the tiles of [range] so [peek] can answer synchronously.
+  @override
   Future<void> prepare(FogTileRange range) => _tiles.loadRange(range);
 
   /// The decoded tile if it is cached, without any I/O.
+  @override
   FogMask? peek(FogTileId id) => _tiles.peek(id);
 
+  @override
   bool isKnownAbsent(FogTileId id) => _tiles.isKnownAbsent(id);
+
+  @override
+  void forgetTrail(int upToId) => _trail.forget(upToId);
 
   Future<void> dispose() async {
     _disposed = true;

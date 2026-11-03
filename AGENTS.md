@@ -37,6 +37,7 @@ Globetrottr/
 │   │   │   ├── auth/           # Login, registration, token handling
 │   │   │   ├── fog/            # Fog of war: own fog as local bitmap tiles, friends' fog
 │   │   │   ├── friends/        # Social, friends lists, friend GeoJSON
+│   │   │   ├── heatmap/        # Heatmap view: sessions per place in the fog's tile pyramid
 │   │   │   ├── map/            # Map UI, location tracking, track log, pending GPS points outbox
 │   │   │   ├── profile/        # User stats, avatar, settings
 │   │   │   └── quests/         # Gamification quests, exp, achievements

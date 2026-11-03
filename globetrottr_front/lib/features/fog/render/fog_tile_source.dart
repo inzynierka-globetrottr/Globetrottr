@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:collection';
 import 'dart:ui' as ui;
 
@@ -7,6 +8,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/async/work_counter.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/data/fog_tile_layer.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_stats.dart';
@@ -20,22 +22,36 @@ class FogFallback {
   final ui.Image image;
 }
 
-/// Turns the tiles of a [FogStore] into GPU images for the painter and keeps
-/// them fresh. It is a [ChangeNotifier]: listeners (the painter) repaint
-/// whenever an image becomes ready.
+/// Builds the pixels of a tile image (the layout of [FogTilePixels]) from the
+/// tiles around it: `around` holds the nine tiles row by row from the
+/// north-west, null for a tile without data.
+typedef TileImageBuilder = Future<Uint8List> Function(List<Uint8List?> around);
+
+/// The tile source of the fog.
+typedef FogTileSource = TileLayerSource<FogStore>;
+
+/// Turns the tiles of a [FogTileLayer] into GPU images for the painter and
+/// keeps them fresh. It is a [ChangeNotifier]: listeners (the painter)
+/// repaint whenever an image becomes ready.
 ///
 /// The painter only ever reads from here synchronously; loading, decoding and
 /// refreshing all happen asynchronously off the paint path, and large reads
 /// are decoded in an isolate.
-class FogTileSource extends ChangeNotifier {
-  FogTileSource(this.store, {this.maxImages = 100}) {
+class TileLayerSource<L extends FogTileLayer> extends ChangeNotifier {
+  TileLayerSource(this.store, {this.maxImages = 100, this._levels}) {
     _subscription = store.changes.listen(_onChange);
   }
 
   static const int _maxRequestedTiles = 400;
 
-  final FogStore store;
+  final L store;
   final int maxImages;
+
+  /// The pixel of every tile value (see [FogTilePixels.build]); null keeps
+  /// the value as the grey, as the fog does.
+  Uint32List? get levels => _levels;
+  Uint32List? _levels;
+  TileImageBuilder? _spread;
   final FogRenderStats stats = FogRenderStats();
 
   final LinkedHashMap<FogTileId, ui.Image> _images = LinkedHashMap();
@@ -85,7 +101,9 @@ class FogTileSource extends ChangeNotifier {
       await store.prepare(target);
       if (_disposed) return;
       for (final id in target.ids) {
-        if (store.peek(id) != null) _request(id);
+        if (store.peek(id) != null || (_spread != null && _hasDataAround(id))) {
+          _request(id);
+        }
       }
     } on Object catch (error) {
       debugPrint('Loading fog tiles failed: $error');
@@ -131,6 +149,24 @@ class FogTileSource extends ChangeNotifier {
     return result;
   }
 
+  /// Draws every tile again with [levels], for example after the look of
+  /// the layer changed.
+  void useLevels(Uint32List? levels) {
+    if (identical(levels, _levels) || _disposed) return;
+    _levels = levels;
+    _onChange(const FogChange({}, all: true));
+  }
+
+  /// Builds every image with [builder] from the tiles around it instead of
+  /// with [levels], so an image can show what spreads in from its
+  /// neighbours (a blur). Tiles without data next to data get an image too.
+  /// Null goes back to [levels].
+  void useSpread(TileImageBuilder? builder) {
+    if (identical(builder, _spread) || _disposed) return;
+    _spread = builder;
+    _onChange(const FogChange({}, all: true));
+  }
+
   /// Completes when no tile is being loaded or decoded.
   Future<void> whenIdle() => _work.whenIdle();
 
@@ -149,10 +185,11 @@ class FogTileSource extends ChangeNotifier {
       return;
     }
 
-    final written = change.trailWrittenUpTo;
+    final trailWritten = change.trailWrittenUpTo;
     final wanted = _lastRange?.expand(1);
     final refresh = <FogTileId>{...change.tiles};
-    if (written != null) {
+    final spreads = _spread != null;
+    if (change.written || spreads) {
       for (final id in change.tiles) {
         for (var dy = -1; dy <= 1; dy++) {
           for (var dx = -1; dx <= 1; dx++) {
@@ -164,13 +201,13 @@ class FogTileSource extends ChangeNotifier {
     for (final id in refresh) {
       final hasImage = _images.containsKey(id);
       final visible = wanted?.contains(id) ?? false;
-      if (hasImage || (visible && change.tiles.contains(id))) {
+      if (hasImage || (visible && (spreads || change.tiles.contains(id)))) {
         _stale.add(id);
         _request(id);
       }
     }
 
-    if (written != null) unawaited(_releaseTrail(written));
+    if (trailWritten != null) unawaited(_releaseTrail(trailWritten));
   }
 
   /// Drops the trail once the new images hold what it shows. Until then both
@@ -178,7 +215,7 @@ class FogTileSource extends ChangeNotifier {
   Future<void> _releaseTrail(int upToId) async {
     await whenIdle();
     if (_disposed) return;
-    store.trail.forget(upToId);
+    if (store case final TrailedTileLayer trailed) trailed.forgetTrail(upToId);
     notifyListeners();
   }
 
@@ -186,19 +223,56 @@ class FogTileSource extends ChangeNotifier {
     if (_disposed || _building.contains(id)) return;
     if (_images.containsKey(id) && !_stale.contains(id)) return;
     final mask = store.peek(id);
-    if (mask == null) return;
+    final spread = _spread;
+    if (mask == null && (spread == null || !_hasDataAround(id))) return;
 
     _stale.remove(id);
     _building.add(id);
     _work.begin();
-    final pixels = FogTilePixels.build(
-      mask,
-      neighbor: (dx, dy) => store.peek(FogTileId(id.z, id.x + dx, id.y + dy)),
-    );
     final generation = _generation;
+    final Future<Uint8List> pixels;
+    if (spread != null) {
+      // Copied, so the build sees the tiles as they are now even when it
+      // runs elsewhere while the store keeps drawing.
+      pixels = spread([
+        for (var dy = -1; dy <= 1; dy++)
+          for (var dx = -1; dx <= 1; dx++)
+            switch (store.peek(FogTileId(id.z, id.x + dx, id.y + dy))) {
+              final tile? => Uint8List.fromList(tile.data),
+              null => null,
+            },
+      ]);
+    } else {
+      pixels = Future.value(
+        FogTilePixels.build(
+          mask!,
+          neighbor: (dx, dy) =>
+              store.peek(FogTileId(id.z, id.x + dx, id.y + dy)),
+          levels: _levels,
+        ),
+      );
+    }
     unawaited(
-      _decode(pixels).then((image) => _finishBuild(id, image, generation)),
+      pixels
+          .then(_decode)
+          .then((image) => _finishBuild(id, image, generation))
+          .catchError((Object error) {
+            debugPrint('Building a tile image failed: $error');
+            _building.remove(id);
+            _work.end();
+          }),
     );
+  }
+
+  bool _hasDataAround(FogTileId id) {
+    for (var dy = -1; dy <= 1; dy++) {
+      for (var dx = -1; dx <= 1; dx++) {
+        if (store.peek(FogTileId(id.z, id.x + dx, id.y + dy)) != null) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   void _finishBuild(FogTileId id, ui.Image image, int generation) {
