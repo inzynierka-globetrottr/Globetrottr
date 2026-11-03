@@ -19,9 +19,9 @@ void main() {
     test('without a source the whole screen is fog', () async {
       final alpha = await renderAlpha(painterFor(cameraAt()));
 
-      expect(alpha(10, 10), closeTo(191, 1));
-      expect(alpha(200, 400), closeTo(191, 1));
-      expect(alpha(390, 790), closeTo(191, 1));
+      expect(alpha(10, 10), closeTo(fogAlpha, 1));
+      expect(alpha(200, 400), closeTo(fogAlpha, 1));
+      expect(alpha(390, 790), closeTo(fogAlpha, 1));
     });
 
     test(
@@ -43,8 +43,8 @@ void main() {
         final reach = (baseRadiusPixels * 0.7).round();
         expect(alpha(200 + reach, 400), 0);
         expect(alpha(200, 400 - reach), 0);
-        expect(alpha(200, 400 + 70), closeTo(191, 1));
-        expect(alpha(20, 20), closeTo(191, 1));
+        expect(alpha(200, 400 + 70), closeTo(fogAlpha, 1));
+        expect(alpha(20, 20), closeTo(fogAlpha, 1));
         source.dispose();
         await store.dispose();
       },
@@ -284,7 +284,7 @@ void main() {
         final alpha = await renderAlpha(painterFor(fine, source: source));
 
         expect(alpha(200, 400), lessThan(10));
-        expect(alpha(20, 20), closeTo(191, 1));
+        expect(alpha(20, 20), closeTo(fogAlpha, 1));
         source.dispose();
         await store.dispose();
       },
@@ -307,7 +307,7 @@ void main() {
         final at = screenOf(coarse, inside.lat, inside.lng);
 
         expect(alpha(at.dx.round(), at.dy.round()), lessThan(20));
-        expect(alpha(20, 20), closeTo(191, 1));
+        expect(alpha(20, 20), closeTo(fogAlpha, 1));
         source.dispose();
         await store.dispose();
       },
@@ -330,7 +330,7 @@ void main() {
 
       expect(alpha(200, 400), 0);
       expect(alpha(200 + (baseRadiusPixels * 0.5).round(), 400), lessThan(5));
-      expect(alpha(200, 400 + 70), closeTo(191, 1));
+      expect(alpha(200, 400 + 70), closeTo(fogAlpha, 1));
     });
 
     test(
@@ -347,7 +347,7 @@ void main() {
         );
 
         expect(alpha(250, 400), lessThan(5));
-        expect(alpha(20, 20), closeTo(191, 2));
+        expect(alpha(20, 20), closeTo(fogAlpha, 2));
         source.dispose();
         await store.dispose();
       },
@@ -393,7 +393,7 @@ void main() {
 
       final alpha = await renderAlpha(painterFor(camera, source: source));
 
-      var strongest = 191;
+      var strongest = fogAlpha;
       for (var dx = -3; dx <= 3; dx++) {
         for (var dy = -3; dy <= 3; dy++) {
           final value = alpha(200 + dx, 400 + dy);
@@ -441,6 +441,7 @@ void main() {
         base.shouldRepaint(
           BitmapFogPainter(
             camera: camera,
+            color: fogColor,
             options: const FogRenderOptions(showGrid: true),
           ),
         ),

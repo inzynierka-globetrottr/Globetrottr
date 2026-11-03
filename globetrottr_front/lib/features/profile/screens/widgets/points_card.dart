@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_container.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 class PointsCard extends StatelessWidget {
   final int totalPoints;
@@ -11,16 +11,18 @@ class PointsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NeuContainer(
-      elevation: NeuElevation.floating,
-      width: double.infinity,
+    final typography = context.typography;
+
+    return NeuSurface(
+      shadows: context.shadows.raised(NeoDepth.lg),
+      borderRadius: BorderRadius.circular(24),
       height: 80,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.emoji_events_rounded,
-            color: AppColors.accentBlue,
+            color: context.palette.accent,
             size: 32,
           ),
           const SizedBox(width: 16),
@@ -28,22 +30,9 @@ class PointsCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                context.l10n.profileTotalPoints,
-                style: AppTextStyles.inputLabel.copyWith(
-                  fontSize: 14,
-                  color: AppColors.textLight,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(context.l10n.profileTotalPoints, style: typography.body),
               const SizedBox(height: 2),
-              Text(
-                '$totalPoints',
-                style: AppTextStyles.screenHeaderLarge.copyWith(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+              Text('$totalPoints', style: typography.digit),
             ],
           ),
         ],

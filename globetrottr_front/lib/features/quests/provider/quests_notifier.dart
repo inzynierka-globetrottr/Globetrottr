@@ -17,7 +17,11 @@ class QuestsNotifier extends Notifier<QuestsState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final quests = await _service.fetchUserQuests();
-      state = state.copyWith(isLoading: false, quests: quests);
+      state = state.copyWith(
+        isLoading: false,
+        quests: quests,
+        hasLoaded: true,
+      );
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.message);
     } catch (e) {
@@ -27,6 +31,13 @@ class QuestsNotifier extends Notifier<QuestsState> {
         errorMessage: 'Something went wrong. Failed to load quests.',
       );
     }
+  }
+
+  /// For screens that only need some list, such as the map; the Quests tab
+  /// refreshes it with [loadQuests] on every visit.
+  Future<void> loadQuestsOnce() async {
+    if (state.hasLoaded || state.isLoading) return;
+    await loadQuests();
   }
 
   Future<void> startQuest(int questId) async {

@@ -1,49 +1,46 @@
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_pressable.dart';
 
+/// The main action of a screen: a full-width pill filled with the accent.
+/// While [isLoading] it shows progress instead of the label and ignores taps.
 class NeuPrimaryButton extends StatelessWidget {
-  final String? label;
-  final Widget? child;
-  final VoidCallback? onPressed;
-  final double width;
-  final double height;
-  final TextStyle? labelStyle;
-
   const NeuPrimaryButton({
     super.key,
-    this.label,
-    this.child,
+    required this.label,
     this.onPressed,
-    this.width = double.infinity,
-    this.height = 48,
-    this.labelStyle,
+    this.isLoading = false,
   });
+
+  static const _height = 60.0;
+  static const _progressSize = 22.0;
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
-    return NeumorphicButton(
-      onPressed: onPressed,
-      style: NeumorphicStyle(
-        color: AppColors.background,
-        boxShape: NeumorphicBoxShape.roundRect(
-          const BorderRadius.all(Radius.circular(24)),
-        ),
-        depth: 4,
-        intensity: 1,
-        shadowLightColor: AppColors.neuLight,
-        shadowDarkColor: AppColors.neuShadow,
-      ),
-      padding: EdgeInsets.zero,
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: Center(
-          child:
-              child ??
-              Text(label!, style: labelStyle ?? AppTextStyles.submitButtonText),
-        ),
-      ),
+    final palette = context.palette;
+    return NeuPressable(
+      onPressed: isLoading ? () {} : onPressed,
+      shadows: context.shadows.raisedAccent(NeoDepth.xl),
+      pressedShadows: context.shadows.insetAccent(NeoDepth.md),
+      color: palette.accent,
+      width: double.infinity,
+      height: _height,
+      borderRadius: BorderRadius.circular(_height / 2),
+      semanticLabel: label,
+      child: isLoading
+          ? SizedBox.square(
+              dimension: _progressSize,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: palette.onAccent,
+              ),
+            )
+          : Text(label, style: context.typography.button),
     );
   }
 }

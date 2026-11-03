@@ -15,28 +15,209 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appLogo => 'globetrottr';
 
   @override
+  String get navMap => 'Map';
+
+  @override
+  String get navQuests => 'Quests';
+
+  @override
+  String get navFriends => 'Friends';
+
+  @override
+  String get navProfile => 'Profile';
+
+  @override
+  String get commonBack => 'Back';
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
+  String mapPercent(String value) {
+    return '$value%';
+  }
+
+  @override
+  String get mapUnknownRegion => 'Your area';
+
+  @override
+  String mapNewArea(String area) {
+    return '+$area km²';
+  }
+
+  @override
+  String get mapNewAreaLabel => 'new ground';
+
+  @override
+  String get mapStartWalk => 'Start the walk';
+
+  @override
+  String get mapStopWalk => 'Stop the walk';
+
+  @override
+  String get mapLayers => 'Map layers';
+
+  @override
+  String get mapRecenter => 'Center on my position';
+
+  @override
+  String get mapViewFog => 'Fog';
+
+  @override
+  String get mapViewStreets => 'Streets only';
+
+  @override
+  String get mapViewHeatmap => 'Heatmap';
+
+  @override
+  String get mapViewVoronoi => 'Voronoi';
+
+  @override
+  String get mapViewUnavailable => 'This view will be available soon.';
+
+  @override
+  String questActive(String title) {
+    return 'Active quest: $title';
+  }
+
+  @override
+  String get questDetails => 'Quest details';
+
+  @override
+  String questProgressShort(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String questPointLabel(String distance) {
+    return 'Quest · $distance';
+  }
+
+  @override
+  String get authSkip => 'Skip';
+
+  @override
+  String get authLoginLabel => 'Login or nickname';
+
+  @override
+  String get authNicknamePlaceholder => 'e.g. explorer';
+
+  @override
+  String get authPasswordLabel => 'Password';
+
+  @override
+  String get authPasswordPlaceholder => '••••••••';
+
+  @override
+  String get authShowPassword => 'Show password';
+
+  @override
+  String get authHidePassword => 'Hide password';
+
+  @override
+  String get authForgotPassword => 'Forgot your password?';
+
+  @override
   String get authSignIn => 'Sign in';
 
   @override
-  String get authSignUp => 'Sign up';
+  String get authOr => 'or';
 
   @override
-  String get authUsernamePlaceholder => 'Username';
+  String get authContinueWithGoogle => 'Continue with Google';
 
   @override
-  String get authEmailPlaceholder => 'Email';
+  String get authNoAccount => 'No account yet?';
 
   @override
-  String get authPasswordPlaceholder => 'Password';
+  String get authCreateOne => 'Create one';
 
   @override
-  String get authLoading => 'Loading...';
+  String get authRegisterTitle => 'Create an account';
 
   @override
-  String get authOrContinueWith => 'OR CONTINUE WITH';
+  String get authNicknameLabel => 'Nickname';
 
   @override
-  String get authGoogleAccount => 'Google Account';
+  String get authEmailLabel => 'E-mail';
+
+  @override
+  String get authEmailPlaceholder => 'address@mail.com';
+
+  @override
+  String authRuleLength(int min, int max) {
+    return '$min–$max characters';
+  }
+
+  @override
+  String get authRuleLowercase => 'a–z';
+
+  @override
+  String get authRuleUppercase => 'A–Z';
+
+  @override
+  String get authRuleDigit => '0–9';
+
+  @override
+  String get authRuleSpecial => '!@#';
+
+  @override
+  String get authRuleMet => 'met';
+
+  @override
+  String get authRuleNotMet => 'not met';
+
+  @override
+  String get authCreateAccount => 'Create account';
+
+  @override
+  String get authHaveAccount => 'Already have an account?';
+
+  @override
+  String get authVerifyTitle => 'Check your inbox';
+
+  @override
+  String get authCodeSentTo => 'We sent a 6-digit code to';
+
+  @override
+  String get authCodeLabel => 'Verification code';
+
+  @override
+  String authCodeValidity(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'The code is valid for $minutes minutes.',
+      one: 'The code is valid for 1 minute.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get authVerify => 'Verify';
+
+  @override
+  String authResendIn(String time) {
+    return 'Resend in $time';
+  }
+
+  @override
+  String get authResend => 'Resend the code';
+
+  @override
+  String get authSendCode => 'Send code';
+
+  @override
+  String get authResetUnavailable => 'Password reset will be available soon.';
+
+  @override
+  String get authNewPasswordTitle => 'Set a new password';
+
+  @override
+  String get authNewPasswordLabel => 'New password';
+
+  @override
+  String get authChangePassword => 'Change password';
 
   @override
   String get profileDefaultUsername => 'Traveler';
@@ -84,29 +265,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendsTitle => 'Friends';
 
   @override
-  String get friendsSearchPlaceholder => 'Enter friend\'s username...';
+  String get friendsAdd => 'Add a friend';
 
   @override
-  String get friendsRequestsBanner => 'Friend requests';
+  String get friendsThisWeek => 'This week';
 
   @override
-  String friendsYourFriendsHeader(int count) {
-    return 'YOUR FRIENDS ($count)';
+  String get friendsYou => 'You';
+
+  @override
+  String friendsInvites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invites',
+      one: '1 invite',
+    );
+    return '$_temp0';
   }
 
   @override
-  String friendsInviteSent(String username) {
-    return 'Invite sent to $username!';
+  String friendsAccept(String username) {
+    return 'Accept the invite from $username';
   }
 
   @override
-  String get friendsRequestsTitle => 'Friend Requests';
+  String friendsReject(String username) {
+    return 'Reject the invite from $username';
+  }
 
   @override
-  String get friendsTabReceived => 'Received';
+  String friendsYourFriends(int count) {
+    return 'Your friends · $count';
+  }
 
   @override
-  String get friendsTabSent => 'Sent';
+  String get friendsEmptyTitle => 'No friends yet';
+
+  @override
+  String get friendsEmptyBody =>
+      'Add someone by their nickname to see how far they have explored.';
+
+  @override
+  String friendsOpen(String username) {
+    return 'Open $username';
+  }
+
+  @override
+  String get friendsLevelUnknown => '–';
+
+  @override
+  String friendsArea(String area) {
+    return '$area km²';
+  }
+
+  @override
+  String get friendsNicknameLabel => 'Nickname';
+
+  @override
+  String get friendsNicknamePlaceholder => 'e.g. explorer';
+
+  @override
+  String get friendsSendInvite => 'Send invite';
+
+  @override
+  String get friendsSent => 'Sent';
+
+  @override
+  String get friendsPending => 'Pending';
+
+  @override
+  String get friendsUndo => 'Undo';
 
   @override
   String friendsPlayerFog(String username) {
@@ -135,7 +364,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get questsNoQuestsInCategory => 'No quests in this category.';
 
   @override
-  String questsProgressPercent(int percent) {
+  String questsProgressPercent(String percent) {
     return '$percent% progress';
   }
 
@@ -245,9 +474,196 @@ class AppLocalizationsEn extends AppLocalizations {
       'Location permission is required to track your trips.';
 
   @override
+  String get errorInvalidCredentials => 'Wrong login or password.';
+
+  @override
+  String get errorEmailNotVerified =>
+      'Confirm your e-mail address before signing in.';
+
+  @override
+  String get errorInvalidCode => 'Wrong code.';
+
+  @override
+  String get errorCodeExpired => 'The code has expired. Send a new one.';
+
+  @override
+  String get errorEmailTaken => 'This e-mail is already in use.';
+
+  @override
+  String get errorUsernameTaken => 'This nickname is already taken.';
+
+  @override
+  String get validationCodeIncomplete => 'Enter all 6 digits of the code.';
+
+  @override
+  String get errorInviteSelf => 'You cannot invite yourself.';
+
+  @override
+  String get errorUserNotFound => 'There is no user with this nickname.';
+
+  @override
+  String get errorAlreadyFriends => 'You are already friends.';
+
+  @override
+  String get errorInviteAlreadySent =>
+      'An invite is already waiting for an answer.';
+
+  @override
+  String get errorCannotInvite => 'This user cannot be invited.';
+
+  @override
   String get errorGoogleAuthFailed => 'Google authentication failed.';
 
   @override
   String get locationNotificationText =>
       'Recording your route in the background...';
+
+  @override
+  String get statsTitle => 'Statistics';
+
+  @override
+  String get statsPeriodWeek => 'Week';
+
+  @override
+  String get statsPeriodMonth => 'Month';
+
+  @override
+  String get statsPeriodYear => 'Year';
+
+  @override
+  String get statsPeriodAllTime => 'All-Time';
+
+  @override
+  String get statsPrevPeriod => 'Previous period';
+
+  @override
+  String get statsNextPeriod => 'Next period';
+
+  @override
+  String get statsNewArea => 'New area';
+
+  @override
+  String get statsDistance => 'Distance';
+
+  @override
+  String get statsNewStreets => 'New streets';
+
+  @override
+  String get statsQuests => 'Quests';
+
+  @override
+  String get statsWeeklyNewArea => 'New area weekly';
+
+  @override
+  String get statsWeeklyChartUnitKm2 => 'km²';
+
+  @override
+  String get statsCurrentWeek => 'now';
+
+  @override
+  String get statsVisitedCountriesTitle => 'visited countries';
+
+  @override
+  String statsCountriesSummary(int regions, int cities) {
+    return '$regions regions · $cities cities';
+  }
+
+  @override
+  String get statsDistanceByActivity => 'Distance by activity · km';
+
+  @override
+  String get statsActivityWalk => 'Walk';
+
+  @override
+  String get statsActivityBike => 'Bike';
+
+  @override
+  String get statsActivityRun => 'Run';
+
+  @override
+  String get statsActivityOther => 'Other';
+
+  @override
+  String get statsRecordsTitle => 'Records';
+
+  @override
+  String get statsRecordHighest => 'Highest';
+
+  @override
+  String get statsRecordFurthest => 'Furthest';
+
+  @override
+  String get statsRecordLongestRoute => 'Longest route';
+
+  @override
+  String get statsRecordBestDay => 'Best day';
+
+  @override
+  String get statsCitiesDiscoveryTitle => 'City discovery';
+
+  @override
+  String get statsMostVisitedTitle => 'Most visited';
+
+  @override
+  String get statsCountriesTitle => 'Countries';
+
+  @override
+  String statsVisitedSection(int count) {
+    return 'Visited · $count';
+  }
+
+  @override
+  String statsCountryCardSubtitle(String area, int cities) {
+    return '$area · $cities cities';
+  }
+
+  @override
+  String get statsNoVisitedCountries => 'No visited countries yet';
+
+  @override
+  String get statsRegionDiscoveryTitle => 'Region discovery';
+
+  @override
+  String get statsCountiesDiscoveryTitle => 'Counties · Discovery';
+
+  @override
+  String get statsMetricDiscovered => 'Discovered';
+
+  @override
+  String get statsMetricCities => 'Cities';
+
+  @override
+  String get statsMetricStreets => 'Streets';
+
+  @override
+  String get statsMetricRoutes => 'Routes';
+
+  @override
+  String get statsFirstVisit => 'First visit';
+
+  @override
+  String get statsLastVisit => 'Last visit';
+
+  @override
+  String get statsLastVisitToday => 'Today';
+
+  @override
+  String get statsTimeSpent => 'Time spent';
+
+  @override
+  String get statsCityDiscoveryTitle => 'City discovery';
+
+  @override
+  String get statsDistrictsDiscoveryTitle => 'Districts · Discovery';
+
+  @override
+  String get statsSubregionsDiscoveryTitle => 'Subregions · Discovery';
+
+  @override
+  String get statsNoSubregions => 'No subregions discovered';
+
+  @override
+  String statsSubregionsCount(int discovered, int total) {
+    return '$discovered of $total counties';
+  }
 }

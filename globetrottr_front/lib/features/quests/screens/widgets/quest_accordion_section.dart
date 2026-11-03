@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
 
@@ -27,42 +26,30 @@ class QuestAccordionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final color = isExpanded ? palette.accent : palette.textMuted;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         GestureDetector(
           onTap: onToggle,
-          child: Container(
-            color: Colors.transparent,
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  color: isExpanded
-                      ? AppColors.accentBlue
-                      : AppColors.textLight,
-                  size: 24,
-                ),
+                Icon(icon, color: color, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   title,
-                  style: isExpanded
-                      ? AppTextStyles.rulesetTitle.copyWith(
-                          color: AppColors.accentBlue,
-                        )
-                      : AppTextStyles.rulesetTitle.copyWith(
-                          color: AppColors.textLight,
-                        ),
+                  style: context.typography.itemTitle.copyWith(color: color),
                 ),
                 const Spacer(),
                 Icon(
                   isExpanded
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
-                  color: isExpanded
-                      ? AppColors.accentBlue
-                      : AppColors.textLight,
+                  color: color,
                 ),
               ],
             ),
@@ -77,7 +64,7 @@ class QuestAccordionSection extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         child: Text(
                           context.l10n.questsNoQuestsInCategory,
-                          style: AppTextStyles.descriptiveStatusAction,
+                          style: context.typography.caption,
                         ),
                       )
                     : Column(

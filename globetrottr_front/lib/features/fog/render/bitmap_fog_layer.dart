@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
@@ -29,6 +30,7 @@ class BitmapFogLayer extends StatelessWidget {
       child: CustomPaint(
         painter: BitmapFogPainter(
           camera: camera,
+          color: context.palette.fog,
           source: source,
           options: options,
           head: head,

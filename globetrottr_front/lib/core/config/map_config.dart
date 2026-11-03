@@ -17,6 +17,9 @@ class MapConfig {
   static const Duration playerFastestStep = Duration(milliseconds: 33);
   static const Duration playerSlowestStep = Duration(milliseconds: 66);
 
+  /// How long the camera flies to the player after the recenter button.
+  static const Duration recenterFlight = Duration(milliseconds: 450);
+
   static const LatLng initialCenter = LatLng(50.0614, 19.9383); // Kraków
 
   static const String tileUserAgentPackageName = 'com.globetrottr.app';

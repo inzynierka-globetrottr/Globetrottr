@@ -5,8 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/dev_style.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
@@ -29,6 +28,7 @@ import 'package:latlong2/latlong.dart';
 class BitmapFogPainter extends CustomPainter {
   BitmapFogPainter({
     required this.camera,
+    required this.color,
     this.source,
     this.head,
     this.options = defaultOptions,
@@ -43,6 +43,9 @@ class BitmapFogPainter extends CustomPainter {
   static const double _minEdgePixels = 1.5;
 
   final MapCamera camera;
+
+  /// Colour of the undiscovered area, opacity included.
+  final Color color;
   final FogTileSource? source;
 
   /// The player while recording. Read at paint time, so the fog is revealed
@@ -55,10 +58,7 @@ class BitmapFogPainter extends CustomPainter {
     final timer = Stopwatch()..start();
     final usable = camera.isUsableForFog;
     canvas.saveLayer(Offset.zero & size, Paint());
-    canvas.drawColor(
-      AppColors.fog.withValues(alpha: FogConfig.fogOpacity),
-      BlendMode.srcOver,
-    );
+    canvas.drawColor(color, BlendMode.srcOver);
     canvas.saveLayer(
       Offset.zero & size,
       Paint()
@@ -128,7 +128,7 @@ class BitmapFogPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1 / pixelSize
-      ..color = AppColors.devPixelLines;
+      ..color = DevColors.pixelLines;
     for (final id in range.ids) {
       canvas
         ..save()
@@ -155,10 +155,10 @@ class BitmapFogPainter extends CustomPainter {
       ..strokeWidth = 2;
     for (final id in range.ids) {
       final color = switch (source) {
-        null => AppColors.devGridUnknown,
-        final s when s.imageFor(id) != null => AppColors.devGridReady,
-        final s when s.isAbsent(id) => AppColors.devGridEmpty,
-        _ => AppColors.devGridLoading,
+        null => DevColors.gridUnknown,
+        final s when s.imageFor(id) != null => DevColors.gridReady,
+        final s when s.isAbsent(id) => DevColors.gridEmpty,
+        _ => DevColors.gridLoading,
       };
       line.color = color;
       final origin = _screen(id.x * _tile, id.y * _tile, id.z);
@@ -182,7 +182,7 @@ class BitmapFogPainter extends CustomPainter {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: AppTextStyles.devGridLabel.copyWith(color: color),
+        style: DevTextStyles.gridLabel.copyWith(color: color),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -340,7 +340,8 @@ class BitmapFogPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant BitmapFogPainter oldDelegate) {
-    return oldDelegate.source != source ||
+    return oldDelegate.color != color ||
+        oldDelegate.source != source ||
         oldDelegate.options != options ||
         oldDelegate.head != head ||
         oldDelegate.camera.center != camera.center ||

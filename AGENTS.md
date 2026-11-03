@@ -152,7 +152,13 @@ Run all commands from within the `globetrottr_backend` directory:
   * **Exemptions:** Developer-only screens (e.g. `lib/debug/`) and internal console/debug logging are exempt.
   * **Error localization:** Map exceptions and domain errors to localized messages via localization extension methods or ARB mappings.
 * **Widget granularity & sizing:** Widgets must be small, focused, and reusable. If any widget or file becomes large (>150-200 lines or deep nesting), propose splitting it into smaller, reusable components under `core/widgets/` or `features/<feature>/screens/widgets/`.
-* **Configurable theme:** All styling (colors, text styles, margins, corner radiuses, button styles) must be centrally configurable. Never hardcode colors or styles inside widgets. If hardcoded styling is discovered, flag it to the user and ask for permission to migrate it to the theme files under `core/theme/`.
+* **Configurable theme:** All styling (colors, text styles, margins, corner radiuses, shadows, button styles) must be centrally configurable. Never hardcode colors or styles inside widgets. If hardcoded styling is discovered, flag it to the user and ask for permission to migrate it to the theme files under `core/theme/`.
+* **Design system as building blocks:**
+  * Styling lives in theme tokens (`core/theme/`) and in reusable components (`core/widgets/` for shared ones, `features/<feature>/screens/widgets/` for feature-specific ones). Changing one token or component must change every place that uses it; duplicated styling is a bug.
+  * Screens are only assembled from ready-made components. A screen contains layout and wiring, never its own colors, shadows, text styles or decorations. If a screen needs a new look, build or extend a component first.
+  * Components read colors and styles from the theme through `BuildContext`, not from static constants, so the light/dark mode and the accent color can be switched without touching widgets.
+* **Dev and release builds:** They differ only by the dev button and the tools behind it. Everything else (screens, guest mode, placeholders) is the same in both.
+* **Placeholders for missing data:** Data the backend or the app does not provide yet is shown as a placeholder value supplied by a provider (not hardcoded in a widget) and marked with a `TODO(data)` comment saying what has to be integrated. Unconnected actions are stubs marked the same way. A temporary screen kept until its mock-up is approved is marked `TODO(neo)`.
 * **State Management:** Use `flutter_riverpod` (v3). Keep UI widgets lightweight and dumb; encapsulate business logic and state in Riverpod providers/notifiers.
 * **Routing:** Use `go_router` for declarative navigation and deep linking.
 * **Immutability:** Use immutable state models.

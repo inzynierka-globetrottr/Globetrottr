@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
+import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 import 'package:go_router/go_router.dart';
 
 class FriendMapHeader extends StatelessWidget {
@@ -22,23 +22,17 @@ class FriendMapHeader extends StatelessWidget {
         children: [
           NeuIconButton(
             onPressed: () => context.pop(),
-            child: const Icon(
-              Icons.arrow_back,
-              color: AppColors.text,
-              size: 22,
-            ),
+            child: const Icon(Icons.arrow_back, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: Container(
+            child: NeuSurface(
+              shadows: context.shadows.mapControl,
+              borderRadius: BorderRadius.circular(22),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.neuLight.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(16),
-              ),
               child: Text(
                 context.l10n.friendsPlayerFog(friendUsername),
-                style: AppTextStyles.rulesetTitle,
+                style: context.typography.itemTitle,
                 overflow: TextOverflow.ellipsis,
               ),
             ),

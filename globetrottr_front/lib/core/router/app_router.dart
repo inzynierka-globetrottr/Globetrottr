@@ -1,18 +1,23 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
+import 'package:globetrottr_front/core/router/auth_redirect.dart';
+import 'package:globetrottr_front/core/router/auth_routes.dart';
 import 'package:globetrottr_front/debug/debug_screen.dart';
 import 'package:globetrottr_front/debug/dev_options_screen.dart';
 import 'package:globetrottr_front/debug/friend_debug_screen.dart';
 import 'package:globetrottr_front/debug/preview_screen.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
-import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
+import 'package:globetrottr_front/features/friends/screens/add_friend_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
-import 'package:globetrottr_front/features/friends/screens/invite_hub_screen.dart';
 import 'package:globetrottr_front/features/map/screens/map_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
+import 'package:globetrottr_front/features/quests/screens/quests_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/city_detail_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/countries_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/region_detail_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/stats_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthNotifierListenable extends ChangeNotifier {
@@ -26,7 +31,7 @@ final appRouter = Provider<GoRouter>((ref) {
   final listenable = AuthNotifierListenable(ref);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: AuthRoutes.start,
     refreshListenable: listenable,
     redirect: (context, state) {
       if ((DevConfig.isDevMode || kDebugMode) &&
@@ -34,45 +39,57 @@ final appRouter = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final authState = ref.read(authProvider);
-
-      if (authState.isInitializing) return null;
-
-      final onLoginPage = state.matchedLocation == '/login';
-      if (authState.isAuthenticated && onLoginPage) return '/map';
-      if (!authState.isAuthenticated && !onLoginPage) return '/login';
-
-      return null;
+      return authRedirect(ref.read(authProvider), state.matchedLocation);
     },
     routes: [
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      startRoute,
+      authRoute,
       GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
+      GoRoute(
+        path: '/quests',
+        builder: (context, state) => const QuestsScreen(),
+      ),
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+        routes: [
+          GoRoute(
+            path: 'statistics',
+            builder: (context, state) => const StatsScreen(),
+            routes: [
+              GoRoute(
+                path: 'countries',
+                builder: (context, state) => const CountriesScreen(),
+              ),
+              GoRoute(
+                path: 'region/:id',
+                builder: (context, state) => RegionDetailScreen(
+                  regionId: int.tryParse(state.pathParameters['id'] ?? '') ?? 1,
+                ),
+              ),
+              GoRoute(
+                path: 'city/:id',
+                builder: (context, state) => CityDetailScreen(
+                  cityId: int.tryParse(state.pathParameters['id'] ?? '') ?? 1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/statistics',
+        builder: (context, state) => const StatsScreen(),
       ),
       GoRoute(
         path: '/friends',
         builder: (context, state) => const FriendsScreen(),
-      ),
-      GoRoute(
-        path: '/friends/invites',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          child: const InviteHubScreen(),
-          transitionDuration: const Duration(milliseconds: 200),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0, 1),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
-                  ),
-              child: child,
-            );
-          },
-        ),
+        routes: [
+          GoRoute(
+            path: 'add',
+            builder: (context, state) => const AddFriendScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: '/friends/:username/map',

@@ -16,11 +16,11 @@ class DevOptionsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           OutlinedButton(
-            onPressed: () {
-              ref.read(authProvider.notifier).enterWithoutLogin();
-              GoRouter.maybeOf(context)?.go('/map');
+            onPressed: () async {
+              await ref.read(authProvider.notifier).continueAsGuest();
+              if (context.mounted) GoRouter.maybeOf(context)?.go('/map');
             },
-            child: const Text('Continue without login'),
+            child: const Text('Continue as guest'),
           ),
           const Divider(height: 32),
           const JourneyGeneratorPanel(),

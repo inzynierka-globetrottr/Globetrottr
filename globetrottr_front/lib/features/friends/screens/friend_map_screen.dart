@@ -1,8 +1,7 @@
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/fog_layer.dart';
 import 'package:globetrottr_front/features/fog/provider/friend_fog_provider.dart';
@@ -31,44 +30,39 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
   Widget build(BuildContext context) {
     final fogAsyncValue = ref.watch(friendFogProvider(widget.friendUsername));
 
-    return NeumorphicTheme(
-      themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: Stack(
-          children: [
-            FlutterMap(
-              mapController: _mapController,
-              options: const MapOptions(
-                initialCenter: MapConfig.initialCenter,
-                initialZoom: MapConfig.defaultZoom,
-                interactionOptions: InteractionOptions(
-                  enableMultiFingerGestureRace: true,
-                  rotationThreshold: 10.0,
-                ),
+    return Scaffold(
+      body: Stack(
+        children: [
+          FlutterMap(
+            mapController: _mapController,
+            options: const MapOptions(
+              initialCenter: MapConfig.initialCenter,
+              initialZoom: MapConfig.defaultZoom,
+              interactionOptions: InteractionOptions(
+                enableMultiFingerGestureRace: true,
+                rotationThreshold: 10.0,
               ),
-              children: [
-                const AppTileLayer(),
-                // TODO(fog): draw the friend's fog with BitmapFogLayer and a
-                // remote tile source.
-                fogAsyncValue.when(
-                  data: (holes) => FogLayer(
-                    readyHoles: holes,
-                    holesRevision: identityHashCode(holes),
-                  ),
-                  loading: () => const SizedBox.shrink(),
-                  error: (err, stack) {
-                    debugPrint('Error downloading fog: $err');
-                    return const FogLayer(readyHoles: [], holesRevision: 0);
-                  },
-                ),
-              ],
             ),
-            FriendMapHeader(friendUsername: widget.friendUsername),
-            FriendMapLoadingOverlay(isLoading: fogAsyncValue.isLoading),
-          ],
-        ),
+            children: [
+              const AppTileLayer(),
+              // TODO(fog): draw the friend's fog with BitmapFogLayer and a
+              // remote tile source.
+              fogAsyncValue.when(
+                data: (holes) => FogLayer(
+                  readyHoles: holes,
+                  holesRevision: identityHashCode(holes),
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (err, stack) {
+                  debugPrint('Error downloading fog: $err');
+                  return const FogLayer(readyHoles: [], holesRevision: 0);
+                },
+              ),
+            ],
+          ),
+          FriendMapHeader(friendUsername: widget.friendUsername),
+          FriendMapLoadingOverlay(isLoading: fogAsyncValue.isLoading),
+        ],
       ),
     );
   }
