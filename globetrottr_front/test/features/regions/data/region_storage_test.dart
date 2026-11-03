@@ -266,6 +266,27 @@ void main() {
         expect(poland!.name, 'Polska');
         expect(poland.code, 'PL');
 
+        // Check Krakow (50.0614, 19.9366)
+        final krakowRegions = await worldStorage.findRegionsByPoint(
+          lat: 50.0614,
+          lon: 19.9366,
+        );
+        expect(krakowRegions, isNotEmpty);
+        expect(krakowRegions.any((r) => r.name == 'Kraków'), isTrue);
+        expect(
+          krakowRegions.any(
+            (r) =>
+                r.name == 'województwo małopolskie' || r.name == 'Małopolskie',
+          ),
+          isTrue,
+        );
+        expect(krakowRegions.any((r) => r.name == 'Polska'), isTrue);
+        // Ensure neighbor voivodeship is rejected by polygon check
+        expect(
+          krakowRegions.any((r) => r.name == 'województwo śląskie'),
+          isFalse,
+        );
+
         // Check Tokyo (35.6762, 139.6503)
         final tokyoRegions = await worldStorage.findRegionsByPoint(
           lat: 35.6762,

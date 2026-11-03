@@ -53,8 +53,8 @@ class SqfliteRegionStorage implements RegionStorage {
           )
         ''');
         await db.execute('''
-          CREATE VIRTUAL TABLE IF NOT EXISTS regions_rtree USING rtree(
-            id, min_lon, max_lon, min_lat, max_lat
+          CREATE INDEX IF NOT EXISTS idx_regions_bbox ON regions (
+            min_lon, max_lon, min_lat, max_lat
           )
         ''');
         await db.execute(
@@ -79,18 +79,20 @@ class SqfliteRegionStorage implements RegionStorage {
     try {
       final dbPath = await getDatabasesPath();
       final fullPath = p.join(dbPath, location);
-      final exists = await databaseExists(fullPath);
-      if (!exists) {
+      final file = File(fullPath);
+      final exists = file.existsSync();
+      final byteData = await rootBundle.load('assets/data/regions_world.db');
+      final assetLength = byteData.lengthInBytes;
+      if (!exists || file.lengthSync() != assetLength) {
         try {
-          await Directory(p.dirname(fullPath)).create(recursive: true);
+          Directory(p.dirname(fullPath)).createSync(recursive: true);
         } catch (_) {}
 
-        final byteData = await rootBundle.load('assets/data/regions_world.db');
         final bytes = byteData.buffer.asUint8List(
           byteData.offsetInBytes,
           byteData.lengthInBytes,
         );
-        await File(fullPath).writeAsBytes(bytes, flush: true);
+        await file.writeAsBytes(bytes, flush: true);
       }
     } catch (e) {
       debugPrint('Could not unpack bundled regions_world.db asset: $e');
@@ -131,9 +133,8 @@ class SqfliteRegionStorage implements RegionStorage {
     final rows = await db.rawQuery(
       '''
       SELECT r.* FROM regions r
-      JOIN regions_rtree tree ON r.id = tree.id
-      WHERE tree.min_lon <= ? AND tree.max_lon >= ?
-        AND tree.min_lat <= ? AND tree.max_lat >= ?
+      WHERE r.min_lon <= ? AND r.max_lon >= ?
+        AND r.min_lat <= ? AND r.max_lat >= ?
       ORDER BY r.total_area_km2 ASC
       ''',
       [lon, lon, lat, lat],
@@ -156,9 +157,8 @@ class SqfliteRegionStorage implements RegionStorage {
     final rows = await db.rawQuery(
       '''
       SELECT r.* FROM regions r
-      JOIN regions_rtree tree ON r.id = tree.id
-      WHERE tree.min_lon <= ? AND tree.max_lon >= ?
-        AND tree.min_lat <= ? AND tree.max_lat >= ?
+      WHERE r.min_lon <= ? AND r.max_lon >= ?
+        AND r.min_lat <= ? AND r.max_lat >= ?
       ORDER BY r.total_area_km2 ASC
       ''',
       [maxLon, minLon, maxLat, minLat],
@@ -188,13 +188,6 @@ class SqfliteRegionStorage implements RegionStorage {
           'regions',
           r.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-        batch.rawInsert(
-          '''
-          INSERT OR REPLACE INTO regions_rtree (id, min_lon, max_lon, min_lat, max_lat)
-          VALUES (?, ?, ?, ?, ?)
-          ''',
-          [r.id, r.minLon, r.maxLon, r.minLat, r.maxLat],
         );
       }
       await batch.commit(noResult: true);

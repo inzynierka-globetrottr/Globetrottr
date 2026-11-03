@@ -389,14 +389,6 @@ class RegionDatabaseSeeder {
         'max_lon': r.maxLon,
         'geometry': null,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
-
-      batch.insert('regions_rtree', {
-        'id': r.id,
-        'min_lon': r.minLon,
-        'max_lon': r.maxLon,
-        'min_lat': r.minLat,
-        'max_lat': r.maxLat,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
     await batch.commit(noResult: true);
   }

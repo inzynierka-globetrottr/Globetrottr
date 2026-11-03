@@ -1,6 +1,9 @@
 import 'dart:math' as math;
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/localization/locale_provider.dart';
+import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
@@ -161,6 +164,11 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
     ref.watch(statisticsRevisionProvider);
     final statsStorage = ref.watch(statisticsStorageProvider);
     final regionStorage = ref.watch(regionStorageProvider);
+    final currentLocale = ref.watch(localeProvider);
+    final isPolish =
+        (currentLocale?.languageCode ??
+            WidgetsBinding.instance.platformDispatcher.locale.languageCode) ==
+        'pl';
 
     final String fromDate;
     final String toDate;
@@ -172,13 +180,18 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
         final sun = mon.add(const Duration(days: 6));
         fromDate = _fmtDate(mon);
         toDate = _fmtDate(sun);
-        periodLabel = 'Tydzień ${_isoWeekNumber(mon)} · ${mon.year}';
+        periodLabel = isPolish
+            ? 'Tydzień ${_isoWeekNumber(mon)} · ${mon.year}'
+            : 'Week ${_isoWeekNumber(mon)} · ${mon.year}';
       case StatsPeriod.month:
         final firstDay = DateTime(date.year, date.month);
         final lastDay = DateTime(date.year, date.month + 1, 0);
         fromDate = _fmtDate(firstDay);
         toDate = _fmtDate(lastDay);
-        periodLabel = '${_monthNames[date.month - 1]} ${date.year}';
+        final monthName = (isPolish
+            ? _monthNamesPl
+            : _monthNamesEn)[date.month - 1];
+        periodLabel = '$monthName ${date.year}';
       case StatsPeriod.year:
         fromDate = '${date.year}-01-01';
         toDate = '${date.year}-12-31';
@@ -186,13 +199,30 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       case StatsPeriod.allTime:
         fromDate = '1970-01-01';
         toDate = '2099-12-31';
-        periodLabel = 'Wszystko';
+        periodLabel = isPolish ? 'Wszystko' : 'All-Time';
     }
 
-    final dailyList = await statsStorage.getDailyStatsRange(
+    var dailyList = await statsStorage.getDailyStatsRange(
       fromDate: fromDate,
       toDate: toDate,
     );
+    var allRegionStats = await statsStorage.getAllRegionStats();
+
+    final hasAreaStats =
+        dailyList.any((d) => d.newAreaM2 > 0) ||
+        allRegionStats.any((r) => r.discoveredAreaM2 > 0);
+    if (!hasAreaStats) {
+      final fogStorage = ref.read(fogTileStorageProvider);
+      final baseTiles = await fogStorage.loadBaseTilesWithArea();
+      if (baseTiles.isNotEmpty) {
+        await ref.read(fogProvider.notifier).backfillStatsIfEmpty();
+        dailyList = await statsStorage.getDailyStatsRange(
+          fromDate: fromDate,
+          toDate: toDate,
+        );
+        allRegionStats = await statsStorage.getAllRegionStats();
+      }
+    }
 
     final totalNewAreaM2 = dailyList.fold<double>(
       0.0,
@@ -222,32 +252,36 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
 
     final activities = [
       ActivityDistanceItem(
-        label: 'Pieszo',
+        label: isPolish ? 'Pieszo' : 'Walk',
         distanceKm: walkKm,
         percentage: maxActivity > 0
             ? (walkKm / maxActivity).clamp(0.0, 1.0)
             : 0.0,
+        type: StatsActivityType.walk,
       ),
       ActivityDistanceItem(
-        label: 'Rower',
+        label: isPolish ? 'Rower' : 'Bike',
         distanceKm: bikeKm,
         percentage: maxActivity > 0
             ? (bikeKm / maxActivity).clamp(0.0, 1.0)
             : 0.0,
+        type: StatsActivityType.bike,
       ),
       ActivityDistanceItem(
-        label: 'Bieg',
+        label: isPolish ? 'Bieg' : 'Run',
         distanceKm: runKm,
         percentage: maxActivity > 0
             ? (runKm / maxActivity).clamp(0.0, 1.0)
             : 0.0,
+        type: StatsActivityType.run,
       ),
       ActivityDistanceItem(
-        label: 'Inne',
+        label: isPolish ? 'Inne' : 'Other',
         distanceKm: otherKm,
         percentage: maxActivity > 0
             ? (otherKm / maxActivity).clamp(0.0, 1.0)
             : 0.0,
+        type: StatsActivityType.other,
       ),
     ];
 
@@ -264,7 +298,9 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       final weekAreaKm2 =
           weekList.fold<double>(0.0, (sum, d) => sum + d.newAreaM2) / 1000000.0;
       final isCur = w == 0;
-      final label = isCur ? 'teraz' : '${_isoWeekNumber(target)}';
+      final label = isCur
+          ? (isPolish ? 'teraz' : 'now')
+          : '${_isoWeekNumber(target)}';
       weeklyBars.add(
         WeeklyBarItem(label: label, valueKm2: weekAreaKm2, isCurrent: isCur),
       );
@@ -277,36 +313,38 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
 
     final records = [
       RecordTileItem(
-        header: 'NAJWYŻEJ',
+        header: isPolish ? 'NAJWYŻEJ' : 'HIGHEST',
         value: highest != null ? '${highest.value.round()} m' : '–',
         subtitle: highest?.label ?? '–',
+        type: StatsRecordType.highest,
       ),
       RecordTileItem(
-        header: 'NAJDALEJ',
+        header: isPolish ? 'NAJDALEJ' : 'FURTHEST',
         value: furthest != null
             ? '${(furthest.value / 1000).toStringAsFixed(1)} km'
             : '–',
         subtitle: furthest?.label ?? '–',
+        type: StatsRecordType.furthest,
       ),
       RecordTileItem(
-        header: 'NAJDŁUŻSZA TRASA',
+        header: isPolish ? 'NAJDŁUŻSZA TRASA' : 'LONGEST ROUTE',
         value: longest != null
             ? '${(longest.value / 1000).toStringAsFixed(1)} km'
             : '–',
         subtitle: longest?.label ?? '–',
+        type: StatsRecordType.longestRoute,
       ),
       RecordTileItem(
-        header: 'NAJLEPSZY DZIEŃ',
+        header: isPolish ? 'NAJLEPSZY DZIEŃ' : 'BEST DAY',
         value: (bestDay != null && bestDay.newAreaM2 > 0)
             ? '+${(bestDay.newAreaM2 / 1000000).toStringAsFixed(2)} km²'
             : '–',
         subtitle: (bestDay != null && bestDay.newAreaM2 > 0)
-            ? _formatShortDate(bestDay.date)
+            ? _formatShortDate(bestDay.date, isPolish)
             : '–',
+        type: StatsRecordType.bestDay,
       ),
     ];
-
-    final allRegionStats = await statsStorage.getAllRegionStats();
 
     var visitedCountries = 0;
     var visitedRegions = 0;
@@ -388,30 +426,62 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
     return 1 + ((thursday.difference(firstThursday).inDays) / 7).floor();
   }
 
-  static String _formatShortDate(String yyyyMmDd) {
+  static String _formatShortDate(String yyyyMmDd, bool isPolish) {
     final parts = yyyyMmDd.split('-');
     if (parts.length != 3) return yyyyMmDd;
     final day = int.tryParse(parts[2]) ?? 1;
     final month = int.tryParse(parts[1]) ?? 1;
-    final shortMonths = [
-      'sty',
-      'lut',
-      'mar',
-      'kwi',
-      'maj',
-      'cze',
-      'lip',
-      'sie',
-      'wrz',
-      'paź',
-      'lis',
-      'gru',
-    ];
+    final shortMonths = isPolish ? _shortMonthsPl : _shortMonthsEn;
     final mStr = (month >= 1 && month <= 12) ? shortMonths[month - 1] : '';
-    return '$day $mStr';
+    return isPolish ? '$day $mStr' : '$mStr $day';
   }
 
-  static const _monthNames = [
+  static const _shortMonthsEn = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  static const _shortMonthsPl = [
+    'sty',
+    'lut',
+    'mar',
+    'kwi',
+    'maj',
+    'cze',
+    'lip',
+    'sie',
+    'wrz',
+    'paź',
+    'lis',
+    'gru',
+  ];
+
+  static const _monthNamesEn = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  static const _monthNamesPl = [
     'Styczeń',
     'Luty',
     'Marzec',

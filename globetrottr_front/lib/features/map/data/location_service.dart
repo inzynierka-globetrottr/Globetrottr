@@ -45,6 +45,9 @@ class LocationService {
   }
 
   @visibleForTesting
+  bool get hasStream => _broadcastStream != null;
+
+  @visibleForTesting
   String? get sessionId => _sessionId;
 
   /// Every recorded position after it was stored in the permanent track log,
@@ -101,6 +104,7 @@ class LocationService {
       locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
+        forceLocationManager: true,
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: ForegroundNotificationConfig(
           notificationText: translateErrorDart(
@@ -138,7 +142,15 @@ class LocationService {
   @visibleForTesting
   void followPositions(Stream<Position> fixes) {
     _broadcastStream = fixes.where(isUsablePosition).asBroadcastStream();
-    _dbSubscription = _broadcastStream!.listen(recordPosition);
+    _dbSubscription = _broadcastStream!.listen(
+      recordPosition,
+      onError: (Object error) {
+        debugPrint('Location stream error: $error');
+        _dbSubscription?.cancel();
+        _dbSubscription = null;
+        _broadcastStream = null;
+      },
+    );
   }
 
   /// Stores a fix in the session that was recording when it arrived, even if

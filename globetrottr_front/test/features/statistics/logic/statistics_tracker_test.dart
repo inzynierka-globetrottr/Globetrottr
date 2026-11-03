@@ -23,7 +23,10 @@ void main() {
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('stats_tracker_test_');
-      regionStorage = SqfliteRegionStorage(path: '${tempDir.path}/regions.db');
+      regionStorage = SqfliteRegionStorage(
+        path: '${tempDir.path}/regions.db',
+        autoSeed: false,
+      );
       await regionStorage.init();
 
       statsStorage = SqfliteStatisticsStorage(path: '${tempDir.path}/stats.db');

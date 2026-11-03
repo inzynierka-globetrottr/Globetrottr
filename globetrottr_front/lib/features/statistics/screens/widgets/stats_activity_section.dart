@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
+
+enum StatsActivityType { walk, bike, run, other }
 
 class ActivityDistanceItem {
   const ActivityDistanceItem({
     required this.label,
     required this.distanceKm,
     required this.percentage,
+    this.type,
   });
 
   final String label;
   final double distanceKm;
   final double percentage; // 0.0 to 1.0
+  final StatsActivityType? type;
 }
 
 class StatsActivitySection extends StatelessWidget {
@@ -45,7 +50,7 @@ class StatsActivitySection extends StatelessWidget {
         SizedBox(
           width: 70,
           child: Text(
-            item.label,
+            _labelFor(context, item),
             style: typography.action.copyWith(
               fontWeight: FontWeight.w800,
             ),
@@ -72,11 +77,12 @@ class StatsActivitySection extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        SizedBox(
-          width: 36,
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 40),
           child: Text(
             item.distanceKm.round().toString(),
             textAlign: TextAlign.right,
+            maxLines: 1,
             style: typography.action.copyWith(
               fontWeight: FontWeight.w800,
               fontFeatures: const [FontFeature.tabularFigures()],
@@ -85,5 +91,21 @@ class StatsActivitySection extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _labelFor(BuildContext context, ActivityDistanceItem item) {
+    final l10n = context.l10n;
+    switch (item.type) {
+      case StatsActivityType.walk:
+        return l10n.statsActivityWalk;
+      case StatsActivityType.bike:
+        return l10n.statsActivityBike;
+      case StatsActivityType.run:
+        return l10n.statsActivityRun;
+      case StatsActivityType.other:
+        return l10n.statsActivityOther;
+      case null:
+        return item.label;
+    }
   }
 }

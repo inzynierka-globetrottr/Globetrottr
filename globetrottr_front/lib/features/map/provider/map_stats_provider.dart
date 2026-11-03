@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
+import 'package:globetrottr_front/features/map/provider/player_motion.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
@@ -26,10 +27,22 @@ class AreaProgressNotifier extends Notifier<AreaProgress> {
   @override
   AreaProgress build() {
     ref.watch(statisticsRevisionProvider);
-    final pos = ref.watch(locationProvider.select((s) => s.currentPosition));
+    final motion = ref.watch(playerMotionProvider);
+    final pos =
+        ref.watch(locationProvider.select((s) => s.currentPosition)) ??
+        motion.value;
     if (pos != null) {
       Future.microtask(() => _update(pos.latitude, pos.longitude));
     }
+    void onMotion() {
+      final p = motion.value;
+      if (p != null) {
+        _update(p.latitude, p.longitude);
+      }
+    }
+
+    motion.addListener(onMotion);
+    ref.onDispose(() => motion.removeListener(onMotion));
     return _current;
   }
 
@@ -92,6 +105,7 @@ class SessionNewAreaNotifier extends Notifier<double?> {
         _sessionStartTime = DateTime.now();
         state = 0.0;
       } else if (prev ?? false) {
+        unawaited(ref.read(fogProvider.notifier).flush());
         if (_distanceM > 0 || _m2 > 0) {
           final durationSec = _sessionStartTime != null
               ? DateTime.now().difference(_sessionStartTime!).inSeconds

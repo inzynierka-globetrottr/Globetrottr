@@ -33,8 +33,51 @@ class Region {
     if (lat < minLat || lat > maxLat || lon < minLon || lon > maxLon) {
       return false;
     }
-    // If exact polygon geometry is present, point-in-polygon can be evaluated here.
-    return true;
+    if (geometry == null || geometry!.isEmpty) {
+      return true;
+    }
+    return _pointInGeometry(geometry!, lat, lon);
+  }
+
+  static bool _pointInGeometry(Uint8List geometry, double lat, double lon) {
+    if (geometry.length < 2) return false;
+    final byteData = ByteData.sublistView(geometry);
+    final numRings = byteData.getUint16(0, Endian.little);
+    var offset = 2;
+    var inside = false;
+
+    for (var r = 0; r < numRings; r++) {
+      if (offset + 2 > geometry.length) break;
+      final numPoints = byteData.getUint16(offset, Endian.little);
+      offset += 2;
+      if (offset + numPoints * 8 > geometry.length) break;
+
+      if (numPoints < 3) {
+        offset += numPoints * 8;
+        continue;
+      }
+
+      final lastPtOffset = offset + (numPoints - 1) * 8;
+      var x1 = byteData.getFloat32(lastPtOffset, Endian.little);
+      var y1 = byteData.getFloat32(lastPtOffset + 4, Endian.little);
+
+      for (var i = 0; i < numPoints; i++) {
+        final x2 = byteData.getFloat32(offset, Endian.little);
+        final y2 = byteData.getFloat32(offset + 4, Endian.little);
+        offset += 8;
+
+        final intersects =
+            ((y1 > lat) != (y2 > lat)) &&
+            (lon < (x2 - x1) * (lat - y1) / (y2 - y1) + x1);
+        if (intersects) {
+          inside = !inside;
+        }
+        x1 = x2;
+        y1 = y2;
+      }
+    }
+
+    return inside;
   }
 
   Map<String, Object?> toMap() {

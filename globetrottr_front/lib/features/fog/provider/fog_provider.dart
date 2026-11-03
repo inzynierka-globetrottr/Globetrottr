@@ -110,30 +110,39 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       // The stored tiles are still valid; the next start retries the replay.
       debugPrint('Replaying the track log into the fog failed: $error');
     } finally {
-      await _backfillStatsIfEmpty(store);
+      await backfillStatsIfEmpty(store);
     }
   }
 
-  Future<void> _backfillStatsIfEmpty(FogStore store) async {
+  Future<void> backfillStatsIfEmpty([FogStore? store]) async {
     try {
-      if (store.totalAreaM2 <= 0) return;
       final statsStorage = ref.read(statisticsStorageProvider);
       final bestDay = await statsStorage.getBestDayStats();
-      if (bestDay == null || bestDay.newAreaM2 <= 0) {
+      final allRegionStats = await statsStorage.getAllRegionStats();
+      final hasAreaStats =
+          (bestDay != null && bestDay.newAreaM2 > 0) ||
+          allRegionStats.any((r) => r.discoveredAreaM2 > 0);
+      if (!hasAreaStats) {
         final storage = ref.read(fogTileStorageProvider);
         final tiles = await storage.loadBaseTilesWithArea();
         if (tiles.isNotEmpty) {
           final deltas = [
             for (final t in tiles)
-              TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
+              if (t.areaM2 > 0) TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
           ];
-          await ref.read(statisticsTrackerProvider).rebuildFromFogTiles(deltas);
+          if (deltas.isNotEmpty) {
+            await ref
+                .read(statisticsTrackerProvider)
+                .rebuildFromFogTiles(deltas);
+          }
         }
       }
     } catch (e) {
       debugPrint('Backfilling stats from fog failed: $e');
     }
   }
+
+  Future<void> flush() => _flushQuietly();
 
   Future<void> _flushQuietly() async {
     try {

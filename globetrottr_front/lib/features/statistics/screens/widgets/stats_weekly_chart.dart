@@ -97,7 +97,7 @@ class StatsWeeklyChart extends StatelessWidget {
                 if (i > 0) const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    bars[i].label,
+                    bars[i].isCurrent ? l10n.statsCurrentWeek : bars[i].label,
                     textAlign: TextAlign.center,
                     style: typography.small.copyWith(
                       fontSize: 11,

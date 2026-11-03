@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:globetrottr_front/core/storage/database_files.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:path/path.dart';
@@ -126,10 +129,56 @@ class SqfliteFogTileStorage implements FogTileStorage {
     final db = await _db;
     final rows = await db.query(
       'fog_tiles',
-      where: 'z = ? AND area > 0',
+      where: 'z = ?',
       whereArgs: [FogConfig.baseZoom],
     );
-    return rows.map(_fromRow).toList();
+    final tiles = <StoredFogTile>[];
+    for (final row in rows) {
+      var area = (row['area']! as num).toDouble();
+      final data = row['data'] == null
+          ? null
+          : Uint8List.fromList(row['data']! as List<int>);
+      if (area <= 0 && data != null) {
+        final id = FogTileId(
+          row['z']! as int,
+          row['x']! as int,
+          row['y']! as int,
+        );
+        try {
+          final flag = row['flag']! as int;
+          final mask = FogTileCodec.decode(flag, data);
+          final latitude = FogMercator.yToLat(
+            (id.y + 0.5) * FogTileId.size,
+            FogConfig.baseZoom,
+          );
+          final pixel = metersPerPixel(
+            latitude: latitude,
+            zoom: FogConfig.baseZoom.toDouble(),
+          );
+          area = mask.coveredSum / 255.0 * pixel * pixel;
+          if (area > 0) {
+            unawaited(
+              db.update(
+                'fog_tiles',
+                {'area': area},
+                where: 'z = ? AND x = ? AND y = ?',
+                whereArgs: [id.z, id.x, id.y],
+              ),
+            );
+          }
+        } catch (_) {}
+      }
+      tiles.add(
+        StoredFogTile(
+          id: FogTileId(row['z']! as int, row['x']! as int, row['y']! as int),
+          flag: row['flag']! as int,
+          rev: row['rev']! as int,
+          areaM2: area,
+          bytes: data,
+        ),
+      );
+    }
+    return tiles;
   }
 
   @override
