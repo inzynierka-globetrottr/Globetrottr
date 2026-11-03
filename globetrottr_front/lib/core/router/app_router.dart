@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/core/router/auth_redirect.dart';
 import 'package:globetrottr_front/core/router/auth_routes.dart';
+import 'package:globetrottr_front/debug/animations/animations_screen.dart';
 import 'package:globetrottr_front/debug/debug_screen.dart';
 import 'package:globetrottr_front/debug/dev_options_screen.dart';
 import 'package:globetrottr_front/debug/friend_debug_screen.dart';
@@ -31,8 +32,9 @@ final appRouter = Provider<GoRouter>((ref) {
     initialLocation: AuthRoutes.start,
     refreshListenable: listenable,
     redirect: (context, state) {
+      final location = state.matchedLocation;
       if ((DevConfig.isDevMode || kDebugMode) &&
-          state.matchedLocation == '/dev') {
+          (location == '/dev' || location.startsWith('/dev/'))) {
         return null;
       }
 
@@ -75,6 +77,12 @@ final appRouter = Provider<GoRouter>((ref) {
         GoRoute(
           path: '/dev',
           builder: (context, state) => const DevOptionsScreen(),
+          routes: [
+            GoRoute(
+              path: 'animations',
+              builder: (context, state) => const AnimationsScreen(),
+            ),
+          ],
         ),
       if (kDebugMode)
         GoRoute(

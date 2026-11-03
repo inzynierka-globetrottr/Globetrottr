@@ -116,6 +116,7 @@ Subtle motion across the app, in the language of the mock-up: short transitions 
 - Numbers, rings and bars move to a new value only when it changes while shown; the first value and one after an unknown appear at once, so entering a tab is not slowed down.
 - Form messages and field errors unfold and fade in when they appear and disappear at once.
 - No looping animation on the map screen. Why: the map draws only 15-30 frames per second to save battery, and a loop would force full frame rate (see Fog of war).
+- Every animation can be tried on the dev screen "Animations" (real components, controls that change their values, slow motion), because most of them need backend data to show up in the app. Each stage adds its part there.
 - Built-in Flutter animations first; no animation packages or Lottie/Rive assets until a design needs them.
 
 ---

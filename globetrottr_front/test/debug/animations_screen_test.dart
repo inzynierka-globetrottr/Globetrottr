@@ -1,0 +1,47 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/debug/animations/animations_screen.dart';
+import 'package:globetrottr_front/l10n/app_localizations.dart';
+
+void main() {
+  Future<void> show(WidgetTester tester, {Widget? replaceWith}) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: replaceWith ?? const AnimationsScreen(),
+        ),
+      ),
+    );
+  }
+
+  testWidgets('a control changes the value shown', (tester) async {
+    await show(tester);
+    expect(find.text('42%'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('+10'));
+    await tester.pump();
+    await tester.tap(find.text('+10'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('52%'), findsOneWidget);
+  });
+
+  testWidgets('slow motion ends with the screen', (tester) async {
+    await show(tester);
+    await tester.tap(find.text('Slow motion x5'));
+    await tester.pump();
+    expect(timeDilation, AnimationsScreen.slowMotion);
+
+    await show(tester, replaceWith: const SizedBox());
+    expect(timeDilation, 1);
+  });
+}
