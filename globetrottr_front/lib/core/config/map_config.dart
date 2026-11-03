@@ -38,7 +38,6 @@ class MapConfig {
   static const String basemapTileJsonUrl =
       'https://tiles.openfreemap.org/planet';
 
-  /// Name of the tile source in the map style.
   static const String basemapSource = 'openmaptiles';
 
   /// Deepest zoom the server has tiles for; the map scales them up beyond it.

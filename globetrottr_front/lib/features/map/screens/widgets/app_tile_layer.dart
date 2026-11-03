@@ -6,7 +6,6 @@ import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/features/map/data/open_free_map_tile_provider.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 
-/// The base map: OpenFreeMap vector tiles drawn in the app's map style.
 class AppTileLayer extends ConsumerWidget {
   const AppTileLayer({super.key});
 

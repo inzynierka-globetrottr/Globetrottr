@@ -15,8 +15,6 @@ final basemapTileProvider = Provider<VectorTileProvider?>((ref) {
   return OpenFreeMapTileProvider(client: client);
 });
 
-/// Vector tiles from OpenFreeMap.
-///
 /// The tile URL carries the data release and is read from the TileJSON when
 /// the first tile is needed, so an app that starts offline needs no request
 /// until a tile is missing from the cache (the cache keys tiles by position,
