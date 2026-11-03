@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:latlong2/latlong.dart';
 
 class LocationNotifier extends Notifier<TrackingState> {
@@ -50,7 +51,12 @@ class LocationNotifier extends Notifier<TrackingState> {
     state = state.copyWith(isRecording: value);
 
     if (!value) {
-      await ref.read(syncServiceProvider).syncPendingPoints();
+      final synced = await ref.read(syncServiceProvider).syncPendingPoints();
+
+      // Sync is when the backend completes quests, so refresh their status.
+      if (synced) {
+        unawaited(ref.read(questsProvider.notifier).loadQuests());
+      }
     }
   }
 

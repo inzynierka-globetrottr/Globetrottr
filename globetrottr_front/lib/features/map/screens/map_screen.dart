@@ -23,8 +23,12 @@ import 'package:globetrottr_front/features/map/provider/map_view_provider.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/layers_sheet.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/map_overlay.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker_layer.dart';
+import 'package:globetrottr_front/features/quests/provider/active_quest.dart';
+import 'package:globetrottr_front/features/quests/provider/quest_map_focus.dart';
+import 'package:globetrottr_front/features/quests/provider/quest_point_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_point_layer.dart';
+import 'package:globetrottr_front/features/quests/screens/widgets/quest_route_layer.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -55,6 +59,32 @@ class _MapScreenState extends ConsumerState<MapScreen>
       ref.read(questsProvider.notifier).loadQuestsOnce();
     });
     _cameraWatch = _mapController.mapEventStream.listen(_onMapEvent);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _answerQuestFocus());
+  }
+
+  /// Shows the active quest when the Quests tab asked for it: flies to its
+  /// next point, or fits its route, and opens its card.
+  void _answerQuestFocus() {
+    if (!mounted || !ref.read(questMapFocusProvider)) return;
+    ref.read(questMapFocusProvider.notifier).clear();
+    final quest = ref.read(activeQuestProvider);
+    if (quest == null) return;
+    final point = ref.read(questPointProvider);
+    final route = [for (final waypoint in quest.waypoints) waypoint.point];
+    setState(() => _questOpen = true);
+    if (point != null) {
+      _flyTo(point.position);
+    } else if (route.length > 1) {
+      _flight.stop();
+      _mapController.fitCamera(
+        CameraFit.coordinates(
+          coordinates: route,
+          padding: MapConfig.questRoutePadding,
+        ),
+      );
+    } else if (route.isNotEmpty) {
+      _flyTo(route.first);
+    }
   }
 
   void _onMapEvent(MapEvent event) {
@@ -161,6 +191,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
                   head: recording ? motion : null,
                 ),
               if (DevConfig.isDevMode) const RecordedPointsLayer(),
+              const QuestRouteLayer(),
               ListenableBuilder(
                 listenable: motion,
                 builder: (context, _) {

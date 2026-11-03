@@ -20,9 +20,9 @@ void main() {
       expect(l10n.friendsTitle, 'Friends');
       expect(l10n.friendsYourFriends(5), 'Your friends · 5');
       expect(l10n.friendsInvites(2), '2 invites');
-      expect(l10n.questsBoardTitle, 'Quest Board');
-      expect(l10n.questsAvailableSection(3), 'Available Quests (3)');
-      expect(l10n.questsProgressPercent('42'), '42% progress');
+      expect(l10n.questsTitle, 'Quests');
+      expect(l10n.questsPointCount(3), '3 points');
+      expect(l10n.questsCompletedCount(1), '1 quest');
       expect(l10n.questsRewardXp(150), '150 XP');
       expect(l10n.settingsTitle, 'Settings');
       expect(l10n.settingsLanguage, 'Language');
@@ -52,9 +52,10 @@ void main() {
       expect(l10n.friendsInvites(1), '1 zaproszenie');
       expect(l10n.friendsInvites(2), '2 zaproszenia');
       expect(l10n.friendsInvites(5), '5 zaproszeń');
-      expect(l10n.questsBoardTitle, 'Tablica zadań');
-      expect(l10n.questsAvailableSection(3), 'Dostępne zadania (3)');
-      expect(l10n.questsProgressPercent('42'), 'Postęp: 42%');
+      expect(l10n.questsTitle, 'Questy');
+      expect(l10n.questsPointCount(3), '3 punkty');
+      expect(l10n.questsPointCount(5), '5 punktów');
+      expect(l10n.questsCompletedCount(5), '5 questów');
       expect(l10n.questsRewardXp(150), '150 XP');
       expect(l10n.settingsTitle, 'Ustawienia');
       expect(l10n.settingsLanguage, 'Język');

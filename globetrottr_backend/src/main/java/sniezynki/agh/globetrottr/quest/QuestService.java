@@ -7,8 +7,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sniezynki.agh.globetrottr.exception.ResourceNotFoundException;
 import sniezynki.agh.globetrottr.location.UserFog;
 import sniezynki.agh.globetrottr.location.UserFogRepository;
 import sniezynki.agh.globetrottr.user.User;
@@ -18,12 +20,15 @@ import sniezynki.agh.globetrottr.user.UserRepository;
 @RequiredArgsConstructor
 public class QuestService {
 
+    // Tolerence of aprox. 5 meters in degrees (for SRID 4326)
+    private static final double VISIT_TOLERANCE_DEGREES = 0.000045;
+
     private final UserQuestRepository userQuestRepository;
     private final QuestRepository questRepository;
     private final UserRepository userRepository;
     private final UserFogRepository userFogRepository;
 
-    public List<QuestResponseDto> getAllQuestsForSidebar(String username) {
+    public List<QuestResponseDto> getAllUserQuests(String username) {
         User user =
                 userRepository
                         .findByUsername(username)
@@ -54,11 +59,21 @@ public class QuestService {
                             return new QuestResponseDto(
                                     quest.getId(),
                                     quest.getTitle(),
+                                    quest.getDescription(),
                                     quest.getType(),
                                     quest.getRewardPoints(),
                                     progress,
                                     isStarted,
-                                    isCompleted);
+                                    isCompleted,
+                                    QuestGeometryMapper.anchorOf(quest),
+                                    QuestGeometryMapper.waypointsOf(
+                                            quest,
+                                            point ->
+                                                    isCompleted
+                                                            || (isStarted
+                                                                    && isPointVisited(
+                                                                            userFog, point))),
+                                    isCompleted ? uq.getCompletedAt() : null);
                         })
                 .toList();
     }
@@ -85,16 +100,19 @@ public class QuestService {
 
         int visitedPoints = 0;
 
-        // Tolerence of aprox. 5 meters in degrees (for SRID 4326)
-        final double toleranceInDegrees = 0.000045;
-
         for (int i = 0; i < totalPoints; i++) {
             Geometry questPoint = targetPoints.getGeometryN(i);
-            if (fogArea.isWithinDistance(questPoint, toleranceInDegrees)) {
+            if (fogArea.isWithinDistance(questPoint, VISIT_TOLERANCE_DEGREES)) {
                 visitedPoints++;
             }
         }
         return (double) visitedPoints / totalPoints;
+    }
+
+    private boolean isPointVisited(UserFog userFog, Point point) {
+        return userFog != null
+                && userFog.getFogArea() != null
+                && userFog.getFogArea().isWithinDistance(point, VISIT_TOLERANCE_DEGREES);
     }
 
     private double calculateFollowRouteProgress(Geometry fogArea, Geometry targetRoute) {
@@ -150,6 +168,10 @@ public class QuestService {
         }
     }
 
+    /**
+     * Starts a quest. Only one quest is active at a time, so a quest in progress is abandoned
+     * together with its progress; completed quests stay.
+     */
     @Transactional
     public void startQuest(String username, Long questId) {
         User user =
@@ -158,16 +180,18 @@ public class QuestService {
                         .orElseThrow(() -> new RuntimeException("User not found"));
         UUID userId = user.getUserId();
 
+        List<UserQuest> userQuests = userQuestRepository.findByUser_UserId(userId);
         boolean alreadyStarted =
-                userQuestRepository.findByUser_UserId(userId).stream()
-                        .anyMatch(uq -> uq.getQuest().getId().equals(questId));
+                userQuests.stream().anyMatch(uq -> uq.getQuest().getId().equals(questId));
 
         if (alreadyStarted) return;
 
         Quest quest =
                 questRepository
                         .findById(questId)
-                        .orElseThrow(() -> new RuntimeException("Quest not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Quest not found"));
+
+        userQuests.stream().filter(uq -> !uq.isCompleted()).forEach(userQuestRepository::delete);
 
         UserQuest newUserQuest =
                 UserQuest.builder().user(user).quest(quest).isCompleted(false).build();

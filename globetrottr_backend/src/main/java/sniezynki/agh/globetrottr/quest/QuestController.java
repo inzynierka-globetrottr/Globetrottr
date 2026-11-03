@@ -16,7 +16,7 @@ public class QuestController {
     @GetMapping("/me")
     public ResponseEntity<List<QuestResponseDto>> getMyQuests() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(questService.getAllQuestsForSidebar(username));
+        return ResponseEntity.ok(questService.getAllUserQuests(username));
     }
 
     @PostMapping("/me/start/{questId}")
