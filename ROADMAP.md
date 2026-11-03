@@ -116,7 +116,7 @@ Besides the classic fog, the user can switch between several views of what they 
 - Voronoi reveals progressively: segments are split into short pieces (tens of metres) with their own cells, grouped by segment; a cell piece is revealed when its piece of road is travelled.
 - Heatmap intensity is the number of sessions that passed a place, at most once per session, so standing still or going back and forth does not inflate it. A place is exactly what the fog reveals (same stadium and radius); colours run from gold to red, fainter for places visited rarely, on a logarithmic scale.
 - Each heatmap pixel remembers the session that last counted it, so a replay after a restart never counts twice; sessions are counted in log order. Rejected: per-session masks in memory (lost on a restart, unbounded for a long session).
-- The heatmap is computed only once it is first shown: it catches up from the track log (stored tiles show meanwhile), then follows new points live. Why: no cost for users who never open it; the owner accepted a short wait. To confirm with the owner: whether it should instead run from app start like the fog.
+- The heatmap is computed only once it is first shown: it catches up from the track log (stored tiles show meanwhile), then follows new points live. Why: no cost for users who never open it; the owner accepted a short wait and chose this over running it from app start like the fog.
 - Offline: classic and heatmap always work; streets and Voronoi wait for missing road tiles and catch up from the track log later.
 - Classic, heatmap and Voronoi can be drawn as bitmap tiles with the existing renderer; streets as vectors or tiles. A common tile source interface (also needed for friends' fog) serves all of them.
 
