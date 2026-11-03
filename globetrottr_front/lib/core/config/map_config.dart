@@ -18,9 +18,6 @@ class MapConfig {
   static const Duration playerFastestStep = Duration(milliseconds: 33);
   static const Duration playerSlowestStep = Duration(milliseconds: 66);
 
-  /// How long the camera flies to the player after the recenter button.
-  static const Duration recenterFlight = Duration(milliseconds: 450);
-
   /// Room left around a quest route fitted on the map, so the controls on
   /// top and the navigation at the bottom do not cover it.
   static const EdgeInsets questRoutePadding = EdgeInsets.fromLTRB(

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/features/map/camera_flight.dart';
 import 'package:globetrottr_front/features/map/camera_health.dart';
 import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
@@ -39,7 +40,6 @@ class _MapScreenState extends ConsumerState<MapScreen>
   final MapController _mapController = MapController();
   late final AnimationController _flight = AnimationController(
     vsync: this,
-    duration: MapConfig.recenterFlight,
   )..addListener(_fly);
   CameraFlight? _route;
   StreamSubscription<MapEvent>? _cameraWatch;
@@ -125,11 +125,14 @@ class _MapScreenState extends ConsumerState<MapScreen>
     );
     if (route.isStill) return;
     _route = route;
+    _flight.duration = context.motion.flight;
     unawaited(_flight.forward(from: 0));
   }
 
   void _fly() {
-    final view = _route?.at(Curves.easeInOut.transform(_flight.value));
+    final view = _route?.at(
+      context.motion.flightCurve.transform(_flight.value),
+    );
     if (view != null) _mapController.move(view.center, view.zoom);
   }
 

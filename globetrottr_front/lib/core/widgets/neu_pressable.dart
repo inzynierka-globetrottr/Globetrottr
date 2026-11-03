@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 /// A raised surface that sinks in while pressed. The common part of every
@@ -52,28 +53,41 @@ class _NeuPressableState extends State<NeuPressable> {
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null;
-    final shadows = _pressed ? widget.pressedShadows : widget.shadows;
+    final motion = context.motion;
     final content = Opacity(
       opacity: enabled ? 1 : _disabledOpacity,
       child: Center(child: widget.child),
     );
-    final surface = widget.borderRadius == null
-        ? NeuSurface.circle(
-            shadows: shadows,
-            color: widget.color,
-            size: widget.width,
-            padding: widget.padding,
-            child: content,
-          )
-        : NeuSurface(
-            shadows: shadows,
-            borderRadius: widget.borderRadius,
-            color: widget.color,
-            width: widget.width,
-            height: widget.height,
-            padding: widget.padding,
-            child: content,
-          );
+    final surface = TweenAnimationBuilder<double>(
+      tween: Tween(end: _pressed ? 1 : 0),
+      duration: motion.short,
+      curve: motion.curve,
+      child: content,
+      builder: (context, depth, content) {
+        final shadows = lerpShadows(
+          widget.shadows,
+          widget.pressedShadows,
+          depth,
+        );
+        return widget.borderRadius == null
+            ? NeuSurface.circle(
+                shadows: shadows,
+                color: widget.color,
+                size: widget.width,
+                padding: widget.padding,
+                child: content,
+              )
+            : NeuSurface(
+                shadows: shadows,
+                borderRadius: widget.borderRadius,
+                color: widget.color,
+                width: widget.width,
+                height: widget.height,
+                padding: widget.padding,
+                child: content,
+              );
+      },
+    );
 
     return Semantics(
       button: true,

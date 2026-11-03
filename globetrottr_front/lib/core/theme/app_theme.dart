@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/app_typography.dart';
@@ -50,6 +51,7 @@ class AppTheme {
         palette,
         typography,
         AppShadows.fromPalette(palette),
+        AppMotion.standard,
       ],
     );
   }

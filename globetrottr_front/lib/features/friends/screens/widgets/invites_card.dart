@@ -28,8 +28,6 @@ class InvitesCard extends StatefulWidget {
 }
 
 class _InvitesCardState extends State<InvitesCard> {
-  static const _duration = Duration(milliseconds: 240);
-
   bool _open = false;
 
   @override
@@ -46,8 +44,8 @@ class _InvitesCardState extends State<InvitesCard> {
             onTap: () => setState(() => _open = !_open),
           ),
           AnimatedSize(
-            duration: _duration,
-            curve: Curves.easeInOut,
+            duration: context.motion.medium,
+            curve: context.motion.curve,
             alignment: Alignment.topCenter,
             child: _open
                 ? Padding(
@@ -142,7 +140,8 @@ class _Header extends StatelessWidget {
                 ),
                 AnimatedRotation(
                   turns: open ? 0.25 : 0,
-                  duration: _InvitesCardState._duration,
+                  duration: context.motion.medium,
+                  curve: context.motion.curve,
                   child: AppIcon(
                     AppIcons.chevronRight,
                     size: 16,

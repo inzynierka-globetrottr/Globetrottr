@@ -100,6 +100,26 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 
 ---
 
+## Animations (In progress, branch `feat/animations`)
+
+Subtle motion across the app, in the language of the mock-up: short transitions with an ease curve, no effects for their own sake. Stages, each reviewed by the owner:
+1. Motion tokens and the reduced-motion setting (Done).
+2. Shared components: pressed buttons, counting numbers, appearing messages (In progress); filling rings and bars (Planned).
+3. Navigation: a persistent bottom navigation and screen transitions (Planned; changes the routing, needs the owner's decision).
+4. Screens: map pill, friends, quests, dialogs, list entrances (Planned).
+5. Reward moments: a reached quest point, a completed quest, a new region (Idea).
+
+**Decisions:**
+- Durations and curves are theme tokens on a scale taken from the mock-up's CSS transitions, like colours and shadows; no widget keeps its own value. The map camera flight is one of them.
+- The system setting that turns animations off makes every token instant.
+- A pressed button only moves its shadows: a raised surface flattens and then sinks in, as one shadow cannot turn into an inset one. No scaling and no haptics (owner's decisions).
+- Numbers count to a new value only when it changes while shown; the first value and one after an unknown appear at once, so entering a tab is not slowed down.
+- A form message unfolds and fades in when it appears and disappears at once.
+- No looping animation on the map screen. Why: the map draws only 15-30 frames per second to save battery, and a loop would force full frame rate (see Fog of war).
+- Built-in Flutter animations first; no animation packages or Lottie/Rive assets until a design needs them.
+
+---
+
 ## Map views (Planned)
 
 Besides the classic fog, the user can switch between several views of what they have discovered.

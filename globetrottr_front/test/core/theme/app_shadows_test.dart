@@ -29,6 +29,48 @@ void main() {
       },
     );
 
+    test('shadows of the same kind blend into each other', () {
+      const from = [
+        NeoShadow(offset: Offset(2, 2), blur: 4, color: Color(0xFF000000)),
+      ];
+      const to = [
+        NeoShadow(offset: Offset(6, 6), blur: 8, color: Color(0x00000000)),
+      ];
+
+      final half = lerpShadows(from, to, 0.5).single;
+
+      expect(half.offset, const Offset(4, 4));
+      expect(half.blur, 6);
+      expect(half.color.a, closeTo(0.5, 0.01));
+      expect(lerpShadows(from, to, 0), from);
+      expect(lerpShadows(from, to, 1), to);
+    });
+
+    test('a raised surface flattens first and then sinks in', () {
+      const raised = [
+        NeoShadow(offset: Offset(4, 4), blur: 9, color: Color(0xFF000000)),
+      ];
+      const sunk = [
+        NeoShadow(
+          offset: Offset(4, 4),
+          blur: 9,
+          color: Color(0xFF000000),
+          inset: true,
+        ),
+      ];
+
+      final flattening = lerpShadows(raised, sunk, 0.25).single;
+      final sinking = lerpShadows(raised, sunk, 0.75).single;
+
+      expect(flattening.inset, isFalse);
+      expect(flattening.offset, const Offset(2, 2));
+      expect(flattening.color.a, closeTo(0.5, 0.01));
+      expect(lerpShadows(raised, sunk, 0.5), isEmpty);
+      expect(sinking.inset, isTrue);
+      expect(sinking.offset, const Offset(2, 2));
+      expect(sinking.blur, 9);
+    });
+
     test('an inset shadow cannot become a BoxShadow', () {
       const shadow = NeoShadow(
         offset: Offset(4, 4),

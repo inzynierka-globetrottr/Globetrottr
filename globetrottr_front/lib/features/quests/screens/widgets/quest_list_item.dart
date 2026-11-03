@@ -36,8 +36,6 @@ class QuestListItem extends StatelessWidget {
   /// Starting it replaces the active quest.
   final bool swaps;
 
-  static const _toggle = Duration(milliseconds: 240);
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -81,8 +79,8 @@ class QuestListItem extends StatelessWidget {
           ),
         ),
         AnimatedSize(
-          duration: _toggle,
-          curve: Curves.ease,
+          duration: context.motion.medium,
+          curve: context.motion.curve,
           alignment: Alignment.topCenter,
           child: expanded
               ? Padding(

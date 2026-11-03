@@ -5,6 +5,7 @@ import 'package:globetrottr_front/core/localization/localization_extensions.dart
 import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/animated_number.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/neu_divider.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
@@ -38,7 +39,8 @@ class MapStatusPill extends ConsumerWidget {
         children: [
           Expanded(
             child: _Stat(
-              value: l10n.mapPercent(formatPercent(progress.share)),
+              value: progress.share,
+              format: (share) => l10n.mapPercent(formatPercent(share)),
               label: progress.regionName ?? l10n.mapUnknownRegion,
             ),
           ),
@@ -46,7 +48,8 @@ class MapStatusPill extends ConsumerWidget {
             const NeuDivider.vertical(length: 30),
             Expanded(
               child: _Stat(
-                value: l10n.mapNewArea(formatKm2(newArea, locale)),
+                value: newArea,
+                format: (area) => l10n.mapNewArea(formatKm2(area, locale)),
                 label: l10n.mapNewAreaLabel,
                 accent: true,
               ),
@@ -60,9 +63,15 @@ class MapStatusPill extends ConsumerWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label, this.accent = false});
+  const _Stat({
+    required this.value,
+    required this.format,
+    required this.label,
+    this.accent = false,
+  });
 
-  final String value;
+  final double? value;
+  final String Function(double? value) format;
   final String label;
   final bool accent;
 
@@ -73,8 +82,9 @@ class _Stat extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          value,
+        AnimatedNumber(
+          value: value,
+          format: format,
           maxLines: 1,
           style: typography.value.copyWith(
             height: 1.2,
