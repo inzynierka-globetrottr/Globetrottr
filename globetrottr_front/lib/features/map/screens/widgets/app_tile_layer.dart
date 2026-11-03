@@ -14,7 +14,10 @@ class AppTileLayer extends ConsumerWidget {
     final tiles = ref.watch(basemapTileProvider);
     if (tiles == null) return const SizedBox.shrink();
     return VectorTileLayer(
-      theme: AppMapStyle.themeOf(context.mapPalette),
+      theme: AppMapStyle.themeOf(
+        context.mapPalette,
+        Localizations.localeOf(context).languageCode,
+      ),
       tileProviders: TileProviders({
         MapConfig.basemapSource: tiles,
       }),

@@ -38,6 +38,17 @@ class MapConfig {
   static const String basemapTileJsonUrl =
       'https://tiles.openfreemap.org/planet';
 
+  /// How long a tile URL from the TileJSON is used before it is read again,
+  /// so a long session does not keep asking for a removed data release.
+  static const Duration basemapTileJsonMaxAge = Duration(hours: 12);
+
+  /// Wait before the next TileJSON attempt after a failed refresh, while the
+  /// old tile URL is still used.
+  static const Duration basemapTileJsonRetryDelay = Duration(minutes: 1);
+
+  /// Longest wait for one base map request, after which it is retried.
+  static const Duration basemapRequestTimeout = Duration(seconds: 10);
+
   static const String basemapSource = 'openmaptiles';
 
   /// Deepest zoom the server has tiles for; the map scales them up beyond it.

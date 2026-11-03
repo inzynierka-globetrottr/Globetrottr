@@ -62,6 +62,21 @@ void main() {
     );
   });
 
+  test('the map palette switches at once instead of blending, so a theme '
+      'animation does not rebuild the map style on every frame', () {
+    final dark = AppMapPalette.light.copyWith(land: const Color(0xFF101010));
+
+    for (final t in [0.0, 0.2, 0.49]) {
+      expect(
+        identical(AppMapPalette.light.lerp(dark, t), AppMapPalette.light),
+        isTrue,
+      );
+    }
+    for (final t in [0.5, 0.8, 1.0]) {
+      expect(identical(AppMapPalette.light.lerp(dark, t), dark), isTrue);
+    }
+  });
+
   test('every text style uses the app font', () {
     final typography = AppTypography.fromPalette(AppPalette.light);
 

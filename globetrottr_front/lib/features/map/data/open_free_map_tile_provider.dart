@@ -19,11 +19,27 @@ final basemapTileProvider = Provider<VectorTileProvider?>((ref) {
 /// the first tile is needed, so an app that starts offline needs no request
 /// until a tile is missing from the cache (the cache keys tiles by position,
 /// not by URL). A failed TileJSON request is repeated with the next tile.
+///
+/// OpenFreeMap removes old releases, so the URL is read again once it is
+/// [MapConfig.basemapTileJsonMaxAge] old; if that fails, the old URL stays in
+/// use until a later attempt succeeds.
+///
+/// Our own provider rather than `NetworkVectorTileProvider`, which takes a
+/// fixed URL, opens a new client for every tile and has no timeout.
 class OpenFreeMapTileProvider extends VectorTileProvider {
-  OpenFreeMapTileProvider({required this._client});
+  OpenFreeMapTileProvider({
+    required this._client,
+    this._requestTimeout = MapConfig.basemapRequestTimeout,
+    DateTime Function() clock = DateTime.now,
+  }) : _now = clock;
 
   final http.Client _client;
-  Future<String>? _template;
+  final Duration _requestTimeout;
+  final DateTime Function() _now;
+
+  String? _template;
+  DateTime? _refreshAt;
+  Future<String>? _fetching;
 
   static const _headers = {'User-Agent': MapConfig.tileUserAgentPackageName};
 
@@ -59,12 +75,23 @@ class OpenFreeMapTileProvider extends VectorTileProvider {
   }
 
   Future<String> _resolveTemplate() async {
-    final pending = _template ??= _fetchTemplate();
+    final stale = _template;
+    final refreshAt = _refreshAt;
+    if (stale != null && refreshAt != null && _now().isBefore(refreshAt)) {
+      return stale;
+    }
+    final fetching = _fetching ??= _fetchTemplate();
     try {
-      return await pending;
+      final template = await fetching;
+      _template = template;
+      _refreshAt = _now().add(MapConfig.basemapTileJsonMaxAge);
+      return template;
     } on Object {
-      if (identical(_template, pending)) _template = null;
-      rethrow;
+      if (stale == null) rethrow;
+      _refreshAt = _now().add(MapConfig.basemapTileJsonRetryDelay);
+      return stale;
+    } finally {
+      if (identical(_fetching, fetching)) _fetching = null;
     }
   }
 
@@ -77,7 +104,18 @@ class OpenFreeMapTileProvider extends VectorTileProvider {
         retryable: Retryable.retry,
       );
     }
-    final tiles = (jsonDecode(response.body) as Map<String, dynamic>)['tiles'];
+    // A captive portal answers with its own page, so the body may be anything;
+    // the next try may get through.
+    final Object? json;
+    try {
+      json = jsonDecode(response.body);
+    } on FormatException {
+      throw ProviderException(
+        message: 'TileJSON is not JSON',
+        retryable: Retryable.retry,
+      );
+    }
+    final tiles = json is Map ? json['tiles'] : null;
     if (tiles is! List || tiles.isEmpty || tiles.first is! String) {
       throw ProviderException(
         message: 'TileJSON names no tiles',
@@ -89,9 +127,16 @@ class OpenFreeMapTileProvider extends VectorTileProvider {
 
   Future<http.Response> _get(String url) async {
     try {
-      return await _client.get(Uri.parse(url), headers: _headers);
+      return await _client
+          .get(Uri.parse(url), headers: _headers)
+          .timeout(_requestTimeout);
     } on http.ClientException catch (e) {
       throw ProviderException(message: e.message, retryable: Retryable.retry);
+    } on TimeoutException {
+      throw ProviderException(
+        message: 'No response within $_requestTimeout: $url',
+        retryable: Retryable.retry,
+      );
     }
   }
 

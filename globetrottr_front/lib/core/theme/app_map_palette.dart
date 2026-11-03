@@ -143,32 +143,10 @@ class AppMapPalette extends ThemeExtension<AppMapPalette> {
     poiLabel: poiLabel ?? this.poiLabel,
   );
 
+  /// Switches halfway instead of blending. A blended palette would be a new
+  /// map style on every frame of a theme animation, and every new style
+  /// redraws all map tiles.
   @override
-  AppMapPalette lerp(AppMapPalette? other, double t) {
-    if (other == null) return this;
-    Color mix(Color a, Color b) => Color.lerp(a, b, t)!;
-    return AppMapPalette(
-      land: mix(land, other.land),
-      landuse: mix(landuse, other.landuse),
-      park: mix(park, other.park),
-      wood: mix(wood, other.wood),
-      grass: mix(grass, other.grass),
-      water: mix(water, other.water),
-      building: mix(building, other.building),
-      buildingOutline: mix(buildingOutline, other.buildingOutline),
-      road: mix(road, other.road),
-      roadCasing: mix(roadCasing, other.roadCasing),
-      majorRoad: mix(majorRoad, other.majorRoad),
-      majorRoadCasing: mix(majorRoadCasing, other.majorRoadCasing),
-      motorway: mix(motorway, other.motorway),
-      motorwayCasing: mix(motorwayCasing, other.motorwayCasing),
-      path: mix(path, other.path),
-      rail: mix(rail, other.rail),
-      label: mix(label, other.label),
-      labelHalo: mix(labelHalo, other.labelHalo),
-      placeLabel: mix(placeLabel, other.placeLabel),
-      waterLabel: mix(waterLabel, other.waterLabel),
-      poiLabel: mix(poiLabel, other.poiLabel),
-    );
-  }
+  AppMapPalette lerp(AppMapPalette? other, double t) =>
+      other == null || t < 0.5 ? this : other;
 }
