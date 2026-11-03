@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/app_map_palette.dart';
 import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
@@ -10,7 +11,10 @@ class AppTheme {
   static final ThemeData light = from(AppPalette.light);
 
   /// A dark mode or another accent is just another palette.
-  static ThemeData from(AppPalette palette) {
+  static ThemeData from(
+    AppPalette palette, {
+    AppMapPalette map = AppMapPalette.light,
+  }) {
     final brightness = ThemeData.estimateBrightnessForColor(palette.background);
     final typography = AppTypography.fromPalette(palette);
     return ThemeData(
@@ -49,6 +53,7 @@ class AppTheme {
       useMaterial3: true,
       extensions: [
         palette,
+        map,
         typography,
         AppShadows.fromPalette(palette),
         AppMotion.standard,

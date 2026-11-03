@@ -100,6 +100,20 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 
 ---
 
+## Base map (Done)
+
+**Decisions:**
+- Vector tiles from OpenFreeMap drawn with our own style built from the map palette. Why: no API key, no cost and full control of the look, so the map fits the app. Rejected: Carto raster tiles (fixed look).
+- The tile URL names a data release and is read from the OpenFreeMap TileJSON, and read again periodically, because old releases are removed. Own tile provider instead of the package's, which takes a fixed URL and has no timeout.
+- Labels are in the app language, with the local name where the map data has no translation.
+- The map palette switches at once instead of blending during a theme animation, because every new style redraws all tiles.
+
+**Planned:**
+- **Attribution (Planned, required before the app is given to anyone outside the team):** the map must credit OpenFreeMap, OpenMapTiles and OpenStreetMap contributors (ODbL), for example with a collapsible attribution button that fits the mock-up.
+- **Dark map palette (Planned):** together with the dark mode of the app.
+
+---
+
 ## Animations (In progress, branch `feat/animations`)
 
 Subtle motion across the app, in the language of the mock-up: short transitions with an ease curve, no effects for their own sake. Stages, each reviewed by the owner:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/app_map_palette.dart';
 import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
@@ -9,6 +10,9 @@ import 'package:globetrottr_front/core/theme/app_typography.dart';
 extension ThemeContext on BuildContext {
   AppPalette get palette =>
       Theme.of(this).extension<AppPalette>() ?? AppPalette.light;
+
+  AppMapPalette get mapPalette =>
+      Theme.of(this).extension<AppMapPalette>() ?? AppMapPalette.light;
 
   AppTypography get typography =>
       Theme.of(this).extension<AppTypography>() ??
