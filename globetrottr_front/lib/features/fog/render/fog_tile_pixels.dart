@@ -17,23 +17,35 @@ abstract final class FogTilePixels {
     for (var v = 0; v < 256; v++) 0xFF000000 | v << 16 | v << 8 | v,
   ]);
 
+  /// The opaque grey of every value 0..255 when the brightness is not the
+  /// value itself, as an RGBA word.
+  static Uint32List greysOf(int Function(int value) brightness) {
+    return Uint32List.fromList([
+      for (var v = 0; v < 256; v++) _greys[brightness(v).clamp(0, 255)],
+    ]);
+  }
+
+  /// [levels] maps each value to its pixel (see [greysOf]); by default the
+  /// value is the brightness.
   static Uint8List build(
     FogMask mask, {
     required FogMask? Function(int dx, int dy) neighbor,
+    Uint32List? levels,
   }) {
     const size = FogMask.size;
     final pixels = Uint32List(side * side);
     final data = mask.data;
+    final greys = levels ?? _greys;
 
     void put(int x, int y, int value) {
-      pixels[y * side + x] = _greys[value];
+      pixels[y * side + x] = greys[value];
     }
 
     for (var y = 0; y < size; y++) {
       final row = y * size;
       final target = (y + 1) * side + 1;
       for (var x = 0; x < size; x++) {
-        pixels[target + x] = _greys[data[row + x]];
+        pixels[target + x] = greys[data[row + x]];
       }
     }
 

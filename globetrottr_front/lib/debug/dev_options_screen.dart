@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/debug/widgets/fog_dev_panel.dart';
+import 'package:globetrottr_front/debug/widgets/heatmap_dev_panel.dart';
 import 'package:globetrottr_front/debug/widgets/journey_generator_panel.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,8 @@ class DevOptionsScreen extends ConsumerWidget {
           const JourneyGeneratorPanel(),
           const Divider(height: 32),
           const FogDevPanel(),
+          const Divider(height: 32),
+          const HeatmapDevPanel(),
         ],
       ),
     );

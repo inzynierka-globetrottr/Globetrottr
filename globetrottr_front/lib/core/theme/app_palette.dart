@@ -22,6 +22,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.shadowOverlay,
     required this.shadowPressed,
     required this.fog,
+    required this.heatCold,
+    required this.heatHot,
   });
 
   static const light = AppPalette(
@@ -41,6 +43,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     shadowOverlay: Color(0xFF14120F),
     shadowPressed: Color(0xFF000000),
     fog: Color(0xDB383633),
+    heatCold: Color(0xFFE3A33A),
+    heatHot: Color(0xF2D9531E),
   );
 
   /// Screens and every neumorphic surface on them.
@@ -81,6 +85,13 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Undiscovered area, opacity included.
   final Color fog;
 
+  /// Heatmap colour of a place visited once; its opacity is not used.
+  final Color heatCold;
+
+  /// Heatmap colour of the busiest places, opacity included. Less visited
+  /// places are drawn fainter.
+  final Color heatHot;
+
   @override
   AppPalette copyWith({
     Color? background,
@@ -99,6 +110,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? shadowOverlay,
     Color? shadowPressed,
     Color? fog,
+    Color? heatCold,
+    Color? heatHot,
   }) => AppPalette(
     background: background ?? this.background,
     text: text ?? this.text,
@@ -116,6 +129,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     shadowOverlay: shadowOverlay ?? this.shadowOverlay,
     shadowPressed: shadowPressed ?? this.shadowPressed,
     fog: fog ?? this.fog,
+    heatCold: heatCold ?? this.heatCold,
+    heatHot: heatHot ?? this.heatHot,
   );
 
   @override
@@ -139,6 +154,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
       shadowOverlay: mix(shadowOverlay, other.shadowOverlay),
       shadowPressed: mix(shadowPressed, other.shadowPressed),
       fog: mix(fog, other.fog),
+      heatCold: mix(heatCold, other.heatCold),
+      heatHot: mix(heatHot, other.heatHot),
     );
   }
 }

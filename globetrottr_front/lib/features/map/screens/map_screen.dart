@@ -15,6 +15,9 @@ import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_layer.dart';
+import 'package:globetrottr_front/features/heatmap/provider/heatmap_provider.dart';
+import 'package:globetrottr_front/features/heatmap/render/heatmap_layer.dart';
+import 'package:globetrottr_front/features/map/provider/map_view_provider.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/layers_sheet.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/map_overlay.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/player_marker_layer.dart';
@@ -123,6 +126,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final motion = ref.watch(playerMotionProvider);
     final fog = ref.watch(fogProvider);
     final fogOptions = ref.watch(fogRenderOptionsProvider);
+    final view = ref.watch(mapViewProvider);
+    // The heatmap is opened the first time it is shown and keeps counting
+    // from then on (the provider stays alive).
+    final heat = view == MapView.heatmap ? ref.watch(heatmapProvider) : null;
 
     return Scaffold(
       body: Stack(
@@ -140,11 +147,14 @@ class _MapScreenState extends ConsumerState<MapScreen>
             ),
             children: [
               const AppTileLayer(),
-              BitmapFogLayer(
-                source: fog.value,
-                options: fogOptions,
-                head: recording ? motion : null,
-              ),
+              if (heat != null)
+                HeatmapLayer(source: heat.value)
+              else
+                BitmapFogLayer(
+                  source: fog.value,
+                  options: fogOptions,
+                  head: recording ? motion : null,
+                ),
               if (DevConfig.isDevMode) const RecordedPointsLayer(),
               ListenableBuilder(
                 listenable: motion,

@@ -6,6 +6,7 @@ import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/debug/explorer_journey_import.dart';
 import 'package:globetrottr_front/debug/explorer_route_generator.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
+import 'package:globetrottr_front/features/heatmap/provider/heatmap_provider.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 
 /// Kilometres for a slider position in [0, 1]: 1 km to 100 000 km on a
@@ -46,6 +47,11 @@ class _JourneyGeneratorPanelState extends ConsumerState<JourneyGeneratorPanel> {
         ref.read(locationProvider).currentPosition ?? MapConfig.initialCenter;
     final fogReady = ref.read(fogProvider.future);
     final fog = ref.read(fogProvider.notifier);
+    // A heatmap that is open counts the journey too; a closed one catches up
+    // when it is opened.
+    final heat = ref.exists(heatmapProvider)
+        ? ref.read(heatmapProvider.notifier)
+        : null;
     final journey = ExplorerJourney(
       start: start,
       totalKm: _km.toDouble(),
@@ -71,6 +77,7 @@ class _JourneyGeneratorPanelState extends ConsumerState<JourneyGeneratorPanel> {
           if (mounted) setState(() => _progress = value);
         },
       );
+      await heat?.catchUp();
       final seconds = (timer.elapsedMilliseconds / 1000).toStringAsFixed(0);
       _message =
           '${result.cancelled ? 'Stopped after' : 'Generated'} '

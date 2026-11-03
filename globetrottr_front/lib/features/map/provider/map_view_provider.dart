@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Ways of showing what the user has discovered.
 enum MapView {
   fog(isAvailable: true),
-  // TODO(data): the streets, heatmap and Voronoi views are planned; each is a
+  // TODO(data): the streets and Voronoi views are planned; each is a
   // derived layer of the track log.
   streets(isAvailable: false),
-  heatmap(isAvailable: false),
+  heatmap(isAvailable: true),
   voronoi(isAvailable: false);
 
   const MapView({required this.isAvailable});

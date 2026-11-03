@@ -83,7 +83,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - "This week" shows the user and every friend with discovered area that week, largest first; with more than four the row scrolls and the next person peeks in at the edge. With no friends the strip and the list give way to one empty card with an "Add a friend" action, because a lone avatar looked broken (the mock-up has no such state; owner approval pending).
 - Received invites live in a folding card on the Friends screen and sent ones on the Add friend screen; the separate invites screen and user search are gone. Until the comparison screen is approved, a friend's arrow opens their map.
 - The map always keeps north up and has no compass, as in the mock-up.
-- The layers sheet lists every planned view; only the fog can be chosen, the others say they are coming.
+- The layers sheet lists every planned view; the fog and the heatmap can be chosen, the others say they are coming.
 - Until the Quests tab is designed it shows the existing quest list; the map card shows the first started quest with its progress. Quests have no map points yet, so the point marker, its distance and the bar of points wait for that data.
 - Product decisions from the mock-up: one active quest at a time, its next point is shown on the map without navigation; friends are added by exact nickname, without suggestions; the profile has no map; the "passing through" feature is dropped.
 - Quests tab from the mock-up: the active quest card on top (points as steps, a route as a progress bar, an empty dashed card when none is active), below it the available quests grouped by type (places, routes) with no time estimates. A quest opens into a map preview with one button that starts it, or swaps it in after a warning that the active quest and its progress are lost. Completed quests are not listed; the level row opens their history.
@@ -96,28 +96,31 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 
 ---
 
-## Map views (Planned)
+## Map views (In progress: classic and heatmap Done)
 
 Besides the classic fog, the user can switch between several views of what they have discovered.
 
 **Views:**
 - **Classic:** the current fog, revealed within the vision radius.
 - **Streets:** only the road network; the parts of roads actually travelled are marked, nothing else.
-- **Heatmap:** how often places were visited.
+- **Heatmap (Done; not yet checked on a phone):** how often places were visited.
 - **Voronoi:** every road segment between two intersections owns the area closer to it than to any other segment (a Voronoi cell). Travelling along a segment progressively reveals its cell: in a city a strip up to the middle of each block, in the countryside possibly a whole forest.
 
 **Decisions:**
-- Every view is up to date while recording; switching views is instant. All views are computed continuously in the background from the same stream of new points; the active view only decides what is drawn.
-- Every view is a derived layer of the track log, like the fog: its own storage, the id of the last log point it has applied, an algorithm version (a change triggers a rebuild) and a rebuild from scratch. Each layer has an incremental mode (point by point while recording) and a batch mode (rebuild in isolates). `FogStore` is the model to generalize before the second view is built.
+- Every view is up to date while recording and follows the same stream of new points; the active view only decides what is drawn.
+- Every view is a derived layer of the track log, like the fog: its own storage, the id of the last log point it has applied, an algorithm version (a change triggers a rebuild) and a rebuild from scratch. Each layer has an incremental mode (point by point while recording) and a batch mode (rebuild in isolates).
+- Bitmap views share the fog's tile pyramid, tile source and renderer through one tile layer contract; each keeps its own store and database file. Why: the heatmap needs a second value per pixel, so `FogStore` itself was not generalized; the duplicated cache and pyramid writing are to be merged when Voronoi, the third bitmap view, is built.
+- Developer options include a heatmap benchmark (rebuild, live point, flush, tile images, paint) to measure it on phones; the same code runs as a `FOG_BENCH` test.
 - Streets and Voronoi need the road network, from OpenStreetMap, preprocessed on the server into tiles: road segments with stable ids, plus precomputed Voronoi cells. Tiles are downloaded where the user goes (prefetched around the position and direction of travel, optionally a region in advance) and cached. The road data is versioned; a new version re-matches the affected tiles from the track log. The phone and the server must use the same version if friends are to see these views.
 - Matching points to roads (map matching) runs incrementally with a short delay over a sliding window; the last stretch can be shown provisionally and is corrected once decided, and the whole session is re-checked when recording stops. The result is the list of travelled ranges per road segment.
 - Voronoi reveals progressively: segments are split into short pieces (tens of metres) with their own cells, grouped by segment; a cell piece is revealed when its piece of road is travelled.
-- Heatmap counts each place at most once per session, so standing still or going back and forth does not inflate it.
+- Heatmap intensity is the number of sessions that passed a place, at most once per session, so standing still or going back and forth does not inflate it. A place is exactly what the fog reveals (same stadium and radius); colours run from gold to red, fainter for places visited rarely, on a logarithmic scale.
+- Each heatmap pixel remembers the session that last counted it, so a replay after a restart never counts twice; sessions are counted in log order. Rejected: per-session masks in memory (lost on a restart, unbounded for a long session).
+- The heatmap is computed only once it is first shown: it catches up from the track log (stored tiles show meanwhile), then follows new points live. Why: no cost for users who never open it; the owner accepted a short wait. To confirm with the owner: whether it should instead run from app start like the fog.
 - Offline: classic and heatmap always work; streets and Voronoi wait for missing road tiles and catch up from the track log later.
 - Classic, heatmap and Voronoi can be drawn as bitmap tiles with the existing renderer; streets as vectors or tiles. A common tile source interface (also needed for friends' fog) serves all of them.
 
 **Open questions:**
-- Heatmap intensity: distinct days or sessions per place (recommended), time spent, or number of passes?
 - Which roads count: public roads only, also footpaths and cycle paths, also field and forest tracks?
 - Should trains and flights count? If not, they must be filtered out (a railway along a road can match the road).
 - Initial coverage of the road data: Poland or the whole world?

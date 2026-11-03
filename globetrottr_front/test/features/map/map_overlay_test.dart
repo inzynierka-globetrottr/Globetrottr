@@ -115,11 +115,21 @@ void main() {
   testWidgets('planned map views only say they are coming', (tester) async {
     await pump(tester, const LayersSheet());
 
-    await tester.tap(find.text('Heatmap'));
+    await tester.tap(find.text('Voronoi'));
     await tester.pump();
 
     expect(find.text('This view will be available soon.'), findsOneWidget);
     expect(container.read(mapViewProvider), MapView.fog);
+  });
+
+  testWidgets('the heatmap can be picked in the layers sheet', (tester) async {
+    await pump(tester, const LayersSheet());
+
+    await tester.tap(find.text('Heatmap'));
+    await tester.pump();
+
+    expect(find.text('This view will be available soon.'), findsNothing);
+    expect(container.read(mapViewProvider), MapView.heatmap);
   });
 
   testWidgets('tapping the quest point opens the quest', (tester) async {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:collection';
 import 'dart:ui' as ui;
 
@@ -7,6 +8,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/async/work_counter.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
+import 'package:globetrottr_front/features/fog/data/fog_tile_layer.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_stats.dart';
@@ -20,22 +22,29 @@ class FogFallback {
   final ui.Image image;
 }
 
-/// Turns the tiles of a [FogStore] into GPU images for the painter and keeps
-/// them fresh. It is a [ChangeNotifier]: listeners (the painter) repaint
-/// whenever an image becomes ready.
+/// The tile source of the fog.
+typedef FogTileSource = TileLayerSource<FogStore>;
+
+/// Turns the tiles of a [FogTileLayer] into GPU images for the painter and
+/// keeps them fresh. It is a [ChangeNotifier]: listeners (the painter)
+/// repaint whenever an image becomes ready.
 ///
 /// The painter only ever reads from here synchronously; loading, decoding and
 /// refreshing all happen asynchronously off the paint path, and large reads
 /// are decoded in an isolate.
-class FogTileSource extends ChangeNotifier {
-  FogTileSource(this.store, {this.maxImages = 100}) {
+class TileLayerSource<L extends FogTileLayer> extends ChangeNotifier {
+  TileLayerSource(this.store, {this.maxImages = 100, this.levels}) {
     _subscription = store.changes.listen(_onChange);
   }
 
   static const int _maxRequestedTiles = 400;
 
-  final FogStore store;
+  final L store;
   final int maxImages;
+
+  /// Grey of every tile value (see [FogTilePixels.build]); null keeps the
+  /// value as the grey, as the fog does.
+  final Uint32List? levels;
   final FogRenderStats stats = FogRenderStats();
 
   final LinkedHashMap<FogTileId, ui.Image> _images = LinkedHashMap();
@@ -178,7 +187,7 @@ class FogTileSource extends ChangeNotifier {
   Future<void> _releaseTrail(int upToId) async {
     await whenIdle();
     if (_disposed) return;
-    store.trail.forget(upToId);
+    store.forgetTrail(upToId);
     notifyListeners();
   }
 
@@ -194,6 +203,7 @@ class FogTileSource extends ChangeNotifier {
     final pixels = FogTilePixels.build(
       mask,
       neighbor: (dx, dy) => store.peek(FogTileId(id.z, id.x + dx, id.y + dy)),
+      levels: levels,
     );
     final generation = _generation;
     unawaited(
