@@ -50,6 +50,9 @@ abstract class FogTileStorage {
   /// Tiles written by a commit newer than [rev], for differential sync.
   Future<List<StoredFogTile>> changedSince(int rev, {int limit = 1000});
 
+  /// All base-zoom tiles with recorded non-zero area.
+  Future<List<StoredFogTile>> loadBaseTilesWithArea();
+
   /// Writes [upserts] and [meta] atomically.
   Future<void> commit({
     required List<StoredFogTile> upserts,

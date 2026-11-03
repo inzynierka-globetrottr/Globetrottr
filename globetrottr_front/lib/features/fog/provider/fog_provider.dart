@@ -11,6 +11,8 @@ import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
+import 'package:globetrottr_front/features/statistics/logic/statistics_tracker.dart';
+import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 
 final fogTileStorageProvider = Provider<FogTileStorage>((ref) {
   final storage = SqfliteFogTileStorage();
@@ -25,6 +27,7 @@ final fogTileStorageProvider = Provider<FogTileStorage>((ref) {
 /// The state is the [FogTileSource] the map layer paints from.
 class FogNotifier extends AsyncNotifier<FogTileSource> {
   FogStore? _store;
+  bool _isReplaying = false;
 
   FogStore get _openStore {
     final store = _store;
@@ -61,6 +64,24 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
             debugPrint('Applying a position to the fog failed: $error');
           });
     });
+    final storeChanges = store.changes.listen((change) {
+      if (_isReplaying) return;
+      if (change.areaDeltas.isNotEmpty) {
+        final deltas = [
+          for (final entry in change.areaDeltas.entries)
+            if (entry.value > 0)
+              TileAreaDelta(id: entry.key, areaDeltaM2: entry.value),
+        ];
+        if (deltas.isNotEmpty) {
+          ref
+              .read(statisticsTrackerProvider)
+              .onTilesCommitted(deltas)
+              .catchError((Object error) {
+                debugPrint('Statistics tracking on tile commit failed: $error');
+              });
+        }
+      }
+    });
     final lifecycle = AppLifecycleListener(
       onStateChange: (state) {
         if (state == AppLifecycleState.resumed) return;
@@ -70,6 +91,7 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
     );
     ref.onDispose(() {
       unawaited(logged.cancel());
+      unawaited(storeChanges.cancel());
       lifecycle.dispose();
       source.dispose();
       _store = null;
@@ -84,13 +106,53 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
   }
 
   Future<void> _catchUp(FogStore store, TrackLogStorage log) async {
+    _isReplaying = true;
     try {
       await store.replayFrom(log);
     } on Object catch (error) {
       // The stored tiles are still valid; the next start retries the replay.
       debugPrint('Replaying the track log into the fog failed: $error');
+    } finally {
+      _isReplaying = false;
+      await backfillStatsIfEmpty(store);
     }
   }
+
+  Future<void> backfillStatsIfEmpty([
+    FogStore? store,
+    bool force = false,
+  ]) async {
+    try {
+      final statsStorage = ref.read(statisticsStorageProvider);
+      final isBackfilled = await statsStorage.getRecord('stats_backfilled');
+      if (!force && isBackfilled != null && isBackfilled > 0) {
+        return;
+      }
+      final allRegionStats = await statsStorage.getAllRegionStats();
+      final hasAreaStats = allRegionStats.any((r) => r.discoveredAreaM2 > 0);
+      if (!force && hasAreaStats) {
+        await statsStorage.setRecordIfMax('stats_backfilled', 1.0);
+        return;
+      }
+
+      final storage = ref.read(fogTileStorageProvider);
+      final tiles = await storage.loadBaseTilesWithArea();
+      if (tiles.isNotEmpty) {
+        final deltas = [
+          for (final t in tiles)
+            if (t.areaM2 > 0) TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
+        ];
+        if (deltas.isNotEmpty) {
+          await ref.read(statisticsTrackerProvider).rebuildFromFogTiles(deltas);
+          await statsStorage.setRecordIfMax('stats_backfilled', 1.0);
+        }
+      }
+    } catch (e) {
+      debugPrint('Backfilling stats from fog failed: $e');
+    }
+  }
+
+  Future<void> flush() => _flushQuietly();
 
   Future<void> _flushQuietly() async {
     try {
@@ -120,12 +182,18 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
   Future<void> rebuild({
     bool useIsolate = true,
     void Function(double progress)? onProgress,
-  }) {
-    return _openStore.rebuildFrom(
-      ref.read(trackLogStorageProvider),
-      useIsolate: useIsolate,
-      onProgress: onProgress,
-    );
+  }) async {
+    _isReplaying = true;
+    try {
+      await _openStore.rebuildFrom(
+        ref.read(trackLogStorageProvider),
+        useIsolate: useIsolate,
+        onProgress: onProgress,
+      );
+    } finally {
+      _isReplaying = false;
+      await backfillStatsIfEmpty(_openStore, true);
+    }
   }
 
   /// Removes the fog tiles but keeps the track log, so [rebuild] can bring
@@ -135,6 +203,9 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
     await store.clear();
     final newest = await ref.read(trackLogStorageProvider).lastId();
     await store.markLogApplied(newest);
+    try {
+      await ref.read(statisticsStorageProvider).clearRegionStats();
+    } catch (_) {}
   }
 }
 
@@ -146,6 +217,7 @@ class FogRenderOptionsNotifier extends Notifier<FogRenderOptions> {
   @override
   FogRenderOptions build() => const FogRenderOptions();
 
+  // ignore: avoid_public_notifier_properties
   FogRenderOptions get options => state;
 
   set options(FogRenderOptions options) => state = options;

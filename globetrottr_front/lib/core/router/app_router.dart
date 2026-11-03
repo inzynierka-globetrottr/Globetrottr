@@ -15,6 +15,10 @@ import 'package:globetrottr_front/features/map/screens/map_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
 import 'package:globetrottr_front/features/quests/screens/quest_history_screen.dart';
 import 'package:globetrottr_front/features/quests/screens/quests_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/city_detail_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/countries_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/region_detail_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/stats_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthNotifierListenable extends ChangeNotifier {
@@ -55,6 +59,34 @@ final appRouter = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+        routes: [
+          GoRoute(
+            path: 'statistics',
+            builder: (context, state) => const StatsScreen(),
+            routes: [
+              GoRoute(
+                path: 'countries',
+                builder: (context, state) => const CountriesScreen(),
+              ),
+              GoRoute(
+                path: 'region/:id',
+                builder: (context, state) => RegionDetailScreen(
+                  regionId: int.tryParse(state.pathParameters['id'] ?? '') ?? 1,
+                ),
+              ),
+              GoRoute(
+                path: 'city/:id',
+                builder: (context, state) => CityDetailScreen(
+                  cityId: int.tryParse(state.pathParameters['id'] ?? '') ?? 1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/statistics',
+        builder: (context, state) => const StatsScreen(),
       ),
       GoRoute(
         path: '/friends',

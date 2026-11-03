@@ -27,6 +27,7 @@ public class UserStatistics {
     private Integer visitedCountriesCount;
     private Integer completedQuestsCount;
     private Integer currentStreak;
+    private Integer appStreak;
 
     @Column(name = "last_activity_date")
     private LocalDate lastActivityDate;

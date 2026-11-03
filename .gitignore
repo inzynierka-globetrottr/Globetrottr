@@ -4,3 +4,4 @@
 graphify-out/
 .private/
 CLAUDE.local.md
+build_cache/

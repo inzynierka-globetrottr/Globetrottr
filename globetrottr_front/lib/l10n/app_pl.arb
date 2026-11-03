@@ -172,5 +172,92 @@
   "errorInviteAlreadySent": "Zaproszenie już czeka na odpowiedź.",
   "errorCannotInvite": "Tego użytkownika nie można zaprosić.",
   "errorGoogleAuthFailed": "Logowanie przez Google nie powiodło się.",
-  "locationNotificationText": "Nagrywanie trasy w tle..."
+  "locationNotificationText": "Nagrywanie trasy w tle...",
+  "statsTitle": "Statystyki",
+  "statsPeriodWeek": "Tydzień",
+  "statsPeriodMonth": "Miesiąc",
+  "statsPeriodYear": "Rok",
+  "statsPeriodAllTime": "Zawsze",
+  "statsPrevPeriod": "Poprzedni okres",
+  "statsNextPeriod": "Następny okres",
+  "statsNewArea": "Nowy teren",
+  "statsDistance": "Dystans",
+  "statsNewStreets": "Nowe ulice",
+  "statsQuests": "Questy",
+  "statsWeeklyNewArea": "Nowy teren tygodniowo",
+  "statsWeeklyChartUnitKm2": "km²",
+  "statsCurrentWeek": "teraz",
+  "statsVisitedCountriesTitle": "odwiedzone kraje",
+  "statsCountriesSummary": "{regions} regionów · {cities} miast",
+  "@statsCountriesSummary": {
+    "placeholders": {
+      "regions": { "type": "int" },
+      "cities": { "type": "int" }
+    }
+  },
+  "statsDistanceByActivity": "Dystans według aktywności · km",
+  "statsActivityWalk": "Pieszo",
+  "statsActivityBike": "Rower",
+  "statsActivityRun": "Bieg",
+  "statsActivityOther": "Inne",
+  "statsRecordsTitle": "Rekordy",
+  "statsRecordHighest": "Najwyżej",
+  "statsRecordFurthest": "Najdalej",
+  "statsRecordLongestRoute": "Najdłuższa trasa",
+  "statsRecordBestDay": "Najlepszy dzień",
+  "statsCitiesDiscoveryTitle": "Odkrycie miast",
+  "statsMostVisitedTitle": "Najczęściej odwiedzane",
+  "statsCountriesTitle": "Kraje",
+  "statsVisitedSection": "Odwiedzone · {count}",
+  "@statsVisitedSection": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "statsCountryCardSubtitle": "{area} · {cities} miast",
+  "@statsCountryCardSubtitle": {
+    "placeholders": {
+      "area": { "type": "String" },
+      "cities": { "type": "int" }
+    }
+  },
+  "statsNoVisitedCountries": "Brak odwiedzonych krajów",
+  "statsRegionDiscoveryTitle": "Odkrycie regionu",
+  "statsCountiesDiscoveryTitle": "Powiaty · Odkrycie",
+  "statsMetricDiscovered": "Odkryto",
+  "statsMetricCities": "Miasta",
+  "statsMetricStreets": "Ulice",
+  "statsMetricRoutes": "Trasy",
+  "statsFirstVisit": "Pierwsza wizyta",
+  "statsLastVisit": "Ostatnia wizyta",
+  "statsLastVisitToday": "Dziś",
+  "statsTimeSpent": "Spędzony czas",
+  "statsCityDiscoveryTitle": "Odkrycie miasta",
+  "statsDistrictsDiscoveryTitle": "Dzielnice · Odkrycie",
+  "statsSubregionsDiscoveryTitle": "Podregiony · Odkrycie",
+  "statsNoSubregions": "Brak odkrytych podregionów",
+  "statsSubregionsCount": "{discovered} z {total} powiatów",
+  "@statsSubregionsCount": {
+    "placeholders": {
+      "discovered": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "statsNoDiscoveredCities": "Brak odkrytych miast",
+  "statsNoVisitedPlaces": "Brak odwiedzonych miejsc",
+  "statsStreaksTitle": "Serie",
+  "statsAppOpenStreak": "Otwarcie aplikacji",
+  "statsRecordingStreak": "Nagrywanie",
+  "statsStreakDays": "{count, plural, =1{1 dzień} few{{count} dni} many{{count} dni} other{{count} dni}}",
+  "@statsStreakDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "statsStreakMax": "Maks: {count, plural, =1{1 dzień} few{{count} dni} many{{count} dni} other{{count} dni}}",
+  "@statsStreakMax": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

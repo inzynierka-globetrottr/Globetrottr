@@ -230,5 +230,92 @@
   "errorInviteAlreadySent": "An invite is already waiting for an answer.",
   "errorCannotInvite": "This user cannot be invited.",
   "errorGoogleAuthFailed": "Google authentication failed.",
-  "locationNotificationText": "Recording your route in the background..."
+  "locationNotificationText": "Recording your route in the background...",
+  "statsTitle": "Statistics",
+  "statsPeriodWeek": "Week",
+  "statsPeriodMonth": "Month",
+  "statsPeriodYear": "Year",
+  "statsPeriodAllTime": "All-Time",
+  "statsPrevPeriod": "Previous period",
+  "statsNextPeriod": "Next period",
+  "statsNewArea": "New area",
+  "statsDistance": "Distance",
+  "statsNewStreets": "New streets",
+  "statsQuests": "Quests",
+  "statsWeeklyNewArea": "New area weekly",
+  "statsWeeklyChartUnitKm2": "km²",
+  "statsCurrentWeek": "now",
+  "statsVisitedCountriesTitle": "visited countries",
+  "statsCountriesSummary": "{regions} regions · {cities} cities",
+  "@statsCountriesSummary": {
+    "placeholders": {
+      "regions": { "type": "int" },
+      "cities": { "type": "int" }
+    }
+  },
+  "statsDistanceByActivity": "Distance by activity · km",
+  "statsActivityWalk": "Walk",
+  "statsActivityBike": "Bike",
+  "statsActivityRun": "Run",
+  "statsActivityOther": "Other",
+  "statsRecordsTitle": "Records",
+  "statsRecordHighest": "Highest",
+  "statsRecordFurthest": "Furthest",
+  "statsRecordLongestRoute": "Longest route",
+  "statsRecordBestDay": "Best day",
+  "statsCitiesDiscoveryTitle": "City discovery",
+  "statsMostVisitedTitle": "Most visited",
+  "statsCountriesTitle": "Countries",
+  "statsVisitedSection": "Visited · {count}",
+  "@statsVisitedSection": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "statsCountryCardSubtitle": "{area} · {cities} cities",
+  "@statsCountryCardSubtitle": {
+    "placeholders": {
+      "area": { "type": "String" },
+      "cities": { "type": "int" }
+    }
+  },
+  "statsNoVisitedCountries": "No visited countries yet",
+  "statsRegionDiscoveryTitle": "Region discovery",
+  "statsCountiesDiscoveryTitle": "Counties · Discovery",
+  "statsMetricDiscovered": "Discovered",
+  "statsMetricCities": "Cities",
+  "statsMetricStreets": "Streets",
+  "statsMetricRoutes": "Routes",
+  "statsFirstVisit": "First visit",
+  "statsLastVisit": "Last visit",
+  "statsLastVisitToday": "Today",
+  "statsTimeSpent": "Time spent",
+  "statsCityDiscoveryTitle": "City discovery",
+  "statsDistrictsDiscoveryTitle": "Districts · Discovery",
+  "statsSubregionsDiscoveryTitle": "Subregions · Discovery",
+  "statsNoSubregions": "No subregions discovered",
+  "statsSubregionsCount": "{discovered} of {total} counties",
+  "@statsSubregionsCount": {
+    "placeholders": {
+      "discovered": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "statsNoDiscoveredCities": "No discovered cities yet",
+  "statsNoVisitedPlaces": "No visited places yet",
+  "statsStreaksTitle": "Streaks",
+  "statsAppOpenStreak": "App opened",
+  "statsRecordingStreak": "Recording",
+  "statsStreakDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsStreakDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "statsStreakMax": "Max: {count, plural, =1{1 day} other{{count} days}}",
+  "@statsStreakMax": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

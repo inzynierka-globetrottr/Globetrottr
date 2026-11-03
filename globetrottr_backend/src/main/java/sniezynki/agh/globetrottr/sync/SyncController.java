@@ -20,7 +20,7 @@ public class SyncController {
     public ResponseEntity<?> sync(@RequestBody SyncRequest syncRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        syncService.processPoints(syncRequest.points(), username);
+        syncService.processSync(syncRequest, username);
         return ResponseEntity.ok("Sync complete");
     }
 }

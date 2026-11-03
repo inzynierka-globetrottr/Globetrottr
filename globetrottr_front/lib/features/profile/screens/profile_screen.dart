@@ -10,6 +10,7 @@ import 'package:globetrottr_front/features/profile/screens/widgets/profile_avata
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_bio.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/profile_nav_button.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/settings_dialog.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -104,7 +105,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ProfileNavButton(
                 icon: Icons.bar_chart_rounded,
                 label: l10n.profileStatistics,
-                onPressed: () => {}, //context.push('/statistics'),
+                onPressed: () => context.push('/profile/statistics'),
               ),
 
               const SizedBox(height: 14),

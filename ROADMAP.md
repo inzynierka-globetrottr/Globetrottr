@@ -40,7 +40,7 @@ Source of truth for the plan and the key design decisions of every part of the a
 ## Fog follow-ups (Planned)
 
 - **Friends' fog as tiles:** the client uploads tiles changed since the last synced revision; the server stores them per user and serves them on demand to accepted friends. The friend's map uses the same renderer with a network tile source. Then the polygon friends' fog is removed.
-- **Backend stops computing the fog:** raw routes are still uploaded and persisted for statistics; quests and statistics move to the bitmap fog (computed on the device, or the same rasterization on the server; to be decided).
+- **Backend stops computing the fog (In progress, branch `feat/25-stats-screens`):** raw routes are still uploaded and persisted; statistics move to client-side bitmap fog tiles mapped to bundled boundaries. Server PostGIS polygon intersection is deprecated.
 - **Restore on a new device:** from server tiles (lower resolution) or by syncing the track log and rebuilding locally; to be decided with the backend work.
 - **Store resilience after an out-of-memory (Done, one part open):** a tile cap per path and a replay that retries a failing step small and then skips it keep a bad stretch of the log from blocking every start; skipped entries show in the dev panel and a rebuild redraws them. Still to investigate: after an OOM the store queues did not recover (Clear fog / Clear track log did nothing).
 - **New fog as a copy of the future tiles (Done):** points waiting for a flush and the stretch to the player are drawn with exactly the values the tiles will hold, and merged with them by a maximum. Why: a flush changes nothing on the screen and new fog needs no live pyramid updates. Rejected: a differently drawn trail (visible jump at every flush), rebuilding tile images for every point (flicker on zoom changes, fog behind the marker), a disk write for every point (no gain).
@@ -97,6 +97,26 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 
 **Ideas:**
 - **Configurable profile widgets:** the profile (own and a friend's) is assembled from widgets the user picks and orders. Candidates from the mock-up: metric tiles, discovery per month chart, cities with % rings, countries with km² bars, completed quests carousel. The mock-up keeps a fixed layout until then.
+
+---
+
+## Statistics & administrative boundaries (In progress, branch `feat/25-stats-screens`)
+
+**Why:** With fog computed as local bitmap tiles, backend polygon intersections (`ST_Intersection`) are obsolete, slow, and offline-incompatible. Statistics are computed directly on the device from fog tiles.
+
+**Decisions:**
+- Administrative boundaries for the whole world (countries, states, counties, cities/municipalities, major city districts) are bundled in the app as a compact read-only SQLite database with R-Tree spatial indexing (`regions_world.db`, ~55 MB).
+- Fog tiles at zoom 15 map to regions by tile centroid. Area increments are attributed to the leaf city and rolled up to county, state, and country. No runtime polygon clipping.
+- Rebuildable: clearing or recalculating statistics replays all stored fog tiles against the local boundary index in under 200 ms.
+- Dual streaks are tracked in local SQLite: app open streak (daily app launches) and recording streak (daily track recordings with distance/area).
+- Streets count is tracked per city by recording unique traversed OpenStreetMap road names matched from vector road tiles.
+- Backend statistics ingestion & dual streaks: backend accepts StatisticsSyncDto (scalar area, countries, dual streaks, and region percentage breakdowns resolved by name and code) on /api/map/sync avoiding heavy PostGIS spatial calculations on sync; statistics screen displays both app open streak and recording streak with current and max day counts in neumorphic styling. Expired streaks reset to zero; fog rebuilds isolate replay to prevent artificial spikes in daily exploration and personal records.
+- Screens follow the Neo Neumorphic design (`globetrotttr-neo-neumorphic.html`): `Neo · Statystyki`, `Neo · Kraje`, `Neo · Region`, and `Neo · Miasto`. Reusable components built under `lib/features/statistics/screens/widgets/` (`StatsPeriodTabs`, `StatsDateNavigator`, `StatsMetricTile`, `StatsWeeklyChart`, `StatsCountriesBanner`, `StatsActivitySection`, `StatsRecordsGrid`, `StatsDiscoveryCard`, `StatsMostVisitedCard`, `StatsDetailProgressCard`, `StatsMetricsRow`, `StatsMetadataCard`, `CountryFlagChip`, `CountryAccordionCard`).
+- Dual Polish and English localization across all statistics screens and sub-pages.
+- GoRouter navigation registered under `/profile/statistics`, `/profile/statistics/countries`, `/profile/statistics/region/:id`, and `/profile/statistics/city/:id`.
+- Wired to live data: all statistics screens and sub-pages read directly from local `stats.db` and `regions_world.db`. Fog tile flushes emit area deltas to `StatisticsTracker` to update daily exploration ledgers, region progress, and personal records without mock data. Missing data shows neutral placeholders.
+- Map pill & region seeding: map status pill wired to live session new area, player motion, and current district progress; boundary database seeder automatically populates initial world and Polish administrative hierarchies into `regions_world.db`; automatic startup and on-screen backfill reconstructs stats from existing `fog.db` tiles using codec decoding, with localized period labels and activity metrics.
+- Accurate boundaries & spatial query portability: boundary database contains exact simplified polygon rings (242 countries, 4,596 states, 2,477 Polish cities and gminas from GUGiK, Krakow municipal districts) with ray-casting point-in-polygon verification in Region.containsPoint; queries use standard B-tree bounding box indexing instead of SQLite R-Tree virtual tables which are absent from Android system SQLite.
 
 ---
 

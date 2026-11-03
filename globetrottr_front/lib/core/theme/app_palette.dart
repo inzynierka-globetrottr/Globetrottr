@@ -22,6 +22,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.shadowOverlay,
     required this.shadowPressed,
     required this.fog,
+    required this.illustrationBackground,
   });
 
   static const light = AppPalette(
@@ -41,6 +42,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     shadowOverlay: Color(0xFF14120F),
     shadowPressed: Color(0xFF000000),
     fog: Color(0xDB383633),
+    illustrationBackground: Color(0xFFB9D2DC),
   );
 
   /// Screens and every neumorphic surface on them.
@@ -81,6 +83,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Undiscovered area, opacity included.
   final Color fog;
 
+  /// Pastel background for map/voronoi illustrations.
+  final Color illustrationBackground;
+
   @override
   AppPalette copyWith({
     Color? background,
@@ -99,6 +104,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? shadowOverlay,
     Color? shadowPressed,
     Color? fog,
+    Color? illustrationBackground,
   }) => AppPalette(
     background: background ?? this.background,
     text: text ?? this.text,
@@ -116,6 +122,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     shadowOverlay: shadowOverlay ?? this.shadowOverlay,
     shadowPressed: shadowPressed ?? this.shadowPressed,
     fog: fog ?? this.fog,
+    illustrationBackground:
+        illustrationBackground ?? this.illustrationBackground,
   );
 
   @override
@@ -139,6 +147,10 @@ class AppPalette extends ThemeExtension<AppPalette> {
       shadowOverlay: mix(shadowOverlay, other.shadowOverlay),
       shadowPressed: mix(shadowPressed, other.shadowPressed),
       fog: mix(fog, other.fog),
+      illustrationBackground: mix(
+        illustrationBackground,
+        other.illustrationBackground,
+      ),
     );
   }
 }

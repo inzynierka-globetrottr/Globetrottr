@@ -7,6 +7,7 @@ import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:globetrottr_front/core/router/app_router.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/debug/widgets/build_stamp.dart';
+import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
 
 Future<void> main() async {
@@ -24,11 +25,24 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(streakStatsProvider.notifier).recordAppOpen();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouter);
     final locale = ref.watch(localeProvider);
 

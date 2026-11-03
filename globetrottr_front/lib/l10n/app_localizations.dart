@@ -1087,6 +1087,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recording your route in the background...'**
   String get locationNotificationText;
+
+  /// No description provided for @statsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statsTitle;
+
+  /// No description provided for @statsPeriodWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get statsPeriodWeek;
+
+  /// No description provided for @statsPeriodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get statsPeriodMonth;
+
+  /// No description provided for @statsPeriodYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get statsPeriodYear;
+
+  /// No description provided for @statsPeriodAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All-Time'**
+  String get statsPeriodAllTime;
+
+  /// No description provided for @statsPrevPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous period'**
+  String get statsPrevPeriod;
+
+  /// No description provided for @statsNextPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Next period'**
+  String get statsNextPeriod;
+
+  /// No description provided for @statsNewArea.
+  ///
+  /// In en, this message translates to:
+  /// **'New area'**
+  String get statsNewArea;
+
+  /// No description provided for @statsDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get statsDistance;
+
+  /// No description provided for @statsNewStreets.
+  ///
+  /// In en, this message translates to:
+  /// **'New streets'**
+  String get statsNewStreets;
+
+  /// No description provided for @statsQuests.
+  ///
+  /// In en, this message translates to:
+  /// **'Quests'**
+  String get statsQuests;
+
+  /// No description provided for @statsWeeklyNewArea.
+  ///
+  /// In en, this message translates to:
+  /// **'New area weekly'**
+  String get statsWeeklyNewArea;
+
+  /// No description provided for @statsWeeklyChartUnitKm2.
+  ///
+  /// In en, this message translates to:
+  /// **'km²'**
+  String get statsWeeklyChartUnitKm2;
+
+  /// No description provided for @statsCurrentWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get statsCurrentWeek;
+
+  /// No description provided for @statsVisitedCountriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'visited countries'**
+  String get statsVisitedCountriesTitle;
+
+  /// No description provided for @statsCountriesSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{regions} regions · {cities} cities'**
+  String statsCountriesSummary(int regions, int cities);
+
+  /// No description provided for @statsDistanceByActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance by activity · km'**
+  String get statsDistanceByActivity;
+
+  /// No description provided for @statsActivityWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk'**
+  String get statsActivityWalk;
+
+  /// No description provided for @statsActivityBike.
+  ///
+  /// In en, this message translates to:
+  /// **'Bike'**
+  String get statsActivityBike;
+
+  /// No description provided for @statsActivityRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Run'**
+  String get statsActivityRun;
+
+  /// No description provided for @statsActivityOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get statsActivityOther;
+
+  /// No description provided for @statsRecordsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Records'**
+  String get statsRecordsTitle;
+
+  /// No description provided for @statsRecordHighest.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest'**
+  String get statsRecordHighest;
+
+  /// No description provided for @statsRecordFurthest.
+  ///
+  /// In en, this message translates to:
+  /// **'Furthest'**
+  String get statsRecordFurthest;
+
+  /// No description provided for @statsRecordLongestRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest route'**
+  String get statsRecordLongestRoute;
+
+  /// No description provided for @statsRecordBestDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Best day'**
+  String get statsRecordBestDay;
+
+  /// No description provided for @statsCitiesDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'City discovery'**
+  String get statsCitiesDiscoveryTitle;
+
+  /// No description provided for @statsMostVisitedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Most visited'**
+  String get statsMostVisitedTitle;
+
+  /// No description provided for @statsCountriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Countries'**
+  String get statsCountriesTitle;
+
+  /// No description provided for @statsVisitedSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited · {count}'**
+  String statsVisitedSection(int count);
+
+  /// No description provided for @statsCountryCardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{area} · {cities} cities'**
+  String statsCountryCardSubtitle(String area, int cities);
+
+  /// No description provided for @statsNoVisitedCountries.
+  ///
+  /// In en, this message translates to:
+  /// **'No visited countries yet'**
+  String get statsNoVisitedCountries;
+
+  /// No description provided for @statsRegionDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Region discovery'**
+  String get statsRegionDiscoveryTitle;
+
+  /// No description provided for @statsCountiesDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Counties · Discovery'**
+  String get statsCountiesDiscoveryTitle;
+
+  /// No description provided for @statsMetricDiscovered.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovered'**
+  String get statsMetricDiscovered;
+
+  /// No description provided for @statsMetricCities.
+  ///
+  /// In en, this message translates to:
+  /// **'Cities'**
+  String get statsMetricCities;
+
+  /// No description provided for @statsMetricStreets.
+  ///
+  /// In en, this message translates to:
+  /// **'Streets'**
+  String get statsMetricStreets;
+
+  /// No description provided for @statsMetricRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Routes'**
+  String get statsMetricRoutes;
+
+  /// No description provided for @statsFirstVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'First visit'**
+  String get statsFirstVisit;
+
+  /// No description provided for @statsLastVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Last visit'**
+  String get statsLastVisit;
+
+  /// No description provided for @statsLastVisitToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get statsLastVisitToday;
+
+  /// No description provided for @statsTimeSpent.
+  ///
+  /// In en, this message translates to:
+  /// **'Time spent'**
+  String get statsTimeSpent;
+
+  /// No description provided for @statsCityDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'City discovery'**
+  String get statsCityDiscoveryTitle;
+
+  /// No description provided for @statsDistrictsDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Districts · Discovery'**
+  String get statsDistrictsDiscoveryTitle;
+
+  /// No description provided for @statsSubregionsDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subregions · Discovery'**
+  String get statsSubregionsDiscoveryTitle;
+
+  /// No description provided for @statsNoSubregions.
+  ///
+  /// In en, this message translates to:
+  /// **'No subregions discovered'**
+  String get statsNoSubregions;
+
+  /// No description provided for @statsSubregionsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{discovered} of {total} counties'**
+  String statsSubregionsCount(int discovered, int total);
+
+  /// No description provided for @statsNoDiscoveredCities.
+  ///
+  /// In en, this message translates to:
+  /// **'No discovered cities yet'**
+  String get statsNoDiscoveredCities;
+
+  /// No description provided for @statsNoVisitedPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'No visited places yet'**
+  String get statsNoVisitedPlaces;
+
+  /// No description provided for @statsStreaksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaks'**
+  String get statsStreaksTitle;
+
+  /// No description provided for @statsAppOpenStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'App opened'**
+  String get statsAppOpenStreak;
+
+  /// No description provided for @statsRecordingStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get statsRecordingStreak;
+
+  /// No description provided for @statsStreakDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String statsStreakDays(int count);
+
+  /// No description provided for @statsStreakMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Max: {count, plural, =1{1 day} other{{count} days}}'**
+  String statsStreakMax(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -75,7 +75,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(locationProvider).isRecording, isTrue);
-    expect(find.text('+— km²'), findsOneWidget);
+    expect(find.text('+0.00 km²'), findsOneWidget);
     expect(find.text('new ground'), findsOneWidget);
 
     await tester.tap(find.bySemanticsLabel('Stop the walk'));

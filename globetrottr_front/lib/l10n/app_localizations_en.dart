@@ -603,4 +603,190 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get locationNotificationText =>
       'Recording your route in the background...';
+
+  @override
+  String get statsTitle => 'Statistics';
+
+  @override
+  String get statsPeriodWeek => 'Week';
+
+  @override
+  String get statsPeriodMonth => 'Month';
+
+  @override
+  String get statsPeriodYear => 'Year';
+
+  @override
+  String get statsPeriodAllTime => 'All-Time';
+
+  @override
+  String get statsPrevPeriod => 'Previous period';
+
+  @override
+  String get statsNextPeriod => 'Next period';
+
+  @override
+  String get statsNewArea => 'New area';
+
+  @override
+  String get statsDistance => 'Distance';
+
+  @override
+  String get statsNewStreets => 'New streets';
+
+  @override
+  String get statsQuests => 'Quests';
+
+  @override
+  String get statsWeeklyNewArea => 'New area weekly';
+
+  @override
+  String get statsWeeklyChartUnitKm2 => 'km²';
+
+  @override
+  String get statsCurrentWeek => 'now';
+
+  @override
+  String get statsVisitedCountriesTitle => 'visited countries';
+
+  @override
+  String statsCountriesSummary(int regions, int cities) {
+    return '$regions regions · $cities cities';
+  }
+
+  @override
+  String get statsDistanceByActivity => 'Distance by activity · km';
+
+  @override
+  String get statsActivityWalk => 'Walk';
+
+  @override
+  String get statsActivityBike => 'Bike';
+
+  @override
+  String get statsActivityRun => 'Run';
+
+  @override
+  String get statsActivityOther => 'Other';
+
+  @override
+  String get statsRecordsTitle => 'Records';
+
+  @override
+  String get statsRecordHighest => 'Highest';
+
+  @override
+  String get statsRecordFurthest => 'Furthest';
+
+  @override
+  String get statsRecordLongestRoute => 'Longest route';
+
+  @override
+  String get statsRecordBestDay => 'Best day';
+
+  @override
+  String get statsCitiesDiscoveryTitle => 'City discovery';
+
+  @override
+  String get statsMostVisitedTitle => 'Most visited';
+
+  @override
+  String get statsCountriesTitle => 'Countries';
+
+  @override
+  String statsVisitedSection(int count) {
+    return 'Visited · $count';
+  }
+
+  @override
+  String statsCountryCardSubtitle(String area, int cities) {
+    return '$area · $cities cities';
+  }
+
+  @override
+  String get statsNoVisitedCountries => 'No visited countries yet';
+
+  @override
+  String get statsRegionDiscoveryTitle => 'Region discovery';
+
+  @override
+  String get statsCountiesDiscoveryTitle => 'Counties · Discovery';
+
+  @override
+  String get statsMetricDiscovered => 'Discovered';
+
+  @override
+  String get statsMetricCities => 'Cities';
+
+  @override
+  String get statsMetricStreets => 'Streets';
+
+  @override
+  String get statsMetricRoutes => 'Routes';
+
+  @override
+  String get statsFirstVisit => 'First visit';
+
+  @override
+  String get statsLastVisit => 'Last visit';
+
+  @override
+  String get statsLastVisitToday => 'Today';
+
+  @override
+  String get statsTimeSpent => 'Time spent';
+
+  @override
+  String get statsCityDiscoveryTitle => 'City discovery';
+
+  @override
+  String get statsDistrictsDiscoveryTitle => 'Districts · Discovery';
+
+  @override
+  String get statsSubregionsDiscoveryTitle => 'Subregions · Discovery';
+
+  @override
+  String get statsNoSubregions => 'No subregions discovered';
+
+  @override
+  String statsSubregionsCount(int discovered, int total) {
+    return '$discovered of $total counties';
+  }
+
+  @override
+  String get statsNoDiscoveredCities => 'No discovered cities yet';
+
+  @override
+  String get statsNoVisitedPlaces => 'No visited places yet';
+
+  @override
+  String get statsStreaksTitle => 'Streaks';
+
+  @override
+  String get statsAppOpenStreak => 'App opened';
+
+  @override
+  String get statsRecordingStreak => 'Recording';
+
+  @override
+  String statsStreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsStreakMax(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return 'Max: $_temp0';
+  }
 }

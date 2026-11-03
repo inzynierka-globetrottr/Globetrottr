@@ -59,6 +59,25 @@ void main() {
 
       expect(seen.map((p) => p.latitude), [50]);
     });
+
+    test(
+      'resets the stream reference when the position stream errors',
+      () async {
+        final fixes = StreamController<Position>();
+        addTearDown(fixes.close);
+        final service = LocationService(
+          MapStorage(),
+          InMemoryTrackLogStorage(),
+        );
+        service.followPositions(fixes.stream);
+        expect(service.hasStream, isTrue);
+
+        fixes.addError(StateError('Location disabled'));
+        await pumpEventQueue();
+
+        expect(service.hasStream, isFalse);
+      },
+    );
   });
 
   group('LocationService.recordPosition', () {

@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+
+class CountryFlagChip extends StatelessWidget {
+  const CountryFlagChip({
+    super.key,
+    required this.countryCode,
+    this.showCodeLabel = true,
+  });
+
+  final String countryCode;
+  final bool showCodeLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final typography = context.typography;
+    final code = countryCode.toUpperCase();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 36,
+          height: 24,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: palette.background,
+            boxShadow: [
+              BoxShadow(
+                color: palette.shadowDark.withValues(alpha: 0.55),
+                offset: const Offset(2, 2),
+                blurRadius: 5,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: _buildFlag(code),
+        ),
+        if (showCodeLabel) ...[
+          const SizedBox(height: 3),
+          Text(
+            code,
+            style: typography.smallStrong.copyWith(
+              fontSize: 10,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildFlag(String code) {
+    switch (code) {
+      case 'PL':
+        return const Column(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFFFFFFFF))),
+            Expanded(child: ColoredBox(color: Color(0xFFDC143C))),
+          ],
+        );
+      case 'CZ':
+        return const CustomPaint(
+          painter: _CzechFlagPainter(),
+        );
+      case 'SK':
+        return const CustomPaint(
+          painter: _SlovakFlagPainter(),
+        );
+      case 'DE':
+        return const Column(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFF000000))),
+            Expanded(child: ColoredBox(color: Color(0xFFDD0000))),
+            Expanded(child: ColoredBox(color: Color(0xFFFFCE00))),
+          ],
+        );
+      case 'UA':
+        return const Column(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFF005BBB))),
+            Expanded(child: ColoredBox(color: Color(0xFFFFD500))),
+          ],
+        );
+      default:
+        return Center(
+          child: Text(
+            code,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        );
+    }
+  }
+}
+
+class _CzechFlagPainter extends CustomPainter {
+  const _CzechFlagPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final whitePaint = Paint()..color = const Color(0xFFFFFFFF);
+    final redPaint = Paint()..color = const Color(0xFFD7141A);
+    final bluePaint = Paint()..color = const Color(0xFF11457E);
+
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height / 2),
+      whitePaint,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height / 2, size.width, size.height / 2),
+      redPaint,
+    );
+
+    final triangle = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height / 2)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(triangle, bluePaint);
+  }
+
+  @override
+  bool shouldRepaint(_CzechFlagPainter oldDelegate) => false;
+}
+
+class _SlovakFlagPainter extends CustomPainter {
+  const _SlovakFlagPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stripeHeight = size.height / 3;
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, stripeHeight),
+      Paint()..color = const Color(0xFFFFFFFF),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(0, stripeHeight, size.width, stripeHeight),
+      Paint()..color = const Color(0xFF0B4EA2),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(0, stripeHeight * 2, size.width, stripeHeight),
+      Paint()..color = const Color(0xFFEE1C25),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SlovakFlagPainter oldDelegate) => false;
+}
