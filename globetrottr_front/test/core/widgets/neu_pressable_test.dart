@@ -51,19 +51,24 @@ void main() {
   List<NeoShadow> shown(WidgetTester tester) =>
       tester.widget<NeuSurface>(find.byType(NeuSurface)).shadows;
 
-  testWidgets('a press sinks the surface in gradually', (tester) async {
+  testWidgets('a press sinks the surface in at once', (tester) async {
     final gesture = await press(tester);
+    await tester.pump();
 
-    expect(shown(tester), raised);
+    expect(shown(tester), sunk);
+    await gesture.up();
+  });
+
+  testWidgets('a released surface rises back gradually', (tester) async {
+    final gesture = await press(tester);
+    await tester.pump();
+    await gesture.up();
+    await tester.pump();
 
     await tester.pump(AppMotion.standard.short ~/ 4);
-    expect(shown(tester).single.inset, isFalse);
+    expect(shown(tester).single.inset, isTrue);
     expect(shown(tester).single.offset.dx, lessThan(4));
 
-    await tester.pump(AppMotion.standard.short);
-    expect(shown(tester), sunk);
-
-    await gesture.up();
     await tester.pumpAndSettle();
     expect(shown(tester), raised);
   });

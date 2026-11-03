@@ -5,7 +5,8 @@ import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 /// The points of a quest as steps joined by lines: visited points are filled,
 /// the next one is ringed and the rest are sunk in. A line is filled once
-/// both of its points are visited.
+/// both of its points are visited. A step that changes fades into its new
+/// look.
 class QuestSteps extends StatelessWidget {
   const QuestSteps({super.key, required this.visited, this.next})
     : _count = null;
@@ -37,12 +38,18 @@ class QuestSteps extends StatelessWidget {
         for (var i = 0; i < count; i++) ...[
           if (i > 0)
             Expanded(
-              child: _StepLine(filled: _isVisited(i - 1) && _isVisited(i)),
+              child: _CrossFade(
+                child: _StepLine(
+                  filled: _isVisited(i - 1) && _isVisited(i),
+                ),
+              ),
             ),
-          _StepDot(
-            state: _isVisited(i)
-                ? _StepState.visited
-                : (i == next ? _StepState.next : _StepState.ahead),
+          _CrossFade(
+            child: _StepDot(
+              state: _isVisited(i)
+                  ? _StepState.visited
+                  : (i == next ? _StepState.next : _StepState.ahead),
+            ),
           ),
         ],
       ],
@@ -52,8 +59,31 @@ class QuestSteps extends StatelessWidget {
 
 enum _StepState { visited, next, ahead }
 
+class _CrossFade extends StatelessWidget {
+  const _CrossFade({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final motion = context.motion;
+    return AnimatedSwitcher(
+      duration: motion.medium,
+      switchInCurve: motion.curve,
+      switchOutCurve: motion.curve,
+      // Passes the stretch of a line on, which the default layout drops.
+      layoutBuilder: (current, previous) => Stack(
+        alignment: Alignment.center,
+        fit: StackFit.passthrough,
+        children: [...previous, ?current],
+      ),
+      child: child,
+    );
+  }
+}
+
 class _StepDot extends StatelessWidget {
-  const _StepDot({required this.state});
+  _StepDot({required this.state}) : super(key: ValueKey(state));
 
   final _StepState state;
 
@@ -86,7 +116,7 @@ class _StepDot extends StatelessWidget {
 }
 
 class _StepLine extends StatelessWidget {
-  const _StepLine({required this.filled});
+  _StepLine({required this.filled}) : super(key: ValueKey(filled));
 
   final bool filled;
 

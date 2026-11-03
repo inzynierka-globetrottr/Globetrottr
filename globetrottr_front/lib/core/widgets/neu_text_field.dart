@@ -4,6 +4,7 @@ import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
+import 'package:globetrottr_front/core/widgets/unfold_in.dart';
 
 /// A labelled input sunk into the page, with an optional icon in front and
 /// a widget at the end (for example a button showing the password).
@@ -64,59 +65,67 @@ class _NeuTextFieldState extends State<NeuTextField> {
           : (_) => widget.validator!(_controller.text),
       builder: (field) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 8,
         children: [
-          if (widget.label != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 6),
-              child: Text(widget.label!, style: typography.label),
-            ),
-          NeuSurface(
-            shadows: context.shadows.inset(NeoDepth.md),
-            borderRadius: BorderRadius.circular(22),
-            height: NeuTextField._height,
-            padding: EdgeInsets.only(
-              left: 18,
-              right: widget.trailing == null ? 18 : 6,
-            ),
-            child: Row(
-              spacing: 10,
-              children: [
-                if (widget.leadingIcon != null)
-                  AppIcon(
-                    widget.leadingIcon!,
-                    size: 20,
-                    color: palette.textMuted,
-                  ),
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    obscureText: widget.obscureText,
-                    keyboardType: widget.keyboardType,
-                    onChanged: widget.onChanged,
-                    autofillHints: widget.autofillHints,
-                    style: typography.input,
-                    cursorColor: palette.accent,
-                    decoration: InputDecoration(
-                      isCollapsed: true,
-                      border: InputBorder.none,
-                      hintText: widget.placeholder,
-                      hintStyle: typography.input.copyWith(
-                        color: palette.placeholder,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 8,
+            children: [
+              if (widget.label != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(widget.label!, style: typography.label),
+                ),
+              NeuSurface(
+                shadows: context.shadows.inset(NeoDepth.md),
+                borderRadius: BorderRadius.circular(22),
+                height: NeuTextField._height,
+                padding: EdgeInsets.only(
+                  left: 18,
+                  right: widget.trailing == null ? 18 : 6,
+                ),
+                child: Row(
+                  spacing: 10,
+                  children: [
+                    if (widget.leadingIcon != null)
+                      AppIcon(
+                        widget.leadingIcon!,
+                        size: 20,
+                        color: palette.textMuted,
+                      ),
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        obscureText: widget.obscureText,
+                        keyboardType: widget.keyboardType,
+                        onChanged: widget.onChanged,
+                        autofillHints: widget.autofillHints,
+                        style: typography.input,
+                        cursorColor: palette.accent,
+                        decoration: InputDecoration(
+                          isCollapsed: true,
+                          border: InputBorder.none,
+                          hintText: widget.placeholder,
+                          hintStyle: typography.input.copyWith(
+                            color: palette.placeholder,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    ?widget.trailing,
+                  ],
                 ),
-                ?widget.trailing,
-              ],
-            ),
+              ),
+            ],
           ),
+          // The gap above the error unfolds with it.
           if (field.hasError)
-            Padding(
-              padding: const EdgeInsets.only(left: 6),
-              child: Text(
-                field.errorText!,
-                style: typography.note.copyWith(color: palette.danger),
+            UnfoldIn(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 6, top: 8),
+                child: Text(
+                  field.errorText!,
+                  style: typography.note.copyWith(color: palette.danger),
+                ),
               ),
             ),
         ],

@@ -60,7 +60,9 @@ class _NeuPressableState extends State<NeuPressable> {
     );
     final surface = TweenAnimationBuilder<double>(
       tween: Tween(end: _pressed ? 1 : 0),
-      duration: motion.short,
+      // It sinks in at once, as a tap is shorter than any animation; only
+      // rising back is animated.
+      duration: _pressed ? Duration.zero : motion.short,
       curve: motion.curve,
       child: content,
       builder: (context, depth, content) {
