@@ -31,8 +31,8 @@ class BasemapCacheLimitNotifier extends Notifier<int> {
   void set(int bytes) => state = bytes;
 }
 
-/// Bytes the base map cache may take before the least recently used tiles
-/// are dropped. Only the developer options change it, to try out limits.
+/// Bytes the base map cache may take before the oldest tiles are dropped.
+/// Only the developer options change it, to try out limits.
 final basemapCacheLimitProvider =
     NotifierProvider<BasemapCacheLimitNotifier, int>(
       BasemapCacheLimitNotifier.new,
@@ -87,6 +87,9 @@ class BasemapCache {
   static const double _earthRadiusKm = 6371.0088;
 
   static final _vectorTile = RegExp(r'^(\d+)_(\d+)_(\d+)_.+\.pbf$');
+
+  /// `<theme>-<z>-<x>-<y>.png`; the icon atlas is a png kept here as well.
+  static final _renderedTile = RegExp(r'^(?!icon-atlas-).+-\d+-\d+-\d+\.png$');
 
   /// The ground covered by Web Mercator tile row [y] of zoom [z], on a
   /// spherical Earth.
@@ -145,7 +148,7 @@ class BasemapCache {
           deepestTiles++;
           deepestArea += tileAreaKm2(deepestZoom, int.parse(vector.group(3)!));
         }
-      } else if (name.endsWith('.png')) {
+      } else if (_renderedTile.hasMatch(name)) {
         renderedTiles++;
         renderedBytes += size;
       } else {

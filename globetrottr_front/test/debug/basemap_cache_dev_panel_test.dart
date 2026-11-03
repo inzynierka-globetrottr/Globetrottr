@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +12,15 @@ import '../support/fake_basemap_cache.dart';
 
 void main() {
   const mega = 1024 * 1024;
+  const oneTile = BasemapCacheStats(
+    vectorTiles: 1,
+    vectorBytes: mega,
+    renderedTiles: 0,
+    renderedBytes: 0,
+    otherBytes: 0,
+    deepestZoomTiles: 1,
+    deepestZoomAreaKm2: 2.5,
+  );
 
   Future<ProviderContainer> pumpPanel(
     WidgetTester tester,
@@ -75,6 +87,57 @@ void main() {
 
     expect(cache.clears, 1);
     expect(find.textContaining('Vector tiles: 0, 0 B'), findsOneWidget);
+    expect(find.textContaining('Cleared.'), findsOneWidget);
+  });
+
+  testWidgets('reads the cache only when asked', (tester) async {
+    final cache = FakeBasemapCache();
+    await pumpPanel(tester, cache);
+    cache.current = oneTile;
+
+    await tester.pump(const Duration(seconds: 30));
+    expect(cache.reads, 1);
+    expect(find.textContaining('Vector tiles: 0, 0 B'), findsOneWidget);
+
+    await tester.tap(find.text('Refresh'));
+    await tester.pump();
+
+    expect(cache.reads, 2);
+    expect(find.textContaining('Vector tiles: 1, 1.0 MB'), findsOneWidget);
+  });
+
+  testWidgets('a failed read is shown until a read succeeds', (tester) async {
+    final cache = FakeBasemapCache()..failure = const FileSystemException();
+    await pumpPanel(tester, cache);
+    expect(find.textContaining('Reading failed'), findsOneWidget);
+
+    cache.failure = null;
+    await tester.tap(find.text('Refresh'));
+    await tester.pump();
+
+    expect(find.textContaining('Reading failed'), findsNothing);
+  });
+
+  testWidgets('nothing can be started while the cache is read', (
+    tester,
+  ) async {
+    final cache = FakeBasemapCache()..hold = Completer<void>();
+    await pumpPanel(tester, cache);
+
+    await tester.tap(find.text('Clear base map cache'));
+    await tester.tap(find.text('Refresh'));
+    await tester.pump();
+    expect(cache.clears, 0);
+    expect(cache.reads, 1);
+
+    cache.hold!.complete();
+    await tester.pump();
+    await tester.pump();
+    await tester.tap(find.text('Clear base map cache'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(cache.clears, 1);
   });
 
   testWidgets('a picked limit becomes the cache limit', (tester) async {
@@ -88,14 +151,5 @@ void main() {
     await tester.pump();
 
     expect(container.read(basemapCacheLimitProvider), 100 * mega);
-  });
-
-  testWidgets('leaving the panel stops its refresh', (tester) async {
-    await pumpPanel(tester, FakeBasemapCache());
-
-    await tester.pumpWidget(const SizedBox());
-    await tester.pump(const Duration(seconds: 10));
-
-    expect(tester.takeException(), isNull);
   });
 }

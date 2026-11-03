@@ -21,50 +21,62 @@ class BasemapCacheDevPanel extends ConsumerStatefulWidget {
 class _BasemapCacheDevPanelState extends ConsumerState<BasemapCacheDevPanel> {
   static const _mega = 1024 * 1024;
 
-  Timer? _timer;
   BasemapCacheStats? _stats;
-  String? _message;
-  bool _busy = false;
+  String? _status;
+  String? _readError;
+
+  /// Reading walks the whole folder, so it runs only when asked and never
+  /// alongside clearing, which would let an older scan show stale numbers.
+  bool _busy = true;
 
   @override
   void initState() {
     super.initState();
-    unawaited(_refresh());
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
-      if (mounted && !_busy) unawaited(_refresh());
-    });
+    unawaited(_settle(_load()));
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  void _refresh() {
+    setState(() => _busy = true);
+    unawaited(_settle(_load()));
   }
 
-  Future<void> _refresh() async {
-    final cache = ref.read(basemapCacheProvider);
-    try {
-      final stats = await cache.stats();
-      if (mounted) setState(() => _stats = stats);
-    } on Object catch (error) {
-      if (mounted) setState(() => _message = 'Reading failed: $error');
-    }
-  }
-
-  Future<void> _clear() async {
-    final cache = ref.read(basemapCacheProvider);
+  void _clear() {
     setState(() {
       _busy = true;
-      _message = 'Clearing...';
+      _status = 'Clearing...';
     });
-    try {
-      await cache.clear();
-      _message = 'Cleared. Tiles still on screen stay in memory.';
-    } on Object catch (error) {
-      _message = 'Clearing failed: $error';
-    }
-    await _refresh();
+    unawaited(_settle(_clearAndLoad()));
+  }
+
+  Future<void> _settle(Future<void> work) async {
+    await work;
     if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _load() async {
+    try {
+      final stats = await ref.read(basemapCacheProvider).stats();
+      if (!mounted) return;
+      setState(() {
+        _stats = stats;
+        _readError = null;
+      });
+    } on Object catch (error) {
+      if (mounted) setState(() => _readError = 'Reading failed: $error');
+    }
+  }
+
+  Future<void> _clearAndLoad() async {
+    String status;
+    try {
+      await ref.read(basemapCacheProvider).clear();
+      status = 'Cleared. Tiles still on screen stay in memory.';
+    } on Object catch (error) {
+      status = 'Clearing failed: $error';
+    }
+    if (!mounted) return;
+    setState(() => _status = status);
+    await _load();
   }
 
   List<String> _lines(BasemapCacheStats stats, int limit) => [
@@ -97,7 +109,7 @@ class _BasemapCacheDevPanelState extends ConsumerState<BasemapCacheDevPanel> {
         const SizedBox(height: 8),
         Text(
           'Limit until the app restarts. It is applied a few seconds after a '
-          'map is shown, least recently used tiles first. Tiles older than '
+          'map is shown, oldest tiles first. Tiles older than '
           '${MapConfig.basemapCacheTtl.inDays} days are deleted.',
         ),
         const SizedBox(height: 8),
@@ -115,13 +127,22 @@ class _BasemapCacheDevPanelState extends ConsumerState<BasemapCacheDevPanel> {
           ],
         ),
         const SizedBox(height: 8),
-        OutlinedButton(
-          onPressed: _busy ? null : _clear,
-          child: const Text('Clear base map cache'),
+        Wrap(
+          spacing: 8,
+          children: [
+            OutlinedButton(
+              onPressed: _busy ? null : _refresh,
+              child: const Text('Refresh'),
+            ),
+            OutlinedButton(
+              onPressed: _busy ? null : _clear,
+              child: const Text('Clear base map cache'),
+            ),
+          ],
         ),
-        if (_message != null) ...[
+        for (final message in [?_readError, ?_status]) ...[
           const SizedBox(height: 8),
-          Text(_message!),
+          Text(message),
         ],
       ],
     );

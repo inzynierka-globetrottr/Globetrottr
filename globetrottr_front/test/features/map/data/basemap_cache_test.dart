@@ -41,6 +41,7 @@ void main() {
     await write('13_4574_2777_openmaptiles.pbf', 200);
     await write('globetrottr-v1a2b-14-9148-5554.png', 1000);
     await write('sprite.json', 50);
+    await write('icon-atlas-globetrottr-1.png', 70);
 
     final stats = await cache().stats();
 
@@ -48,8 +49,8 @@ void main() {
     expect(stats.vectorBytes, 500);
     expect(stats.renderedTiles, 1);
     expect(stats.renderedBytes, 1000);
-    expect(stats.otherBytes, 50);
-    expect(stats.totalBytes, 1550);
+    expect(stats.otherBytes, 120);
+    expect(stats.totalBytes, 1620);
     expect(stats.deepestZoomTiles, 1);
     expect(
       stats.deepestZoomAreaKm2,

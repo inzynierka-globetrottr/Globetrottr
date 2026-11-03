@@ -106,7 +106,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - The base map is drawn on the device from OpenFreeMap vector tiles in the app style (Done, branch `feat/openfreemap-tiles`). Why: one style for the whole app, colours from the theme.
 - Tiles are cached by the map package itself in the app support storage, not the temporary folder, because the system can wipe that one right before a trip with no signal (offline-first).
 - Cached tiles are never revalidated; they expire after 180 days, so the map can be that stale. Expiry also runs offline, so it must outlast any trip. Rejected: an own cache with background refresh (the package cache always answers first and would have to be worked around).
-- Size limit 250 MB by default (owner's decision), least recently used first. The dev panel keeps a limit selector to try other values, next to the cache size, tiles, area covered and a clear button.
+- Size limit 250 MB by default (owner's decision). Above it the package drops the oldest tiles first; true least-recently-used would need an own cache, since Android mostly does not record file reads. The dev panel keeps a limit selector to try other values, next to the cache size, tiles, area covered, a refresh and a clear button.
 - The cache is not user data: logout keeps it.
 
 **Planned / Ideas:**
