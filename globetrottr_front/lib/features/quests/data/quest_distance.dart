@@ -14,6 +14,19 @@ double? distanceToQuest(Quest quest, LatLng from) {
       .reduce((a, b) => a < b ? a : b);
 }
 
+double metersBetween(LatLng a, LatLng b) =>
+    _distance.as(LengthUnit.Meter, a, b);
+
+/// Length of a route in meters, along its points in order.
+double routeLengthMeters(Quest quest) {
+  final points = [for (final waypoint in quest.waypoints) waypoint.point];
+  var length = 0.0;
+  for (var i = 1; i < points.length; i++) {
+    length += _distance.as(LengthUnit.Meter, points[i - 1], points[i]);
+  }
+  return length;
+}
+
 List<LatLng> _targetsOf(Quest quest) {
   final waypoints = quest.waypoints;
   if (quest.isRoute || waypoints.isEmpty) {

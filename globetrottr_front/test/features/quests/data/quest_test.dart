@@ -83,4 +83,46 @@ void main() {
       );
     });
   });
+
+  group('Quest.completedAt', () {
+    test('parses the completion date', () {
+      final quest = Quest.fromJson({
+        ..._questJson(isStarted: true, isCompleted: true),
+        'completedAt': '2026-09-28T17:30:00',
+      });
+
+      expect(quest.completedAt, DateTime(2026, 9, 28, 17, 30));
+    });
+
+    test('is null when the quest is not completed', () {
+      expect(Quest.fromJson(_questJson()).completedAt, isNull);
+    });
+  });
+
+  group('Quest points', () {
+    Quest withVisited(List<bool> visited) => Quest.fromJson(
+      _questJson(
+        waypoints: [
+          for (var i = 0; i < visited.length; i++)
+            {
+              'latitude': 50.0 + i / 1000,
+              'longitude': 19.9,
+              'visited': visited[i],
+            },
+        ],
+      ),
+    );
+
+    test('counts the visited points', () {
+      expect(withVisited([true, true, false, false]).visitedCount, 2);
+    });
+
+    test('the next point is the first one not visited yet', () {
+      expect(withVisited([true, false, true, false]).nextWaypointIndex, 1);
+    });
+
+    test('has no next point once every point is visited', () {
+      expect(withVisited([true, true]).nextWaypointIndex, isNull);
+    });
+  });
 }

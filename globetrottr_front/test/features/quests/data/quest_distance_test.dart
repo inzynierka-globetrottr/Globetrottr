@@ -73,4 +73,28 @@ void main() {
       expect(distanceToQuest(_quest(), _player), isNull);
     });
   });
+
+  group('routeLengthMeters', () {
+    test('adds up the segments of the route', () {
+      final quest = _quest(
+        type: Quest.routeType,
+        waypoints: const [
+          QuestWaypoint(point: _player, visited: false),
+          QuestWaypoint(point: _near, visited: false),
+          QuestWaypoint(point: _far, visited: false),
+        ],
+      );
+
+      expect(routeLengthMeters(quest), closeTo(556, 2));
+    });
+
+    test('is zero for a single point', () {
+      final quest = _quest(
+        type: Quest.routeType,
+        waypoints: const [QuestWaypoint(point: _player, visited: false)],
+      );
+
+      expect(routeLengthMeters(quest), 0);
+    });
+  });
 }

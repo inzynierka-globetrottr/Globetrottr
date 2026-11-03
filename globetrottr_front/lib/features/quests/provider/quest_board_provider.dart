@@ -3,27 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/data/quest_distance.dart';
-import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
+import 'package:latlong2/latlong.dart';
 
-@immutable
-class QuestBoardEntry {
-  final Quest quest;
-  final double? distanceMeters;
-
-  const QuestBoardEntry({required this.quest, this.distanceMeters});
-}
-
-/// The quests of the quest board, split by zone and sorted from the nearest.
+/// The lists of the Quests tab: the quests that can be started, grouped by
+/// type and nearest first, and the completed ones, newest first. The active
+/// quest has its own card.
 @immutable
 class QuestBoard {
-  final List<QuestBoardEntry> unstarted;
-  final List<QuestBoardEntry> inProgress;
-  final List<QuestBoardEntry> completed;
+  final List<Quest> places;
+  final List<Quest> routes;
+  final List<Quest> completed;
 
   const QuestBoard({
-    this.unstarted = const [],
-    this.inProgress = const [],
+    this.places = const [],
+    this.routes = const [],
     this.completed = const [],
   });
 }
@@ -33,36 +27,51 @@ final questBoardProvider = Provider<QuestBoard>((ref) {
   final position = ref.watch(
     locationProvider.select((state) => state.currentPosition),
   );
-
-  List<QuestBoardEntry> entriesIn(QuestZone zone) => _sortedByDistance([
+  final available = _nearestFirst([
     for (final quest in quests)
-      if (quest.zone == zone)
-        QuestBoardEntry(
-          quest: quest,
-          distanceMeters: position == null
-              ? null
-              : distanceToQuest(quest, position),
-        ),
-  ]);
-
+      if (!quest.isStarted) quest,
+  ], position);
   return QuestBoard(
-    unstarted: entriesIn(QuestZone.unstarted),
-    inProgress: entriesIn(QuestZone.inProgress),
-    completed: entriesIn(QuestZone.completed),
+    places: [
+      for (final quest in available)
+        if (!quest.isRoute) quest,
+    ],
+    routes: [
+      for (final quest in available)
+        if (quest.isRoute) quest,
+    ],
+    completed: [
+      for (final quest in quests)
+        if (quest.isCompleted) quest,
+    ]..sort(_newestFirst),
   );
 });
 
-/// Quests without a distance go last; ties keep a stable order by id.
-List<QuestBoardEntry> _sortedByDistance(List<QuestBoardEntry> entries) {
-  if (entries.every((entry) => entry.distanceMeters == null)) return entries;
-  return entries..sort((a, b) {
-    final da = a.distanceMeters;
-    final db = b.distanceMeters;
+/// Quests without a point go last; ties keep a stable order by id. Without a
+/// position the server order stays.
+List<Quest> _nearestFirst(List<Quest> quests, LatLng? position) {
+  if (position == null) return quests;
+  final distances = {
+    for (final quest in quests) quest.id: distanceToQuest(quest, position),
+  };
+  return quests..sort((a, b) {
+    final da = distances[a.id];
+    final db = distances[b.id];
     if (da == null || db == null) {
-      if (da == db) return a.quest.id.compareTo(b.quest.id);
+      if (da == db) return a.id.compareTo(b.id);
       return da == null ? 1 : -1;
     }
     final byDistance = da.compareTo(db);
-    return byDistance != 0 ? byDistance : a.quest.id.compareTo(b.quest.id);
+    return byDistance != 0 ? byDistance : a.id.compareTo(b.id);
   });
+}
+
+int _newestFirst(Quest a, Quest b) {
+  final da = a.completedAt;
+  final db = b.completedAt;
+  if (da == null || db == null) {
+    if (da == db) return a.id.compareTo(b.id);
+    return da == null ? 1 : -1;
+  }
+  return db.compareTo(da);
 }

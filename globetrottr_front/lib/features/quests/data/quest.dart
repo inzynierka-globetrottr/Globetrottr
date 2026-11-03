@@ -15,6 +15,7 @@ class Quest {
   final bool isCompleted;
   final LatLng? location;
   final List<QuestWaypoint> waypoints;
+  final DateTime? completedAt;
 
   const Quest({
     required this.id,
@@ -27,9 +28,18 @@ class Quest {
     this.description,
     this.location,
     this.waypoints = const [],
+    this.completedAt,
   });
 
   bool get isRoute => type == routeType;
+
+  int get visitedCount => waypoints.where((w) => w.visited).length;
+
+  /// The first point not visited yet; null once every point is visited.
+  int? get nextWaypointIndex {
+    final index = waypoints.indexWhere((w) => !w.visited);
+    return index < 0 ? null : index;
+  }
 
   QuestZone get zone {
     if (isCompleted) return QuestZone.completed;
@@ -58,6 +68,10 @@ class Quest {
                 .map(QuestWaypoint.fromJson)
                 .toList()
           : const [],
+      completedAt: switch (json['completedAt']) {
+        final String date => DateTime.tryParse(date),
+        _ => null,
+      },
     );
   }
 

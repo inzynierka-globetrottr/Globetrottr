@@ -674,47 +674,101 @@ abstract class AppLocalizations {
   /// **'Player fog: {username}'**
   String friendsPlayerFog(String username);
 
-  /// No description provided for @questsBoardTitle.
+  /// No description provided for @questsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Quest Board'**
-  String get questsBoardTitle;
+  /// **'Quests'**
+  String get questsTitle;
 
-  /// No description provided for @questsAvailableSection.
+  /// No description provided for @questsLevel.
   ///
   /// In en, this message translates to:
-  /// **'Available Quests ({count})'**
-  String questsAvailableSection(int count);
+  /// **'Level {level}'**
+  String questsLevel(String level);
 
-  /// No description provided for @questsInProgressSection.
+  /// No description provided for @questsXp.
   ///
   /// In en, this message translates to:
-  /// **'In Progress ({count})'**
-  String questsInProgressSection(int count);
+  /// **'{xp} XP'**
+  String questsXp(String xp);
 
-  /// No description provided for @questsCompletedSection.
+  /// No description provided for @questsCompletedCount.
   ///
   /// In en, this message translates to:
-  /// **'Completed ({count})'**
-  String questsCompletedSection(int count);
+  /// **'{count, plural, =1{1 quest} other{{count} quests}}'**
+  String questsCompletedCount(int count);
 
-  /// No description provided for @questsNoQuestsInCategory.
+  /// No description provided for @questsHistoryLink.
   ///
   /// In en, this message translates to:
-  /// **'No quests in this category.'**
-  String get questsNoQuestsInCategory;
+  /// **'Level {level}, {completed}: history'**
+  String questsHistoryLink(String level, String completed);
 
-  /// No description provided for @questsProgressPercent.
+  /// No description provided for @questsActiveLabel.
   ///
   /// In en, this message translates to:
-  /// **'{percent}% progress'**
-  String questsProgressPercent(String percent);
+  /// **'Active quest'**
+  String get questsActiveLabel;
 
-  /// No description provided for @questsCompletedStatus.
+  /// No description provided for @questsNoActive.
   ///
   /// In en, this message translates to:
-  /// **'Completed'**
-  String get questsCompletedStatus;
+  /// **'No active quest'**
+  String get questsNoActive;
+
+  /// No description provided for @questsPickFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a quest from the list'**
+  String get questsPickFromList;
+
+  /// No description provided for @questsPointOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Point {current} of {total}'**
+  String questsPointOf(int current, int total);
+
+  /// No description provided for @questsRouteDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} km'**
+  String questsRouteDone(String done, String total);
+
+  /// No description provided for @questsShowPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Show point'**
+  String get questsShowPoint;
+
+  /// No description provided for @questsShowRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Show route'**
+  String get questsShowRoute;
+
+  /// No description provided for @questsPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Places'**
+  String get questsPlaces;
+
+  /// No description provided for @questsRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Routes'**
+  String get questsRoutes;
+
+  /// No description provided for @questsPointCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 point} other{{count} points}}'**
+  String questsPointCount(int count);
+
+  /// No description provided for @questsKilometers.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} km'**
+  String questsKilometers(String distance);
 
   /// No description provided for @questsRewardXp.
   ///
@@ -722,41 +776,65 @@ abstract class AppLocalizations {
   /// **'{points} XP'**
   String questsRewardXp(int points);
 
-  /// No description provided for @questsStartQuest.
+  /// No description provided for @questsStart.
   ///
   /// In en, this message translates to:
-  /// **'Start Quest'**
-  String get questsStartQuest;
+  /// **'Start quest: {title}'**
+  String questsStart(String title);
 
-  /// No description provided for @questsTypeFollowRoute.
+  /// No description provided for @questsSwap.
   ///
   /// In en, this message translates to:
-  /// **'Follow the route'**
-  String get questsTypeFollowRoute;
+  /// **'Swap the active quest for: {title}'**
+  String questsSwap(String title);
 
-  /// No description provided for @questsTypeVisitPoints.
+  /// No description provided for @questsSwapTitle.
   ///
   /// In en, this message translates to:
-  /// **'Visit the points'**
-  String get questsTypeVisitPoints;
+  /// **'Swap the active quest?'**
+  String get questsSwapTitle;
 
-  /// No description provided for @questsNoDescription.
+  /// No description provided for @questsSwapBody.
   ///
   /// In en, this message translates to:
-  /// **'No description yet.'**
-  String get questsNoDescription;
+  /// **'“{active}” will be cancelled and you will lose its progress ({progress}). You will start “{next}” instead.'**
+  String questsSwapBody(String active, String progress, String next);
 
-  /// No description provided for @distanceMeters.
+  /// No description provided for @questsSwapProgressPoint.
   ///
   /// In en, this message translates to:
-  /// **'{meters} m'**
-  String distanceMeters(int meters);
+  /// **'point {current} of {total}'**
+  String questsSwapProgressPoint(int current, int total);
 
-  /// No description provided for @distanceKilometers.
+  /// No description provided for @questsSwapCancel.
   ///
   /// In en, this message translates to:
-  /// **'{kilometers} km'**
-  String distanceKilometers(String kilometers);
+  /// **'Cancel'**
+  String get questsSwapCancel;
+
+  /// No description provided for @questsSwapConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap'**
+  String get questsSwapConfirm;
+
+  /// No description provided for @questsHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed quests'**
+  String get questsHistoryTitle;
+
+  /// No description provided for @questsCompletedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} · completed {date}'**
+  String questsCompletedOn(String type, String date);
+
+  /// No description provided for @questFlagPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'point {current}/{total} · {distance}'**
+  String questFlagPoint(int current, int total, String distance);
 
   /// No description provided for @settingsTitle.
   ///

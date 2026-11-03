@@ -30,7 +30,12 @@ void main() {
         syncServiceProvider.overrideWithValue(FakeSyncService()),
         questServiceProvider.overrideWithValue(FakeQuestService()),
         questPointProvider.overrideWithValue(
-          const QuestPoint(position: LatLng(50.05, 19.93), distanceMeters: 280),
+          const QuestPoint(
+            position: LatLng(50.05, 19.93),
+            distanceMeters: 280,
+            index: 3,
+            total: 5,
+          ),
         ),
       ],
     );
@@ -79,7 +84,7 @@ void main() {
     expect(container.read(locationProvider).isRecording, isFalse);
   });
 
-  testWidgets('the quest flag grows into a card with the progress', (
+  testWidgets('the quest flag grows into a card with the next point', (
     tester,
   ) async {
     var open = false;
@@ -108,10 +113,36 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Active quest: Spacer Bulwarami'));
     await tester.pumpAndSettle();
     expect(open, isTrue);
-    expect(find.text('60%'), findsOneWidget);
+    expect(find.text('point 4/5 · 280 m'), findsOneWidget);
 
     await tester.tap(find.bySemanticsLabel('Quest details'));
     expect(details, 1);
+  });
+
+  testWidgets('the quest flag of a route shows its progress', (tester) async {
+    container = ProviderContainer(
+      overrides: [
+        locationServiceProvider.overrideWithValue(FakeLocationService()),
+        questServiceProvider.overrideWithValue(FakeQuestService()),
+        questPointProvider.overrideWithValue(null),
+      ],
+    );
+    addTearDown(container.dispose);
+    const route = Quest(
+      id: 2,
+      title: 'Pętla Błoń',
+      type: Quest.routeType,
+      rewardPoints: 10,
+      progress: 0.64,
+      isStarted: true,
+      isCompleted: false,
+    );
+    await pump(
+      tester,
+      QuestFlag(quest: route, open: true, onToggle: () {}, onDetails: () {}),
+    );
+
+    expect(find.text('64%'), findsOneWidget);
   });
 
   testWidgets('planned map views only say they are coming', (tester) async {

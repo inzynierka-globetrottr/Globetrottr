@@ -19,6 +19,10 @@ enum AppIcons {
   layers('layers'),
   recenter('recenter'),
   flag('flag'),
+  pin('pin'),
+  route('route'),
+  warning('warning'),
+  footsteps('footsteps'),
 
   /// The globe of the logo, drawn over a disc in the accent colour.
   globe('globe', tintable: false),
