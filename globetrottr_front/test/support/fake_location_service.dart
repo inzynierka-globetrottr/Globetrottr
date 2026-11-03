@@ -10,6 +10,8 @@ import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
+import 'package:globetrottr_front/features/quests/data/quest.dart';
+import 'package:globetrottr_front/features/quests/data/quest_service.dart';
 
 import 'in_memory_fog_tile_storage.dart';
 import 'in_memory_track_log_storage.dart';
@@ -80,25 +82,39 @@ class FakeSyncService extends Fake implements SyncService {
   }
 }
 
+class FakeQuestService extends Fake implements QuestService {
+  int fetchCount = 0;
+
+  @override
+  Future<List<Quest>> fetchUserQuests() async {
+    fetchCount++;
+    return [];
+  }
+}
+
 class FogTestEnvironment {
   FogTestEnvironment({
     FakeLocationService? location,
     FakeSyncService? sync,
+    FakeQuestService? quests,
     InMemoryTrackLogStorage? log,
     InMemoryFogTileStorage? tiles,
   }) : location = location ?? FakeLocationService(),
        sync = sync ?? FakeSyncService(),
+       quests = quests ?? FakeQuestService(),
        log = log ?? InMemoryTrackLogStorage(),
        tiles = tiles ?? InMemoryFogTileStorage();
 
   final FakeLocationService location;
   final FakeSyncService sync;
+  final FakeQuestService quests;
   final InMemoryTrackLogStorage log;
   final InMemoryFogTileStorage tiles;
 
   List<Override> get overrides => [
     locationServiceProvider.overrideWithValue(location),
     syncServiceProvider.overrideWithValue(sync),
+    questServiceProvider.overrideWithValue(quests),
     trackLogStorageProvider.overrideWithValue(log),
     fogTileStorageProvider.overrideWithValue(tiles),
   ];

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,10 +14,15 @@ void main() {
 
   tearDown(() => env.location.positions.close());
 
+  ProviderContainer createContainer() {
+    final container = env.createContainer();
+    addTearDown(container.dispose);
+    return container;
+  }
+
   group('LocationNotifier', () {
     test('starts without tracking or recording', () {
-      final container = env.createContainer();
-      addTearDown(container.dispose);
+      final container = createContainer();
 
       final state = container.read(locationProvider);
 
@@ -26,8 +32,7 @@ void main() {
     });
 
     test('follows the position once tracking has started', () async {
-      final container = env.createContainer();
-      addTearDown(container.dispose);
+      final container = createContainer();
       final notifier = container.read(locationProvider.notifier);
 
       await notifier.startTracking();
@@ -40,8 +45,7 @@ void main() {
     });
 
     test('keeps the position moving while it is not recording', () async {
-      final container = env.createContainer();
-      addTearDown(container.dispose);
+      final container = createContainer();
       final notifier = container.read(locationProvider.notifier);
       await notifier.startTracking();
 
@@ -55,8 +59,7 @@ void main() {
     });
 
     test('starting twice follows every position once', () async {
-      final container = env.createContainer();
-      addTearDown(container.dispose);
+      final container = createContainer();
       final notifier = container.read(locationProvider.notifier);
       await notifier.startTracking();
       await notifier.startTracking();
@@ -71,8 +74,7 @@ void main() {
 
     test('reports why tracking could not start', () async {
       env.location.startError = Exception('no permission');
-      final container = env.createContainer();
-      addTearDown(container.dispose);
+      final container = createContainer();
 
       await container.read(locationProvider.notifier).startTracking();
 
@@ -82,8 +84,7 @@ void main() {
     });
 
     test('turning recording on does not sync', () async {
-      final container = env.createContainer();
-      addTearDown(container.dispose);
+      final container = createContainer();
 
       await container.read(locationProvider.notifier).setRecording(true);
 
@@ -92,8 +93,7 @@ void main() {
     });
 
     test('turning recording off syncs the pending points once', () async {
-      final container = env.createContainer();
-      addTearDown(container.dispose);
+      final container = createContainer();
       final notifier = container.read(locationProvider.notifier);
       await notifier.setRecording(true);
 
@@ -134,8 +134,7 @@ void main() {
 
     test('a failed sync does not break recording', () async {
       env.sync.succeeds = false;
-      final container = env.createContainer();
-      addTearDown(container.dispose);
+      final container = createContainer();
       final notifier = container.read(locationProvider.notifier);
 
       await notifier.setRecording(true);
@@ -143,6 +142,35 @@ void main() {
       await notifier.setRecording(true);
 
       expect(container.read(locationProvider).isRecording, isTrue);
+    });
+
+    test('reloads quests after recording stops and sync succeeds', () async {
+      final container = createContainer();
+      final notifier = container.read(locationProvider.notifier);
+
+      await notifier.setRecording(true);
+      await notifier.setRecording(false);
+
+      expect(env.quests.fetchCount, 1);
+    });
+
+    test('does not reload quests when sync fails', () async {
+      env.sync.succeeds = false;
+      final container = createContainer();
+      final notifier = container.read(locationProvider.notifier);
+
+      await notifier.setRecording(true);
+      await notifier.setRecording(false);
+
+      expect(env.quests.fetchCount, 0);
+    });
+
+    test('does not reload quests when recording starts', () async {
+      final container = createContainer();
+
+      await container.read(locationProvider.notifier).setRecording(true);
+
+      expect(env.quests.fetchCount, 0);
     });
   });
 }

@@ -18,6 +18,16 @@ String formatPercent(double? share) {
   return (share * 100).round().toString();
 }
 
+/// A day with a short month, e.g. "28 Sep" or "28 wrz".
+String formatShortDate(DateTime date, String locale) =>
+    DateFormat('d MMM', locale).format(date);
+
+/// The name of a month, with the year when it is not [now]'s year.
+String formatMonth(DateTime date, String locale, {DateTime? now}) {
+  final sameYear = date.year == (now ?? DateTime.now()).year;
+  return DateFormat(sameYear ? 'LLLL' : 'LLLL y', locale).format(date);
+}
+
 /// A distance in metres, or in kilometres from one kilometre on.
 String formatDistance(double? meters, String locale) {
   if (meters == null) return '$_unknown m';
