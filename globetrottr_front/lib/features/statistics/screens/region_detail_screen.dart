@@ -89,12 +89,18 @@ class RegionDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 StatsDiscoveryCard(
                   barHeight: 8,
+                  emptyMessage: l10n.statsNoSubregions,
                   items: [
                     for (final sub in data.subregions)
                       DiscoveryRowItem(
+                        id: sub.id,
                         name: sub.name,
                         percentage: sub.percentage,
-                        onTap: () => context.push('/profile/statistics/city/1'),
+                        onTap: sub.id != null
+                            ? () => context.push(
+                                '/profile/statistics/city/${sub.id}',
+                              )
+                            : null,
                       ),
                   ],
                 ),

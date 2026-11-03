@@ -1261,6 +1261,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{discovered} of {total} counties'**
   String statsSubregionsCount(int discovered, int total);
+
+  /// No description provided for @statsNoDiscoveredCities.
+  ///
+  /// In en, this message translates to:
+  /// **'No discovered cities yet'**
+  String get statsNoDiscoveredCities;
+
+  /// No description provided for @statsNoVisitedPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'No visited places yet'**
+  String get statsNoVisitedPlaces;
 }
 
 class _AppLocalizationsDelegate

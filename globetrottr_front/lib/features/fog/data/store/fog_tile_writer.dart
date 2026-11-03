@@ -16,6 +16,7 @@ class FogWriteResult {
     required this.revision,
     required this.totalAreaM2,
     required this.tiles,
+    this.areaDeltas = const {},
   });
 
   final int revision;
@@ -23,6 +24,9 @@ class FogWriteResult {
 
   /// Every tile written, on any level of the pyramid.
   final Set<FogTileId> tiles;
+
+  /// Ground area delta in square meters for base zoom tiles written in this commit.
+  final Map<FogTileId, double> areaDeltas;
 }
 
 List<EncodedFogTile> _encodeBatch(List<Uint8List> raw) {
@@ -113,14 +117,19 @@ class FogTileWriter {
       var areaDelta = 0.0;
       final upserts = <StoredFogTile>[];
       final newAreas = <FogTileId, double>{};
+      final tileAreaDeltas = <FogTileId, double>{};
       for (var i = 0; i < ids.length; i++) {
         final id = ids[i];
         final entry = cache[id]!;
         var area = 0.0;
         if (id.z == baseZoom) {
           area = _areaOf(id, entry.mask!);
-          areaDelta += area - entry.areaM2;
+          final delta = area - entry.areaM2;
+          areaDelta += delta;
           newAreas[id] = area;
+          if (delta > 0) {
+            tileAreaDeltas[id] = delta;
+          }
         }
         upserts.add(
           StoredFogTile(
@@ -150,6 +159,7 @@ class FogTileWriter {
         revision: nextRevision,
         totalAreaM2: newTotal,
         tiles: changed,
+        areaDeltas: tileAreaDeltas,
       );
     } finally {
       cache.pinned.removeAll(ancestors);

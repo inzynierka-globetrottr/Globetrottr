@@ -212,6 +212,18 @@ class SqfliteStatisticsStorage implements StatisticsStorage {
   }
 
   @override
+  Future<DailyExplorationStats?> getBestDayStats() async {
+    final db = await _db;
+    final rows = await db.query(
+      'daily_exploration_stats',
+      orderBy: 'new_area_m2 DESC',
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return DailyExplorationStats.fromMap(rows.first);
+  }
+
+  @override
   Future<void> saveDailyStats(DailyExplorationStats stats) async {
     final db = await _db;
     await db.insert(
@@ -233,6 +245,25 @@ class SqfliteStatisticsStorage implements StatisticsStorage {
     );
     if (rows.isEmpty) return null;
     return (rows.first['numeric_value'] as num?)?.toDouble();
+  }
+
+  @override
+  Future<UserRecordEntry?> getRecordEntry(String key) async {
+    final db = await _db;
+    final rows = await db.query(
+      'user_records',
+      where: 'record_key = ?',
+      whereArgs: [key],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    final row = rows.first;
+    return UserRecordEntry(
+      key: key,
+      value: (row['numeric_value']! as num).toDouble(),
+      label: row['label'] as String?,
+      timestampMs: (row['timestamp_ms'] as num?)?.toInt() ?? 0,
+    );
   }
 
   @override

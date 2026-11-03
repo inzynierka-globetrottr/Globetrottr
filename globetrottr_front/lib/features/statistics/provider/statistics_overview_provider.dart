@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_activity_section.dart';
@@ -85,6 +88,15 @@ class StatsOverviewState {
   }
 }
 
+final completedQuestsCountProvider = Provider<int>((ref) {
+  try {
+    final quests = ref.watch(questsProvider).quests;
+    return quests.where((q) => q.isCompleted).length;
+  } catch (_) {
+    return 0;
+  }
+});
+
 final statsOverviewProvider =
     AsyncNotifierProvider<StatsOverviewNotifier, StatsOverviewState>(
       StatsOverviewNotifier.new,
@@ -146,8 +158,153 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
     StatsPeriod period,
     DateTime date,
   ) async {
+    ref.watch(statisticsRevisionProvider);
     final statsStorage = ref.watch(statisticsStorageProvider);
     final regionStorage = ref.watch(regionStorageProvider);
+
+    final String fromDate;
+    final String toDate;
+    final String periodLabel;
+
+    switch (period) {
+      case StatsPeriod.week:
+        final mon = date.subtract(Duration(days: date.weekday - 1));
+        final sun = mon.add(const Duration(days: 6));
+        fromDate = _fmtDate(mon);
+        toDate = _fmtDate(sun);
+        periodLabel = 'Tydzień ${_isoWeekNumber(mon)} · ${mon.year}';
+      case StatsPeriod.month:
+        final firstDay = DateTime(date.year, date.month);
+        final lastDay = DateTime(date.year, date.month + 1, 0);
+        fromDate = _fmtDate(firstDay);
+        toDate = _fmtDate(lastDay);
+        periodLabel = '${_monthNames[date.month - 1]} ${date.year}';
+      case StatsPeriod.year:
+        fromDate = '${date.year}-01-01';
+        toDate = '${date.year}-12-31';
+        periodLabel = '${date.year}';
+      case StatsPeriod.allTime:
+        fromDate = '1970-01-01';
+        toDate = '2099-12-31';
+        periodLabel = 'Wszystko';
+    }
+
+    final dailyList = await statsStorage.getDailyStatsRange(
+      fromDate: fromDate,
+      toDate: toDate,
+    );
+
+    final totalNewAreaM2 = dailyList.fold<double>(
+      0.0,
+      (sum, d) => sum + d.newAreaM2,
+    );
+    final totalDistanceM = dailyList.fold<double>(
+      0.0,
+      (sum, d) => sum + d.distanceM,
+    );
+    final totalStreets = dailyList.fold<int>(
+      0,
+      (sum, d) => sum + d.newStreetsCount,
+    );
+
+    final questsCount = ref.watch(completedQuestsCountProvider);
+
+    final walkKm =
+        dailyList.fold<double>(0.0, (sum, d) => sum + d.walkDistanceM) / 1000.0;
+    final bikeKm =
+        dailyList.fold<double>(0.0, (sum, d) => sum + d.bikeDistanceM) / 1000.0;
+    final runKm =
+        dailyList.fold<double>(0.0, (sum, d) => sum + d.runDistanceM) / 1000.0;
+    final otherKm =
+        dailyList.fold<double>(0.0, (sum, d) => sum + d.otherDistanceM) /
+        1000.0;
+    final maxActivity = [walkKm, bikeKm, runKm, otherKm].reduce(math.max);
+
+    final activities = [
+      ActivityDistanceItem(
+        label: 'Pieszo',
+        distanceKm: walkKm,
+        percentage: maxActivity > 0
+            ? (walkKm / maxActivity).clamp(0.0, 1.0)
+            : 0.0,
+      ),
+      ActivityDistanceItem(
+        label: 'Rower',
+        distanceKm: bikeKm,
+        percentage: maxActivity > 0
+            ? (bikeKm / maxActivity).clamp(0.0, 1.0)
+            : 0.0,
+      ),
+      ActivityDistanceItem(
+        label: 'Bieg',
+        distanceKm: runKm,
+        percentage: maxActivity > 0
+            ? (runKm / maxActivity).clamp(0.0, 1.0)
+            : 0.0,
+      ),
+      ActivityDistanceItem(
+        label: 'Inne',
+        distanceKm: otherKm,
+        percentage: maxActivity > 0
+            ? (otherKm / maxActivity).clamp(0.0, 1.0)
+            : 0.0,
+      ),
+    ];
+
+    final weeklyBars = <WeeklyBarItem>[];
+    final now = DateTime.now();
+    final currentMon = now.subtract(Duration(days: now.weekday - 1));
+    for (var w = 7; w >= 0; w--) {
+      final target = currentMon.subtract(Duration(days: 7 * w));
+      final sun = target.add(const Duration(days: 6));
+      final weekList = await statsStorage.getDailyStatsRange(
+        fromDate: _fmtDate(target),
+        toDate: _fmtDate(sun),
+      );
+      final weekAreaKm2 =
+          weekList.fold<double>(0.0, (sum, d) => sum + d.newAreaM2) / 1000000.0;
+      final isCur = w == 0;
+      final label = isCur ? 'teraz' : '${_isoWeekNumber(target)}';
+      weeklyBars.add(
+        WeeklyBarItem(label: label, valueKm2: weekAreaKm2, isCurrent: isCur),
+      );
+    }
+
+    final highest = await statsStorage.getRecordEntry('max_altitude');
+    final furthest = await statsStorage.getRecordEntry('furthest_distance');
+    final longest = await statsStorage.getRecordEntry('longest_route_distance');
+    final bestDay = await statsStorage.getBestDayStats();
+
+    final records = [
+      RecordTileItem(
+        header: 'NAJWYŻEJ',
+        value: highest != null ? '${highest.value.round()} m' : '–',
+        subtitle: highest?.label ?? '–',
+      ),
+      RecordTileItem(
+        header: 'NAJDALEJ',
+        value: furthest != null
+            ? '${(furthest.value / 1000).toStringAsFixed(1)} km'
+            : '–',
+        subtitle: furthest?.label ?? '–',
+      ),
+      RecordTileItem(
+        header: 'NAJDŁUŻSZA TRASA',
+        value: longest != null
+            ? '${(longest.value / 1000).toStringAsFixed(1)} km'
+            : '–',
+        subtitle: longest?.label ?? '–',
+      ),
+      RecordTileItem(
+        header: 'NAJLEPSZY DZIEŃ',
+        value: (bestDay != null && bestDay.newAreaM2 > 0)
+            ? '+${(bestDay.newAreaM2 / 1000000).toStringAsFixed(2)} km²'
+            : '–',
+        subtitle: (bestDay != null && bestDay.newAreaM2 > 0)
+            ? _formatShortDate(bestDay.date)
+            : '–',
+      ),
+    ];
 
     final allRegionStats = await statsStorage.getAllRegionStats();
 
@@ -157,7 +314,10 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
     final countryCodes = <String>{};
     final discoveredCities = <DiscoveryRowItem>[];
 
-    for (final regStat in allRegionStats) {
+    final activeStats = allRegionStats
+        .where((s) => s.discoveredAreaM2 > 0)
+        .toList();
+    for (final regStat in activeStats) {
       final region = await regionStorage.findRegionById(regStat.regionId);
       if (region == null) continue;
       if (region.type == RegionType.country) {
@@ -171,6 +331,7 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
         visitedCities++;
         discoveredCities.add(
           DiscoveryRowItem(
+            id: region.id,
             name: region.name,
             percentage: regStat.discoveryPercentage,
           ),
@@ -178,91 +339,90 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       }
     }
 
-    // TODO(data): Provide mock/fallback values matching design when real entries are empty
-    final finalCountriesCount = visitedCountries > 0 ? visitedCountries : 3;
-    final finalRegionsCount = visitedRegions > 0 ? visitedRegions : 8;
-    final finalCitiesCount = visitedCities > 0 ? visitedCities : 12;
-    final finalCountryCodes = countryCodes.isNotEmpty
-        ? countryCodes.toList()
-        : ['PL', 'CZ', 'SK'];
+    discoveredCities.sort((a, b) => b.percentage.compareTo(a.percentage));
 
-    final finalDiscoveredCities = discoveredCities.isNotEmpty
-        ? discoveredCities
-        : const [
-            DiscoveryRowItem(name: 'Kraków', percentage: 7.3),
-            DiscoveryRowItem(name: 'Zabierzów', percentage: 1.1),
-            DiscoveryRowItem(name: 'Skawina', percentage: 1.0),
-          ];
+    final mostVisitedList =
+        allRegionStats.where((s) => s.visitsCount > 0).toList()
+          ..sort((a, b) => b.visitsCount.compareTo(a.visitsCount));
 
-    final monthNames = [
-      'Styczeń',
-      'Luty',
-      'Marzec',
-      'Kwiecień',
-      'Maj',
-      'Czerwiec',
-      'Lipiec',
-      'Sierpień',
-      'Wrzesień',
-      'Październik',
-      'Listopad',
-      'Grudzień',
-    ];
-    final periodLabel = '${monthNames[date.month - 1]} ${date.year}';
+    final mostVisitedPlaces = <MostVisitedItem>[];
+    for (final s in mostVisitedList.take(5)) {
+      final region = await regionStorage.findRegionById(s.regionId);
+      if (region != null) {
+        mostVisitedPlaces.add(
+          MostVisitedItem(name: region.name, count: s.visitsCount),
+        );
+      }
+    }
 
-    // TODO(data): Read real ledger data from StatisticsStorage for period aggregations
     return StatsOverviewState(
       period: period,
       selectedDate: date,
       periodLabel: periodLabel,
-      newAreaKm2: 1.84,
-      distanceKm: 46.2,
-      newStreetsCount: 128,
-      questsCount: 5,
-      weeklyBars: const [
-        WeeklyBarItem(label: '37', valueKm2: 0.12),
-        WeeklyBarItem(label: '38', valueKm2: 0.30),
-        WeeklyBarItem(label: '39', valueKm2: 0.22),
-        WeeklyBarItem(label: '40', valueKm2: 0.45),
-        WeeklyBarItem(label: '41', valueKm2: 0.18),
-        WeeklyBarItem(label: '42', valueKm2: 0.52),
-        WeeklyBarItem(label: '43', valueKm2: 0.38),
-        WeeklyBarItem(label: 'teraz', valueKm2: 0.61, isCurrent: true),
-      ],
-      visitedCountriesCount: finalCountriesCount,
-      visitedRegionsCount: finalRegionsCount,
-      visitedCitiesCount: finalCitiesCount,
-      countryCodes: finalCountryCodes,
-      activities: const [
-        ActivityDistanceItem(label: 'Pieszo', distanceKm: 198, percentage: 1.0),
-        ActivityDistanceItem(label: 'Rower', distanceKm: 102, percentage: 0.52),
-        ActivityDistanceItem(label: 'Bieg', distanceKm: 14, percentage: 0.08),
-        ActivityDistanceItem(label: 'Inne', distanceKm: 4, percentage: 0.03),
-      ],
-      records: const [
-        RecordTileItem(
-          header: 'NAJWYŻEJ',
-          value: '1 987 m',
-          subtitle: 'Kasprowy Wierch',
-        ),
-        RecordTileItem(header: 'NAJDALEJ', value: '412 km', subtitle: 'Gdańsk'),
-        RecordTileItem(
-          header: 'NAJDŁUŻSZA TRASA',
-          value: '22,6 km',
-          subtitle: 'Rower · Tyniec',
-        ),
-        RecordTileItem(
-          header: 'NAJLEPSZY DZIEŃ',
-          value: '+0,74 km²',
-          subtitle: '12 paź',
-        ),
-      ],
-      discoveredCities: finalDiscoveredCities,
-      mostVisitedPlaces: const [
-        MostVisitedItem(name: 'Bulwary Wiślane', count: 105),
-        MostVisitedItem(name: 'Rynek Główny', count: 41),
-        MostVisitedItem(name: 'Kopiec Krakusa', count: 30),
-      ],
+      newAreaKm2: totalNewAreaM2 / 1000000.0,
+      distanceKm: totalDistanceM / 1000.0,
+      newStreetsCount: totalStreets,
+      questsCount: questsCount,
+      weeklyBars: weeklyBars,
+      visitedCountriesCount: visitedCountries,
+      visitedRegionsCount: visitedRegions,
+      visitedCitiesCount: visitedCities,
+      countryCodes: countryCodes.toList(),
+      activities: activities,
+      records: records,
+      discoveredCities: discoveredCities,
+      mostVisitedPlaces: mostVisitedPlaces,
     );
   }
+
+  static String _fmtDate(DateTime dt) {
+    final y = dt.year.toString().padLeft(4, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final d = dt.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
+  static int _isoWeekNumber(DateTime date) {
+    final thursday = date.add(Duration(days: 3 - ((date.weekday + 6) % 7)));
+    final firstThursday = DateTime(thursday.year, 1, 4);
+    return 1 + ((thursday.difference(firstThursday).inDays) / 7).floor();
+  }
+
+  static String _formatShortDate(String yyyyMmDd) {
+    final parts = yyyyMmDd.split('-');
+    if (parts.length != 3) return yyyyMmDd;
+    final day = int.tryParse(parts[2]) ?? 1;
+    final month = int.tryParse(parts[1]) ?? 1;
+    final shortMonths = [
+      'sty',
+      'lut',
+      'mar',
+      'kwi',
+      'maj',
+      'cze',
+      'lip',
+      'sie',
+      'wrz',
+      'paź',
+      'lis',
+      'gru',
+    ];
+    final mStr = (month >= 1 && month <= 12) ? shortMonths[month - 1] : '';
+    return '$day $mStr';
+  }
+
+  static const _monthNames = [
+    'Styczeń',
+    'Luty',
+    'Marzec',
+    'Kwiecień',
+    'Maj',
+    'Czerwiec',
+    'Lipiec',
+    'Sierpień',
+    'Wrzesień',
+    'Październik',
+    'Listopad',
+    'Grudzień',
+  ];
 }

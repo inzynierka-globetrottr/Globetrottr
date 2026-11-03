@@ -111,6 +111,7 @@ class CityDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 StatsDiscoveryCard(
                   barHeight: 8,
+                  emptyMessage: l10n.statsNoSubregions,
                   items: data.districts,
                 ),
                 const SizedBox(height: 16),

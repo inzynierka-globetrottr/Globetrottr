@@ -2,6 +2,20 @@ import 'package:globetrottr_front/features/statistics/data/daily_exploration_sta
 import 'package:globetrottr_front/features/statistics/data/user_region_stats.dart';
 import 'package:globetrottr_front/features/statistics/data/user_streak_stats.dart';
 
+class UserRecordEntry {
+  final String key;
+  final double value;
+  final String? label;
+  final int timestampMs;
+
+  const UserRecordEntry({
+    required this.key,
+    required this.value,
+    this.label,
+    required this.timestampMs,
+  });
+}
+
 abstract interface class StatisticsStorage {
   Future<void> init();
   Future<void> close();
@@ -34,10 +48,12 @@ abstract interface class StatisticsStorage {
     required String fromDate,
     required String toDate,
   });
+  Future<DailyExplorationStats?> getBestDayStats();
   Future<void> saveDailyStats(DailyExplorationStats stats);
 
   // Personal records
   Future<double?> getRecord(String key);
+  Future<UserRecordEntry?> getRecordEntry(String key);
   Future<void> setRecordIfMax(
     String key,
     double value, {

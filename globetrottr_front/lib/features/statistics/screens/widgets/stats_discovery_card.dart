@@ -9,11 +9,13 @@ import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 class DiscoveryRowItem {
   const DiscoveryRowItem({
+    this.id,
     required this.name,
     required this.percentage, // 0.0 to 100.0 (or share 0.0 to 1.0)
     this.onTap,
   });
 
+  final int? id;
   final String name;
   final double percentage;
   final VoidCallback? onTap;
@@ -24,13 +26,31 @@ class StatsDiscoveryCard extends StatelessWidget {
     super.key,
     required this.items,
     this.barHeight = 12,
+    this.emptyMessage,
   });
 
   final List<DiscoveryRowItem> items;
   final double barHeight;
+  final String? emptyMessage;
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return NeuSurface(
+        shadows: context.shadows.raised(NeoDepth.xl),
+        borderRadius: BorderRadius.circular(24),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Center(
+          child: Text(
+            emptyMessage ?? '—',
+            style: context.typography.body.copyWith(
+              color: context.palette.textMuted,
+            ),
+          ),
+        ),
+      );
+    }
+
     return NeuSurface(
       shadows: context.shadows.raised(NeoDepth.xl),
       borderRadius: BorderRadius.circular(24),

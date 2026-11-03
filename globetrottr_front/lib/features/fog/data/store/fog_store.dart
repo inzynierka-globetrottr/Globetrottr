@@ -343,7 +343,13 @@ class FogStore {
       _trail.forget(drawn);
     }
     if (result.tiles.isNotEmpty) {
-      _emit(FogChange(result.tiles, trailWrittenUpTo: drawn));
+      _emit(
+        FogChange(
+          result.tiles,
+          trailWrittenUpTo: drawn,
+          areaDeltas: result.areaDeltas,
+        ),
+      );
     }
   }
 

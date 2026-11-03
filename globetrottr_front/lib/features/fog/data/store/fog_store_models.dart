@@ -6,6 +6,7 @@ class FogChange {
     this.all = false,
     this.onTrail = false,
     this.trailWrittenUpTo,
+    this.areaDeltas = const {},
   });
 
   /// Tiles whose content changed, on any level of the pyramid.
@@ -21,6 +22,9 @@ class FogChange {
   /// Set when the change was written to storage, so coarser levels were
   /// refreshed too: the newest trail segment the write put into the tiles.
   final int? trailWrittenUpTo;
+
+  /// Area delta in square meters for base zoom tiles written in this commit.
+  final Map<FogTileId, double> areaDeltas;
 }
 
 class FogStoreDiagnostics {

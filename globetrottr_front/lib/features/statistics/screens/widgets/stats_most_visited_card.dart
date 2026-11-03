@@ -18,12 +18,30 @@ class StatsMostVisitedCard extends StatelessWidget {
   const StatsMostVisitedCard({
     super.key,
     required this.items,
+    this.emptyMessage,
   });
 
   final List<MostVisitedItem> items;
+  final String? emptyMessage;
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return NeuSurface(
+        shadows: context.shadows.raised(NeoDepth.xl),
+        borderRadius: BorderRadius.circular(24),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Center(
+          child: Text(
+            emptyMessage ?? '—',
+            style: context.typography.body.copyWith(
+              color: context.palette.textMuted,
+            ),
+          ),
+        ),
+      );
+    }
+
     return NeuSurface(
       shadows: context.shadows.raised(NeoDepth.xl),
       borderRadius: BorderRadius.circular(24),

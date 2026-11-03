@@ -20,10 +20,23 @@ final statisticsStorageProvider = Provider<StatisticsStorage>((ref) {
   return storage;
 });
 
+final statisticsRevisionProvider =
+    NotifierProvider<StatisticsRevisionNotifier, int>(
+      StatisticsRevisionNotifier.new,
+    );
+
+class StatisticsRevisionNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
 final statisticsTrackerProvider = Provider<StatisticsTracker>((ref) {
   return StatisticsTracker(
     regionStorage: ref.watch(regionStorageProvider),
     statisticsStorage: ref.watch(statisticsStorageProvider),
+    onUpdated: () => ref.read(statisticsRevisionProvider.notifier).bump(),
   );
 });
 

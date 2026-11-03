@@ -138,19 +138,28 @@ class StatsScreen extends ConsumerWidget {
                 SectionHeader(l10n.statsCitiesDiscoveryTitle),
                 const SizedBox(height: 12),
                 StatsDiscoveryCard(
+                  emptyMessage: l10n.statsNoDiscoveredCities,
                   items: [
                     for (final city in state.discoveredCities)
                       DiscoveryRowItem(
+                        id: city.id,
                         name: city.name,
                         percentage: city.percentage,
-                        onTap: () => context.push('/profile/statistics/city/1'),
+                        onTap: city.id != null
+                            ? () => context.push(
+                                '/profile/statistics/city/${city.id}',
+                              )
+                            : null,
                       ),
                   ],
                 ),
                 const SizedBox(height: 20),
                 SectionHeader(l10n.statsMostVisitedTitle),
                 const SizedBox(height: 12),
-                StatsMostVisitedCard(items: state.mostVisitedPlaces),
+                StatsMostVisitedCard(
+                  emptyMessage: l10n.statsNoVisitedPlaces,
+                  items: state.mostVisitedPlaces,
+                ),
               ],
             ),
           ),

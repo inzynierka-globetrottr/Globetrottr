@@ -666,4 +666,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String statsSubregionsCount(int discovered, int total) {
     return '$discovered z $total powiatów';
   }
+
+  @override
+  String get statsNoDiscoveredCities => 'Brak odkrytych miast';
+
+  @override
+  String get statsNoVisitedPlaces => 'Brak odwiedzonych miejsc';
 }

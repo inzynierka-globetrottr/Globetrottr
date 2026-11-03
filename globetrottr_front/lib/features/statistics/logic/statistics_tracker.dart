@@ -17,11 +17,13 @@ class StatisticsTracker {
   final RegionStorage regionStorage;
   final StatisticsStorage statisticsStorage;
   final StreakService streakService;
+  final void Function()? onUpdated;
 
   const StatisticsTracker({
     required this.regionStorage,
     required this.statisticsStorage,
     this.streakService = const StreakService(),
+    this.onUpdated,
   });
 
   Future<void> onTilesCommitted(
@@ -113,6 +115,10 @@ class StatisticsTracker {
         ),
       );
     }
+
+    if (regionAreaDeltas.isNotEmpty || totalNewArea > 0) {
+      onUpdated?.call();
+    }
   }
 
   Future<void> rebuildFromFogTiles(Iterable<TileAreaDelta> tiles) async {
@@ -176,6 +182,7 @@ class StatisticsTracker {
     }
 
     await statisticsStorage.saveRegionStats(updated);
+    onUpdated?.call();
   }
 
   Future<void> recordTripSession({
@@ -244,6 +251,8 @@ class StatisticsTracker {
       distanceM,
       timestampMs: moment.millisecondsSinceEpoch,
     );
+
+    onUpdated?.call();
   }
 
   String _formatDate(DateTime dt) {

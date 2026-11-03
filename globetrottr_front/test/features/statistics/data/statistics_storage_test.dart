@@ -123,7 +123,31 @@ void main() {
           label: 'Kasprowy Wierch',
         );
         expect(await storage.getRecord('max_altitude'), 1987.0);
+
+        final entry = await storage.getRecordEntry('max_altitude');
+        expect(entry, isNotNull);
+        expect(entry!.value, 1987.0);
+        expect(entry.label, 'Kasprowy Wierch');
       },
     );
+
+    test('getBestDayStats returns day with highest discovered area', () async {
+      expect(await storage.getBestDayStats(), isNull);
+
+      await storage.saveDailyStats(
+        const DailyExplorationStats(date: '2026-11-01', newAreaM2: 5000.0),
+      );
+      await storage.saveDailyStats(
+        const DailyExplorationStats(date: '2026-11-02', newAreaM2: 25000.0),
+      );
+      await storage.saveDailyStats(
+        const DailyExplorationStats(date: '2026-11-03', newAreaM2: 12000.0),
+      );
+
+      final best = await storage.getBestDayStats();
+      expect(best, isNotNull);
+      expect(best!.date, '2026-11-02');
+      expect(best.newAreaM2, 25000.0);
+    });
   });
 }

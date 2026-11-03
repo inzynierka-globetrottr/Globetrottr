@@ -302,5 +302,7 @@
       "discovered": { "type": "int" },
       "total": { "type": "int" }
     }
-  }
+  },
+  "statsNoDiscoveredCities": "No discovered cities yet",
+  "statsNoVisitedPlaces": "No visited places yet"
 }

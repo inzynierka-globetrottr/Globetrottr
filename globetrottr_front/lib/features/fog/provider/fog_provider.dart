@@ -11,6 +11,8 @@ import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
+import 'package:globetrottr_front/features/statistics/logic/statistics_tracker.dart';
+import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 
 final fogTileStorageProvider = Provider<FogTileStorage>((ref) {
   final storage = SqfliteFogTileStorage();
@@ -61,6 +63,23 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
             debugPrint('Applying a position to the fog failed: $error');
           });
     });
+    final storeChanges = store.changes.listen((change) {
+      if (change.areaDeltas.isNotEmpty) {
+        final deltas = [
+          for (final entry in change.areaDeltas.entries)
+            if (entry.value > 0)
+              TileAreaDelta(id: entry.key, areaDeltaM2: entry.value),
+        ];
+        if (deltas.isNotEmpty) {
+          ref
+              .read(statisticsTrackerProvider)
+              .onTilesCommitted(deltas)
+              .catchError((Object error) {
+                debugPrint('Statistics tracking on tile commit failed: $error');
+              });
+        }
+      }
+    });
     final lifecycle = AppLifecycleListener(
       onStateChange: (state) {
         if (state == AppLifecycleState.resumed) return;
@@ -70,6 +89,7 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
     );
     ref.onDispose(() {
       unawaited(logged.cancel());
+      unawaited(storeChanges.cancel());
       lifecycle.dispose();
       source.dispose();
       _store = null;

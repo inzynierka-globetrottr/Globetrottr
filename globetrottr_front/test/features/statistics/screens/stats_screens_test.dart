@@ -5,10 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/features/regions/data/region.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
+import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/data/daily_exploration_stats.dart';
 import 'package:globetrottr_front/features/statistics/data/statistics_storage.dart';
 import 'package:globetrottr_front/features/statistics/data/user_region_stats.dart';
 import 'package:globetrottr_front/features/statistics/data/user_streak_stats.dart';
+import 'package:globetrottr_front/features/statistics/provider/statistics_overview_provider.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 import 'package:globetrottr_front/features/statistics/screens/city_detail_screen.dart';
 import 'package:globetrottr_front/features/statistics/screens/countries_screen.dart';
@@ -30,19 +32,117 @@ import 'package:globetrottr_front/features/statistics/screens/widgets/stats_week
 import 'package:globetrottr_front/l10n/app_localizations.dart';
 
 class _FakeRegionStorage implements RegionStorage {
+  static const poland = Region(
+    id: 1,
+    parentId: null,
+    name: 'Polska',
+    type: RegionType.country,
+    code: 'PL',
+    totalAreaKm2: 312696.0,
+    minLat: 49.0,
+    maxLat: 55.0,
+    minLon: 14.0,
+    maxLon: 24.5,
+  );
+
+  static const czechia = Region(
+    id: 2,
+    parentId: null,
+    name: 'Czechy',
+    type: RegionType.country,
+    code: 'CZ',
+    totalAreaKm2: 78866.0,
+    minLat: 48.5,
+    maxLat: 51.1,
+    minLon: 12.1,
+    maxLon: 18.9,
+  );
+
+  static const malopolskie = Region(
+    id: 10,
+    parentId: 1,
+    name: 'Małopolskie',
+    type: RegionType.state,
+    code: null,
+    totalAreaKm2: 15183.0,
+    minLat: 49.1,
+    maxLat: 50.5,
+    minLon: 19.0,
+    maxLon: 21.4,
+  );
+
+  static const moravskoslezsky = Region(
+    id: 20,
+    parentId: 2,
+    name: 'Moravskoslezský kraj',
+    type: RegionType.state,
+    code: null,
+    totalAreaKm2: 5427.0,
+    minLat: 49.4,
+    maxLat: 50.4,
+    minLon: 17.1,
+    maxLon: 18.9,
+  );
+
+  static const krakow = Region(
+    id: 100,
+    parentId: 10,
+    name: 'Kraków',
+    type: RegionType.city,
+    code: null,
+    totalAreaKm2: 326.8,
+    minLat: 49.95,
+    maxLat: 50.15,
+    minLon: 19.8,
+    maxLon: 20.2,
+  );
+
+  static const stareMiasto = Region(
+    id: 1001,
+    parentId: 100,
+    name: 'Stare Miasto',
+    type: RegionType.district,
+    code: null,
+    totalAreaKm2: 5.5,
+    minLat: 50.05,
+    maxLat: 50.07,
+    minLon: 19.93,
+    maxLon: 19.95,
+  );
+
+  final List<Region> _all = [
+    poland,
+    czechia,
+    malopolskie,
+    moravskoslezsky,
+    krakow,
+    stareMiasto,
+  ];
+
   @override
   Future<void> init() async {}
   @override
   Future<void> close() async {}
+
   @override
-  Future<Region?> findRegionById(int id) async => null;
+  Future<Region?> findRegionById(int id) async {
+    for (final r in _all) {
+      if (r.id == id) return r;
+    }
+    return null;
+  }
+
   @override
-  Future<List<Region>> findChildren(int parentId) async => [];
+  Future<List<Region>> findChildren(int parentId) async {
+    return _all.where((r) => r.parentId == parentId).toList();
+  }
+
   @override
   Future<List<Region>> findRegionsByPoint({
     required double lat,
     required double lon,
   }) async => [];
+
   @override
   Future<List<Region>> findRegionsInBBox({
     required double minLat,
@@ -50,13 +150,63 @@ class _FakeRegionStorage implements RegionStorage {
     required double maxLat,
     required double maxLon,
   }) async => [];
+
   @override
-  Future<List<Region>> getAncestorChain(int regionId) async => [];
+  Future<List<Region>> getAncestorChain(int regionId) async {
+    final chain = <Region>[];
+    var current = await findRegionById(regionId);
+    while (current != null) {
+      chain.add(current);
+      if (current.parentId == null) break;
+      current = await findRegionById(current.parentId!);
+    }
+    return chain;
+  }
+
   @override
   Future<void> insertRegions(Iterable<Region> regions) async {}
 }
 
 class _FakeStatisticsStorage implements StatisticsStorage {
+  final List<UserRegionStats> _regionStats = [
+    const UserRegionStats(
+      regionId: 1,
+      discoveredAreaM2: 50000.0,
+      discoveryPercentage: 0.02,
+      visitsCount: 10,
+    ),
+    const UserRegionStats(
+      regionId: 2,
+      discoveredAreaM2: 20000.0,
+      discoveryPercentage: 0.03,
+      visitsCount: 3,
+    ),
+    const UserRegionStats(
+      regionId: 10,
+      discoveredAreaM2: 50000.0,
+      discoveryPercentage: 0.33,
+      visitsCount: 10,
+    ),
+    const UserRegionStats(
+      regionId: 20,
+      discoveredAreaM2: 20000.0,
+      discoveryPercentage: 0.37,
+      visitsCount: 3,
+    ),
+    const UserRegionStats(
+      regionId: 100,
+      discoveredAreaM2: 50000.0,
+      discoveryPercentage: 1.53,
+      visitsCount: 10,
+    ),
+    const UserRegionStats(
+      regionId: 1001,
+      discoveredAreaM2: 20000.0,
+      discoveryPercentage: 36.3,
+      visitsCount: 10,
+    ),
+  ];
+
   @override
   Future<void> init() async {}
   @override
@@ -65,10 +215,18 @@ class _FakeStatisticsStorage implements StatisticsStorage {
   Future<UserStreakStats> loadStreakStats() async => UserStreakStats.empty;
   @override
   Future<void> saveStreakStats(UserStreakStats stats) async {}
+
   @override
-  Future<UserRegionStats?> getRegionStats(int regionId) async => null;
+  Future<UserRegionStats?> getRegionStats(int regionId) async {
+    for (final s in _regionStats) {
+      if (s.regionId == regionId) return s;
+    }
+    return null;
+  }
+
   @override
-  Future<List<UserRegionStats>> getAllRegionStats() async => [];
+  Future<List<UserRegionStats>> getAllRegionStats() async => _regionStats;
+
   @override
   Future<void> saveRegionStats(Iterable<UserRegionStats> stats) async {}
   @override
@@ -84,17 +242,40 @@ class _FakeStatisticsStorage implements StatisticsStorage {
     required int y,
     required int regionId,
   }) async {}
+
   @override
   Future<DailyExplorationStats?> getDailyStats(String date) async => null;
+
   @override
   Future<List<DailyExplorationStats>> getDailyStatsRange({
     required String fromDate,
     required String toDate,
-  }) async => [];
+  }) async {
+    return [
+      DailyExplorationStats(
+        date: fromDate,
+        newAreaM2: 50000.0,
+        distanceM: 3500.0,
+        walkDistanceM: 3500.0,
+        newStreetsCount: 12,
+      ),
+    ];
+  }
+
+  @override
+  Future<DailyExplorationStats?> getBestDayStats() async =>
+      const DailyExplorationStats(date: '2026-11-03', newAreaM2: 50000.0);
+
   @override
   Future<void> saveDailyStats(DailyExplorationStats stats) async {}
+
   @override
-  Future<double?> getRecord(String key) async => null;
+  Future<double?> getRecord(String key) async => 250.0;
+
+  @override
+  Future<UserRecordEntry?> getRecordEntry(String key) async =>
+      UserRecordEntry(key: key, value: 250.0, label: 'Kraków', timestampMs: 0);
+
   @override
   Future<void> setRecordIfMax(
     String key,
@@ -120,6 +301,7 @@ void main() {
         overrides: [
           regionStorageProvider.overrideWithValue(_FakeRegionStorage()),
           statisticsStorageProvider.overrideWithValue(_FakeStatisticsStorage()),
+          completedQuestsCountProvider.overrideWithValue(5),
         ],
         child: MaterialApp(
           theme: AppTheme.light,
@@ -220,7 +402,7 @@ void main() {
     testWidgets('renders region discovery, metrics, subregions and metadata', (
       tester,
     ) async {
-      await pumpScreen(tester, const RegionDetailScreen(regionId: 1));
+      await pumpScreen(tester, const RegionDetailScreen(regionId: 10));
 
       expect(find.text('Małopolskie'), findsOneWidget);
       expect(find.byType(StatsDetailProgressCard), findsOneWidget);
@@ -239,9 +421,9 @@ void main() {
     testWidgets('renders city discovery, metrics, districts and metadata', (
       tester,
     ) async {
-      await pumpScreen(tester, const CityDetailScreen(cityId: 1));
+      await pumpScreen(tester, const CityDetailScreen(cityId: 100));
 
-      expect(find.text('Kraków'), findsOneWidget);
+      expect(find.text('Kraków'), findsWidgets);
       expect(find.byType(StatsDetailProgressCard), findsOneWidget);
       expect(find.byType(StatsMetricsRow), findsOneWidget);
       expect(find.byType(StatsDiscoveryCard), findsOneWidget);
