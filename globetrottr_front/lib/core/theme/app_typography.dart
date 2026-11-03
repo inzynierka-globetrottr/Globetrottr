@@ -72,6 +72,10 @@ class AppTypography extends ThemeExtension<AppTypography> {
 
   static const fontFamily = 'Manrope';
 
+  /// Bold Manrope under its own family name, for map labels: the map
+  /// renderer picks a font by family only, without a weight.
+  static const mapBoldFontFamily = 'Manrope Bold';
+
   /// Logo and the largest titles.
   final TextStyle display;
 
