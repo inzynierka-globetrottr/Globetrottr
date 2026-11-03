@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/form_message.dart';
-import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/core/widgets/neu_list_card.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
@@ -30,20 +30,18 @@ class QuestsScreen extends ConsumerStatefulWidget {
   ConsumerState<QuestsScreen> createState() => _QuestsScreenState();
 }
 
-class _QuestsScreenState extends ConsumerState<QuestsScreen> {
+class _QuestsScreenState extends ConsumerState<QuestsScreen>
+    with TabVisibility {
   static const _side = 20.0;
 
   int? _openQuestId;
 
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      ref.read(questsProvider.notifier).loadQuests();
-      if (ref.read(profileProvider).profile == null) {
-        ref.read(profileProvider.notifier).loadProfile();
-      }
-    });
+  void onTabShown() {
+    ref.read(questsProvider.notifier).loadQuests();
+    if (ref.read(profileProvider).profile == null) {
+      ref.read(profileProvider.notifier).loadProfile();
+    }
   }
 
   void _toggle(Quest quest) => setState(
@@ -104,12 +102,8 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen> {
     );
 
     return Scaffold(
-      // The list scrolls on under the floating navigation.
-      extendBody: true,
-      bottomNavigationBar: const NeuBottomNavbar(
-        activeItem: NavbarItem.quests,
-      ),
-      // Read inside the scaffold, whose padding includes the navigation.
+      // The padding includes the floating navigation, which the list scrolls
+      // on under.
       body: Builder(
         builder: (context) => SingleChildScrollView(
           padding: _scrollPadding(MediaQuery.paddingOf(context)),

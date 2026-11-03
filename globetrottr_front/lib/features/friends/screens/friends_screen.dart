@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
@@ -7,7 +8,6 @@ import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/form_message.dart';
-import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_list_card.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
@@ -27,18 +27,16 @@ class FriendsScreen extends ConsumerStatefulWidget {
   ConsumerState<FriendsScreen> createState() => _FriendsScreenState();
 }
 
-class _FriendsScreenState extends ConsumerState<FriendsScreen> {
+class _FriendsScreenState extends ConsumerState<FriendsScreen>
+    with TabVisibility {
   static const _side = 20.0;
 
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      ref.read(friendsProvider.notifier).loadAll();
-      if (ref.read(profileProvider).profile == null) {
-        ref.read(profileProvider.notifier).loadProfile();
-      }
-    });
+  void onTabShown() {
+    ref.read(friendsProvider.notifier).loadAll();
+    if (ref.read(profileProvider).profile == null) {
+      ref.read(profileProvider.notifier).loadProfile();
+    }
   }
 
   @override
@@ -54,11 +52,8 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     );
 
     return Scaffold(
-      // The list scrolls on under the floating navigation.
-      extendBody: true,
-      bottomNavigationBar: const NeuBottomNavbar(
-        activeItem: NavbarItem.friends,
-      ),
+      // The padding includes the floating navigation, which the list scrolls
+      // on under.
       body: SingleChildScrollView(
         padding: EdgeInsets.only(
           top: padding.top + 1,

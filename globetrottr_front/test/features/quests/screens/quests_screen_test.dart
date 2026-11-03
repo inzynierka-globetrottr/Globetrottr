@@ -282,7 +282,7 @@ void main() {
         ..._places,
       ], locale: const Locale('pl'));
 
-      expect(find.text('Questy'), findsNWidgets(2));
+      expect(find.text('Questy'), findsOneWidget);
       expect(find.text('Punkt 1 z 5'), findsOneWidget);
       expect(find.text('Pokaż punkt'), findsOneWidget);
       expect(find.text('MIEJSCA'), findsOneWidget);

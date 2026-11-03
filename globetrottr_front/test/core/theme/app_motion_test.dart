@@ -45,6 +45,7 @@ void main() {
     expect(reduced.medium, Duration.zero);
     expect(reduced.long, Duration.zero);
     expect(reduced.flight, Duration.zero);
+    expect(reduced.landing, Duration.zero);
   });
 
   test('reduced motion still shows a press, as it is not a movement', () {

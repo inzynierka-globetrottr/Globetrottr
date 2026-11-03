@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
-import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/logout_button.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/points_card.dart';
@@ -19,12 +19,10 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with TabVisibility {
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() => ref.read(profileProvider.notifier).loadProfile());
-  }
+  void onTabShown() => ref.read(profileProvider.notifier).loadProfile();
 
   Future<void> _pickAndUploadAvatar(BuildContext context) async {
     if (ref.read(profileProvider).isUploadingAvatar) return;
@@ -136,9 +134,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: const NeuBottomNavbar(
-        activeItem: NavbarItem.profile,
       ),
     );
   }

@@ -14,6 +14,7 @@ class AppTheme {
   static ThemeData from(
     AppPalette palette, {
     AppMapPalette map = AppMapPalette.light,
+    AppMotion motion = AppMotion.standard,
   }) {
     final brightness = ThemeData.estimateBrightnessForColor(palette.background);
     final typography = AppTypography.fromPalette(palette);
@@ -56,8 +57,9 @@ class AppTheme {
         map,
         typography,
         AppShadows.fromPalette(palette),
-        AppMotion.standard,
+        motion,
       ],
+      pageTransitionsTheme: motion.deeperTransition.pageTransitions,
     );
   }
 }

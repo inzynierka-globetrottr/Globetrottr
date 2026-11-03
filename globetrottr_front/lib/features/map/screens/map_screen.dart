@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
@@ -36,7 +37,7 @@ class MapScreen extends ConsumerStatefulWidget {
 }
 
 class _MapScreenState extends ConsumerState<MapScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, TabVisibility {
   final MapController _mapController = MapController();
   late final AnimationController _flight = AnimationController(
     vsync: this,
@@ -46,6 +47,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
   String? _lastCameraProblem;
   bool _questOpen = false;
 
+  /// Whether the camera has come down to the player, or the user took it
+  /// over before the first position arrived.
+  bool _landed = false;
+
   @override
   void initState() {
     super.initState();
@@ -54,13 +59,25 @@ class _MapScreenState extends ConsumerState<MapScreen>
       ref.read(questsProvider.notifier).loadQuestsOnce();
     });
     _cameraWatch = _mapController.mapEventStream.listen(_onMapEvent);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _answerQuestFocus());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final position = ref.read(locationProvider).currentPosition;
+      if (mounted && position != null) _land(position);
+    });
   }
+
+  void _land(LatLng position) {
+    if (_landed) return;
+    _landed = true;
+    _flyTo(position, duration: context.motion.landing);
+  }
+
+  @override
+  void onTabShown() => _answerQuestFocus();
 
   /// Shows the active quest when the Quests tab asked for it: flies to its
   /// next point, or fits its route, and opens its card.
   void _answerQuestFocus() {
-    if (!mounted || !ref.read(questMapFocusProvider)) return;
+    if (!ref.read(questMapFocusProvider)) return;
     ref.read(questMapFocusProvider.notifier).clear();
     final quest = ref.read(activeQuestProvider);
     if (quest == null) return;
@@ -83,7 +100,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 
   void _onMapEvent(MapEvent event) {
-    if (interruptsCameraFlight(event.source)) _flight.stop();
+    if (interruptsCameraFlight(event.source)) {
+      _flight.stop();
+      _landed = true;
+    }
     _logCameraProblem(event);
   }
 
@@ -117,7 +137,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
     );
   }
 
-  void _flyTo(LatLng center) {
+  void _flyTo(LatLng center, {Duration? duration}) {
     final camera = _mapController.camera;
     final route = CameraFlight(
       from: (center: camera.center, zoom: camera.zoom),
@@ -125,7 +145,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
     );
     if (route.isStill) return;
     _route = route;
-    _flight.duration = context.motion.flight;
+    _flight.duration = duration ?? context.motion.flight;
     unawaited(_flight.forward(from: 0));
   }
 
@@ -148,7 +168,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   Widget build(BuildContext context) {
     ref.listen<TrackingState>(locationProvider, (previous, next) {
       if (previous?.currentPosition == null && next.currentPosition != null) {
-        _mapController.move(next.currentPosition!, MapConfig.defaultZoom);
+        _land(next.currentPosition!);
       }
     });
 
@@ -164,7 +184,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
             mapController: _mapController,
             options: const MapOptions(
               initialCenter: MapConfig.initialCenter,
-              initialZoom: MapConfig.defaultZoom,
+              initialZoom: MapConfig.startZoom,
               // North stays up, as in the mock-up, which has no compass.
               interactionOptions: InteractionOptions(
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,

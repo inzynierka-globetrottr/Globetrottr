@@ -119,7 +119,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 Subtle motion across the app, in the language of the mock-up: short transitions with an ease curve, no effects for their own sake. Stages, each reviewed by the owner:
 1. Motion tokens and the reduced-motion setting (Done).
 2. Shared components: pressed buttons, counting numbers, filling rings, bars and quest steps, appearing form and field errors (Done; not yet checked on a phone).
-3. Navigation: a persistent bottom navigation and screen transitions (Planned; changes the routing, needs the owner's decision).
+3. Navigation: one persistent bottom navigation, tab and screen transitions, back behaviour (Done; not yet checked on a phone).
 4. Screens: map pill, friends, quests, dialogs, list entrances (Planned).
 5. Reward moments: a reached quest point, a completed quest, a new region (Idea).
 
@@ -131,6 +131,12 @@ Subtle motion across the app, in the language of the mock-up: short transitions 
 - Form messages and field errors unfold and fade in when they appear and disappear at once.
 - No looping animation on the map screen. Why: the map draws only 15-30 frames per second to save battery, and a loop would force full frame rate (see Fog of war).
 - Every animation can be tried on the dev screen "Animations" (real components, controls that change their values, slow motion), because most of them need backend data to show up in the app. Each stage adds its part there.
+- The four tabs share one navigation and stay alive while another tab is shown, so the map keeps its place and lists their scroll; the accent pill slides to the new tab (owner's decision). A tab reloads its data each time it is shown, as it did when it was built anew. Rejected: separate screens with a cross-fade (simpler, but the map and lists reset on every switch).
+- A hidden tab is neither drawn nor ticking, so the map in the background costs no frames of its own.
+- Deeper screens (adding a friend, quest history, a friend's map, the auth steps) come in over the navigation. The tab and deeper screen transitions are being chosen on a phone from variants on the dev screen "Animations" (tabs: fade through, instant, fade in; deeper: iOS slide, zoom, rise, platform default); the unchosen ones are then removed. For now the default is an instant tab change and the zoom for deeper screens (owner's choice, may change). Rejected: a plain cross-fade of tabs and a short half-transparent slide (both showed two screens at once, owner's feedback).
+- System back on a deeper screen goes one level up, on a tab other than the map returns to the map, and on the map leaves the app (owner's decision).
+- The map opens on an overview and the camera comes down to the player once the first position arrives, unless the user has moved the map first. Why: the jump to the player looked abrupt (owner's feedback).
+- The navigation keeps a fixed gap above the system navigation (gesture bar or buttons) instead of resting on it.
 - Built-in Flutter animations first; no animation packages or Lottie/Rive assets until a design needs them.
 
 ---
