@@ -86,6 +86,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - The layers sheet lists every planned view; only the fog can be chosen, the others say they are coming.
 - Until the Quests tab is designed it shows the existing quest list; the map card shows the first started quest with its progress. Quests have no map points yet, so the point marker, its distance and the bar of points wait for that data.
 - Product decisions from the mock-up: one active quest at a time, its next point is shown on the map without navigation; friends are added by exact nickname, without suggestions; the profile has no map; the "passing through" feature is dropped.
+- Quests tab from the mock-up: the active quest card on top (points as steps, a route as a progress bar, an empty dashed card when none is active), below it the available quests grouped by type (places, routes) with no time estimates. A quest opens into a map preview with one button that starts it, or swaps it in after a warning that the active quest and its progress are lost. Completed quests are not listed; the level row opens their history.
 
 **Open questions:**
 - Guest data after signing in: the fog stays (it is per installation), but should points recorded as a guest be uploaded to the new account? For now leaving guest mode keeps them in the upload queue, so the first sync after signing in sends them.
