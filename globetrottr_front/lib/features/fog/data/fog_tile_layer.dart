@@ -19,8 +19,12 @@ abstract interface class FogTileLayer {
   FogMask? peek(FogTileId id);
 
   bool isKnownAbsent(FogTileId id);
+}
 
+/// A layer that draws its newest points over the tile images until they are
+/// written into them (the fog's trail).
+abstract interface class TrailedTileLayer implements FogTileLayer {
   /// The images now hold everything drawn up to trail segment [upToId], so
-  /// a layer that draws new points over them can stop doing so.
+  /// it no longer needs to be drawn over them.
   void forgetTrail(int upToId);
 }

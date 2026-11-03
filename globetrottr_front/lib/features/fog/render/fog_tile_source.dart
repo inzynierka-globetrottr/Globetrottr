@@ -185,11 +185,11 @@ class TileLayerSource<L extends FogTileLayer> extends ChangeNotifier {
       return;
     }
 
-    final written = change.trailWrittenUpTo;
+    final trailWritten = change.trailWrittenUpTo;
     final wanted = _lastRange?.expand(1);
     final refresh = <FogTileId>{...change.tiles};
     final spreads = _spread != null;
-    if (written != null || spreads) {
+    if (change.written || spreads) {
       for (final id in change.tiles) {
         for (var dy = -1; dy <= 1; dy++) {
           for (var dx = -1; dx <= 1; dx++) {
@@ -207,7 +207,7 @@ class TileLayerSource<L extends FogTileLayer> extends ChangeNotifier {
       }
     }
 
-    if (written != null) unawaited(_releaseTrail(written));
+    if (trailWritten != null) unawaited(_releaseTrail(trailWritten));
   }
 
   /// Drops the trail once the new images hold what it shows. Until then both
@@ -215,7 +215,7 @@ class TileLayerSource<L extends FogTileLayer> extends ChangeNotifier {
   Future<void> _releaseTrail(int upToId) async {
     await whenIdle();
     if (_disposed) return;
-    store.forgetTrail(upToId);
+    if (store case final TrailedTileLayer trailed) trailed.forgetTrail(upToId);
     notifyListeners();
   }
 

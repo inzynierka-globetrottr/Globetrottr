@@ -1,14 +1,10 @@
-import 'dart:isolate';
-import 'dart:math' as math;
-import 'dart:typed_data';
-
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
-import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_tile_cache.dart';
+import 'package:globetrottr_front/features/fog/data/store/tile_writer.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 class FogWriteResult {
@@ -25,19 +21,61 @@ class FogWriteResult {
   final Set<FogTileId> tiles;
 }
 
-List<EncodedFogTile> _encodeBatch(List<Uint8List> raw) {
-  return [for (final data in raw) FogTileCodec.encode(FogMask.fromBytes(data))];
+/// Fog tiles are coverage masks; the coarser levels average them, keeping a
+/// minimum strength for thin routes on country-sized views.
+class FogTileKind extends TileKind<FogMask> {
+  const FogTileKind({required this.baseZoom});
+
+  final int baseZoom;
+
+  @override
+  FogMask planeOf(FogMask tile) => tile;
+
+  @override
+  FogMask overview() => FogMask();
+
+  @override
+  int overviewFloor(int z) =>
+      z > FogConfig.overviewFloorMaxZoom ? 0 : FogPyramid.defaultOverviewFloor;
+
+  /// The rasterizer already draws base tiles on the storage grid; only the
+  /// averaging of the pyramid creates other values.
+  @override
+  void finishOverview(FogMask tile) =>
+      tile.quantizeInPlace(step: FogConfig.overviewQuantStep);
+
+  @override
+  EncodedFogTile encode(FogMask tile) => FogTileCodec.encode(tile);
+
+  @override
+  double areaOf(FogTileId id, FogMask tile) {
+    final latitude = FogMercator.yToLat(
+      (id.y + 0.5) * FogTileId.size,
+      baseZoom,
+    );
+    final pixel = metersPerPixel(
+      latitude: latitude,
+      zoom: baseZoom.toDouble(),
+    );
+    return tile.coveredSum / 255.0 * pixel * pixel;
+  }
 }
 
 /// Writes the modified tiles of a [FogTileCache] to its storage, together
 /// with the coarser pyramid levels above them and the store's metadata.
 class FogTileWriter {
   FogTileWriter(
-    this.cache, {
+    FogTileCache cache, {
     required this.baseZoom,
-    required this.encodeInIsolate,
-    required this.isolateEncodeThreshold,
-  });
+    required bool encodeInIsolate,
+    required int isolateEncodeThreshold,
+  }) : _writer = TileWriter(
+         cache,
+         FogTileKind(baseZoom: baseZoom),
+         baseZoom: baseZoom,
+         encodeInIsolate: encodeInIsolate,
+         isolateEncodeThreshold: isolateEncodeThreshold,
+       );
 
   /// The metadata `FogStore.open` checks to know the tiles were drawn the way
   /// this build draws them. Every metadata write must include it, otherwise
@@ -50,12 +88,8 @@ class FogTileWriter {
     'drawVersion': FogConfig.drawVersion.toDouble(),
   };
 
-  final FogTileCache cache;
   final int baseZoom;
-
-  /// Compress large writes in a background isolate to keep the UI smooth.
-  final bool encodeInIsolate;
-  final int isolateEncodeThreshold;
+  final TileWriter<FogMask> _writer;
 
   /// Writes every tile in [FogTileCache.dirty] and the pyramid above it, and
   /// stores [lastAppliedLogId] with them. A write without modified tiles
@@ -65,127 +99,26 @@ class FogTileWriter {
     required double totalAreaM2,
     required int lastAppliedLogId,
   }) async {
-    final baseDirty = cache.dirty.toSet();
     // The revision counts writes that change tiles; saving only the log
     // position does not make any tile newer.
-    final nextRevision = baseDirty.isEmpty ? revision : revision + 1;
-    final ancestors = <FogTileId>{};
-
-    try {
-      var level = baseDirty;
-      for (var z = baseZoom; z > FogConfig.minZoom; z--) {
-        final byParent = <FogTileId, List<FogTileId>>{};
-        for (final id in level) {
-          byParent.putIfAbsent(id.ancestorAt(z - 1), () => []).add(id);
-        }
-        ancestors.addAll(byParent.keys);
-        cache.pinned.addAll(byParent.keys);
-        await cache.ensureLoaded(byParent.keys);
-        for (final group in byParent.entries) {
-          final parentMask = cache[group.key]!.mask ??= FogMask();
-          for (final child in group.value) {
-            FogPyramid.downsampleInto(
-              child: cache[child]?.mask ?? FogMask(),
-              parent: parentMask,
-              quadX: child.x & 1,
-              quadY: child.y & 1,
-              overviewFloor: z - 1 > FogConfig.overviewFloorMaxZoom
-                  ? 0
-                  : FogPyramid.defaultOverviewFloor,
-            );
-          }
-        }
-        level = byParent.keys.toSet();
-      }
-
-      // The rasterizer already draws base tiles on the storage grid; only
-      // the averaging of the pyramid creates other values.
-      for (final id in ancestors) {
-        cache[id]!.mask!.quantizeInPlace(step: FogConfig.overviewQuantStep);
-      }
-
-      final changed = <FogTileId>{...baseDirty, ...ancestors};
-      final ids = changed.toList();
-      final encoded = await _encodeAll([
-        for (final id in ids) cache[id]!.mask!,
-      ]);
-
-      var areaDelta = 0.0;
-      final upserts = <StoredFogTile>[];
-      final newAreas = <FogTileId, double>{};
-      for (var i = 0; i < ids.length; i++) {
-        final id = ids[i];
-        final entry = cache[id]!;
-        var area = 0.0;
-        if (id.z == baseZoom) {
-          area = _areaOf(id, entry.mask!);
-          areaDelta += area - entry.areaM2;
-          newAreas[id] = area;
-        }
-        upserts.add(
-          StoredFogTile(
-            id: id,
-            flag: encoded[i].flag,
-            rev: nextRevision,
-            areaM2: area,
-            bytes: encoded[i].bytes,
-          ),
-        );
-      }
-
-      final newTotal = math.max(0.0, totalAreaM2 + areaDelta);
-      await cache.storage.commit(
-        upserts: upserts,
-        meta: {
+    final nextRevision = _writer.cache.dirty.isEmpty ? revision : revision + 1;
+    var newTotal = totalAreaM2;
+    final result = await _writer.write(
+      revision: nextRevision,
+      meta: (areaDelta) {
+        newTotal = (totalAreaM2 + areaDelta).clamp(0.0, double.infinity);
+        return {
           'rev': nextRevision.toDouble(),
           'totalAreaM2': newTotal,
           'lastAppliedLogId': lastAppliedLogId.toDouble(),
           ...compatibilityMeta(baseZoom: baseZoom),
-        },
-      );
-
-      newAreas.forEach((id, area) => cache[id]!.areaM2 = area);
-      cache.dirty.removeAll(baseDirty);
-      return FogWriteResult(
-        revision: nextRevision,
-        totalAreaM2: newTotal,
-        tiles: changed,
-      );
-    } finally {
-      cache.pinned.removeAll(ancestors);
-      cache.evict();
-    }
-  }
-
-  Future<List<EncodedFogTile>> _encodeAll(List<FogMask> masks) async {
-    if (!encodeInIsolate || masks.length < isolateEncodeThreshold) {
-      return [for (final mask in masks) FogTileCodec.encode(mask)];
-    }
-    final raw = [for (final mask in masks) mask.data];
-    final workers = math.max(
-      1,
-      math.min(FogConfig.isolateWorkers, raw.length ~/ isolateEncodeThreshold),
+        };
+      },
     );
-    final share = (raw.length / workers).ceil();
-    final parts = await Future.wait([
-      for (var start = 0; start < raw.length; start += share)
-        () {
-          final slice = raw.sublist(start, math.min(start + share, raw.length));
-          return Isolate.run(() => _encodeBatch(slice));
-        }(),
-    ]);
-    return [for (final part in parts) ...part];
-  }
-
-  double _areaOf(FogTileId id, FogMask mask) {
-    final latitude = FogMercator.yToLat(
-      (id.y + 0.5) * FogTileId.size,
-      baseZoom,
+    return FogWriteResult(
+      revision: nextRevision,
+      totalAreaM2: newTotal,
+      tiles: result.tiles,
     );
-    final pixel = metersPerPixel(
-      latitude: latitude,
-      zoom: baseZoom.toDouble(),
-    );
-    return mask.coveredSum / 255.0 * pixel * pixel;
   }
 }

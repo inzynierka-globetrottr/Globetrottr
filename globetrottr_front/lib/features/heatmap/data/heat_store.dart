@@ -1,17 +1,14 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_path_point.dart';
-import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_rasterizer.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_segment_rule.dart';
-import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_layer.dart';
@@ -19,10 +16,10 @@ import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_batch_drawing.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_replay_tracker.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store_models.dart';
+import 'package:globetrottr_front/features/fog/data/store/tile_writer.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/heatmap/bitmap/heat_session_tag.dart';
 import 'package:globetrottr_front/features/heatmap/bitmap/heat_tile.dart';
-import 'package:globetrottr_front/features/heatmap/bitmap/heat_tile_codec.dart';
 import 'package:globetrottr_front/features/heatmap/data/heat_tile_cache.dart';
 import 'package:globetrottr_front/features/heatmap/heat_config.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
@@ -55,13 +52,6 @@ class HeatStoreDiagnostics {
 /// Masks of one session rasterized in a background isolate.
 List<Map<int, Uint8List>> _rasterizeSessions(List<FogChunkJob> jobs) {
   return [for (final job in jobs) rasterizeChunk(job)];
-}
-
-List<EncodedFogTile> _encodeBatch(List<(Uint8List, Uint16List?)> tiles) {
-  return [
-    for (final (counts, tags) in tiles)
-      HeatTileCodec.encode(HeatTile(FogMask.fromBytes(counts), tags)),
-  ];
 }
 
 /// The heatmap of one user: per pixel, the number of sessions that passed
@@ -135,7 +125,8 @@ class HeatStore implements FogTileLayer {
     'radiusMeters': radiusMeters,
   };
 
-  static const int _isolateThreshold = 4;
+  /// The trail segment a deferred point belongs to: the heatmap has no trail.
+  static const int _noTrailSegment = 0;
 
   final FogTileStorage storage;
   @override
@@ -154,6 +145,13 @@ class HeatStore implements FogTileLayer {
     storage,
     maxTiles: maxCachedTiles,
     decodeInIsolate: encodeInIsolate,
+  );
+  late final TileWriter<HeatTile> _writer = TileWriter(
+    _tiles,
+    const HeatTileKind(),
+    baseZoom: baseZoom,
+    encodeInIsolate: encodeInIsolate,
+    isolateEncodeThreshold: FogConfig.isolateEncodeThreshold,
   );
   late final FogRasterizer _rasterizer = FogRasterizer(zoom: baseZoom);
   late final FogSegmentRule _segmentRule = FogSegmentRule(
@@ -218,7 +216,9 @@ class HeatStore implements FogTileLayer {
       radiusMeters: radiusMeters,
     );
     if (_replayTracker.isRunning) {
-      return _replayTracker.defer(FogDeferredPoint(sessionId, point, logId, 0));
+      return _replayTracker.defer(
+        FogDeferredPoint(sessionId, point, logId, _noTrailSegment),
+      );
     }
     return _queue.run(() => _apply(sessionId, point, logId));
   }
@@ -325,90 +325,19 @@ class HeatStore implements FogTileLayer {
     _flushTimer = null;
     if (_tiles.dirty.isEmpty && !_metaDirty) return;
     final timer = Stopwatch()..start();
-    final baseDirty = _tiles.dirty.toSet();
-    final ancestors = <FogTileId>{};
-    try {
-      await _refreshPyramid(baseDirty, ancestors);
-      final ids = [...baseDirty, ...ancestors];
-      final encoded = await _encodeAll([for (final id in ids) _tiles[id]!]);
-      await storage.commit(
-        upserts: [
-          for (var i = 0; i < ids.length; i++)
-            StoredFogTile(
-              id: ids[i],
-              flag: encoded[i].flag,
-              rev: 0,
-              areaM2: 0,
-              bytes: encoded[i].bytes,
-            ),
-        ],
-        meta: {
-          'lastAppliedLogId': _lastAppliedLogId.toDouble(),
-          ...compatibilityMeta(baseZoom: baseZoom, radiusMeters: radiusMeters),
-        },
-      );
-      _tiles.dirty.removeAll(baseDirty);
-      _metaDirty = false;
-      _lastFlushMillis = timer.elapsedMilliseconds;
-      _lastFlushTiles = ids.length;
-      // Marked as written so the images of the neighbours, whose borders
-      // sample these tiles, are refreshed too.
-      if (ids.isNotEmpty) _emit(FogChange(ids.toSet(), trailWrittenUpTo: 0));
-    } finally {
-      _tiles.pinned.removeAll(ancestors);
-      _tiles.evict();
-    }
-  }
-
-  /// Draws [baseDirty] into every coarser level, keeping the busiest of four
-  /// pixels so a route stays visible on a country-sized view.
-  Future<void> _refreshPyramid(
-    Set<FogTileId> baseDirty,
-    Set<FogTileId> ancestors,
-  ) async {
-    var level = baseDirty;
-    for (var z = baseZoom; z > FogConfig.minZoom; z--) {
-      final byParent = <FogTileId, List<FogTileId>>{};
-      for (final id in level) {
-        byParent.putIfAbsent(id.ancestorAt(z - 1), () => []).add(id);
-      }
-      ancestors.addAll(byParent.keys);
-      _tiles.pinned.addAll(byParent.keys);
-      await _tiles.ensureLoaded(byParent.keys);
-      for (final group in byParent.entries) {
-        final parent = _tiles.overviewTile(group.key).counts;
-        for (final child in group.value) {
-          FogPyramid.downsampleInto(
-            child: _tiles[child]?.counts ?? FogMask(),
-            parent: parent,
-            quadX: child.x & 1,
-            quadY: child.y & 1,
-            overviewFloor: 255,
-          );
-        }
-      }
-      level = byParent.keys.toSet();
-    }
-  }
-
-  Future<List<EncodedFogTile>> _encodeAll(List<HeatTile> tiles) async {
-    if (!encodeInIsolate || tiles.length < _isolateThreshold) {
-      return [for (final tile in tiles) HeatTileCodec.encode(tile)];
-    }
-    final raw = [for (final tile in tiles) (tile.counts.data, tile.tags)];
-    final workers = math.max(
-      1,
-      math.min(FogConfig.isolateWorkers, raw.length ~/ _isolateThreshold),
+    final result = await _writer.write(
+      revision: 0,
+      meta: (_) => {
+        'lastAppliedLogId': _lastAppliedLogId.toDouble(),
+        ...compatibilityMeta(baseZoom: baseZoom, radiusMeters: radiusMeters),
+      },
     );
-    final share = (raw.length / workers).ceil();
-    final parts = await Future.wait([
-      for (var start = 0; start < raw.length; start += share)
-        () {
-          final slice = raw.sublist(start, math.min(start + share, raw.length));
-          return Isolate.run(() => _encodeBatch(slice));
-        }(),
-    ]);
-    return [for (final part in parts) ...part];
+    _metaDirty = false;
+    _lastFlushMillis = timer.elapsedMilliseconds;
+    _lastFlushTiles = result.tiles.length;
+    if (result.tiles.isNotEmpty) {
+      _emit(FogChange(result.tiles, written: true));
+    }
   }
 
   /// Counts many entries at once, rasterizing in background isolates.
@@ -582,13 +511,10 @@ class HeatStore implements FogTileLayer {
   Future<void> prepare(FogTileRange range) => _tiles.loadRange(range);
 
   @override
-  FogMask? peek(FogTileId id) => _tiles[id]?.counts;
+  FogMask? peek(FogTileId id) => _tiles.peek(id)?.counts;
 
   @override
   bool isKnownAbsent(FogTileId id) => _tiles.isKnownAbsent(id);
-
-  @override
-  void forgetTrail(int upToId) {}
 
   Future<void> dispose() async {
     _disposed = true;

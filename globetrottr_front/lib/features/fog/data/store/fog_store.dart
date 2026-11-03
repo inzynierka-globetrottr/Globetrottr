@@ -35,7 +35,7 @@ export 'package:globetrottr_front/features/fog/data/store/fog_store_models.dart'
 ///
 /// Every operation that changes the fog runs through one queue, so they
 /// never interleave.
-class FogStore implements FogTileLayer {
+class FogStore implements TrailedTileLayer {
   FogStore._(
     this.storage, {
     required this.baseZoom,
