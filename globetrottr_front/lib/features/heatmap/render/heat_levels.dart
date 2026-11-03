@@ -1,21 +1,16 @@
 import 'dart:math' as math;
-import 'dart:typed_data';
 
-import 'package:globetrottr_front/features/fog/render/fog_tile_pixels.dart';
 import 'package:globetrottr_front/features/heatmap/heat_config.dart';
 
-/// How the session count of a pixel becomes the brightness the painter
-/// colours: 0 stays black (nothing drawn), one session is [first], and the
-/// rest grows with the logarithm of the count up to white at
-/// [HeatConfig.saturationSessions].
+/// Where a session count lies on the colour scale of the heatmap: one
+/// session is 0, [HeatConfig.saturationSessions] and more are 1, and the
+/// counts in between follow the logarithm, so the first visits are told apart
+/// best.
 abstract final class HeatLevels {
-  static const int first = 96;
-
-  static int brightnessOf(int sessions) {
-    if (sessions <= 0) return 0;
+  /// Position of [sessions] on the scale, or null for a place nobody passed.
+  static double? shareOf(int sessions) {
+    if (sessions <= 0) return null;
     final share = math.log(sessions) / math.log(HeatConfig.saturationSessions);
-    return (first + (255 - first) * share.clamp(0.0, 1.0)).round();
+    return share.clamp(0.0, 1.0);
   }
-
-  static final Uint32List greys = FogTilePixels.greysOf(brightnessOf);
 }

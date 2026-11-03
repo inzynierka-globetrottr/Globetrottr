@@ -22,8 +22,12 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.shadowOverlay,
     required this.shadowPressed,
     required this.fog,
-    required this.heatCold,
-    required this.heatHot,
+    required this.heatRare,
+    required this.heatLow,
+    required this.heatMid,
+    required this.heatHigh,
+    required this.heatBusiest,
+    required this.heatBackdrop,
   });
 
   static const light = AppPalette(
@@ -43,8 +47,12 @@ class AppPalette extends ThemeExtension<AppPalette> {
     shadowOverlay: Color(0xFF14120F),
     shadowPressed: Color(0xFF000000),
     fog: Color(0xDB383633),
-    heatCold: Color(0xFFE3A33A),
-    heatHot: Color(0xF2D9531E),
+    heatRare: Color(0xB3801A5E),
+    heatLow: Color(0xE6C8203A),
+    heatMid: Color(0xFFF2560A),
+    heatHigh: Color(0xFFFFB21A),
+    heatBusiest: Color(0xFFFFF4D6),
+    heatBackdrop: Color(0xE6170D15),
   );
 
   /// Screens and every neumorphic surface on them.
@@ -85,12 +93,16 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Undiscovered area, opacity included.
   final Color fog;
 
-  /// Heatmap colour of a place visited once; its opacity is not used.
-  final Color heatCold;
+  /// The heatmap scale, opacity included, from a route taken once to the
+  /// busiest places.
+  final Color heatRare;
+  final Color heatLow;
+  final Color heatMid;
+  final Color heatHigh;
+  final Color heatBusiest;
 
-  /// Heatmap colour of the busiest places, opacity included. Less visited
-  /// places are drawn fainter.
-  final Color heatHot;
+  /// Darkens the map under the heatmap, so the routes glow.
+  final Color heatBackdrop;
 
   @override
   AppPalette copyWith({
@@ -110,8 +122,12 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? shadowOverlay,
     Color? shadowPressed,
     Color? fog,
-    Color? heatCold,
-    Color? heatHot,
+    Color? heatRare,
+    Color? heatLow,
+    Color? heatMid,
+    Color? heatHigh,
+    Color? heatBusiest,
+    Color? heatBackdrop,
   }) => AppPalette(
     background: background ?? this.background,
     text: text ?? this.text,
@@ -129,8 +145,12 @@ class AppPalette extends ThemeExtension<AppPalette> {
     shadowOverlay: shadowOverlay ?? this.shadowOverlay,
     shadowPressed: shadowPressed ?? this.shadowPressed,
     fog: fog ?? this.fog,
-    heatCold: heatCold ?? this.heatCold,
-    heatHot: heatHot ?? this.heatHot,
+    heatRare: heatRare ?? this.heatRare,
+    heatLow: heatLow ?? this.heatLow,
+    heatMid: heatMid ?? this.heatMid,
+    heatHigh: heatHigh ?? this.heatHigh,
+    heatBusiest: heatBusiest ?? this.heatBusiest,
+    heatBackdrop: heatBackdrop ?? this.heatBackdrop,
   );
 
   @override
@@ -154,8 +174,12 @@ class AppPalette extends ThemeExtension<AppPalette> {
       shadowOverlay: mix(shadowOverlay, other.shadowOverlay),
       shadowPressed: mix(shadowPressed, other.shadowPressed),
       fog: mix(fog, other.fog),
-      heatCold: mix(heatCold, other.heatCold),
-      heatHot: mix(heatHot, other.heatHot),
+      heatRare: mix(heatRare, other.heatRare),
+      heatLow: mix(heatLow, other.heatLow),
+      heatMid: mix(heatMid, other.heatMid),
+      heatHigh: mix(heatHigh, other.heatHigh),
+      heatBusiest: mix(heatBusiest, other.heatBusiest),
+      heatBackdrop: mix(heatBackdrop, other.heatBackdrop),
     );
   }
 }

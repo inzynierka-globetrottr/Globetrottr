@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -8,10 +9,10 @@ import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/debug/format_bytes.dart';
 import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
-import 'package:globetrottr_front/features/fog/render/fog_tile_pixels.dart';
+import 'package:globetrottr_front/features/heatmap/render/heat_density.dart';
 import 'package:globetrottr_front/features/heatmap/render/heat_tile_source.dart';
 import 'package:globetrottr_front/features/heatmap/data/heat_store.dart';
-import 'package:globetrottr_front/features/heatmap/render/heat_levels.dart';
+import 'package:globetrottr_front/features/heatmap/render/heat_style.dart';
 import 'package:globetrottr_front/features/heatmap/render/heatmap_painter.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:latlong2/latlong.dart';
@@ -19,13 +20,16 @@ import 'package:latlong2/latlong.dart';
 /// Measures the heatmap on the device: a rebuild of the whole track log, the
 /// cost of every live point, a flush, building tile images and painting.
 /// It works on [scratch], never on the user's heatmap, and clears it after.
+/// [style] is the look painted, the app's by default.
 Future<List<String>> runHeatmapBenchmark({
   required TrackLogStorage log,
   required FogTileStorage scratch,
   required LatLng around,
   int livePoints = 2000,
+  HeatStyle? style,
   void Function(String line)? onLine,
 }) async {
+  final look = style ?? HeatStyle.of(AppPalette.light);
   final lines = <String>[];
   void say(String line) {
     lines.add(line);
@@ -95,33 +99,34 @@ Future<List<String>> runHeatmapBenchmark({
     final range = camera.visibleTiles(store.baseZoom);
     await store.prepare(range);
     final drawn = [for (final id in range.ids) ?store.peek(id)];
-    // A live point rebuilds the image of the tile under the player, so this
-    // runs on the UI thread once per fix. The first round warms up.
+    // A live point rebuilds the images of the tiles around the player, each
+    // in a background isolate. Measured here without the isolate, so the
+    // number is the work itself. The first round warms up.
+    final recipe = look.densityRecipe;
     const rounds = 10;
     final pixelTimer = Stopwatch();
     for (var round = 0; round <= rounds; round++) {
       if (round == 1) pixelTimer.start();
       for (final mask in drawn) {
-        FogTilePixels.build(
-          mask,
-          neighbor: (_, _) => null,
-          levels: HeatLevels.greys,
-        );
+        HeatDensity.build([
+          ...List<Uint8List?>.filled(4, null),
+          mask.data,
+          ...List<Uint8List?>.filled(4, null),
+        ], recipe);
       }
     }
     final builds = drawn.length * rounds;
     final pixelMicros = builds == 0
         ? 0
         : pixelTimer.elapsedMicroseconds ~/ builds;
-    say('Tile image pixels: $pixelMicros us per tile ($builds builds)');
+    say('Density tile image: $pixelMicros us per tile ($builds builds)');
 
-    final source = HeatTileSource(store, levels: HeatLevels.greys);
+    final source = HeatTileSource(store)..useSpread(look.spread);
     source.ensureVisible(camera);
     await source.whenIdle();
     final painter = HeatmapPainter(
       camera: camera,
-      cold: AppPalette.light.heatCold,
-      hot: AppPalette.light.heatHot,
+      style: look,
       source: source,
     );
     var paintMicros = 0;

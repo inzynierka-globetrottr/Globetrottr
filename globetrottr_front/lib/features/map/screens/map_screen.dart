@@ -16,7 +16,9 @@ import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.da
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_layer.dart';
 import 'package:globetrottr_front/features/heatmap/provider/heatmap_provider.dart';
+import 'package:globetrottr_front/features/heatmap/render/heat_style.dart';
 import 'package:globetrottr_front/features/heatmap/render/heatmap_layer.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/features/map/provider/map_view_provider.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/layers_sheet.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/map_overlay.dart';
@@ -148,7 +150,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
             children: [
               const AppTileLayer(),
               if (heat != null)
-                HeatmapLayer(source: heat.value)
+                HeatmapLayer(
+                  style: HeatStyle.of(context.palette),
+                  source: heat.value,
+                )
               else
                 BitmapFogLayer(
                   source: fog.value,

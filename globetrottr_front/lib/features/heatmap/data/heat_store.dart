@@ -79,6 +79,7 @@ class HeatStore implements FogTileLayer {
   HeatStore._(
     this.storage, {
     required this.baseZoom,
+    required this.radiusMeters,
     required this.maxCachedTiles,
     required this.maxDirtyTiles,
     required this.importTileBudget,
@@ -90,6 +91,7 @@ class HeatStore implements FogTileLayer {
   static Future<HeatStore> open(
     FogTileStorage storage, {
     int baseZoom = FogConfig.baseZoom,
+    double radiusMeters = HeatConfig.radiusMeters,
     int maxCachedTiles = HeatConfig.maxCachedTiles,
     int maxDirtyTiles = HeatConfig.maxDirtyTiles,
     int importTileBudget = HeatConfig.importTileBudget,
@@ -97,7 +99,10 @@ class HeatStore implements FogTileLayer {
     bool encodeInIsolate = true,
   }) async {
     var meta = await storage.loadMeta();
-    final expected = compatibilityMeta(baseZoom: baseZoom);
+    final expected = compatibilityMeta(
+      baseZoom: baseZoom,
+      radiusMeters: radiusMeters,
+    );
     final compatible =
         meta.isEmpty || expected.entries.every((e) => meta[e.key] == e.value);
     if (!compatible) {
@@ -107,6 +112,7 @@ class HeatStore implements FogTileLayer {
     return HeatStore._(
       storage,
       baseZoom: baseZoom,
+      radiusMeters: radiusMeters,
       maxCachedTiles: maxCachedTiles,
       maxDirtyTiles: maxDirtyTiles,
       importTileBudget: importTileBudget,
@@ -118,11 +124,15 @@ class HeatStore implements FogTileLayer {
 
   /// What [open] checks to know the tiles were counted the way this build
   /// counts them. Every metadata write includes it.
-  static Map<String, double> compatibilityMeta({required int baseZoom}) => {
+  static Map<String, double> compatibilityMeta({
+    required int baseZoom,
+    required double radiusMeters,
+  }) => {
     'baseZoom': baseZoom.toDouble(),
     'minZoom': FogConfig.minZoom.toDouble(),
     'drawVersion': FogConfig.drawVersion.toDouble(),
     'heatVersion': HeatConfig.algorithmVersion.toDouble(),
+    'radiusMeters': radiusMeters,
   };
 
   static const int _isolateThreshold = 4;
@@ -130,6 +140,10 @@ class HeatStore implements FogTileLayer {
   final FogTileStorage storage;
   @override
   final int baseZoom;
+
+  /// Half the width of a pass. The vision radius makes the heatmap cover
+  /// exactly what the fog reveals; a smaller one draws the routes thinner.
+  final double radiusMeters;
   final int maxCachedTiles;
   final int maxDirtyTiles;
   final int importTileBudget;
@@ -142,13 +156,14 @@ class HeatStore implements FogTileLayer {
     decodeInIsolate: encodeInIsolate,
   );
   late final FogRasterizer _rasterizer = FogRasterizer(zoom: baseZoom);
-  late final FogSegmentRule _segmentRule = const FogSegmentRule(
-    radiusMeters: MapConfig.defaultVisionRadius,
+  late final FogSegmentRule _segmentRule = FogSegmentRule(
+    radiusMeters: radiusMeters,
     maxSegmentMeters: MapConfig.maxPathGapMeters,
   );
   late final FogImportPlanner _planner = FogImportPlanner(
     segmentRule: _segmentRule,
     rasterizer: _rasterizer,
+    radiusMeters: radiusMeters,
   );
   final FogLastPoints _lastPoints = FogLastPoints();
   final FogReplayTracker _replayTracker = FogReplayTracker();
@@ -196,7 +211,12 @@ class HeatStore implements FogTileLayer {
     required double longitude,
     int? logId,
   }) {
-    final point = FogPathPoint.at(latitude, longitude, baseZoom);
+    final point = FogPathPoint.at(
+      latitude,
+      longitude,
+      baseZoom,
+      radiusMeters: radiusMeters,
+    );
     if (_replayTracker.isRunning) {
       return _replayTracker.defer(FogDeferredPoint(sessionId, point, logId, 0));
     }
@@ -324,7 +344,7 @@ class HeatStore implements FogTileLayer {
         ],
         meta: {
           'lastAppliedLogId': _lastAppliedLogId.toDouble(),
-          ...compatibilityMeta(baseZoom: baseZoom),
+          ...compatibilityMeta(baseZoom: baseZoom, radiusMeters: radiusMeters),
         },
       );
       _tiles.dirty.removeAll(baseDirty);

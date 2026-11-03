@@ -6,7 +6,6 @@ import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/sqflite_fog_tile_storage.dart';
 import 'package:globetrottr_front/features/heatmap/render/heat_tile_source.dart';
 import 'package:globetrottr_front/features/heatmap/data/heat_store.dart';
-import 'package:globetrottr_front/features/heatmap/render/heat_levels.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
 
@@ -34,7 +33,7 @@ class HeatmapNotifier extends AsyncNotifier<HeatTileSource> {
   @override
   Future<HeatTileSource> build() async {
     final store = await HeatStore.open(ref.read(heatTileStorageProvider));
-    final source = HeatTileSource(store, levels: HeatLevels.greys);
+    final source = HeatTileSource(store);
     _store = store;
 
     final logged = ref.read(playerMotionProvider).passed.listen((e) {

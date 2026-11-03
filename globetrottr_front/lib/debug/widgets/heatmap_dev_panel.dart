@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/debug/format_bytes.dart';
+import 'package:globetrottr_front/debug/commute_generator.dart';
 import 'package:globetrottr_front/debug/heatmap_benchmark.dart';
 import 'package:globetrottr_front/features/fog/data/sqflite_fog_tile_storage.dart';
+import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/heatmap/provider/heatmap_provider.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
@@ -70,6 +72,25 @@ class _HeatmapDevPanelState extends ConsumerState<HeatmapDevPanel> {
 
   void _progressTo(double value) {
     if (mounted) setState(() => _progress = value);
+  }
+
+  Future<void> _commutes({required int trips, required int routes}) async {
+    // `ref` must not be used after an `await`, so it is read up front.
+    final home =
+        ref.read(locationProvider).currentPosition ?? MapConfig.initialCenter;
+    final fogReady = ref.read(fogProvider.future);
+    final fog = ref.read(fogProvider.notifier);
+    final heat = ref.read(heatmapProvider.notifier);
+    final entries = generateCommutes(
+      home: home,
+      trips: trips,
+      routes: routes,
+      seed: DateTime.now().millisecondsSinceEpoch,
+    );
+    await fogReady;
+    await fog.importEntries(entries);
+    await heat.catchUp(onProgress: _progressTo);
+    _messages.add('${entries.length} points in $trips trips.');
   }
 
   Future<void> _benchmark() async {
@@ -156,6 +177,24 @@ class _HeatmapDevPanelState extends ConsumerState<HeatmapDevPanel> {
           onPressed: _busy ? null : () => _run('Benchmark', _benchmark),
           child: const Text('Run heatmap benchmark'),
         ),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: _busy
+              ? null
+              : () => _run('Commutes', () => _commutes(trips: 60, routes: 7)),
+          child: const Text('Generate 60 commutes around me'),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: _busy
+              ? null
+              : () => _run(
+                  'Heavy traffic',
+                  () => _commutes(trips: 300, routes: 30),
+                ),
+          child: const Text('Generate heavy traffic (300 trips, 30 routes)'),
+        ),
+        const SizedBox(height: 8),
         if (_busy) ...[
           const SizedBox(height: 12),
           LinearProgressIndicator(value: _progress),
