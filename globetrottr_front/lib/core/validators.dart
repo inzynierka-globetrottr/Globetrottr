@@ -25,21 +25,51 @@ String? validateEmail(String? value, [AppLocalizations? l10n]) {
   return null;
 }
 
+/// Rules of the backend registration a password must meet.
+enum PasswordRule {
+  length,
+  lowercase,
+  uppercase,
+  digit,
+  special;
+
+  static const minLength = 6;
+  static const maxLength = 50;
+
+  bool isMetBy(String password) => switch (this) {
+    PasswordRule.length =>
+      password.length >= minLength && password.length <= maxLength,
+    PasswordRule.lowercase => RegExp('[a-z]').hasMatch(password),
+    PasswordRule.uppercase => RegExp('[A-Z]').hasMatch(password),
+    PasswordRule.digit => RegExp('[0-9]').hasMatch(password),
+    PasswordRule.special => RegExp(r'[!@#$%^&*()\-_=+]').hasMatch(password),
+  };
+}
+
+/// Good when it meets every [PasswordRule].
+bool isPasswordGood(String password) =>
+    PasswordRule.values.every((rule) => rule.isMetBy(password));
+
 String? validatePassword(String? value, [AppLocalizations? l10n]) {
   if (value == null || value.isEmpty) {
     return l10n?.validationPasswordRequired ?? 'Password is required';
   }
-  if (value.length < 6 || value.length > 50) {
+  if (!PasswordRule.length.isMetBy(value)) {
     return l10n?.validationPasswordLength ??
         'Password must be between 6 and 50 characters';
   }
-  final hasLower = RegExp('[a-z]').hasMatch(value);
-  final hasUpper = RegExp('[A-Z]').hasMatch(value);
-  final hasDigit = RegExp('[0-9]').hasMatch(value);
-  final hasSpecial = RegExp(r'[!@#$%^&*()\-_=+]').hasMatch(value);
-  if (!hasLower || !hasUpper || !hasDigit || !hasSpecial) {
+  if (!isPasswordGood(value)) {
     return l10n?.validationPasswordComplexity ??
         'Password must contain an uppercase letter, a lowercase letter, a digit and a special character';
+  }
+  return null;
+}
+
+/// Signing in checks only that a password was typed; the rules may have
+/// changed since the account was created.
+String? validatePasswordPresent(String? value, [AppLocalizations? l10n]) {
+  if (value == null || value.isEmpty) {
+    return l10n?.validationPasswordRequired ?? 'Password is required';
   }
   return null;
 }

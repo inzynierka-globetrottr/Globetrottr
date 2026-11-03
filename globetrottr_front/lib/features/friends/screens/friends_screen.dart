@@ -1,13 +1,23 @@
-import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/theme/app_icons.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/app_icon.dart';
+import 'package:globetrottr_front/core/widgets/form_message.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
+import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
+import 'package:globetrottr_front/core/widgets/neu_list_card.dart';
+import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/friends/provider/friends_provider.dart';
-import 'package:globetrottr_front/features/friends/screens/widgets/friend_card.dart';
-import 'package:globetrottr_front/features/friends/screens/widgets/invite_hub_banner.dart';
-import 'package:globetrottr_front/features/friends/screens/widgets/search_send_row.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/friend_action.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/friend_row.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/friends_empty_card.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/invites_card.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/weekly_strip.dart';
+import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 import 'package:go_router/go_router.dart';
 
 class FriendsScreen extends ConsumerStatefulWidget {
@@ -18,67 +28,121 @@ class FriendsScreen extends ConsumerStatefulWidget {
 }
 
 class _FriendsScreenState extends ConsumerState<FriendsScreen> {
+  static const _side = 20.0;
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(friendsProvider.notifier).loadAll());
+    Future.microtask(() {
+      ref.read(friendsProvider.notifier).loadAll();
+      if (ref.read(profileProvider).profile == null) {
+        ref.read(profileProvider.notifier).loadProfile();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = ref.watch(friendsProvider);
+    final notifier = ref.read(friendsProvider.notifier);
+    final padding = MediaQuery.paddingOf(context);
 
-    return NeumorphicTheme(
-      themeMode: ThemeMode.dark,
-      darkTheme: const NeumorphicThemeData(baseColor: AppColors.background),
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                child: Center(
-                  child: Text(
-                    l10n.friendsTitle,
-                    style: AppTextStyles.screenHeaderLarge,
+    Widget side(Widget child) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _side),
+      child: child,
+    );
+
+    return Scaffold(
+      // The list scrolls on under the floating navigation.
+      extendBody: true,
+      bottomNavigationBar: const NeuBottomNavbar(
+        activeItem: NavbarItem.friends,
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          top: padding.top + 1,
+          bottom: padding.bottom + 20,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 16,
+          children: [
+            side(
+              Row(
+                spacing: 12,
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.friendsTitle,
+                      style: context.typography.headline,
+                    ),
+                  ),
+                  NeuIconButton(
+                    size: 50,
+                    depth: NeoDepth.lg,
+                    fill: NeuFill.accent,
+                    semanticLabel: l10n.friendsAdd,
+                    onPressed: () => context.go('/friends/add'),
+                    child: const AppIcon(AppIcons.plus),
+                  ),
+                ],
+              ),
+            ),
+            if (state.errorMessage != null)
+              side(
+                FormMessage.error(
+                  context.localizeErrorMessage(state.errorMessage),
+                ),
+              ),
+            if (state.friends.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 10,
+                children: [
+                  side(SectionHeader(l10n.friendsThisWeek)),
+                  const WeeklyStrip(sidePadding: _side),
+                ],
+              ),
+            if (state.receivedInvites.isNotEmpty)
+              side(
+                InvitesCard(
+                  invites: state.receivedInvites,
+                  onAccept: (username) => runFriendAction(
+                    context,
+                    () => notifier.acceptInvite(username),
+                  ),
+                  onReject: (username) => runFriendAction(
+                    context,
+                    () => notifier.deleteRelationship(username),
                   ),
                 ),
               ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+            if (state.friends.isEmpty)
+              side(FriendsEmptyCard(onAdd: () => context.go('/friends/add')))
+            else
+              side(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 10,
                   children: [
-                    const SearchSendRow(),
-
-                    const SizedBox(height: 24),
-                    InviteHubBanner(
-                      receivedCount: state.receivedInvites.length,
-                      onTap: () => context.push('/friends/invites'),
+                    SectionHeader(
+                      l10n.friendsYourFriends(state.friends.length),
                     ),
-
-                    const SizedBox(height: 24),
-                    Text(
-                      l10n.friendsYourFriendsHeader(state.friends.length),
-                      style: AppTextStyles.sectionTitle,
-                    ),
-                    const SizedBox(height: 14),
-                    ...state.friends.map(
-                      (f) => Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: FriendCard(friend: f),
-                      ),
+                    NeuListCard(
+                      rows: [
+                        for (final friend in state.friends)
+                          FriendRow(
+                            friend: friend,
+                            onOpen: () =>
+                                context.push('/friends/${friend.username}/map'),
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: const NeuBottomNavbar(
-          activeItem: NavbarItem.friends,
+          ],
         ),
       ),
     );

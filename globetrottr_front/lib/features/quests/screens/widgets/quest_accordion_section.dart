@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/localization/distance_format.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/features/quests/data/quest_zone.dart';
-import 'package:globetrottr_front/features/quests/provider/quest_board_provider.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_card.dart';
-import 'package:globetrottr_front/features/quests/screens/widgets/quest_details_sheet.dart';
 
 class QuestAccordionSection extends StatelessWidget {
   final String title;
   final QuestZone zone;
-  final List<QuestBoardEntry> entries;
+  final List<Quest> quests;
   final IconData icon;
   final bool isExpanded;
   final VoidCallback onToggle;
@@ -21,7 +17,7 @@ class QuestAccordionSection extends StatelessWidget {
     super.key,
     required this.title,
     required this.zone,
-    required this.entries,
+    required this.quests,
     required this.icon,
     required this.isExpanded,
     required this.onToggle,
@@ -30,42 +26,30 @@ class QuestAccordionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final color = isExpanded ? palette.accent : palette.textMuted;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         GestureDetector(
           onTap: onToggle,
-          child: Container(
-            color: Colors.transparent,
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  color: isExpanded
-                      ? AppColors.accentBlue
-                      : AppColors.textLight,
-                  size: 24,
-                ),
+                Icon(icon, color: color, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   title,
-                  style: isExpanded
-                      ? AppTextStyles.rulesetTitle.copyWith(
-                          color: AppColors.accentBlue,
-                        )
-                      : AppTextStyles.rulesetTitle.copyWith(
-                          color: AppColors.textLight,
-                        ),
+                  style: context.typography.itemTitle.copyWith(color: color),
                 ),
                 const Spacer(),
                 Icon(
                   isExpanded
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
-                  color: isExpanded
-                      ? AppColors.accentBlue
-                      : AppColors.textLight,
+                  color: color,
                 ),
               ],
             ),
@@ -75,34 +59,24 @@ class QuestAccordionSection extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           child: isExpanded
-              ? (entries.isEmpty
+              ? (quests.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         child: Text(
                           context.l10n.questsNoQuestsInCategory,
-                          style: AppTextStyles.descriptiveStatusAction,
+                          style: context.typography.caption,
                         ),
                       )
                     : Column(
-                        children: [
-                          for (final entry in entries)
-                            QuestCard(
-                              quest: entry.quest,
-                              zone: zone,
-                              distanceLabel: switch (entry.distanceMeters) {
-                                final double meters => formatDistance(
-                                  meters,
-                                  context.l10n,
-                                ),
-                                null => null,
-                              },
-                              onStart: () => onStartQuest(entry.quest.id),
-                              onTap: () => showQuestDetailsSheet(
-                                context,
-                                questId: entry.quest.id,
+                        children: quests
+                            .map(
+                              (q) => QuestCard(
+                                quest: q,
+                                zone: zone,
+                                onStart: () => onStartQuest(q.id),
                               ),
-                            ),
-                        ],
+                            )
+                            .toList(),
                       ))
               : const SizedBox.shrink(),
         ),

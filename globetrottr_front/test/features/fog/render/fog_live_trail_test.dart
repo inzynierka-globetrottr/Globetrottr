@@ -9,8 +9,6 @@ import 'package:latlong2/latlong.dart';
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
 
-const _fogAlpha = 191;
-
 Future<int> _alphaAt(
   FogTileSource source,
   double zoom,
@@ -43,7 +41,7 @@ List<int> _column(int Function(int, int) alpha) => [
 
 /// Where the fog starts below the middle of the screen, at half strength.
 double _edgeBelow(int Function(int, int) alpha) {
-  const half = _fogAlpha / 2;
+  final half = fogAlpha / 2;
   for (var y = 400; y < 799; y++) {
     final a = alpha(205, y);
     final b = alpha(205, y + 1);
@@ -95,7 +93,7 @@ void main() {
 
       expect(source.imageCount, 0);
       expect(await _alphaAt(source, zoom, 150), lessThan(60));
-      expect(await _alphaAt(source, zoom, -200), _fogAlpha);
+      expect(await _alphaAt(source, zoom, -200), fogAlpha);
       source.dispose();
       await store.dispose();
     });
@@ -262,7 +260,7 @@ void main() {
     );
     await pumpEventQueue();
 
-    expect(await _alphaAt(source, 14.6, 300), _fogAlpha);
+    expect(await _alphaAt(source, 14.6, 300), fogAlpha);
     expect(await _alphaAt(source, 14.6, 600), lessThan(60));
     source.dispose();
     await store.dispose();
@@ -290,7 +288,7 @@ void main() {
     final outside = await _alphaAt(source, 16, 60 + 56, head: head);
 
     expect(inside, lessThan(10));
-    expect(outside, _fogAlpha);
+    expect(outside, fogAlpha);
     source.dispose();
     await store.dispose();
   });
@@ -302,7 +300,7 @@ void main() {
 
     final alpha = await _alphaAt(source, 14.6, 300, head: _eastOfStart(600));
 
-    expect(alpha, _fogAlpha);
+    expect(alpha, fogAlpha);
     source.dispose();
     await store.dispose();
   });
@@ -315,7 +313,7 @@ void main() {
     store.endLivePath();
     final alpha = await _alphaAt(source, 16, 100, head: _eastOfStart(200));
 
-    expect(alpha, _fogAlpha);
+    expect(alpha, fogAlpha);
     source.dispose();
     await store.dispose();
   });

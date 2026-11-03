@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/dev_style.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 /// When the installed package was last updated, in local time. A hot restart
@@ -34,13 +34,13 @@ class BuildStamp extends ConsumerWidget {
       right: _bannerWidth,
       child: IgnorePointer(
         child: ColoredBox(
-          color: AppColors.devGridLabelBackground,
+          color: DevColors.labelBackground,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
               buildStampText(installed),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppColors.devButton,
+                color: DevColors.button,
                 decoration: TextDecoration.none,
               ),
             ),

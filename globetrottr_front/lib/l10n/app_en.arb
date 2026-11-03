@@ -3,14 +3,84 @@
   "appTitle": "Globetrottr",
   "appLogo": "globetrottr",
 
+  "navMap": "Map",
+  "navQuests": "Quests",
+  "navFriends": "Friends",
+  "navProfile": "Profile",
+
+  "commonBack": "Back",
+  "commonClose": "Close",
+  "mapPercent": "{value}%",
+  "mapUnknownRegion": "Your area",
+  "mapNewArea": "+{area} km²",
+  "mapNewAreaLabel": "new ground",
+  "mapStartWalk": "Start the walk",
+  "mapStopWalk": "Stop the walk",
+  "mapLayers": "Map layers",
+  "mapRecenter": "Center on my position",
+  "mapViewFog": "Fog",
+  "mapViewStreets": "Streets only",
+  "mapViewHeatmap": "Heatmap",
+  "mapViewVoronoi": "Voronoi",
+  "mapViewUnavailable": "This view will be available soon.",
+  "questActive": "Active quest: {title}",
+  "questDetails": "Quest details",
+  "questProgressShort": "{percent}%",
+  "questPointLabel": "Quest · {distance}",
+  "@mapPercent": {"placeholders": {"value": {"type": "String"}}},
+  "@mapNewArea": {"placeholders": {"area": {"type": "String"}}},
+  "@questActive": {"placeholders": {"title": {"type": "String"}}},
+  "@questProgressShort": {"placeholders": {"percent": {"type": "String"}}},
+  "@questPointLabel": {"placeholders": {"distance": {"type": "String"}}},
+  "authSkip": "Skip",
+  "authLoginLabel": "Login or nickname",
+  "authNicknamePlaceholder": "e.g. explorer",
+  "authPasswordLabel": "Password",
+  "authPasswordPlaceholder": "••••••••",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
+  "authForgotPassword": "Forgot your password?",
   "authSignIn": "Sign in",
-  "authSignUp": "Sign up",
-  "authUsernamePlaceholder": "Username",
-  "authEmailPlaceholder": "Email",
-  "authPasswordPlaceholder": "Password",
-  "authLoading": "Loading...",
-  "authOrContinueWith": "OR CONTINUE WITH",
-  "authGoogleAccount": "Google Account",
+  "authOr": "or",
+  "authContinueWithGoogle": "Continue with Google",
+  "authNoAccount": "No account yet?",
+  "authCreateOne": "Create one",
+  "authRegisterTitle": "Create an account",
+  "authNicknameLabel": "Nickname",
+  "authEmailLabel": "E-mail",
+  "authEmailPlaceholder": "address@mail.com",
+  "authRuleLength": "{min}–{max} characters",
+  "authRuleLowercase": "a–z",
+  "authRuleUppercase": "A–Z",
+  "authRuleDigit": "0–9",
+  "authRuleSpecial": "!@#",
+  "authRuleMet": "met",
+  "authRuleNotMet": "not met",
+  "@authRuleLength": {"placeholders": {"min": {"type": "int"}, "max": {"type": "int"}}},
+  "authCreateAccount": "Create account",
+  "authHaveAccount": "Already have an account?",
+  "authVerifyTitle": "Check your inbox",
+  "authCodeSentTo": "We sent a 6-digit code to",
+  "authCodeLabel": "Verification code",
+  "authCodeValidity": "{minutes, plural, one{The code is valid for 1 minute.} other{The code is valid for {minutes} minutes.}}",
+  "authVerify": "Verify",
+  "authResendIn": "Resend in {time}",
+  "authResend": "Resend the code",
+  "authSendCode": "Send code",
+  "authResetUnavailable": "Password reset will be available soon.",
+  "authNewPasswordTitle": "Set a new password",
+  "authNewPasswordLabel": "New password",
+  "authChangePassword": "Change password",
+  "@authCodeValidity": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "@authResendIn": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
 
   "profileDefaultUsername": "Traveler",
   "profileBioPlaceholder": "Tell others about your journeys...",
@@ -34,27 +104,30 @@
   },
 
   "friendsTitle": "Friends",
-  "friendsSearchPlaceholder": "Enter friend's username...",
-  "friendsRequestsBanner": "Friend requests",
-  "friendsYourFriendsHeader": "YOUR FRIENDS ({count})",
-  "@friendsYourFriendsHeader": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "friendsInviteSent": "Invite sent to {username}!",
-  "@friendsInviteSent": {
-    "placeholders": {
-      "username": {
-        "type": "String"
-      }
-    }
-  },
-  "friendsRequestsTitle": "Friend Requests",
-  "friendsTabReceived": "Received",
-  "friendsTabSent": "Sent",
+  "friendsAdd": "Add a friend",
+  "friendsThisWeek": "This week",
+  "friendsYou": "You",
+  "friendsInvites": "{count, plural, one{1 invite} other{{count} invites}}",
+  "friendsAccept": "Accept the invite from {username}",
+  "friendsReject": "Reject the invite from {username}",
+  "friendsYourFriends": "Your friends · {count}",
+  "friendsEmptyTitle": "No friends yet",
+  "friendsEmptyBody": "Add someone by their nickname to see how far they have explored.",
+  "friendsOpen": "Open {username}",
+  "friendsLevelUnknown": "–",
+  "friendsArea": "{area} km²",
+  "friendsNicknameLabel": "Nickname",
+  "friendsNicknamePlaceholder": "e.g. explorer",
+  "friendsSendInvite": "Send invite",
+  "friendsSent": "Sent",
+  "friendsPending": "Pending",
+  "friendsUndo": "Undo",
+  "@friendsInvites": {"placeholders": {"count": {"type": "int"}}},
+  "@friendsAccept": {"placeholders": {"username": {"type": "String"}}},
+  "@friendsReject": {"placeholders": {"username": {"type": "String"}}},
+  "@friendsYourFriends": {"placeholders": {"count": {"type": "int"}}},
+  "@friendsOpen": {"placeholders": {"username": {"type": "String"}}},
+  "@friendsArea": {"placeholders": {"area": {"type": "String"}}},
   "friendsPlayerFog": "Player fog: {username}",
   "@friendsPlayerFog": {
     "placeholders": {
@@ -94,7 +167,7 @@
   "@questsProgressPercent": {
     "placeholders": {
       "percent": {
-        "type": "int"
+        "type": "String"
       }
     }
   },
@@ -165,6 +238,18 @@
   "errorFailedToLoadQuests": "Something went wrong. Failed to load quests.",
   "errorLocationDisabled": "Location services are disabled. Please enable them in your device settings.",
   "errorLocationPermissionRequired": "Location permission is required to track your trips.",
+  "errorInvalidCredentials": "Wrong login or password.",
+  "errorEmailNotVerified": "Confirm your e-mail address before signing in.",
+  "errorInvalidCode": "Wrong code.",
+  "errorCodeExpired": "The code has expired. Send a new one.",
+  "errorEmailTaken": "This e-mail is already in use.",
+  "errorUsernameTaken": "This nickname is already taken.",
+  "validationCodeIncomplete": "Enter all 6 digits of the code.",
+  "errorInviteSelf": "You cannot invite yourself.",
+  "errorUserNotFound": "There is no user with this nickname.",
+  "errorAlreadyFriends": "You are already friends.",
+  "errorInviteAlreadySent": "An invite is already waiting for an answer.",
+  "errorCannotInvite": "This user cannot be invited.",
   "errorGoogleAuthFailed": "Google authentication failed.",
   "locationNotificationText": "Recording your route in the background..."
 }

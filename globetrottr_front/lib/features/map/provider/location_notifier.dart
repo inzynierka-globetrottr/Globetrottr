@@ -35,6 +35,17 @@ class LocationNotifier extends Notifier<TrackingState> {
     }
   }
 
+  /// Starts a walk, first trying again to start tracking if it failed
+  /// before (e.g. the permission was granted since). Returns false, with
+  /// the reason in [TrackingState.errorMessage], when there is no position
+  /// to record.
+  Future<bool> startRecording() async {
+    if (!state.isTracking) await startTracking();
+    if (!state.isTracking) return false;
+    await setRecording(true);
+    return true;
+  }
+
   Future<void> setRecording(bool value) async {
     _locationService.setRecording(value);
     state = state.copyWith(isRecording: value);

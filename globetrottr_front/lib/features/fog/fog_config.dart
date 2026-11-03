@@ -64,6 +64,4 @@ abstract final class FogConfig {
 
   /// Most isolates one batch of work may use at the same time.
   static int get isolateWorkers => math.min(Platform.numberOfProcessors, 4);
-
-  static const double fogOpacity = 0.75;
 }

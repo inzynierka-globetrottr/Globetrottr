@@ -17,7 +17,7 @@ class FogPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.saveLayer(Offset.zero & size, Paint());
-    // TODO(fog): hardcoded colour and opacity, not FogConfig.fogOpacity; this
+    // TODO(fog): hardcoded colour and opacity, not the theme's fog colour; this
     // painter goes away with the bitmap friends' fog.
     canvas.drawColor(Colors.black.withValues(alpha: 0.75), BlendMode.srcOver);
 

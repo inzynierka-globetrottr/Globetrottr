@@ -39,7 +39,18 @@ String translateErrorMessage(String message, AppLocalizations l10n) {
     'Failed to upload avatar.' => l10n.errorFailedToUploadAvatar,
     'Something went wrong. Failed to load quests.' =>
       l10n.errorFailedToLoadQuests,
-    'Email is required' => l10n.validationEmailRequired,
+    'Invalid username or password' => l10n.errorInvalidCredentials,
+    'Email not verified' => l10n.errorEmailNotVerified,
+    'Invalid mail or verification code' => l10n.errorInvalidCode,
+    'Verification code expired' => l10n.errorCodeExpired,
+    'Email already exists' => l10n.errorEmailTaken,
+    'Username already exists' => l10n.errorUsernameTaken,
+    'You cannot invite yourself' => l10n.errorInviteSelf,
+    'Receiver not found' => l10n.errorUserNotFound,
+    'Friendship already exists' => l10n.errorAlreadyFriends,
+    'Friendship invitation already exists and is pending' =>
+      l10n.errorInviteAlreadySent,
+    'Cannot send invitation to this user' => l10n.errorCannotInvite,
     'Google authentication failed.' => l10n.errorGoogleAuthFailed,
     'Location services are disabled. Please enable them in your device settings.' =>
       l10n.errorLocationDisabled,
