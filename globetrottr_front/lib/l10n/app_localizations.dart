@@ -110,53 +110,371 @@ abstract class AppLocalizations {
   /// **'globetrottr'**
   String get appLogo;
 
+  /// No description provided for @navMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get navMap;
+
+  /// No description provided for @navQuests.
+  ///
+  /// In en, this message translates to:
+  /// **'Quests'**
+  String get navQuests;
+
+  /// No description provided for @navFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get navFriends;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get navProfile;
+
+  /// No description provided for @commonBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get commonBack;
+
+  /// No description provided for @commonClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get commonClose;
+
+  /// No description provided for @mapPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}%'**
+  String mapPercent(String value);
+
+  /// No description provided for @mapUnknownRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Your area'**
+  String get mapUnknownRegion;
+
+  /// No description provided for @mapNewArea.
+  ///
+  /// In en, this message translates to:
+  /// **'+{area} km²'**
+  String mapNewArea(String area);
+
+  /// No description provided for @mapNewAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'new ground'**
+  String get mapNewAreaLabel;
+
+  /// No description provided for @mapStartWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the walk'**
+  String get mapStartWalk;
+
+  /// No description provided for @mapStopWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop the walk'**
+  String get mapStopWalk;
+
+  /// No description provided for @mapLayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Map layers'**
+  String get mapLayers;
+
+  /// No description provided for @mapRecenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Center on my position'**
+  String get mapRecenter;
+
+  /// No description provided for @mapViewFog.
+  ///
+  /// In en, this message translates to:
+  /// **'Fog'**
+  String get mapViewFog;
+
+  /// No description provided for @mapViewStreets.
+  ///
+  /// In en, this message translates to:
+  /// **'Streets only'**
+  String get mapViewStreets;
+
+  /// No description provided for @mapViewHeatmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Heatmap'**
+  String get mapViewHeatmap;
+
+  /// No description provided for @mapViewVoronoi.
+  ///
+  /// In en, this message translates to:
+  /// **'Voronoi'**
+  String get mapViewVoronoi;
+
+  /// No description provided for @mapViewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This view will be available soon.'**
+  String get mapViewUnavailable;
+
+  /// No description provided for @questActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active quest: {title}'**
+  String questActive(String title);
+
+  /// No description provided for @questDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest details'**
+  String get questDetails;
+
+  /// No description provided for @questProgressShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String questProgressShort(String percent);
+
+  /// No description provided for @questPointLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest · {distance}'**
+  String questPointLabel(String distance);
+
+  /// No description provided for @authSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get authSkip;
+
+  /// No description provided for @authLoginLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Login or nickname'**
+  String get authLoginLabel;
+
+  /// No description provided for @authNicknamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. explorer'**
+  String get authNicknamePlaceholder;
+
+  /// No description provided for @authPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get authPasswordLabel;
+
+  /// No description provided for @authPasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'••••••••'**
+  String get authPasswordPlaceholder;
+
+  /// No description provided for @authShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get authShowPassword;
+
+  /// No description provided for @authHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get authHidePassword;
+
+  /// No description provided for @authForgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your password?'**
+  String get authForgotPassword;
+
   /// No description provided for @authSignIn.
   ///
   /// In en, this message translates to:
   /// **'Sign in'**
   String get authSignIn;
 
-  /// No description provided for @authSignUp.
+  /// No description provided for @authOr.
   ///
   /// In en, this message translates to:
-  /// **'Sign up'**
-  String get authSignUp;
+  /// **'or'**
+  String get authOr;
 
-  /// No description provided for @authUsernamePlaceholder.
+  /// No description provided for @authContinueWithGoogle.
   ///
   /// In en, this message translates to:
-  /// **'Username'**
-  String get authUsernamePlaceholder;
+  /// **'Continue with Google'**
+  String get authContinueWithGoogle;
+
+  /// No description provided for @authNoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'No account yet?'**
+  String get authNoAccount;
+
+  /// No description provided for @authCreateOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Create one'**
+  String get authCreateOne;
+
+  /// No description provided for @authRegisterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get authRegisterTitle;
+
+  /// No description provided for @authNicknameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get authNicknameLabel;
+
+  /// No description provided for @authEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'E-mail'**
+  String get authEmailLabel;
 
   /// No description provided for @authEmailPlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'Email'**
+  /// **'address@mail.com'**
   String get authEmailPlaceholder;
 
-  /// No description provided for @authPasswordPlaceholder.
+  /// No description provided for @authRuleLength.
   ///
   /// In en, this message translates to:
-  /// **'Password'**
-  String get authPasswordPlaceholder;
+  /// **'{min}–{max} characters'**
+  String authRuleLength(int min, int max);
 
-  /// No description provided for @authLoading.
+  /// No description provided for @authRuleLowercase.
   ///
   /// In en, this message translates to:
-  /// **'Loading...'**
-  String get authLoading;
+  /// **'a–z'**
+  String get authRuleLowercase;
 
-  /// No description provided for @authOrContinueWith.
+  /// No description provided for @authRuleUppercase.
   ///
   /// In en, this message translates to:
-  /// **'OR CONTINUE WITH'**
-  String get authOrContinueWith;
+  /// **'A–Z'**
+  String get authRuleUppercase;
 
-  /// No description provided for @authGoogleAccount.
+  /// No description provided for @authRuleDigit.
   ///
   /// In en, this message translates to:
-  /// **'Google Account'**
-  String get authGoogleAccount;
+  /// **'0–9'**
+  String get authRuleDigit;
+
+  /// No description provided for @authRuleSpecial.
+  ///
+  /// In en, this message translates to:
+  /// **'!@#'**
+  String get authRuleSpecial;
+
+  /// No description provided for @authRuleMet.
+  ///
+  /// In en, this message translates to:
+  /// **'met'**
+  String get authRuleMet;
+
+  /// No description provided for @authRuleNotMet.
+  ///
+  /// In en, this message translates to:
+  /// **'not met'**
+  String get authRuleNotMet;
+
+  /// No description provided for @authCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get authCreateAccount;
+
+  /// No description provided for @authHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get authHaveAccount;
+
+  /// No description provided for @authVerifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox'**
+  String get authVerifyTitle;
+
+  /// No description provided for @authCodeSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to'**
+  String get authCodeSentTo;
+
+  /// No description provided for @authCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code'**
+  String get authCodeLabel;
+
+  /// No description provided for @authCodeValidity.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, one{The code is valid for 1 minute.} other{The code is valid for {minutes} minutes.}}'**
+  String authCodeValidity(int minutes);
+
+  /// No description provided for @authVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get authVerify;
+
+  /// No description provided for @authResendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {time}'**
+  String authResendIn(String time);
+
+  /// No description provided for @authResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend the code'**
+  String get authResend;
+
+  /// No description provided for @authSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get authSendCode;
+
+  /// No description provided for @authResetUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset will be available soon.'**
+  String get authResetUnavailable;
+
+  /// No description provided for @authNewPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a new password'**
+  String get authNewPasswordTitle;
+
+  /// No description provided for @authNewPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get authNewPasswordLabel;
+
+  /// No description provided for @authChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get authChangePassword;
 
   /// No description provided for @profileDefaultUsername.
   ///
@@ -242,47 +560,113 @@ abstract class AppLocalizations {
   /// **'Friends'**
   String get friendsTitle;
 
-  /// No description provided for @friendsSearchPlaceholder.
+  /// No description provided for @friendsAdd.
   ///
   /// In en, this message translates to:
-  /// **'Enter friend\'s username...'**
-  String get friendsSearchPlaceholder;
+  /// **'Add a friend'**
+  String get friendsAdd;
 
-  /// No description provided for @friendsRequestsBanner.
+  /// No description provided for @friendsThisWeek.
   ///
   /// In en, this message translates to:
-  /// **'Friend requests'**
-  String get friendsRequestsBanner;
+  /// **'This week'**
+  String get friendsThisWeek;
 
-  /// No description provided for @friendsYourFriendsHeader.
+  /// No description provided for @friendsYou.
   ///
   /// In en, this message translates to:
-  /// **'YOUR FRIENDS ({count})'**
-  String friendsYourFriendsHeader(int count);
+  /// **'You'**
+  String get friendsYou;
 
-  /// No description provided for @friendsInviteSent.
+  /// No description provided for @friendsInvites.
   ///
   /// In en, this message translates to:
-  /// **'Invite sent to {username}!'**
-  String friendsInviteSent(String username);
+  /// **'{count, plural, one{1 invite} other{{count} invites}}'**
+  String friendsInvites(int count);
 
-  /// No description provided for @friendsRequestsTitle.
+  /// No description provided for @friendsAccept.
   ///
   /// In en, this message translates to:
-  /// **'Friend Requests'**
-  String get friendsRequestsTitle;
+  /// **'Accept the invite from {username}'**
+  String friendsAccept(String username);
 
-  /// No description provided for @friendsTabReceived.
+  /// No description provided for @friendsReject.
   ///
   /// In en, this message translates to:
-  /// **'Received'**
-  String get friendsTabReceived;
+  /// **'Reject the invite from {username}'**
+  String friendsReject(String username);
 
-  /// No description provided for @friendsTabSent.
+  /// No description provided for @friendsYourFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Your friends · {count}'**
+  String friendsYourFriends(int count);
+
+  /// No description provided for @friendsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No friends yet'**
+  String get friendsEmptyTitle;
+
+  /// No description provided for @friendsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add someone by their nickname to see how far they have explored.'**
+  String get friendsEmptyBody;
+
+  /// No description provided for @friendsOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {username}'**
+  String friendsOpen(String username);
+
+  /// No description provided for @friendsLevelUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'–'**
+  String get friendsLevelUnknown;
+
+  /// No description provided for @friendsArea.
+  ///
+  /// In en, this message translates to:
+  /// **'{area} km²'**
+  String friendsArea(String area);
+
+  /// No description provided for @friendsNicknameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get friendsNicknameLabel;
+
+  /// No description provided for @friendsNicknamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. explorer'**
+  String get friendsNicknamePlaceholder;
+
+  /// No description provided for @friendsSendInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Send invite'**
+  String get friendsSendInvite;
+
+  /// No description provided for @friendsSent.
   ///
   /// In en, this message translates to:
   /// **'Sent'**
-  String get friendsTabSent;
+  String get friendsSent;
+
+  /// No description provided for @friendsPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get friendsPending;
+
+  /// No description provided for @friendsUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get friendsUndo;
 
   /// No description provided for @friendsPlayerFog.
   ///
@@ -324,7 +708,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{percent}% progress'**
-  String questsProgressPercent(int percent);
+  String questsProgressPercent(String percent);
 
   /// No description provided for @questsCompletedStatus.
   ///
@@ -511,6 +895,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Location permission is required to track your trips.'**
   String get errorLocationPermissionRequired;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong login or password.'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @errorEmailNotVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your e-mail address before signing in.'**
+  String get errorEmailNotVerified;
+
+  /// No description provided for @errorInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong code.'**
+  String get errorInvalidCode;
+
+  /// No description provided for @errorCodeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The code has expired. Send a new one.'**
+  String get errorCodeExpired;
+
+  /// No description provided for @errorEmailTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This e-mail is already in use.'**
+  String get errorEmailTaken;
+
+  /// No description provided for @errorUsernameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This nickname is already taken.'**
+  String get errorUsernameTaken;
+
+  /// No description provided for @validationCodeIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter all 6 digits of the code.'**
+  String get validationCodeIncomplete;
+
+  /// No description provided for @errorInviteSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot invite yourself.'**
+  String get errorInviteSelf;
+
+  /// No description provided for @errorUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no user with this nickname.'**
+  String get errorUserNotFound;
+
+  /// No description provided for @errorAlreadyFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already friends.'**
+  String get errorAlreadyFriends;
+
+  /// No description provided for @errorInviteAlreadySent.
+  ///
+  /// In en, this message translates to:
+  /// **'An invite is already waiting for an answer.'**
+  String get errorInviteAlreadySent;
+
+  /// No description provided for @errorCannotInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'This user cannot be invited.'**
+  String get errorCannotInvite;
 
   /// No description provided for @errorGoogleAuthFailed.
   ///

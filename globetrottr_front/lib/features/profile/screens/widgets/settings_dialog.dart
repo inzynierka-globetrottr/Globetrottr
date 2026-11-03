@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
-import 'package:globetrottr_front/core/theme/app_theme.dart';
-import 'package:globetrottr_front/core/widgets/neu_container.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 class SettingsDialog extends ConsumerWidget {
   const SettingsDialog({super.key});
@@ -12,15 +12,11 @@ class SettingsDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final palette = context.palette;
+    final typography = context.typography;
     final currentLocale = ref.watch(localeProvider);
 
     return Dialog(
-      backgroundColor: AppColors.background,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.neuLight, width: 1.5),
-      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: SingleChildScrollView(
@@ -32,29 +28,15 @@ class SettingsDialog extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    l10n.settingsTitle,
-                    style: AppTextStyles.screenHeaderLarge.copyWith(
-                      fontSize: 20,
-                    ),
-                  ),
+                  Text(l10n.settingsTitle, style: typography.title),
                   IconButton(
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: AppColors.textLight,
-                    ),
+                    icon: Icon(Icons.close_rounded, color: palette.textMuted),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              Text(
-                l10n.settingsLanguage,
-                style: AppTextStyles.inputLabel.copyWith(
-                  color: AppColors.textLight,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(l10n.settingsLanguage, style: typography.note),
               const SizedBox(height: 12),
               _LocaleOption(
                 label: l10n.settingsEnglish,
@@ -104,40 +86,37 @@ class _LocaleOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final shadows = context.shadows;
+    final color = isSelected ? palette.accent : palette.text;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: NeuContainer(
-        elevation: isSelected ? NeuElevation.inset : NeuElevation.floating,
-        borderRadius: const BorderRadius.all(Radius.circular(16)),
-        width: double.infinity,
-        height: null,
-        constraints: const BoxConstraints(minHeight: 52),
-        color: isSelected ? AppColors.neuShadow : AppColors.background,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTextStyles.actionButtonText.copyWith(
-                    color: isSelected ? AppColors.accentBlue : AppColors.text,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  ),
-                ),
+      child: NeuSurface(
+        shadows: isSelected
+            ? shadows.inset(NeoDepth.sm)
+            : shadows.raised(NeoDepth.sm),
+        borderRadius: BorderRadius.circular(18),
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: context.typography.itemTitle.copyWith(color: color),
               ),
-              const SizedBox(width: 8),
-              Icon(
-                isSelected
-                    ? Icons.check_circle_rounded
-                    : Icons.radio_button_unchecked_rounded,
-                color: isSelected ? AppColors.accentBlue : AppColors.textLight,
-                size: 20,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              isSelected
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: isSelected ? palette.accent : palette.textMuted,
+              size: 20,
+            ),
+          ],
         ),
       ),
     );

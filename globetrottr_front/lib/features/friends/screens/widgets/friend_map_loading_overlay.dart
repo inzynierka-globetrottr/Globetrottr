@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/theme/app_colors.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 
 class FriendMapLoadingOverlay extends StatelessWidget {
   final bool isLoading;
@@ -10,11 +10,12 @@ class FriendMapLoadingOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!isLoading) return const SizedBox.shrink();
 
+    final palette = context.palette;
     return Positioned.fill(
       child: ColoredBox(
-        color: AppColors.background.withValues(alpha: 0.5),
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.accentBlue),
+        color: palette.background.withValues(alpha: 0.5),
+        child: Center(
+          child: CircularProgressIndicator(color: palette.accent),
         ),
       ),
     );

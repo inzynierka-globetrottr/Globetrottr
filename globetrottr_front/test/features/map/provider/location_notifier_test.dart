@@ -103,6 +103,35 @@ void main() {
       expect(env.sync.calls, 1);
     });
 
+    test('a walk does not start while tracking cannot start', () async {
+      env.location.startError = Exception('no permission');
+      final container = env.createContainer();
+      addTearDown(container.dispose);
+
+      final started = await container
+          .read(locationProvider.notifier)
+          .startRecording();
+
+      expect(started, isFalse);
+      expect(container.read(locationProvider).isRecording, isFalse);
+    });
+
+    test('starting a walk retries tracking that failed before', () async {
+      env.location.startError = Exception('no permission');
+      final container = env.createContainer();
+      addTearDown(container.dispose);
+      final notifier = container.read(locationProvider.notifier);
+      await notifier.startTracking();
+      env.location.startError = null;
+
+      final started = await notifier.startRecording();
+
+      final state = container.read(locationProvider);
+      expect(started, isTrue);
+      expect(state.isTracking, isTrue);
+      expect(state.isRecording, isTrue);
+    });
+
     test('a failed sync does not break recording', () async {
       env.sync.succeeds = false;
       final container = env.createContainer();

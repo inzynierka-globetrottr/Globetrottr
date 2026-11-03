@@ -50,6 +50,51 @@ Source of truth for the plan and the key design decisions of every part of the a
 
 ---
 
+## UI redesign "Neo · Neumorphic" (In progress)
+
+The app moves from the current dark neumorphic look to a light neumorphic style with one configurable accent colour. The reference is the HTML mock-up `globetrotttr-neo-neumorphic.html` (branch `design/neo-mockup`); screens in its "Locked in" group are approved, the rest are still being iterated.
+
+**Current frontend:** the whole app uses the light theme tokens, the bundled Manrope font and the shared neumorphic components; the bottom navigation follows the mock-up and Quests is a tab with the old quest list. The auth, Friends, Add friend and map screens follow the mock-up; numbers the backend does not provide yet are neutral placeholders. The friend's map and the profile still have their old layouts.
+
+**Stages** (each ends with a review by the owner):
+1. Theme tokens, bundled Manrope font, shared components, bottom navigation, fog colour (Done; not yet checked on a phone).
+2. Auth: login, registration, e-mail verification, password reset (Done; not yet checked on a phone or against the backend).
+3. Friends and adding a friend (Done; not yet checked on a phone or against the backend).
+4. Map: area pill, recording, quest flag with its card, layers sheet (Done; not yet checked on a phone).
+
+**Decisions:**
+- Port in stages, cheapest visual gain first. Screens outside the "Locked in" group (comparison with a friend, statistics, countries, regions, cities, badges) wait for approval and data.
+- Design system as building blocks: styling lives only in theme tokens and reusable components; screens are just assembled from them, so one change keeps the whole app consistent.
+- Light theme first. The architecture supports a dark mode and a different accent (components read them from the theme); the switch itself is Planned. Accent for now: one teal colour.
+- Own shadow implementation in the shared components instead of `flutter_neumorphic_plus`. Why: the package does not reproduce the mock-up shadows and forces a neumorphic theme wrapper on every screen.
+- Manrope is bundled with the app, not downloaded at run time (offline-first).
+- Icons are the mock-up's own SVG drawings, not Material Icons, which look different.
+- Shadows follow one scale of five depths taken from the mock-up instead of a value per element. Why: the mock-up's small differences in shadow opacity are not visible and one scale keeps components consistent.
+- The fog colour and opacity come from the theme palette like every other colour.
+- Dev and release builds differ only by the dev button and its tools. Missing data is shown as placeholders from providers, marked `TODO(data)`, in both builds.
+- Guest mode in release: "Skip" on the login screen enters the app without an account and is remembered across restarts until the user leaves it from the profile; everything local works, backend features fail as offline. An account and guest mode never hold at once: a stored session or a sign-in that ends after "Skip" wins, so a logout still syncs that account's points.
+- Registration goes through e-mail verification (the backend already supports it); password rules follow the backend. Instead of the mock-up's strength bar the registration shows each rule as a pill that is ticked once met (owner's decision: a password is either good or not, and symbols read faster than a sentence).
+- Signing in to an account whose e-mail is not verified only shows a message. Why: the backend needs the address to send a code and the user may have typed the nickname. Known gap: such an account can be verified only right after registering.
+- Password reset is UI only until the backend has an endpoint for it: "Send code" says it is not available yet and the code screen is built but not reachable.
+- The auth screens are nested routes under the login screen, so going back follows the routes and one redirect takes the user to the map once they are in.
+- Startup decides from the device alone: a stored token or the guest choice opens the map at once, behind a blank start screen instead of a flash of the login. The token is refreshed afterwards; only the backend rejecting it signs the user out, being offline never does (offline-first; waiting for the refresh kept the login on screen up to the network timeout).
+- The player marker is the accent dot without the mock-up's faint halo (owner's decision: the halo read as GPS accuracy or vision range and showed neither).
+- Placeholders for missing data are neutral ("— km²", empty rings, level "–", no invite details), never sample numbers, because they show next to real friends in release.
+- "This week" shows the user and every friend with discovered area that week, largest first; with more than four the row scrolls and the next person peeks in at the edge. With no friends the strip and the list give way to one empty card with an "Add a friend" action, because a lone avatar looked broken (the mock-up has no such state; owner approval pending).
+- Received invites live in a folding card on the Friends screen and sent ones on the Add friend screen; the separate invites screen and user search are gone. Until the comparison screen is approved, a friend's arrow opens their map.
+- The map always keeps north up and has no compass, as in the mock-up.
+- The layers sheet lists every planned view; only the fog can be chosen, the others say they are coming.
+- Until the Quests tab is designed it shows the existing quest list; the map card shows the first started quest with its progress. Quests have no map points yet, so the point marker, its distance and the bar of points wait for that data.
+- Product decisions from the mock-up: one active quest at a time, its next point is shown on the map without navigation; friends are added by exact nickname, without suggestions; the profile has no map; the "passing through" feature is dropped.
+
+**Open questions:**
+- Guest data after signing in: the fog stays (it is per installation), but should points recorded as a guest be uploaded to the new account? For now leaving guest mode keeps them in the upload queue, so the first sync after signing in sends them.
+
+**Ideas:**
+- **Configurable profile widgets:** the profile (own and a friend's) is assembled from widgets the user picks and orders. Candidates from the mock-up: metric tiles, discovery per month chart, cities with % rings, countries with km² bars, completed quests carousel. The mock-up keeps a fixed layout until then.
+
+---
+
 ## Map views (Planned)
 
 Besides the classic fog, the user can switch between several views of what they have discovered.

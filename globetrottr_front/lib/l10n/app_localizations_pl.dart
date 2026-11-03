@@ -15,28 +15,210 @@ class AppLocalizationsPl extends AppLocalizations {
   String get appLogo => 'globetrottr';
 
   @override
+  String get navMap => 'Mapa';
+
+  @override
+  String get navQuests => 'Questy';
+
+  @override
+  String get navFriends => 'Znajomi';
+
+  @override
+  String get navProfile => 'Profil';
+
+  @override
+  String get commonBack => 'Wróć';
+
+  @override
+  String get commonClose => 'Zamknij';
+
+  @override
+  String mapPercent(String value) {
+    return '$value%';
+  }
+
+  @override
+  String get mapUnknownRegion => 'Twoja okolica';
+
+  @override
+  String mapNewArea(String area) {
+    return '+$area km²';
+  }
+
+  @override
+  String get mapNewAreaLabel => 'nowy teren';
+
+  @override
+  String get mapStartWalk => 'Rozpocznij spacer';
+
+  @override
+  String get mapStopWalk => 'Zakończ spacer';
+
+  @override
+  String get mapLayers => 'Warstwy mapy';
+
+  @override
+  String get mapRecenter => 'Wyśrodkuj na mojej pozycji';
+
+  @override
+  String get mapViewFog => 'Mgła';
+
+  @override
+  String get mapViewStreets => 'Same ulice';
+
+  @override
+  String get mapViewHeatmap => 'Heatmap';
+
+  @override
+  String get mapViewVoronoi => 'Voronoi';
+
+  @override
+  String get mapViewUnavailable => 'Ten widok będzie dostępny wkrótce.';
+
+  @override
+  String questActive(String title) {
+    return 'Aktywny quest: $title';
+  }
+
+  @override
+  String get questDetails => 'Szczegóły questa';
+
+  @override
+  String questProgressShort(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String questPointLabel(String distance) {
+    return 'Quest · $distance';
+  }
+
+  @override
+  String get authSkip => 'Pomiń';
+
+  @override
+  String get authLoginLabel => 'Login lub nick';
+
+  @override
+  String get authNicknamePlaceholder => 'np. odkrywca';
+
+  @override
+  String get authPasswordLabel => 'Hasło';
+
+  @override
+  String get authPasswordPlaceholder => '••••••••';
+
+  @override
+  String get authShowPassword => 'Pokaż hasło';
+
+  @override
+  String get authHidePassword => 'Ukryj hasło';
+
+  @override
+  String get authForgotPassword => 'Nie pamiętasz hasła?';
+
+  @override
   String get authSignIn => 'Zaloguj się';
 
   @override
-  String get authSignUp => 'Zarejestruj się';
+  String get authOr => 'lub';
 
   @override
-  String get authUsernamePlaceholder => 'Nazwa użytkownika';
+  String get authContinueWithGoogle => 'Kontynuuj z Google';
 
   @override
-  String get authEmailPlaceholder => 'Email';
+  String get authNoAccount => 'Nie masz konta?';
 
   @override
-  String get authPasswordPlaceholder => 'Hasło';
+  String get authCreateOne => 'Załóż je';
 
   @override
-  String get authLoading => 'Ładowanie...';
+  String get authRegisterTitle => 'Załóż konto';
 
   @override
-  String get authOrContinueWith => 'LUB KONTYNUUJ PRZEZ';
+  String get authNicknameLabel => 'Nick';
 
   @override
-  String get authGoogleAccount => 'Konto Google';
+  String get authEmailLabel => 'E-mail';
+
+  @override
+  String get authEmailPlaceholder => 'adres@poczta.pl';
+
+  @override
+  String authRuleLength(int min, int max) {
+    return '$min–$max znaków';
+  }
+
+  @override
+  String get authRuleLowercase => 'a–z';
+
+  @override
+  String get authRuleUppercase => 'A–Z';
+
+  @override
+  String get authRuleDigit => '0–9';
+
+  @override
+  String get authRuleSpecial => '!@#';
+
+  @override
+  String get authRuleMet => 'spełnione';
+
+  @override
+  String get authRuleNotMet => 'niespełnione';
+
+  @override
+  String get authCreateAccount => 'Utwórz konto';
+
+  @override
+  String get authHaveAccount => 'Masz już konto?';
+
+  @override
+  String get authVerifyTitle => 'Sprawdź skrzynkę';
+
+  @override
+  String get authCodeSentTo => 'Wysłaliśmy 6-cyfrowy kod na';
+
+  @override
+  String get authCodeLabel => 'Kod weryfikacyjny';
+
+  @override
+  String authCodeValidity(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'Kod jest ważny $minutes minut.',
+      few: 'Kod jest ważny $minutes minuty.',
+      one: 'Kod jest ważny 1 minutę.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get authVerify => 'Zweryfikuj';
+
+  @override
+  String authResendIn(String time) {
+    return 'Wyślij ponownie za $time';
+  }
+
+  @override
+  String get authResend => 'Wyślij ponownie';
+
+  @override
+  String get authSendCode => 'Wyślij kod';
+
+  @override
+  String get authResetUnavailable => 'Reset hasła będzie dostępny wkrótce.';
+
+  @override
+  String get authNewPasswordTitle => 'Ustaw nowe hasło';
+
+  @override
+  String get authNewPasswordLabel => 'Nowe hasło';
+
+  @override
+  String get authChangePassword => 'Zmień hasło';
 
   @override
   String get profileDefaultUsername => 'Podróżnik';
@@ -84,29 +266,78 @@ class AppLocalizationsPl extends AppLocalizations {
   String get friendsTitle => 'Znajomi';
 
   @override
-  String get friendsSearchPlaceholder => 'Wpisz nazwę użytkownika...';
+  String get friendsAdd => 'Dodaj znajomego';
 
   @override
-  String get friendsRequestsBanner => 'Zaproszenia do znajomych';
+  String get friendsThisWeek => 'W tym tygodniu';
 
   @override
-  String friendsYourFriendsHeader(int count) {
-    return 'TWOI ZNAJOMI ($count)';
+  String get friendsYou => 'Ty';
+
+  @override
+  String friendsInvites(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count zaproszeń',
+      few: '$count zaproszenia',
+      one: '1 zaproszenie',
+    );
+    return '$_temp0';
   }
 
   @override
-  String friendsInviteSent(String username) {
-    return 'Wysłano zaproszenie do $username!';
+  String friendsAccept(String username) {
+    return 'Przyjmij zaproszenie od $username';
   }
 
   @override
-  String get friendsRequestsTitle => 'Zaproszenia do znajomych';
+  String friendsReject(String username) {
+    return 'Odrzuć zaproszenie od $username';
+  }
 
   @override
-  String get friendsTabReceived => 'Odebrane';
+  String friendsYourFriends(int count) {
+    return 'Twoi znajomi · $count';
+  }
 
   @override
-  String get friendsTabSent => 'Wysłane';
+  String get friendsEmptyTitle => 'Nie masz jeszcze znajomych';
+
+  @override
+  String get friendsEmptyBody =>
+      'Dodaj kogoś po nicku, żeby zobaczyć, jak daleko zaszedł.';
+
+  @override
+  String friendsOpen(String username) {
+    return 'Otwórz $username';
+  }
+
+  @override
+  String get friendsLevelUnknown => '–';
+
+  @override
+  String friendsArea(String area) {
+    return '$area km²';
+  }
+
+  @override
+  String get friendsNicknameLabel => 'Nick';
+
+  @override
+  String get friendsNicknamePlaceholder => 'np. odkrywca';
+
+  @override
+  String get friendsSendInvite => 'Wyślij zaproszenie';
+
+  @override
+  String get friendsSent => 'Wysłane';
+
+  @override
+  String get friendsPending => 'Oczekuje';
+
+  @override
+  String get friendsUndo => 'Cofnij';
 
   @override
   String friendsPlayerFog(String username) {
@@ -135,7 +366,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get questsNoQuestsInCategory => 'Brak zadań w tej kategorii.';
 
   @override
-  String questsProgressPercent(int percent) {
+  String questsProgressPercent(String percent) {
     return 'Postęp: $percent%';
   }
 
@@ -242,6 +473,43 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get errorLocationPermissionRequired =>
       'Uprawnienia lokalizacji są wymagane do śledzenia podróży.';
+
+  @override
+  String get errorInvalidCredentials => 'Nieprawidłowy login lub hasło.';
+
+  @override
+  String get errorEmailNotVerified =>
+      'Potwierdź adres e-mail, zanim się zalogujesz.';
+
+  @override
+  String get errorInvalidCode => 'Nieprawidłowy kod.';
+
+  @override
+  String get errorCodeExpired => 'Kod wygasł. Wyślij nowy.';
+
+  @override
+  String get errorEmailTaken => 'Ten e-mail jest już zajęty.';
+
+  @override
+  String get errorUsernameTaken => 'Ten nick jest już zajęty.';
+
+  @override
+  String get validationCodeIncomplete => 'Wpisz wszystkie 6 cyfr kodu.';
+
+  @override
+  String get errorInviteSelf => 'Nie możesz zaprosić samego siebie.';
+
+  @override
+  String get errorUserNotFound => 'Nie ma użytkownika o takim nicku.';
+
+  @override
+  String get errorAlreadyFriends => 'Jesteście już znajomymi.';
+
+  @override
+  String get errorInviteAlreadySent => 'Zaproszenie już czeka na odpowiedź.';
+
+  @override
+  String get errorCannotInvite => 'Tego użytkownika nie można zaprosić.';
 
   @override
   String get errorGoogleAuthFailed =>
