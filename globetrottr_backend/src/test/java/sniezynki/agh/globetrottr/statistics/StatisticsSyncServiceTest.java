@@ -47,13 +47,17 @@ class StatisticsSyncServiceTest {
     @Test
     void shouldUpdateScalarUserStatisticsAndRegionsFromSyncDto() {
         when(userStatisticsRepository.findByUser_Username("tester")).thenReturn(Optional.empty());
-        when(regionRepository.findById(1L)).thenReturn(Optional.of(region));
+        when(regionRepository.findByNameIgnoreCase("Poland")).thenReturn(Optional.of(region));
         when(userRegionStatRepository.findByUser_UserIdAndRegion_Id(user.getUserId(), 1L))
                 .thenReturn(Optional.empty());
 
         StatisticsSyncDto dto =
                 new StatisticsSyncDto(
-                        15.5, 2, 7, 10, List.of(new RegionStatisticSyncDto(1L, 15.5, 0.005)));
+                        15.5,
+                        2,
+                        7,
+                        10,
+                        List.of(new RegionStatisticSyncDto(1L, "Poland", "PL", 15.5, 0.005)));
 
         statisticsSyncService.updateUserStatistics(user, dto);
 

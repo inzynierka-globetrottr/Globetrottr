@@ -1,3 +1,6 @@
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
+import 'package:globetrottr_front/features/regions/data/region.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -23,6 +26,8 @@ class AreaProgress {
 
 class AreaProgressNotifier extends Notifier<AreaProgress> {
   AreaProgress _current = const AreaProgress();
+  FogTileId? _lastTileId;
+  int _querySeq = 0;
 
   @override
   AreaProgress build() {
@@ -47,25 +52,56 @@ class AreaProgressNotifier extends Notifier<AreaProgress> {
   }
 
   Future<void> _update(double lat, double lon) async {
+    final tileId = FogTileId.fromLatLng(lat, lon, FogConfig.baseZoom);
+    if (_lastTileId == tileId && _current.regionName != null) {
+      return;
+    }
+    _lastTileId = tileId;
+    final seq = ++_querySeq;
+
     try {
       final regionStorage = ref.read(regionStorageProvider);
       final statsStorage = ref.read(statisticsStorageProvider);
 
-      final regions = await regionStorage.findRegionsByPoint(
-        lat: lat,
-        lon: lon,
+      Region? primary;
+      final cachedRegionId = await statsStorage.getCachedTileRegion(
+        z: tileId.z,
+        x: tileId.x,
+        y: tileId.y,
       );
-      if (!ref.mounted) return;
 
-      if (regions.isEmpty) {
+      if (cachedRegionId != null) {
+        primary = await regionStorage.findRegionById(cachedRegionId);
+      }
+
+      if (primary == null) {
+        final regions = await regionStorage.findRegionsByPoint(
+          lat: lat,
+          lon: lon,
+        );
+        if (seq != _querySeq || !ref.mounted) return;
+
+        if (regions.isNotEmpty) {
+          primary = regions.first;
+          await statsStorage.cacheTileRegion(
+            z: tileId.z,
+            x: tileId.x,
+            y: tileId.y,
+            regionId: primary.id,
+          );
+        }
+      }
+
+      if (seq != _querySeq || !ref.mounted) return;
+
+      if (primary == null) {
         _current = const AreaProgress();
         state = _current;
         return;
       }
 
-      final primary = regions.first;
       final stats = await statsStorage.getRegionStats(primary.id);
-      if (!ref.mounted) return;
+      if (seq != _querySeq || !ref.mounted) return;
 
       final share = stats != null ? (stats.discoveryPercentage / 100.0) : 0.0;
 

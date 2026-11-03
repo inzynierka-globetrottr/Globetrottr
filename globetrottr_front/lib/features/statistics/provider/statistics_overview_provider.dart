@@ -6,6 +6,7 @@ import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
+import 'package:globetrottr_front/features/statistics/logic/streak_service.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_activity_section.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_discovery_card.dart';
@@ -411,6 +412,9 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
     }
 
     final streakStats = await statsStorage.loadStreakStats();
+    const streakService = StreakService();
+    final effectiveOpen = streakService.effectiveOpenStreak(streakStats);
+    final effectiveRec = streakService.effectiveRecordingStreak(streakStats);
 
     return StatsOverviewState(
       period: period,
@@ -429,9 +433,9 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       records: records,
       discoveredCities: discoveredCities,
       mostVisitedPlaces: mostVisitedPlaces,
-      openStreakDays: streakStats.currentOpenStreak,
+      openStreakDays: effectiveOpen,
       maxOpenStreakDays: streakStats.maxOpenStreak,
-      recordingStreakDays: streakStats.currentRecordingStreak,
+      recordingStreakDays: effectiveRec,
       maxRecordingStreakDays: streakStats.maxRecordingStreak,
     );
   }

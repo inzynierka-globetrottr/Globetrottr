@@ -73,7 +73,7 @@ class CityDetailScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       height: 180,
-                      color: const Color(0xFF383633),
+                      color: context.palette.fog,
                       child: const Center(
                         child: AppIllustration(
                           AppIllustrations.viewFog,

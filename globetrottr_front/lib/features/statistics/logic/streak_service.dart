@@ -62,6 +62,48 @@ class StreakService {
     );
   }
 
+  int effectiveRecordingStreak(UserStreakStats stats, [DateTime? now]) {
+    if (stats.lastRecordingDate == null) return 0;
+    final currentMoment = now ?? DateTime.now();
+    try {
+      final last = DateTime.parse(stats.lastRecordingDate!);
+      final todayMidnight = DateTime.utc(
+        currentMoment.year,
+        currentMoment.month,
+        currentMoment.day,
+      );
+      final lastMidnight = DateTime.utc(last.year, last.month, last.day);
+      final diff = todayMidnight.difference(lastMidnight).inDays;
+      if (diff > 1) {
+        return 0;
+      }
+      return stats.currentRecordingStreak;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  int effectiveOpenStreak(UserStreakStats stats, [DateTime? now]) {
+    if (stats.lastOpenDate == null) return 0;
+    final currentMoment = now ?? DateTime.now();
+    try {
+      final last = DateTime.parse(stats.lastOpenDate!);
+      final todayMidnight = DateTime.utc(
+        currentMoment.year,
+        currentMoment.month,
+        currentMoment.day,
+      );
+      final lastMidnight = DateTime.utc(last.year, last.month, last.day);
+      final diff = todayMidnight.difference(lastMidnight).inDays;
+      if (diff > 1) {
+        return 0;
+      }
+      return stats.currentOpenStreak;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   int _nextStreak(String? lastDateStr, DateTime now, int currentStreak) {
     if (lastDateStr == null) return 1;
 

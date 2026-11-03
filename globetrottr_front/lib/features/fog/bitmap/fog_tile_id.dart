@@ -13,6 +13,12 @@ class FogTileId {
     key & _coordinateMask,
   );
 
+  factory FogTileId.fromLatLng(double lat, double lng, int zoom) {
+    final x = (FogMercator.lngToX(lng, zoom) / size).floor();
+    final y = (FogMercator.latToY(lat, zoom) / size).floor();
+    return FogTileId(zoom, x, y);
+  }
+
   static const int size = 256;
   static const int _coordinateMask = (1 << 26) - 1;
 

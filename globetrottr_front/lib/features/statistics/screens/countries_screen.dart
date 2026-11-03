@@ -71,7 +71,7 @@ class CountriesScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       height: 180,
-                      color: const Color(0xFFB9D2DC),
+                      color: context.palette.illustrationBackground,
                       child: const Center(
                         child: AppIllustration(
                           AppIllustrations.viewVoronoi,

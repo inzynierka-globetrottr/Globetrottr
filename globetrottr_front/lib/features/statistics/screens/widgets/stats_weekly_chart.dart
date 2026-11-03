@@ -128,7 +128,7 @@ class StatsWeeklyChart extends StatelessWidget {
       chartHeight,
     );
     final formattedValue = formatKm2(item.valueKm2, locale);
-    final barColor = item.isCurrent ? const Color(0xFFE3A33A) : palette.accent;
+    final barColor = item.isCurrent ? palette.gold : palette.accent;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,

@@ -152,5 +152,43 @@ void main() {
         expect(updated.lastRecordingDate, '2026-11-03');
       });
     });
+
+    group('effectiveStreaks', () {
+      test(
+        'effectiveRecordingStreak returns current when recorded today or yesterday',
+        () {
+          final today = DateTime(2026, 11, 3);
+          final statsToday = UserStreakStats.empty.copyWith(
+            currentRecordingStreak: 5,
+            lastRecordingDate: '2026-11-03',
+          );
+          expect(service.effectiveRecordingStreak(statsToday, today), 5);
+
+          final statsYesterday = UserStreakStats.empty.copyWith(
+            currentRecordingStreak: 5,
+            lastRecordingDate: '2026-11-02',
+          );
+          expect(service.effectiveRecordingStreak(statsYesterday, today), 5);
+        },
+      );
+
+      test('effectiveRecordingStreak returns 0 when older than yesterday', () {
+        final today = DateTime(2026, 11, 3);
+        final statsOld = UserStreakStats.empty.copyWith(
+          currentRecordingStreak: 10,
+          lastRecordingDate: '2026-10-25',
+        );
+        expect(service.effectiveRecordingStreak(statsOld, today), 0);
+      });
+
+      test('effectiveOpenStreak returns 0 when older than yesterday', () {
+        final today = DateTime(2026, 11, 3);
+        final statsOld = UserStreakStats.empty.copyWith(
+          currentOpenStreak: 14,
+          lastOpenDate: '2026-10-20',
+        );
+        expect(service.effectiveOpenStreak(statsOld, today), 0);
+      });
+    });
   });
 }

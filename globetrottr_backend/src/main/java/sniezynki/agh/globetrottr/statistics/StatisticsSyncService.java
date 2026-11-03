@@ -58,22 +58,30 @@ public class StatisticsSyncService {
 
         if (statsDto.regions() != null) {
             for (RegionStatisticSyncDto regionDto : statsDto.regions()) {
-                if (regionDto.regionId() == null) {
-                    continue;
+                Region region = null;
+                if (regionDto.regionName() != null && !regionDto.regionName().isBlank()) {
+                    region =
+                            regionRepository
+                                    .findByNameIgnoreCase(regionDto.regionName())
+                                    .orElse(null);
                 }
-                Region region = regionRepository.findById(regionDto.regionId()).orElse(null);
+                if (region == null && regionDto.regionId() != null) {
+                    region = regionRepository.findById(regionDto.regionId()).orElse(null);
+                }
                 if (region == null) {
                     continue;
                 }
 
+                final Region targetRegion = region;
                 UserRegionStatistics stat =
                         userRegionStatRepository
-                                .findByUser_UserIdAndRegion_Id(user.getUserId(), region.getId())
+                                .findByUser_UserIdAndRegion_Id(
+                                        user.getUserId(), targetRegion.getId())
                                 .orElseGet(
                                         () ->
                                                 UserRegionStatistics.builder()
                                                         .user(user)
-                                                        .region(region)
+                                                        .region(targetRegion)
                                                         .build());
 
                 stat.setDiscoveredAreaKm2(regionDto.discoveredAreaKm2());

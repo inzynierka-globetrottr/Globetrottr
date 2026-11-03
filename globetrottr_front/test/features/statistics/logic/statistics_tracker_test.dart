@@ -177,11 +177,10 @@ void main() {
         expect(stateStats!.discoveredAreaM2, 100000.0);
 
         final bestDay = await statsStorage.getBestDayStats();
-        expect(bestDay, isNotNull);
-        expect(bestDay!.newAreaM2, 100000.0);
+        expect(bestDay, isNull);
 
         final areaRecord = await statsStorage.getRecord('area');
-        expect(areaRecord, closeTo(0.1, 0.001));
+        expect(areaRecord, isNull);
       },
     );
   });

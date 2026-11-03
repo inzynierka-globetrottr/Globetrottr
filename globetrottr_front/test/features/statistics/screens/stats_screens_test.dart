@@ -238,6 +238,8 @@ class _FakeStatisticsStorage implements StatisticsStorage {
   @override
   Future<void> saveRegionStats(Iterable<UserRegionStats> stats) async {}
   @override
+  Future<void> clearRegionStats() async {}
+  @override
   Future<int?> getCachedTileRegion({
     required int z,
     required int x,

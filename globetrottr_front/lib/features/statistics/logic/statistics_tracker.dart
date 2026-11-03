@@ -1,3 +1,4 @@
+import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/regions/data/region.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
@@ -18,8 +19,9 @@ class StatisticsTracker {
   final StatisticsStorage statisticsStorage;
   final StreakService streakService;
   final void Function()? onUpdated;
+  final SerialQueue _queue = SerialQueue();
 
-  const StatisticsTracker({
+  StatisticsTracker({
     required this.regionStorage,
     required this.statisticsStorage,
     this.streakService = const StreakService(),
@@ -27,6 +29,13 @@ class StatisticsTracker {
   });
 
   Future<void> onTilesCommitted(
+    Iterable<TileAreaDelta> tiles, {
+    DateTime? now,
+  }) {
+    return _queue.run(() => _processTilesCommitted(tiles, now: now));
+  }
+
+  Future<void> _processTilesCommitted(
     Iterable<TileAreaDelta> tiles, {
     DateTime? now,
   }) async {
@@ -121,7 +130,13 @@ class StatisticsTracker {
     }
   }
 
-  Future<void> rebuildFromFogTiles(Iterable<TileAreaDelta> tiles) async {
+  Future<void> rebuildFromFogTiles(Iterable<TileAreaDelta> tiles) {
+    return _queue.run(() => _processRebuildFromFogTiles(tiles));
+  }
+
+  Future<void> _processRebuildFromFogTiles(
+    Iterable<TileAreaDelta> tiles,
+  ) async {
     final regionAreas = <int, double>{};
     final resolvedRegions = <int, Region>{};
 
@@ -164,51 +179,47 @@ class StatisticsTracker {
     }
 
     final updated = <UserRegionStats>[];
-    final nowMs = DateTime.now().millisecondsSinceEpoch;
     for (final entry in regionAreas.entries) {
       final region = resolvedRegions[entry.key]!;
       final area = entry.value;
       final percentage = (area / 1000000.0) / region.totalAreaKm2 * 100.0;
+      final existing = await statisticsStorage.getRegionStats(entry.key);
       updated.add(
         UserRegionStats(
           regionId: entry.key,
           discoveredAreaM2: area,
           discoveryPercentage: percentage.clamp(0.0, 100.0),
-          firstVisitMs: nowMs,
-          lastVisitMs: nowMs,
-          visitsCount: 1,
+          firstVisitMs: existing?.firstVisitMs,
+          lastVisitMs: existing?.lastVisitMs,
+          visitsCount: existing?.visitsCount ?? 1,
+          timeSpentSeconds: existing?.timeSpentSeconds ?? 0,
         ),
       );
     }
 
     await statisticsStorage.saveRegionStats(updated);
-
-    final totalAreaM2 = tiles.fold<double>(
-      0.0,
-      (sum, t) => sum + t.areaDeltaM2,
-    );
-    if (totalAreaM2 > 0) {
-      final todayStr = _formatDate(DateTime.now());
-      final daily = await statisticsStorage.getDailyStats(todayStr);
-      final currentDailyArea = daily?.newAreaM2 ?? 0.0;
-      if (currentDailyArea < totalAreaM2) {
-        await statisticsStorage.saveDailyStats(
-          (daily ?? DailyExplorationStats(date: todayStr)).copyWith(
-            newAreaM2: totalAreaM2,
-          ),
-        );
-      }
-      await statisticsStorage.setRecordIfMax(
-        'area',
-        totalAreaM2 / 1000000.0,
-        label: todayStr,
-      );
-    }
-
     onUpdated?.call();
   }
 
   Future<void> recordTripSession({
+    required double distanceM,
+    required int durationSeconds,
+    required String activityType,
+    double? maxAltitudeM,
+    DateTime? now,
+  }) {
+    return _queue.run(
+      () => _processRecordTripSession(
+        distanceM: distanceM,
+        durationSeconds: durationSeconds,
+        activityType: activityType,
+        maxAltitudeM: maxAltitudeM,
+        now: now,
+      ),
+    );
+  }
+
+  Future<void> _processRecordTripSession({
     required double distanceM,
     required int durationSeconds,
     required String activityType,

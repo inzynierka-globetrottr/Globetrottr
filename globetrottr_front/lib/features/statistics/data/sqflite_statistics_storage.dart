@@ -151,6 +151,18 @@ class SqfliteStatisticsStorage implements StatisticsStorage {
   }
 
   @override
+  Future<void> clearRegionStats() async {
+    final db = await _db;
+    await db.delete('user_region_stats');
+    await db.delete('fog_tile_regions');
+    await db.delete(
+      'user_records',
+      where: 'record_key = ?',
+      whereArgs: ['stats_backfilled'],
+    );
+  }
+
+  @override
   Future<int?> getCachedTileRegion({
     required int z,
     required int x,

@@ -46,7 +46,7 @@ class StatsCountriesBanner extends StatelessWidget {
               child: Container(
                 width: 120,
                 height: 160,
-                color: const Color(0xFFB9D2DC),
+                color: context.palette.illustrationBackground,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [

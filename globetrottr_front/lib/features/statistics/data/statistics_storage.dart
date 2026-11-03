@@ -28,6 +28,7 @@ abstract interface class StatisticsStorage {
   Future<UserRegionStats?> getRegionStats(int regionId);
   Future<List<UserRegionStats>> getAllRegionStats();
   Future<void> saveRegionStats(Iterable<UserRegionStats> stats);
+  Future<void> clearRegionStats();
 
   // Tile-to-region mapping cache
   Future<int?> getCachedTileRegion({
