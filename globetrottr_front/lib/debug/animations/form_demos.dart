@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
+import 'package:globetrottr_front/core/widgets/animated_column.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/form_message.dart';
 import 'package:globetrottr_front/core/widgets/neu_button.dart';
@@ -102,29 +103,46 @@ class _FieldErrorDemoState extends State<FieldErrorDemo> {
   );
 }
 
-class InvitesDemo extends StatelessWidget {
+class InvitesDemo extends StatefulWidget {
   const InvitesDemo({super.key});
 
-  static const _invites = [
-    FriendshipResponse(
-      username: 'ola',
-      status: InviteStatus.pending,
-      isIncomingRequest: true,
-    ),
-    FriendshipResponse(
-      username: 'kuba',
-      status: InviteStatus.pending,
-      isIncomingRequest: true,
-    ),
-  ];
+  @override
+  State<InvitesDemo> createState() => _InvitesDemoState();
+}
+
+class _InvitesDemoState extends State<InvitesDemo> {
+  static const _all = ['ola', 'kuba', 'ania'];
+
+  List<String> _invites = _all;
+
+  void _drop(String username) => setState(
+    () => _invites = [
+      for (final invite in _invites)
+        if (invite != username) invite,
+    ],
+  );
 
   @override
   Widget build(BuildContext context) => DemoSection(
-    title: 'Folding card',
-    child: InvitesCard(
-      invites: _invites,
-      onAccept: (_) {},
-      onReject: (_) {},
+    title: 'Invites: open, accept or reject',
+    controls: {'Reset': () => setState(() => _invites = _all)},
+    child: AnimatedColumn(
+      children: [
+        if (_invites.isNotEmpty)
+          InvitesCard(
+            key: const ValueKey('invites'),
+            invites: [
+              for (final username in _invites)
+                FriendshipResponse(
+                  username: username,
+                  status: InviteStatus.pending,
+                  isIncomingRequest: true,
+                ),
+            ],
+            onAccept: _drop,
+            onReject: _drop,
+          ),
+      ],
     ),
   );
 }

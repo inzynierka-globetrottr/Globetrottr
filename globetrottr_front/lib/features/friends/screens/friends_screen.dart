@@ -6,6 +6,7 @@ import 'package:globetrottr_front/core/localization/localization_extensions.dart
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/animated_column.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/form_message.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
@@ -29,6 +30,10 @@ class FriendsScreen extends ConsumerStatefulWidget {
 
 class _FriendsScreenState extends ConsumerState<FriendsScreen>
     with TabVisibility {
+  /// Whether a build has already shown the loaded lists; until then the
+  /// sections arriving with them fade in instead of unfolding.
+  bool _shownLoaded = false;
+
   static const _side = 20.0;
 
   @override
@@ -45,8 +50,11 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     final state = ref.watch(friendsProvider);
     final notifier = ref.read(friendsProvider.notifier);
     final padding = MediaQuery.paddingOf(context);
+    final entrance = _shownLoaded ? ColumnEntrance.unfold : ColumnEntrance.fade;
+    _shownLoaded = state.hasLoaded;
 
-    Widget side(Widget child) => Padding(
+    Widget side(String key, Widget child) => Padding(
+      key: ValueKey(key),
       padding: const EdgeInsets.symmetric(horizontal: _side),
       child: child,
     );
@@ -59,11 +67,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           top: padding.top + 1,
           bottom: padding.bottom + 20,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        // Sections that come with the data or go away unfold and fold; the
+        // first data only fades in, as nothing below has to move.
+        child: AnimatedColumn(
           spacing: 16,
+          entrance: entrance,
           children: [
             side(
+              'title',
               Row(
                 spacing: 12,
                 children: [
@@ -86,21 +97,24 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
             ),
             if (state.errorMessage != null)
               side(
+                'error',
                 FormMessage.error(
                   context.localizeErrorMessage(state.errorMessage),
                 ),
               ),
             if (state.friends.isNotEmpty)
               Column(
+                key: const ValueKey('weekly'),
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 10,
                 children: [
-                  side(SectionHeader(l10n.friendsThisWeek)),
+                  side('weeklyTitle', SectionHeader(l10n.friendsThisWeek)),
                   const WeeklyStrip(sidePadding: _side),
                 ],
               ),
             if (state.receivedInvites.isNotEmpty)
               side(
+                'invites',
                 InvitesCard(
                   invites: state.receivedInvites,
                   onAccept: (username) => runFriendAction(
@@ -113,10 +127,14 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                   ),
                 ),
               ),
-            if (state.friends.isEmpty)
-              side(FriendsEmptyCard(onAdd: () => context.go('/friends/add')))
-            else
+            if (state.friends.isEmpty && state.hasLoaded)
               side(
+                'empty',
+                FriendsEmptyCard(onAdd: () => context.go('/friends/add')),
+              )
+            else if (state.friends.isNotEmpty)
+              side(
+                'friends',
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   spacing: 10,
@@ -128,6 +146,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
                       rows: [
                         for (final friend in state.friends)
                           FriendRow(
+                            key: ValueKey(friend.username),
                             friend: friend,
                             onOpen: () =>
                                 context.push('/friends/${friend.username}/map'),

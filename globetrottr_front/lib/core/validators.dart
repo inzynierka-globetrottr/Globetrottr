@@ -12,6 +12,20 @@ String? validateUsername(String? value, [AppLocalizations? l10n]) {
   return null;
 }
 
+/// For a field that asks for a nickname only, unlike the login field that
+/// also takes an e-mail.
+String? validateNickname(String? value, [AppLocalizations? l10n]) {
+  if (value == null || value.trim().isEmpty) {
+    return l10n?.validationNicknameRequired ?? 'Nickname is required';
+  }
+  final length = value.trim().length;
+  if (length < 3 || length > 50) {
+    return l10n?.validationNicknameLength ??
+        'Nickname must be between 3 and 50 characters';
+  }
+  return null;
+}
+
 String? validateEmail(String? value, [AppLocalizations? l10n]) {
   if (value == null || value.trim().isEmpty) {
     return l10n?.validationEmailRequired ?? 'Email is required';

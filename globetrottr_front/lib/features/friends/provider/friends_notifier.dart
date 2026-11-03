@@ -70,6 +70,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
 
       state = state.copyWith(
         isLoading: false,
+        hasLoaded: true,
         friends: results[0],
         receivedInvites: results[1],
         sentInvites: results[2],
@@ -81,11 +82,16 @@ class FriendsNotifier extends Notifier<FriendsState> {
         sent: results[2].map((f) => f.username),
       );
     } on AppException catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.message);
+      state = state.copyWith(
+        isLoading: false,
+        hasLoaded: true,
+        errorMessage: e.message,
+      );
     } catch (e) {
       debugPrint('Unexpected error loading friends: $e');
       state = state.copyWith(
         isLoading: false,
+        hasLoaded: true,
         errorMessage: 'Something went wrong.',
       );
     }

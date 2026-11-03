@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/widgets/neu_dialog.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_button.dart';
@@ -14,7 +15,7 @@ class LogoutButton extends ConsumerWidget {
     if (await notifier.logout()) return;
     if (!context.mounted) return;
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showNeuDialog<bool>(
       context: context,
       builder: (context) {
         final palette = context.palette;

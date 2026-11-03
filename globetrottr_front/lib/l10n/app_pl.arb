@@ -137,6 +137,8 @@
 
   "validationUsernameRequired": "Login jest wymagany",
   "validationUsernameLength": "Login musi mieć od 3 do 50 znaków",
+  "validationNicknameRequired": "Nick jest wymagany",
+  "validationNicknameLength": "Nick musi mieć od 3 do 50 znaków",
   "validationEmailRequired": "Email jest wymagany",
   "validationEmailInvalid": "Email powinien być poprawny",
   "validationPasswordRequired": "Hasło jest wymagane",

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/unfold_transition.dart';
 
 /// Unfolds downwards and fades in [child] when it first appears, so what
 /// lies below slides away instead of jumping. Removing it is instant.
@@ -37,10 +38,9 @@ class _UnfoldInState extends State<UnfoldIn>
   }
 
   @override
-  Widget build(BuildContext context) => SizeTransition(
+  Widget build(BuildContext context) => UnfoldTransition(
     sizeFactor: _curved,
-    alignment: Alignment.topCenter,
-    fixedCrossAxisSizeFactor: 1,
+    fitWidth: true,
     child: FadeTransition(opacity: _curved, child: widget.child),
   );
 }

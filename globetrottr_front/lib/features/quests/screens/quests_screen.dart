@@ -6,6 +6,7 @@ import 'package:globetrottr_front/core/localization/app_error_localizations.dart
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/animated_column.dart';
 import 'package:globetrottr_front/core/widgets/form_message.dart';
 import 'package:globetrottr_front/core/widgets/neu_list_card.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
@@ -35,6 +36,10 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen>
   static const _side = 20.0;
 
   int? _openQuestId;
+
+  /// Whether a build has already shown the loaded quests; until then the
+  /// sections arriving with them fade in instead of unfolding.
+  bool _shownLoaded = false;
 
   @override
   void onTabShown() {
@@ -79,8 +84,11 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen>
     final state = ref.watch(questsProvider);
     final active = ref.watch(activeQuestProvider);
     final board = ref.watch(questBoardProvider);
+    final entrance = _shownLoaded ? ColumnEntrance.unfold : ColumnEntrance.fade;
+    _shownLoaded = state.hasLoaded;
 
     Widget group(AppIcons icon, String title, List<Quest> quests) => Column(
+      key: ValueKey(title),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 12,
       children: [
@@ -107,23 +115,36 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen>
       body: Builder(
         builder: (context) => SingleChildScrollView(
           padding: _scrollPadding(MediaQuery.paddingOf(context)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          // Sections that come with the data or go away unfold and fold; a
+          // new active quest replaces the old card the same way. The first
+          // data only fades in, as nothing below has to move.
+          child: AnimatedColumn(
             spacing: 16,
+            entrance: entrance,
             children: [
-              Text(l10n.questsTitle, style: context.typography.headline),
+              Text(
+                l10n.questsTitle,
+                key: const ValueKey('title'),
+                style: context.typography.headline,
+              ),
               QuestLevelRow(
+                key: const ValueKey('level'),
                 level: ref.watch(questLevelProvider),
                 onTap: () => context.go('/quests/history'),
               ),
               if (state.errorMessage != null)
                 FormMessage.error(
                   context.localizeErrorMessage(state.errorMessage),
+                  key: const ValueKey('error'),
                 ),
               if (active != null)
-                ActiveQuestCard(quest: active, onShow: _showOnMap)
-              else
-                const EmptyActiveQuestCard(),
+                ActiveQuestCard(
+                  key: ValueKey('active ${active.id}'),
+                  quest: active,
+                  onShow: _showOnMap,
+                )
+              else if (state.hasLoaded)
+                const EmptyActiveQuestCard(key: ValueKey('no active')),
               if (board.places.isNotEmpty)
                 group(AppIcons.pin, l10n.questsPlaces, board.places),
               if (board.routes.isNotEmpty)

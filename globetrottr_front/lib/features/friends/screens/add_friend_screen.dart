@@ -85,7 +85,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                 placeholder: l10n.friendsNicknamePlaceholder,
                 leadingIcon: AppIcons.fieldUser,
                 controller: _nickname,
-                validator: (value) => validateUsername(value, l10n),
+                validator: (value) => validateNickname(value, l10n),
               ),
             ),
             if (_error != null)
@@ -105,6 +105,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                     rows: [
                       for (final invite in sent)
                         SentInviteRow(
+                          key: ValueKey(invite.username),
                           invite: invite,
                           onUndo: () => runFriendAction(
                             context,

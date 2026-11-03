@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/widgets/neu_dialog.dart';
 import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
@@ -119,7 +120,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 icon: Icons.settings_rounded,
                 label: l10n.profileSettings,
                 onPressed: () {
-                  showDialog<void>(
+                  showNeuDialog<void>(
                     context: context,
                     builder: (_) => const SettingsDialog(),
                   );

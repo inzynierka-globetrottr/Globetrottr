@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:globetrottr_front/debug/animations/form_demos.dart';
+import 'package:globetrottr_front/debug/animations/screen_demos.dart';
 import 'package:globetrottr_front/debug/animations/transition_picker.dart';
 import 'package:globetrottr_front/debug/animations/value_demos.dart';
 
@@ -60,6 +61,11 @@ class _AnimationsScreenState extends State<AnimationsScreen> {
             const FormMessageDemo(),
             const FieldErrorDemo(),
             const InvitesDemo(),
+            const MapPillDemo(),
+            const ListRowsDemo(),
+            const DataLoadDemo(),
+            const PasswordDemo(),
+            const DialogDemo(),
           ],
         ),
       ),
