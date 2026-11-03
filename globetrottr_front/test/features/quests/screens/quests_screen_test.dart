@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/features/map/data/open_free_map_tile_provider.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/profile/data/profile_service.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
@@ -53,6 +54,7 @@ void main() {
     container = ProviderContainer(
       overrides: [
         questServiceProvider.overrideWithValue(service),
+        basemapTileProvider.overrideWithValue(null),
         profileServiceProvider.overrideWithValue(_FakeProfileService()),
         locationProvider.overrideWith(
           () => FakeLocationNotifier(const LatLng(50.0, 19.0)),

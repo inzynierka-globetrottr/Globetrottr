@@ -1,5 +1,4 @@
 import 'package:flutter/painting.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapConfig {
@@ -34,19 +33,14 @@ class MapConfig {
 
   static const String tileUserAgentPackageName = 'com.globetrottr.app';
 
-  static String get tileUrlTemplate {
-    final cartoKey = dotenv.isInitialized ? dotenv.env['CARTO_API_KEY'] : null;
-    if (cartoKey != null && cartoKey.isNotEmpty) {
-      return 'https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=$cartoKey';
-    }
-    return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-  }
+  /// Vector tiles of OpenFreeMap in the OpenMapTiles schema. The TileJSON
+  /// names the current tile URL, which changes with every data release.
+  static const String basemapTileJsonUrl =
+      'https://tiles.openfreemap.org/planet';
 
-  static List<String> get tileSubdomains {
-    final cartoKey = dotenv.isInitialized ? dotenv.env['CARTO_API_KEY'] : null;
-    if (cartoKey != null && cartoKey.isNotEmpty) {
-      return const ['a', 'b', 'c', 'd'];
-    }
-    return const [];
-  }
+  /// Name of the tile source in the map style.
+  static const String basemapSource = 'openmaptiles';
+
+  /// Deepest zoom the server has tiles for; the map scales them up beyond it.
+  static const int basemapMaxZoom = 14;
 }

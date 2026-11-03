@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/theme/app_map_palette.dart';
 import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
@@ -44,6 +45,23 @@ void main() {
     );
   });
 
+  test('the theme carries the map palette', () {
+    const land = Color(0xFF223344);
+    final map = AppMapPalette.light.copyWith(land: land);
+
+    expect(
+      AppTheme.from(AppPalette.light).extension<AppMapPalette>(),
+      AppMapPalette.light,
+    );
+    expect(
+      AppTheme.from(
+        AppPalette.light,
+        map: map,
+      ).extension<AppMapPalette>()!.land,
+      land,
+    );
+  });
+
   test('every text style uses the app font', () {
     final typography = AppTypography.fromPalette(AppPalette.light);
 
@@ -69,6 +87,7 @@ void main() {
     final context = await pumpWith(tester, null);
 
     expect(context.palette, AppPalette.light);
+    expect(context.mapPalette, AppMapPalette.light);
     expect(context.shadows.dark, AppPalette.light.shadowDark);
     expect(context.typography.display.fontSize, 32);
   });
