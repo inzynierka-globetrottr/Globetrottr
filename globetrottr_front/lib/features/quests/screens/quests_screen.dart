@@ -37,10 +37,6 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen>
 
   int? _openQuestId;
 
-  /// Whether a build has already shown the loaded quests; until then the
-  /// sections arriving with them fade in instead of unfolding.
-  bool _shownLoaded = false;
-
   @override
   void onTabShown() {
     ref.read(questsProvider.notifier).loadQuests();
@@ -84,8 +80,6 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen>
     final state = ref.watch(questsProvider);
     final active = ref.watch(activeQuestProvider);
     final board = ref.watch(questBoardProvider);
-    final entrance = _shownLoaded ? ColumnEntrance.unfold : ColumnEntrance.fade;
-    _shownLoaded = state.hasLoaded;
 
     Widget group(AppIcons icon, String title, List<Quest> quests) => Column(
       key: ValueKey(title),
@@ -120,7 +114,7 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen>
           // data only fades in, as nothing below has to move.
           child: AnimatedColumn(
             spacing: 16,
-            entrance: entrance,
+            appearing: !state.hasLoaded,
             children: [
               Text(
                 l10n.questsTitle,

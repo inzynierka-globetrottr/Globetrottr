@@ -2,16 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/unfold_transition.dart';
 
-/// How a child added to an [AnimatedColumn] comes in.
-enum ColumnEntrance {
-  /// It unfolds, pushing what is below down.
-  unfold,
-
-  /// It fades in at its full size, for data arriving on an empty screen,
-  /// where nothing below has to move.
-  fade,
-}
-
 /// A column whose children unfold when they are added and fold away in
 /// their place when removed, matched by their keys (children without one
 /// are matched by position). The children it starts with are there at once.
@@ -23,7 +13,7 @@ class AnimatedColumn extends StatefulWidget {
     this.spacing = 0,
     this.separator,
     this.crossAxisAlignment = CrossAxisAlignment.stretch,
-    this.entrance = ColumnEntrance.unfold,
+    this.appearing = false,
   });
 
   final List<Widget> children;
@@ -33,8 +23,11 @@ class AnimatedColumn extends StatefulWidget {
   final Widget? separator;
   final CrossAxisAlignment crossAxisAlignment;
 
-  /// How the children added from now on come in; leaving ones always fold.
-  final ColumnEntrance entrance;
+  /// Whether the data of the column is still to come. Children added while
+  /// it is, and with the update that ends it, fade in at their full size,
+  /// as nothing below has to move on an empty screen; later ones unfold.
+  /// Leaving children always fold.
+  final bool appearing;
 
   @override
   State<AnimatedColumn> createState() => _AnimatedColumnState();
@@ -128,7 +121,7 @@ class _AnimatedColumnState extends State<AnimatedColumn>
       } else {
         next.add(
           _entry(children[i], i, shown: false)
-            ..fadeOnly = widget.entrance == ColumnEntrance.fade
+            ..fadeOnly = old.appearing || widget.appearing
             ..controller.forward(),
         );
       }

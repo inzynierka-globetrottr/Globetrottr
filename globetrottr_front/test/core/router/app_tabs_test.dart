@@ -113,6 +113,20 @@ void main() {
     expect(shown['/quests'], 1);
   });
 
+  testWidgets('a tab is not told again when a deeper screen closes', (
+    tester,
+  ) async {
+    final router = await pumpApp(tester);
+    await openTab(tester, 'Quests');
+
+    router.go('/quests/history');
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(shown['/quests'], 1);
+  });
+
   testWidgets('back on another tab returns to the map', (tester) async {
     final router = await pumpApp(tester);
     await openTab(tester, 'Friends');

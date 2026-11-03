@@ -47,8 +47,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
   String? _lastCameraProblem;
   bool _questOpen = false;
 
-  /// Whether the camera has come down to the player, or the user took it
-  /// over before the first position arrived.
+  /// Whether the camera has come down to the player, or the user or the app
+  /// moved it before the first position arrived, which the landing must not
+  /// undo.
   bool _landed = false;
 
   @override
@@ -66,9 +67,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 
   void _land(LatLng position) {
-    if (_landed) return;
-    _landed = true;
-    _flyTo(position, duration: context.motion.landing);
+    if (!_landed) _flyTo(position, duration: context.motion.landing);
   }
 
   @override
@@ -88,6 +87,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
       _flyTo(point.position);
     } else if (route.length > 1) {
       _flight.stop();
+      _landed = true;
       _mapController.fitCamera(
         CameraFit.coordinates(
           coordinates: route,
@@ -138,6 +138,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 
   void _flyTo(LatLng center, {Duration? duration}) {
+    _landed = true;
     final camera = _mapController.camera;
     final route = CameraFlight(
       from: (center: camera.center, zoom: camera.zoom),

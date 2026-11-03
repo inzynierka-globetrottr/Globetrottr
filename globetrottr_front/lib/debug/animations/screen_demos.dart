@@ -109,7 +109,7 @@ class _DataLoadDemoState extends State<DataLoadDemo> {
     controls: {'Load again': _reload},
     child: AnimatedColumn(
       spacing: 16,
-      entrance: ColumnEntrance.fade,
+      appearing: !_loaded,
       children: [
         const Text('Friends', key: ValueKey('title')),
         if (_loaded) ...[

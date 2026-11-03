@@ -30,10 +30,6 @@ class FriendsScreen extends ConsumerStatefulWidget {
 
 class _FriendsScreenState extends ConsumerState<FriendsScreen>
     with TabVisibility {
-  /// Whether a build has already shown the loaded lists; until then the
-  /// sections arriving with them fade in instead of unfolding.
-  bool _shownLoaded = false;
-
   static const _side = 20.0;
 
   @override
@@ -50,8 +46,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     final state = ref.watch(friendsProvider);
     final notifier = ref.read(friendsProvider.notifier);
     final padding = MediaQuery.paddingOf(context);
-    final entrance = _shownLoaded ? ColumnEntrance.unfold : ColumnEntrance.fade;
-    _shownLoaded = state.hasLoaded;
 
     Widget side(String key, Widget child) => Padding(
       key: ValueKey(key),
@@ -71,7 +65,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
         // first data only fades in, as nothing below has to move.
         child: AnimatedColumn(
           spacing: 16,
-          entrance: entrance,
+          appearing: !state.hasLoaded,
           children: [
             side(
               'title',

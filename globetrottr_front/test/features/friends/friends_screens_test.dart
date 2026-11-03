@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/widgets/form_message.dart';
 import 'package:globetrottr_front/core/widgets/unfold_transition.dart';
 import 'package:globetrottr_front/features/friends/data/friends_service.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
@@ -34,6 +35,7 @@ class _FakeFriendsService implements FriendsService {
   final List<String> invited = [];
   final List<String> accepted = [];
   AppException? failWith;
+  AppException? loadFailWith;
 
   /// Holds the friends back until completed, as a slow backend would.
   Completer<void>? arrival;
@@ -41,6 +43,8 @@ class _FakeFriendsService implements FriendsService {
   @override
   Future<List<FriendshipResponse>> getFriends() async {
     await arrival?.future;
+    final error = loadFailWith;
+    if (error != null) throw error;
     return friends;
   }
 
@@ -178,6 +182,16 @@ void main() {
       1,
     );
     expect(find.text('No friends yet'), findsNothing);
+  });
+
+  testWidgets('a failed load shows no empty card, only the error', (
+    tester,
+  ) async {
+    friends.loadFailWith = const NetworkException();
+    await pump(tester, const FriendsScreen());
+
+    expect(find.text('No friends yet'), findsNothing);
+    expect(find.byType(FormMessage), findsOneWidget);
   });
 
   testWidgets('without friends one card replaces the strip and the list', (

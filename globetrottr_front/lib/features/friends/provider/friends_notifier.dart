@@ -84,14 +84,12 @@ class FriendsNotifier extends Notifier<FriendsState> {
     } on AppException catch (e) {
       state = state.copyWith(
         isLoading: false,
-        hasLoaded: true,
         errorMessage: e.message,
       );
     } catch (e) {
       debugPrint('Unexpected error loading friends: $e');
       state = state.copyWith(
         isLoading: false,
-        hasLoaded: true,
         errorMessage: 'Something went wrong.',
       );
     }

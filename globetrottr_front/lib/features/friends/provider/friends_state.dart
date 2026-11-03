@@ -6,8 +6,8 @@ class FriendsState {
   final List<FriendshipResponse> sentInvites;
   final bool isLoading;
 
-  /// Whether the lists were asked for at least once, so empty lists mean
-  /// there is nothing rather than that nothing has come yet.
+  /// Whether the lists have arrived at least once, so empty lists mean
+  /// there is nothing rather than that nothing has come or the load failed.
   final bool hasLoaded;
   final String? errorMessage;
 

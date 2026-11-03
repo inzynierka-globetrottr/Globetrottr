@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/widgets/form_message.dart';
 import 'package:globetrottr_front/features/map/data/open_free_map_tile_provider.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/profile/data/profile_service.dart';
@@ -46,11 +47,12 @@ void main() {
     String location = '/quests',
     Locale locale = const Locale('en'),
     Size size = const Size(1170, 4000),
+    AppException? failWith,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    service = FakeQuestService(quests);
+    service = FakeQuestService(quests)..failWith = failWith;
     container = ProviderContainer(
       overrides: [
         questServiceProvider.overrideWithValue(service),
@@ -110,6 +112,15 @@ void main() {
       expect(find.text('2 points'), findsOneWidget);
       expect(find.text('1 point'), findsOneWidget);
       expect(find.text('River walk'), findsOneWidget);
+    });
+
+    testWidgets('a failed load shows no empty card, only the error', (
+      tester,
+    ) async {
+      await pump(tester, [], failWith: const NetworkException());
+
+      expect(find.text('No active quest'), findsNothing);
+      expect(find.byType(FormMessage), findsOneWidget);
     });
 
     testWidgets('shows the active quest as steps with its next point', (

@@ -55,6 +55,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     required this.landing,
     required this.pressHold,
     required this.curve,
+    required this.popCurve,
     required this.flightCurve,
     required this.tabTransition,
     required this.deeperTransition,
@@ -68,6 +69,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     landing: Duration(milliseconds: 1200),
     pressHold: Duration(milliseconds: 100),
     curve: Curves.ease,
+    popCurve: Curves.easeOutBack,
     flightCurve: Curves.easeInOut,
     tabTransition: TabTransition.instant,
     deeperTransition: DeeperTransition.zoom,
@@ -95,6 +97,10 @@ class AppMotion extends ThemeExtension<AppMotion> {
   final Duration pressHold;
 
   final Curve curve;
+
+  /// Something popping into place with a slight overshoot, such as the tick
+  /// of a met password rule.
+  final Curve popCurve;
   final Curve flightCurve;
   final TabTransition tabTransition;
   final DeeperTransition deeperTransition;
@@ -118,6 +124,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     Duration? landing,
     Duration? pressHold,
     Curve? curve,
+    Curve? popCurve,
     Curve? flightCurve,
     TabTransition? tabTransition,
     DeeperTransition? deeperTransition,
@@ -129,6 +136,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     landing: landing ?? this.landing,
     pressHold: pressHold ?? this.pressHold,
     curve: curve ?? this.curve,
+    popCurve: popCurve ?? this.popCurve,
     flightCurve: flightCurve ?? this.flightCurve,
     tabTransition: tabTransition ?? this.tabTransition,
     deeperTransition: deeperTransition ?? this.deeperTransition,
@@ -148,6 +156,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
       other.landing == landing &&
       other.pressHold == pressHold &&
       other.curve == curve &&
+      other.popCurve == popCurve &&
       other.flightCurve == flightCurve &&
       other.tabTransition == tabTransition &&
       other.deeperTransition == deeperTransition;
@@ -161,6 +170,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     landing,
     pressHold,
     curve,
+    popCurve,
     flightCurve,
     tabTransition,
     deeperTransition,

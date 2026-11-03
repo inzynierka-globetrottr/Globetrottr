@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/map/provider/location_notifier.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/tracking_state.dart';
@@ -26,9 +27,14 @@ class FakeQuestService extends Fake implements QuestService {
 
   List<Quest> quests;
   final started = <int>[];
+  AppException? failWith;
 
   @override
-  Future<List<Quest>> fetchUserQuests() async => quests;
+  Future<List<Quest>> fetchUserQuests() async {
+    final error = failWith;
+    if (error != null) throw error;
+    return quests;
+  }
 
   @override
   Future<void> startQuest(int questId) async => started.add(questId);

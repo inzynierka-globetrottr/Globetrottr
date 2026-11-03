@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 
@@ -108,17 +109,20 @@ class _TabSwitcherState extends State<TabSwitcher>
           offstage: i != widget.current && i != _leaving,
           child: TickerMode(
             enabled: i == widget.current,
-            child: FadeTransition(
-              opacity: i == widget.current
-                  ? _comingOpacity
-                  : (i == _leaving
-                        ? _leavingOpacity
-                        : kAlwaysCompleteAnimation),
-              child: ScaleTransition(
-                scale: i == widget.current
-                    ? _comingScale
-                    : kAlwaysCompleteAnimation,
-                child: widget.tabs[i],
+            child: TabActive(
+              active: i == widget.current,
+              child: FadeTransition(
+                opacity: i == widget.current
+                    ? _comingOpacity
+                    : (i == _leaving
+                          ? _leavingOpacity
+                          : kAlwaysCompleteAnimation),
+                child: ScaleTransition(
+                  scale: i == widget.current
+                      ? _comingScale
+                      : kAlwaysCompleteAnimation,
+                  child: widget.tabs[i],
+                ),
               ),
             ),
           ),

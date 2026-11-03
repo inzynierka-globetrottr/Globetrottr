@@ -88,7 +88,7 @@ class _RuleChip extends StatelessWidget {
                 children: [
                   AnimatedSwitcher(
                     duration: motion.short,
-                    switchInCurve: Curves.easeOutBack,
+                    switchInCurve: motion.popCurve,
                     transitionBuilder: (child, animation) =>
                         ScaleTransition(scale: animation, child: child),
                     child: AppIcon(

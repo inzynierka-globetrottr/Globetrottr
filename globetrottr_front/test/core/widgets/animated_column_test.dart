@@ -74,13 +74,17 @@ void main() {
     expect(heightOf(tester, 'b'), 50);
   });
 
-  testWidgets('arriving data can fade in at its full size', (tester) async {
-    Future<void> showFading(List<String> items) => tester.pumpWidget(
+  group('while the data is appearing', () {
+    Future<void> showAppearing(
+      WidgetTester tester,
+      List<String> items, {
+      required bool appearing,
+    }) => tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: AnimatedColumn(
             spacing: 10,
-            entrance: ColumnEntrance.fade,
+            appearing: appearing,
             children: [
               for (final item in items)
                 SizedBox(key: ValueKey(item), height: 40, child: Text(item)),
@@ -89,17 +93,36 @@ void main() {
         ),
       ),
     );
-    await showFading(['a']);
-    await showFading(['a', 'b']);
-    await tester.pump(AppMotion.standard.medium ~/ 2);
 
-    expect(heightOf(tester, 'b'), 50);
-    final fade = tester.widget<FadeTransition>(
-      find
-          .ancestor(of: find.text('b'), matching: find.byType(FadeTransition))
-          .first,
-    );
-    expect(fade.opacity.value, inExclusiveRange(0, 1));
+    double opacityOf(WidgetTester tester, String item) => tester
+        .widget<FadeTransition>(
+          find
+              .ancestor(of: find.text(item), matching: find.byType(FadeTransition))
+              .first,
+        )
+        .opacity
+        .value;
+
+    testWidgets('the arriving data fades in at its full size', (tester) async {
+      await showAppearing(tester, ['a'], appearing: true);
+      await showAppearing(tester, ['a', 'b'], appearing: false);
+      await tester.pump(AppMotion.standard.medium ~/ 2);
+
+      expect(heightOf(tester, 'b'), 50);
+      expect(opacityOf(tester, 'b'), inExclusiveRange(0, 1));
+    });
+
+    testWidgets('a child added once the data is there unfolds', (
+      tester,
+    ) async {
+      await showAppearing(tester, ['a'], appearing: true);
+      await showAppearing(tester, ['a', 'b'], appearing: false);
+      await tester.pumpAndSettle();
+      await showAppearing(tester, ['a', 'b', 'c'], appearing: false);
+      await tester.pump(AppMotion.standard.medium ~/ 2);
+
+      expect(heightOf(tester, 'c'), inExclusiveRange(0, 50));
+    });
   });
 
   testWidgets('a removed child folds away in its place', (tester) async {
