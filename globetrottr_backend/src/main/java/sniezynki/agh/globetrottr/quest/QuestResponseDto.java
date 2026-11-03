@@ -1,5 +1,6 @@
 package sniezynki.agh.globetrottr.quest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record QuestResponseDto(
@@ -12,4 +13,5 @@ public record QuestResponseDto(
         boolean isStarted,
         boolean isCompleted,
         QuestCoordinateDto location,
-        List<QuestWaypointDto> waypoints) {}
+        List<QuestWaypointDto> waypoints,
+        LocalDateTime completedAt) {}

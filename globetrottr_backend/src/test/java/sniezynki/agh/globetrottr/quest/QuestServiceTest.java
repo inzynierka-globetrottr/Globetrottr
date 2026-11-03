@@ -6,6 +6,7 @@ import static org.assertj.core.data.Offset.offset;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -356,6 +357,69 @@ class QuestServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessage("Quest not found");
         verify(userQuestRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldAbandonActiveQuestWhenStartingAnotherOne() {
+        Quest active = createQuest(1L, "Active", QuestType.VISIT_POINTS, 100, null);
+        Quest next = createQuest(2L, "Next", QuestType.VISIT_POINTS, 50, null);
+        UserQuest activeProgress =
+                UserQuest.builder().user(user).quest(active).isCompleted(false).build();
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(activeProgress));
+        when(questRepository.findById(2L)).thenReturn(Optional.of(next));
+
+        questService.startQuest(username, 2L);
+
+        verify(userQuestRepository).delete(activeProgress);
+        verify(userQuestRepository).save(argThat(uq -> uq.getQuest() == next && !uq.isCompleted()));
+    }
+
+    @Test
+    void shouldKeepCompletedQuestsWhenStartingAnotherOne() {
+        Quest done = createQuest(1L, "Done", QuestType.VISIT_POINTS, 100, null);
+        Quest next = createQuest(2L, "Next", QuestType.VISIT_POINTS, 50, null);
+        UserQuest completed = UserQuest.builder().user(user).quest(done).isCompleted(true).build();
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(completed));
+        when(questRepository.findById(2L)).thenReturn(Optional.of(next));
+
+        questService.startQuest(username, 2L);
+
+        verify(userQuestRepository, never()).delete(any());
+        verify(userQuestRepository).save(any());
+    }
+
+    @Test
+    void shouldNotAbandonQuestNotFoundWhenStartingIt() {
+        Quest active = createQuest(1L, "Active", QuestType.VISIT_POINTS, 100, null);
+        UserQuest activeProgress =
+                UserQuest.builder().user(user).quest(active).isCompleted(false).build();
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userQuestRepository.findByUser_UserId(userId)).thenReturn(List.of(activeProgress));
+        when(questRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> questService.startQuest(username, 99L))
+                .isInstanceOf(ResourceNotFoundException.class);
+        verify(userQuestRepository, never()).delete(any());
+    }
+
+    @Test
+    void shouldReturnCompletionDateOfCompletedQuest() {
+        Quest quest = createQuest(1L, "Done", QuestType.VISIT_POINTS, 100, null);
+        LocalDateTime completedAt = LocalDateTime.of(2026, 9, 28, 17, 30);
+        UserQuest completed =
+                UserQuest.builder()
+                        .user(user)
+                        .quest(quest)
+                        .isCompleted(true)
+                        .completedAt(completedAt)
+                        .build();
+        stubWaypointProgressFor(quest, completed);
+
+        QuestResponseDto response = questService.getAllUserQuests(username).getFirst();
+
+        assertThat(response.completedAt()).isEqualTo(completedAt);
     }
 
     private void stubSidebarFor(Quest quest) {

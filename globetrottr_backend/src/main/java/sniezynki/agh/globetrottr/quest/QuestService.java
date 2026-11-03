@@ -72,7 +72,8 @@ public class QuestService {
                                                     isCompleted
                                                             || (isStarted
                                                                     && isPointVisited(
-                                                                            userFog, point))));
+                                                                            userFog, point))),
+                                    isCompleted ? uq.getCompletedAt() : null);
                         })
                 .toList();
     }
@@ -167,6 +168,10 @@ public class QuestService {
         }
     }
 
+    /**
+     * Starts a quest. Only one quest is active at a time, so a quest in progress is abandoned
+     * together with its progress; completed quests stay.
+     */
     @Transactional
     public void startQuest(String username, Long questId) {
         User user =
@@ -175,9 +180,9 @@ public class QuestService {
                         .orElseThrow(() -> new RuntimeException("User not found"));
         UUID userId = user.getUserId();
 
+        List<UserQuest> userQuests = userQuestRepository.findByUser_UserId(userId);
         boolean alreadyStarted =
-                userQuestRepository.findByUser_UserId(userId).stream()
-                        .anyMatch(uq -> uq.getQuest().getId().equals(questId));
+                userQuests.stream().anyMatch(uq -> uq.getQuest().getId().equals(questId));
 
         if (alreadyStarted) return;
 
@@ -185,6 +190,8 @@ public class QuestService {
                 questRepository
                         .findById(questId)
                         .orElseThrow(() -> new ResourceNotFoundException("Quest not found"));
+
+        userQuests.stream().filter(uq -> !uq.isCompleted()).forEach(userQuestRepository::delete);
 
         UserQuest newUserQuest =
                 UserQuest.builder().user(user).quest(quest).isCompleted(false).build();
