@@ -6,8 +6,10 @@ import 'package:globetrottr_front/debug/widgets/fog_dev_panel.dart';
 import 'package:globetrottr_front/debug/widgets/journey_generator_panel.dart';
 import 'package:globetrottr_front/features/auth/data/auth_service.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
+import 'package:globetrottr_front/features/map/data/basemap_cache.dart';
 
 import '../support/fake_auth_service.dart';
+import '../support/fake_basemap_cache.dart';
 import '../support/fake_location_service.dart';
 
 void main() {
@@ -22,6 +24,7 @@ void main() {
         overrides: [
           ...env.overrides,
           authServiceProvider.overrideWithValue(FakeAuthService()),
+          basemapCacheProvider.overrideWithValue(FakeBasemapCache()),
         ],
         child: const MaterialApp(home: DevOptionsScreen()),
       ),
@@ -48,6 +51,7 @@ void main() {
       overrides: [
         ...env.overrides,
         authServiceProvider.overrideWithValue(FakeAuthService()),
+        basemapCacheProvider.overrideWithValue(FakeBasemapCache()),
       ],
     );
     addTearDown(container.dispose);

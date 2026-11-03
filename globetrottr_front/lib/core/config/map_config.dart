@@ -42,4 +42,13 @@ class MapConfig {
 
   /// Deepest zoom the server has tiles for; the map scales them up beyond it.
   static const int basemapMaxZoom = 14;
+
+  static const String basemapCacheFolder = 'basemap_tiles';
+
+  /// Cached tiles are never revalidated, so this is how stale the map may
+  /// get. Expired tiles are deleted even offline, so it must outlast a trip.
+  static const Duration basemapCacheTtl = Duration(days: 180);
+
+  /// Raw and rendered tiles together; least recently used go first.
+  static const int basemapCacheMaxBytes = 250 * 1024 * 1024;
 }
