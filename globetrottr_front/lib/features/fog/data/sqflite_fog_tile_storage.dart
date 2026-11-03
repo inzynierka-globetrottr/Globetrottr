@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:globetrottr_front/core/storage/database_files.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -116,6 +117,17 @@ class SqfliteFogTileStorage implements FogTileStorage {
       whereArgs: [rev],
       orderBy: 'rev ASC',
       limit: limit,
+    );
+    return rows.map(_fromRow).toList();
+  }
+
+  @override
+  Future<List<StoredFogTile>> loadBaseTilesWithArea() async {
+    final db = await _db;
+    final rows = await db.query(
+      'fog_tiles',
+      where: 'z = ? AND area > 0',
+      whereArgs: [FogConfig.baseZoom],
     );
     return rows.map(_fromRow).toList();
   }

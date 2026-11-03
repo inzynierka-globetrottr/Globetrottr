@@ -1,5 +1,6 @@
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
+import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 class InMemoryFogTileStorage implements FogTileStorage {
   final Map<int, StoredFogTile> _tiles = {};
@@ -48,6 +49,13 @@ class InMemoryFogTileStorage implements FogTileStorage {
   @override
   Future<List<StoredFogTile>> changedSince(int rev, {int limit = 1000}) async {
     return _tiles.values.where((t) => t.rev > rev).take(limit).toList();
+  }
+
+  @override
+  Future<List<StoredFogTile>> loadBaseTilesWithArea() async {
+    return _tiles.values
+        .where((t) => t.id.z == FogConfig.baseZoom && t.areaM2 > 0)
+        .toList();
   }
 
   @override

@@ -153,6 +153,9 @@ class FogStore {
   int _lastAppliedLogId;
   int _skippedLogEntries;
   int _appliedPoints = 0;
+
+  /// Ground area revealed in this store, in square metres.
+  double get totalAreaM2 => _totalAreaM2;
   int _lastApplyMicros = 0;
   int _lastFlushMillis = 0;
   int _lastFlushTiles = 0;

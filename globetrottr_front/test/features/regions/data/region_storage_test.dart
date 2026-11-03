@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/regions/data/region.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
@@ -13,7 +15,10 @@ void main() {
     late RegionStorage storage;
 
     setUp(() async {
-      storage = SqfliteRegionStorage(path: inMemoryDatabasePath);
+      storage = SqfliteRegionStorage(
+        path: inMemoryDatabasePath,
+        autoSeed: false,
+      );
       await storage.init();
     });
 
@@ -218,5 +223,75 @@ void main() {
       expect(ancestors[1].id, 10);
       expect(ancestors[2].id, 1);
     });
+
+    test('auto seeds initial regions when autoSeed is true', () async {
+      final seededStorage = SqfliteRegionStorage(
+        path: 'seeded_regions_test.db',
+      );
+      await seededStorage.init();
+
+      final poland = await seededStorage.findRegionById(1);
+      expect(poland, isNotNull);
+      expect(poland!.name, 'Polska');
+      expect(poland.code, 'PL');
+
+      final krakow = await seededStorage.findRegionById(1001);
+      expect(krakow, isNotNull);
+      expect(krakow!.name, 'Kraków');
+
+      // Check point query in Kraków Old Town (50.0614, 19.9366)
+      final regions = await seededStorage.findRegionsByPoint(
+        lat: 50.0614,
+        lon: 19.9366,
+      );
+      expect(regions, isNotEmpty);
+      expect(regions.any((r) => r.name == 'Kraków'), isTrue);
+      expect(regions.any((r) => r.name == 'Polska'), isTrue);
+
+      await seededStorage.close();
+      await databaseFactory.deleteDatabase('seeded_regions_test.db');
+    });
+
+    test(
+      'loads worldwide regions from bundled regions_world.db asset',
+      () async {
+        final worldStorage = SqfliteRegionStorage(
+          path: File('assets/data/regions_world.db').absolute.path,
+          autoSeed: false,
+        );
+        await worldStorage.init();
+
+        final poland = await worldStorage.findRegionById(1);
+        expect(poland, isNotNull);
+        expect(poland!.name, 'Polska');
+        expect(poland.code, 'PL');
+
+        // Check Tokyo (35.6762, 139.6503)
+        final tokyoRegions = await worldStorage.findRegionsByPoint(
+          lat: 35.6762,
+          lon: 139.6503,
+        );
+        expect(tokyoRegions, isNotEmpty);
+        expect(tokyoRegions.any((r) => r.name == 'Tokyo'), isTrue);
+
+        // Check London (51.5074, -0.1278)
+        final londonRegions = await worldStorage.findRegionsByPoint(
+          lat: 51.5074,
+          lon: -0.1278,
+        );
+        expect(londonRegions, isNotEmpty);
+        expect(londonRegions.any((r) => r.name == 'London'), isTrue);
+
+        // Check New York (40.7128, -74.0060)
+        final nyRegions = await worldStorage.findRegionsByPoint(
+          lat: 40.7128,
+          lon: -74.0060,
+        );
+        expect(nyRegions, isNotEmpty);
+        expect(nyRegions.any((r) => r.name == 'New York'), isTrue);
+
+        await worldStorage.close();
+      },
+    );
   });
 }

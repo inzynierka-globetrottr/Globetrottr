@@ -1,11 +1,18 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:globetrottr_front/features/regions/data/region.dart';
+import 'package:globetrottr_front/features/regions/data/region_database_seeder.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
+import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
 class SqfliteRegionStorage implements RegionStorage {
-  SqfliteRegionStorage({this.path});
+  SqfliteRegionStorage({this.path, this.autoSeed = true});
 
   final String? path;
+  final bool autoSeed;
   Database? _database;
 
   Future<Database> get _db async => _database ??= await _open();
@@ -23,12 +30,15 @@ class SqfliteRegionStorage implements RegionStorage {
 
   Future<Database> _open() async {
     final location = path ?? 'regions_world.db';
+    if (path == null) {
+      await _copyAssetDbIfMissing(location);
+    }
     return openDatabase(
       location,
       version: 1,
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE regions (
+          CREATE TABLE IF NOT EXISTS regions (
             id INTEGER PRIMARY KEY,
             parent_id INTEGER,
             name TEXT NOT NULL,
@@ -43,16 +53,48 @@ class SqfliteRegionStorage implements RegionStorage {
           )
         ''');
         await db.execute('''
-          CREATE VIRTUAL TABLE regions_rtree USING rtree(
+          CREATE VIRTUAL TABLE IF NOT EXISTS regions_rtree USING rtree(
             id, min_lon, max_lon, min_lat, max_lat
           )
         ''');
         await db.execute(
-          'CREATE INDEX idx_regions_parent ON regions (parent_id)',
+          'CREATE INDEX IF NOT EXISTS idx_regions_parent ON regions (parent_id)',
         );
-        await db.execute('CREATE INDEX idx_regions_type ON regions (type)');
+        await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_regions_type ON regions (type)',
+        );
+        if (autoSeed) {
+          await RegionDatabaseSeeder.seed(db);
+        }
+      },
+      onOpen: (db) async {
+        if (autoSeed) {
+          await RegionDatabaseSeeder.seedIfEmpty(db);
+        }
       },
     );
+  }
+
+  Future<void> _copyAssetDbIfMissing(String location) async {
+    try {
+      final dbPath = await getDatabasesPath();
+      final fullPath = p.join(dbPath, location);
+      final exists = await databaseExists(fullPath);
+      if (!exists) {
+        try {
+          await Directory(p.dirname(fullPath)).create(recursive: true);
+        } catch (_) {}
+
+        final byteData = await rootBundle.load('assets/data/regions_world.db');
+        final bytes = byteData.buffer.asUint8List(
+          byteData.offsetInBytes,
+          byteData.lengthInBytes,
+        );
+        await File(fullPath).writeAsBytes(bytes, flush: true);
+      }
+    } catch (e) {
+      debugPrint('Could not unpack bundled regions_world.db asset: $e');
+    }
   }
 
   @override

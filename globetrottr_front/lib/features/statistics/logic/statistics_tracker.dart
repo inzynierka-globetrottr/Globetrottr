@@ -182,6 +182,29 @@ class StatisticsTracker {
     }
 
     await statisticsStorage.saveRegionStats(updated);
+
+    final totalAreaM2 = tiles.fold<double>(
+      0.0,
+      (sum, t) => sum + t.areaDeltaM2,
+    );
+    if (totalAreaM2 > 0) {
+      final todayStr = _formatDate(DateTime.now());
+      final daily = await statisticsStorage.getDailyStats(todayStr);
+      final currentDailyArea = daily?.newAreaM2 ?? 0.0;
+      if (currentDailyArea < totalAreaM2) {
+        await statisticsStorage.saveDailyStats(
+          (daily ?? DailyExplorationStats(date: todayStr)).copyWith(
+            newAreaM2: totalAreaM2,
+          ),
+        );
+      }
+      await statisticsStorage.setRecordIfMax(
+        'area',
+        totalAreaM2 / 1000000.0,
+        label: todayStr,
+      );
+    }
+
     onUpdated?.call();
   }
 

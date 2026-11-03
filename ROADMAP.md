@@ -110,6 +110,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - Dual Polish and English localization across all statistics screens and sub-pages.
 - GoRouter navigation registered under `/profile/statistics`, `/profile/statistics/countries`, `/profile/statistics/region/:id`, and `/profile/statistics/city/:id`.
 - Wired to live data: all statistics screens and sub-pages read directly from local `stats.db` and `regions_world.db`. Fog tile flushes emit area deltas to `StatisticsTracker` to update daily exploration ledgers, region progress, and personal records without mock data. Missing data shows neutral placeholders.
+- Map pill & region seeding: map status pill wired to live session new area and current district progress; boundary database seeder automatically populates initial world and Polish administrative hierarchies into `regions_world.db`; automatic startup backfill synchronizes existing `fog.db` tiles into statistics ledgers.
 
 ---
 

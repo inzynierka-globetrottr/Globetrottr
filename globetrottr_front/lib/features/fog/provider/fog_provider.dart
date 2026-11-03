@@ -109,6 +109,29 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
     } on Object catch (error) {
       // The stored tiles are still valid; the next start retries the replay.
       debugPrint('Replaying the track log into the fog failed: $error');
+    } finally {
+      await _backfillStatsIfEmpty(store);
+    }
+  }
+
+  Future<void> _backfillStatsIfEmpty(FogStore store) async {
+    try {
+      if (store.totalAreaM2 <= 0) return;
+      final statsStorage = ref.read(statisticsStorageProvider);
+      final bestDay = await statsStorage.getBestDayStats();
+      if (bestDay == null || bestDay.newAreaM2 <= 0) {
+        final storage = ref.read(fogTileStorageProvider);
+        final tiles = await storage.loadBaseTilesWithArea();
+        if (tiles.isNotEmpty) {
+          final deltas = [
+            for (final t in tiles)
+              TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
+          ];
+          await ref.read(statisticsTrackerProvider).rebuildFromFogTiles(deltas);
+        }
+      }
+    } catch (e) {
+      debugPrint('Backfilling stats from fog failed: $e');
     }
   }
 
