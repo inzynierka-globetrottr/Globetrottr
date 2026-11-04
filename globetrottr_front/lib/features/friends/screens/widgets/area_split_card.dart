@@ -24,7 +24,6 @@ class AreaSplitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mapRadius = BorderRadius.circular(_mapRadius);
     return NeuSurface(
       shadows: context.shadows.raised(NeoDepth.xl),
       borderRadius: BorderRadius.circular(28),
@@ -35,20 +34,10 @@ class AreaSplitCard extends StatelessWidget {
         children: [
           SizedBox(
             height: _mapHeight,
+            // No sunk edge: its light side glows on the dark fog.
             child: ClipRRect(
-              borderRadius: mapRadius,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  map,
-                  IgnorePointer(
-                    child: NeuInsetShadow(
-                      shadows: context.shadows.inset(NeoDepth.md),
-                      borderRadius: mapRadius,
-                    ),
-                  ),
-                ],
-              ),
+              borderRadius: BorderRadius.circular(_mapRadius),
+              child: map,
             ),
           ),
           AreaSplitSummary(username: username, split: split),
