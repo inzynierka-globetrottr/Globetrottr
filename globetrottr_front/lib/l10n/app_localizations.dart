@@ -1184,6 +1184,18 @@ abstract class AppLocalizations {
   /// **'Counties · Discovery'**
   String get statsCountiesDiscoveryTitle;
 
+  /// No description provided for @statsSubregionsDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subregions · Discovery'**
+  String get statsSubregionsDiscoveryTitle;
+
+  /// No description provided for @statsDistrictsDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Districts · Discovery'**
+  String get statsDistrictsDiscoveryTitle;
+
   /// No description provided for @statsMetricDiscovered.
   ///
   /// In en, this message translates to:
@@ -1237,18 +1249,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'City discovery'**
   String get statsCityDiscoveryTitle;
-
-  /// No description provided for @statsDistrictsDiscoveryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Districts · Discovery'**
-  String get statsDistrictsDiscoveryTitle;
-
-  /// No description provided for @statsSubregionsDiscoveryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Subregions · Discovery'**
-  String get statsSubregionsDiscoveryTitle;
 
   /// No description provided for @statsNoSubregions.
   ///

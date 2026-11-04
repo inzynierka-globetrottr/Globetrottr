@@ -39,7 +39,7 @@ class CountryFlagChip extends StatelessWidget {
             ],
           ),
           clipBehavior: Clip.antiAlias,
-          child: _buildFlag(code),
+          child: _buildFlag(context, code),
         ),
         if (showCodeLabel) ...[
           const SizedBox(height: 3),
@@ -55,7 +55,10 @@ class CountryFlagChip extends StatelessWidget {
     );
   }
 
-  Widget _buildFlag(String code) {
+  Widget _buildFlag(BuildContext context, String code) {
+    final palette = context.palette;
+    final typography = context.typography;
+
     switch (code) {
       case 'PL':
         return const Column(
@@ -64,13 +67,21 @@ class CountryFlagChip extends StatelessWidget {
             Expanded(child: ColoredBox(color: Color(0xFFDC143C))),
           ],
         );
-      case 'CZ':
-        return const CustomPaint(
-          painter: _CzechFlagPainter(),
+      case 'FR':
+        return const Row(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFF002654))),
+            Expanded(child: ColoredBox(color: Color(0xFFFFFFFF))),
+            Expanded(child: ColoredBox(color: Color(0xFFED2939))),
+          ],
         );
-      case 'SK':
-        return const CustomPaint(
-          painter: _SlovakFlagPainter(),
+      case 'IT':
+        return const Row(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFF009246))),
+            Expanded(child: ColoredBox(color: Color(0xFFFFFFFF))),
+            Expanded(child: ColoredBox(color: Color(0xFFCE2B37))),
+          ],
         );
       case 'DE':
         return const Column(
@@ -87,13 +98,56 @@ class CountryFlagChip extends StatelessWidget {
             Expanded(child: ColoredBox(color: Color(0xFFFFD500))),
           ],
         );
+      case 'AT':
+        return const Column(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFFED2939))),
+            Expanded(child: ColoredBox(color: Color(0xFFFFFFFF))),
+            Expanded(child: ColoredBox(color: Color(0xFFED2939))),
+          ],
+        );
+      case 'HU':
+        return const Column(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFFCE2939))),
+            Expanded(child: ColoredBox(color: Color(0xFFFFFFFF))),
+            Expanded(child: ColoredBox(color: Color(0xFF477050))),
+          ],
+        );
+      case 'NL':
+        return const Column(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFFC8102E))),
+            Expanded(child: ColoredBox(color: Color(0xFFFFFFFF))),
+            Expanded(child: ColoredBox(color: Color(0xFF003DA5))),
+          ],
+        );
+      case 'BE':
+        return const Row(
+          children: [
+            Expanded(child: ColoredBox(color: Color(0xFF000000))),
+            Expanded(child: ColoredBox(color: Color(0xFFFFD100))),
+            Expanded(child: ColoredBox(color: Color(0xFFFF0F21))),
+          ],
+        );
+      case 'CZ':
+        return const CustomPaint(
+          painter: _CzechFlagPainter(),
+        );
+      case 'SK':
+        return const CustomPaint(
+          painter: _SlovakFlagPainter(),
+        );
       default:
-        return Center(
+        return Container(
+          color: palette.background,
+          alignment: Alignment.center,
           child: Text(
             code,
-            style: const TextStyle(
+            style: typography.smallStrong.copyWith(
               fontSize: 10,
               fontWeight: FontWeight.w800,
+              color: palette.text,
             ),
           ),
         );

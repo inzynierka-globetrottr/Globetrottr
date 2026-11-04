@@ -627,6 +627,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get statsCountiesDiscoveryTitle => 'Powiaty · Odkrycie';
 
   @override
+  String get statsSubregionsDiscoveryTitle => 'Podregiony · Odkrycie';
+
+  @override
+  String get statsDistrictsDiscoveryTitle => 'Dzielnice · Odkrycie';
+
+  @override
   String get statsMetricDiscovered => 'Odkryto';
 
   @override
@@ -652,12 +658,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get statsCityDiscoveryTitle => 'Odkrycie miasta';
-
-  @override
-  String get statsDistrictsDiscoveryTitle => 'Dzielnice · Odkrycie';
-
-  @override
-  String get statsSubregionsDiscoveryTitle => 'Podregiony · Odkrycie';
 
   @override
   String get statsNoSubregions => 'Brak odkrytych podregionów';

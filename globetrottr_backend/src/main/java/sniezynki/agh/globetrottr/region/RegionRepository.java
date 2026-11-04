@@ -13,6 +13,10 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
 
     Optional<Region> findByNameIgnoreCase(String name);
 
+    Optional<Region> findByCodeIgnoreCase(String code);
+
+    Optional<Region> findByNameIgnoreCaseAndCodeIgnoreCase(String name, String code);
+
     @Query(
             value = "SELECT r.* FROM regions r WHERE ST_Intersects(r.geom, :fogGeom)",
             nativeQuery = true)

@@ -31,13 +31,21 @@ class AreaProgressNotifier extends Notifier<AreaProgress> {
 
   @override
   AreaProgress build() {
-    ref.watch(statisticsRevisionProvider);
+    ref.listen(statisticsRevisionProvider, (_, __) {
+      final pos =
+          ref.read(locationProvider).currentPosition ??
+          ref.read(playerMotionProvider).value;
+      if (pos != null) {
+        _update(pos.latitude, pos.longitude, forceRefreshStats: true);
+      }
+    });
+
     final motion = ref.watch(playerMotionProvider);
     final pos =
         ref.watch(locationProvider.select((s) => s.currentPosition)) ??
         motion.value;
     if (pos != null) {
-      Future.microtask(() => _update(pos.latitude, pos.longitude));
+      _update(pos.latitude, pos.longitude);
     }
     void onMotion() {
       final p = motion.value;
@@ -51,9 +59,15 @@ class AreaProgressNotifier extends Notifier<AreaProgress> {
     return _current;
   }
 
-  Future<void> _update(double lat, double lon) async {
+  Future<void> _update(
+    double lat,
+    double lon, {
+    bool forceRefreshStats = false,
+  }) async {
     final tileId = FogTileId.fromLatLng(lat, lon, FogConfig.baseZoom);
-    if (_lastTileId == tileId && _current.regionName != null) {
+    if (!forceRefreshStats &&
+        _lastTileId == tileId &&
+        _current.regionName != null) {
       return;
     }
     _lastTileId = tileId;

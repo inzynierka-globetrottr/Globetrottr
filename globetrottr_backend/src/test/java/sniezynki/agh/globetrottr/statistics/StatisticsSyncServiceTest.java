@@ -47,7 +47,8 @@ class StatisticsSyncServiceTest {
     @Test
     void shouldUpdateScalarUserStatisticsAndRegionsFromSyncDto() {
         when(userStatisticsRepository.findByUser_Username("tester")).thenReturn(Optional.empty());
-        when(regionRepository.findByNameIgnoreCase("Poland")).thenReturn(Optional.of(region));
+        when(regionRepository.findByNameIgnoreCaseAndCodeIgnoreCase("Poland", "PL"))
+                .thenReturn(Optional.of(region));
         when(userRegionStatRepository.findByUser_UserIdAndRegion_Id(user.getUserId(), 1L))
                 .thenReturn(Optional.empty());
 
@@ -57,7 +58,7 @@ class StatisticsSyncServiceTest {
                         2,
                         7,
                         10,
-                        List.of(new RegionStatisticSyncDto(1L, "Poland", "PL", 15.5, 0.005)));
+                        List.of(new RegionStatisticSyncDto(9999L, "Poland", "PL", 15.5, 0.005)));
 
         statisticsSyncService.updateUserStatistics(user, dto);
 
@@ -78,6 +79,32 @@ class StatisticsSyncServiceTest {
         assertEquals(15.5, savedRegionStat.getDiscoveredAreaKm2());
         assertEquals(0.005, savedRegionStat.getDiscoveryPercentage());
         assertEquals(region, savedRegionStat.getRegion());
+
+        // Verifies client local ID (9999) is NOT queried against repository
+        verify(regionRepository, never()).findById(9999L);
+    }
+
+    @Test
+    void shouldMatchRegionByCodeWhenNameNotFound() {
+        when(userStatisticsRepository.findByUser_Username("tester")).thenReturn(Optional.empty());
+        when(regionRepository.findByNameIgnoreCaseAndCodeIgnoreCase("Polska", "PL"))
+                .thenReturn(Optional.empty());
+        when(regionRepository.findByCodeIgnoreCase("PL")).thenReturn(Optional.of(region));
+        when(userRegionStatRepository.findByUser_UserIdAndRegion_Id(user.getUserId(), 1L))
+                .thenReturn(Optional.empty());
+
+        StatisticsSyncDto dto =
+                new StatisticsSyncDto(
+                        10.0,
+                        1,
+                        3,
+                        4,
+                        List.of(new RegionStatisticSyncDto(1001L, "Polska", "PL", 10.0, 0.003)));
+
+        statisticsSyncService.updateUserStatistics(user, dto);
+
+        verify(userRegionStatRepository).save(any(UserRegionStatistics.class));
+        verify(regionRepository, never()).findById(1001L);
     }
 
     @Test

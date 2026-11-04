@@ -107,8 +107,11 @@ void main() {
           ),
         );
 
-        // Allow microtask to resolve
-        await Future<void>.delayed(const Duration(milliseconds: 50));
+        // Allow async region resolution to complete
+        for (var i = 0; i < 50; i++) {
+          if (container.read(areaProgressProvider).regionName != null) break;
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
 
         final progress = container.read(areaProgressProvider);
         expect(progress.regionName, 'Kraków');

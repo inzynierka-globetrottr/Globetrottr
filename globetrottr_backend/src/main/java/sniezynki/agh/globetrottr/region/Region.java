@@ -27,6 +27,9 @@ public class Region {
     @Column(columnDefinition = "geometry(MultiPolygon, 4326)", nullable = false)
     private MultiPolygon geom;
 
+    @Column(name = "code")
+    private String code;
+
     @Column(name = "total_area_km2")
     private Double totalAreaKm2;
 }

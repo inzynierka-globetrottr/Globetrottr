@@ -206,6 +206,8 @@
   "statsNoVisitedCountries": "Brak odwiedzonych krajów",
   "statsRegionDiscoveryTitle": "Odkrycie regionu",
   "statsCountiesDiscoveryTitle": "Powiaty · Odkrycie",
+  "statsSubregionsDiscoveryTitle": "Miejscowości i gminy · Odkrycie",
+  "statsDistrictsDiscoveryTitle": "Dzielnice · Odkrycie",
   "statsMetricDiscovered": "Odkryto",
   "statsMetricCities": "Miasta",
   "statsMetricStreets": "Ulice",

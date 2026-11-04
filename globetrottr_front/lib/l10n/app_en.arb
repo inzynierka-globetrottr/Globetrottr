@@ -284,6 +284,8 @@
   "statsNoVisitedCountries": "No visited countries yet",
   "statsRegionDiscoveryTitle": "Region discovery",
   "statsCountiesDiscoveryTitle": "Counties · Discovery",
+  "statsSubregionsDiscoveryTitle": "Cities & Municipalities · Discovery",
+  "statsDistrictsDiscoveryTitle": "Districts · Discovery",
   "statsMetricDiscovered": "Discovered",
   "statsMetricCities": "Cities",
   "statsMetricStreets": "Streets",

@@ -59,14 +59,20 @@ public class StatisticsSyncService {
         if (statsDto.regions() != null) {
             for (RegionStatisticSyncDto regionDto : statsDto.regions()) {
                 Region region = null;
-                if (regionDto.regionName() != null && !regionDto.regionName().isBlank()) {
+                final String code = regionDto.regionCode();
+                final String name = regionDto.regionName();
+
+                if (code != null && !code.isBlank() && name != null && !name.isBlank()) {
                     region =
                             regionRepository
-                                    .findByNameIgnoreCase(regionDto.regionName())
+                                    .findByNameIgnoreCaseAndCodeIgnoreCase(name, code)
                                     .orElse(null);
                 }
-                if (region == null && regionDto.regionId() != null) {
-                    region = regionRepository.findById(regionDto.regionId()).orElse(null);
+                if (region == null && code != null && !code.isBlank()) {
+                    region = regionRepository.findByCodeIgnoreCase(code).orElse(null);
+                }
+                if (region == null && name != null && !name.isBlank()) {
+                    region = regionRepository.findByNameIgnoreCase(name).orElse(null);
                 }
                 if (region == null) {
                     continue;

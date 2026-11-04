@@ -118,68 +118,93 @@ final completedQuestsCountProvider = Provider<int>((ref) {
   }
 });
 
+class StatsPeriodFilterNotifier extends Notifier<StatsPeriod> {
+  @override
+  StatsPeriod build() => StatsPeriod.month;
+
+  StatsPeriod get period => state;
+  set period(StatsPeriod value) => state = value;
+}
+
+final statsPeriodFilterProvider =
+    NotifierProvider<StatsPeriodFilterNotifier, StatsPeriod>(
+      StatsPeriodFilterNotifier.new,
+    );
+
+class StatsDateFilterNotifier extends Notifier<DateTime> {
+  @override
+  DateTime build() => DateTime.now();
+
+  DateTime get date => state;
+  set date(DateTime value) => state = value;
+}
+
+final statsDateFilterProvider =
+    NotifierProvider<StatsDateFilterNotifier, DateTime>(
+      StatsDateFilterNotifier.new,
+    );
+
 final statsOverviewProvider =
     AsyncNotifierProvider<StatsOverviewNotifier, StatsOverviewState>(
       StatsOverviewNotifier.new,
     );
 
 class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
-  StatsPeriod _period = StatsPeriod.month;
-  DateTime _selectedDate = DateTime.now();
-
   @override
   Future<StatsOverviewState> build() async {
-    return _loadStatsFor(_period, _selectedDate);
+    final period = ref.watch(statsPeriodFilterProvider);
+    final selectedDate = ref.watch(statsDateFilterProvider);
+    ref.watch(statisticsRevisionProvider);
+    return _loadStatsFor(period, selectedDate);
   }
 
   Future<void> setPeriod(StatsPeriod period) async {
-    _period = period;
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadStatsFor(_period, _selectedDate));
+    ref.read(statsDateFilterProvider.notifier).date = DateTime.now();
+    ref.read(statsPeriodFilterProvider.notifier).period = period;
   }
 
   Future<void> previousPeriod() async {
-    switch (_period) {
+    final period = ref.read(statsPeriodFilterProvider);
+    final selectedDate = ref.read(statsDateFilterProvider);
+    DateTime nextDate = selectedDate;
+    switch (period) {
       case StatsPeriod.week:
-        _selectedDate = _selectedDate.subtract(const Duration(days: 7));
+        nextDate = selectedDate.subtract(const Duration(days: 7));
       case StatsPeriod.month:
-        _selectedDate = DateTime(_selectedDate.year, _selectedDate.month - 1);
+        nextDate = DateTime(selectedDate.year, selectedDate.month - 1);
       case StatsPeriod.year:
-        _selectedDate = DateTime(_selectedDate.year - 1);
+        nextDate = DateTime(selectedDate.year - 1);
       case StatsPeriod.allTime:
         break;
     }
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadStatsFor(_period, _selectedDate));
+    ref.read(statsDateFilterProvider.notifier).date = nextDate;
   }
 
   Future<void> nextPeriod() async {
+    final period = ref.read(statsPeriodFilterProvider);
+    final selectedDate = ref.read(statsDateFilterProvider);
     final now = DateTime.now();
-    DateTime nextDate;
-    switch (_period) {
+    DateTime nextDate = selectedDate;
+    switch (period) {
       case StatsPeriod.week:
-        nextDate = _selectedDate.add(const Duration(days: 7));
+        nextDate = selectedDate.add(const Duration(days: 7));
       case StatsPeriod.month:
-        nextDate = DateTime(_selectedDate.year, _selectedDate.month + 1);
+        nextDate = DateTime(selectedDate.year, selectedDate.month + 1);
       case StatsPeriod.year:
-        nextDate = DateTime(_selectedDate.year + 1);
+        nextDate = DateTime(selectedDate.year + 1);
       case StatsPeriod.allTime:
         return;
     }
     if (nextDate.isAfter(now)) {
-      _selectedDate = now;
-    } else {
-      _selectedDate = nextDate;
+      nextDate = now;
     }
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadStatsFor(_period, _selectedDate));
+    ref.read(statsDateFilterProvider.notifier).date = nextDate;
   }
 
   Future<StatsOverviewState> _loadStatsFor(
     StatsPeriod period,
     DateTime date,
   ) async {
-    ref.watch(statisticsRevisionProvider);
     final statsStorage = ref.watch(statisticsStorageProvider);
     final regionStorage = ref.watch(regionStorageProvider);
     final currentLocale = ref.watch(localeProvider);
@@ -250,6 +275,7 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       0.0,
       (sum, d) => sum + d.distanceM,
     );
+    // TODO(data): Traversed OpenStreetMap road names matching from vector road tiles.
     final totalStreets = dailyList.fold<int>(
       0,
       (sum, d) => sum + d.newStreetsCount,
@@ -257,6 +283,7 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
 
     final questsCount = ref.watch(completedQuestsCountProvider);
 
+    // TODO(data): Activity type classification for cycling, running, and other motion.
     final walkKm =
         dailyList.fold<double>(0.0, (sum, d) => sum + d.walkDistanceM) / 1000.0;
     final bikeKm =
@@ -324,6 +351,7 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       );
     }
 
+    // TODO(data): Track highest recorded elevation and furthest journey distance from GPS fixes.
     final highest = await statsStorage.getRecordEntry('max_altitude');
     final furthest = await statsStorage.getRecordEntry('furthest_distance');
     final longest = await statsStorage.getRecordEntry('longest_route_distance');
@@ -448,9 +476,11 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
   }
 
   static int _isoWeekNumber(DateTime date) {
-    final thursday = date.add(Duration(days: 3 - ((date.weekday + 6) % 7)));
-    final firstThursday = DateTime(thursday.year, 1, 4);
-    return 1 + ((thursday.difference(firstThursday).inDays) / 7).floor();
+    final dUtc = DateTime.utc(date.year, date.month, date.day);
+    final thursday = dUtc.add(Duration(days: 4 - dUtc.weekday));
+    final firstDayOfYear = DateTime.utc(thursday.year);
+    final dayOfYear = thursday.difference(firstDayOfYear).inDays + 1;
+    return ((dayOfYear - 1) ~/ 7) + 1;
   }
 
   static String _formatShortDate(String yyyyMmDd, bool isPolish) {

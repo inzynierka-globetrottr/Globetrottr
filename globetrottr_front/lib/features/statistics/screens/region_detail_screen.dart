@@ -85,7 +85,17 @@ class RegionDetailScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                SectionHeader(l10n.statsCountiesDiscoveryTitle),
+                SectionHeader(
+                  data.subregions.any(
+                        (s) => s.id != null && s.id! >= 10000 && s.id! < 20000,
+                      )
+                      ? l10n.statsDistrictsDiscoveryTitle
+                      : (data.subregions.any(
+                              (s) => s.id != null && s.id! >= 20000,
+                            )
+                            ? l10n.statsSubregionsDiscoveryTitle
+                            : l10n.statsCountiesDiscoveryTitle),
+                ),
                 const SizedBox(height: 12),
                 StatsDiscoveryCard(
                   barHeight: 8,

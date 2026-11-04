@@ -627,6 +627,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsCountiesDiscoveryTitle => 'Counties · Discovery';
 
   @override
+  String get statsSubregionsDiscoveryTitle => 'Subregions · Discovery';
+
+  @override
+  String get statsDistrictsDiscoveryTitle => 'Districts · Discovery';
+
+  @override
   String get statsMetricDiscovered => 'Discovered';
 
   @override
@@ -652,12 +658,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsCityDiscoveryTitle => 'City discovery';
-
-  @override
-  String get statsDistrictsDiscoveryTitle => 'Districts · Discovery';
-
-  @override
-  String get statsSubregionsDiscoveryTitle => 'Subregions · Discovery';
 
   @override
   String get statsNoSubregions => 'No subregions discovered';

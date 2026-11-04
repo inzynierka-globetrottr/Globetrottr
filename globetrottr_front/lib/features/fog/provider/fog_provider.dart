@@ -114,7 +114,7 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       debugPrint('Replaying the track log into the fog failed: $error');
     } finally {
       _isReplaying = false;
-      await backfillStatsIfEmpty(store);
+      await backfillStatsIfEmpty(store, true);
     }
   }
 
