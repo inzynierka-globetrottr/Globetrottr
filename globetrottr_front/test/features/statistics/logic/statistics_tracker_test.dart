@@ -379,6 +379,43 @@ void main() {
       });
     });
 
+    test('a city as large as its county is the leaf', () async {
+      await regionStorage.insertRegions([
+        _area(
+          701,
+          1,
+          RegionType.county,
+          40,
+          minLon: _west - 0.05,
+          maxLon: _east + 0.05,
+        ),
+        _area(
+          702,
+          701,
+          RegionType.city,
+          40,
+          minLon: _west - 0.05,
+          maxLon: _east + 0.05,
+        ),
+        _area(
+          703,
+          1,
+          RegionType.county,
+          30,
+          minLon: _west - 0.06,
+          maxLon: _east + 0.06,
+        ),
+      ]);
+
+      await tracker.onTilesCommitted(const [
+        TileAreaDelta(id: _tile, areaDeltaM2: 300),
+      ]);
+
+      expect((await statsStorage.getRegionStats(702))?.discoveredAreaM2, 300);
+      expect((await statsStorage.getRegionStats(701))?.discoveredAreaM2, 300);
+      expect(await statsStorage.getRegionStats(703), isNull);
+    });
+
     test('an interior tile goes whole to one city', () async {
       await regionStorage.insertRegions([
         _area(

@@ -8,6 +8,13 @@ import 'package:globetrottr_front/features/regions/data/regions_db_version.dart'
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
+/// Finest level first, so a city that is as large as its county (a city with
+/// county rights) or larger (one whose boundary takes in water) still comes
+/// before the county.
+const _levelOrder =
+    "CASE r.type WHEN 'district' THEN 0 WHEN 'city' THEN 1 "
+    "WHEN 'county' THEN 2 WHEN 'state' THEN 3 ELSE 4 END";
+
 const _columns =
     'id, parent_id, name, name_en, name_pl, type, code, total_area_km2, '
     'min_lat, max_lat, min_lon, max_lon, geometry';
@@ -194,7 +201,7 @@ class SqfliteRegionStorage implements RegionStorage {
       SELECT r.* FROM regions r
       WHERE r.min_lon <= ? AND r.max_lon >= ?
         AND r.min_lat <= ? AND r.max_lat >= ?
-      ORDER BY r.total_area_km2 ASC
+      ORDER BY $_levelOrder, r.total_area_km2 ASC
       ''',
       [lon, lon, lat, lat],
     );
@@ -218,7 +225,7 @@ class SqfliteRegionStorage implements RegionStorage {
       SELECT r.* FROM regions r
       WHERE r.min_lon <= ? AND r.max_lon >= ?
         AND r.min_lat <= ? AND r.max_lat >= ?
-      ORDER BY r.total_area_km2 ASC
+      ORDER BY $_levelOrder, r.total_area_km2 ASC
       ''',
       [maxLon, minLon, maxLat, minLat],
     );

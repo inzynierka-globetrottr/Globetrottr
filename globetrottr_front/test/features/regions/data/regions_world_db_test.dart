@@ -91,4 +91,18 @@ void main() {
     expect(found.first.type, RegionType.city);
     expect(found.first.name, 'Zabierzów');
   });
+
+  for (final (name, lat, lon) in const [
+    ('Kielce', 50.8703, 20.6275),
+    ('Sopot', 54.4418, 18.5601),
+    ('Gdańsk', 54.3520, 18.6466),
+  ]) {
+    test('$name is found as a city, not as its county', () async {
+      final found = await storage.findRegionsByPoint(lat: lat, lon: lon);
+      final chain = await storage.getAncestorChain(found.first.id);
+      final city = chain.firstWhere((r) => r.type != RegionType.district);
+      expect(city.type, RegionType.city);
+      expect(city.name, name);
+    });
+  }
 }
