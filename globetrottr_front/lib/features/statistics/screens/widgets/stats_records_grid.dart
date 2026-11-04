@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
+import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
@@ -8,16 +9,19 @@ enum StatsRecordType { longestRoute, bestDay }
 
 class RecordTileItem {
   const RecordTileItem({
-    required this.header,
-    required this.value,
-    required this.subtitle,
-    this.type,
+    required this.type,
+    this.value,
+    this.date,
+    this.label,
   });
 
-  final String header;
-  final String value;
-  final String subtitle;
-  final StatsRecordType? type;
+  final StatsRecordType type;
+
+  /// Metres for the longest route, km² for the best day; null without a
+  /// record.
+  final double? value;
+  final DateTime? date;
+  final String? label;
 }
 
 class StatsRecordsGrid extends StatelessWidget {
@@ -51,6 +55,7 @@ class StatsRecordsGrid extends StatelessWidget {
   Widget _buildTile(BuildContext context, RecordTileItem item) {
     final palette = context.palette;
     final typography = context.typography;
+    final locale = Localizations.localeOf(context).toString();
 
     return NeuSurface(
       shadows: context.shadows.raised(NeoDepth.xl),
@@ -70,7 +75,7 @@ class StatsRecordsGrid extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            item.value,
+            _valueFor(locale, item),
             style: typography.itemTitle.copyWith(
               fontSize: 21,
               height: 1.25,
@@ -80,7 +85,7 @@ class StatsRecordsGrid extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            item.subtitle,
+            _subtitleFor(locale, item),
             style: typography.caption.copyWith(
               fontWeight: FontWeight.w700,
               color: palette.textMuted,
@@ -95,13 +100,26 @@ class StatsRecordsGrid extends StatelessWidget {
 
   String _headerFor(BuildContext context, RecordTileItem item) {
     final l10n = context.l10n;
-    switch (item.type) {
-      case StatsRecordType.longestRoute:
-        return l10n.statsRecordLongestRoute.toUpperCase();
-      case StatsRecordType.bestDay:
-        return l10n.statsRecordBestDay.toUpperCase();
-      case null:
-        return item.header.toUpperCase();
-    }
+    return switch (item.type) {
+      StatsRecordType.longestRoute => l10n.statsRecordLongestRoute,
+      StatsRecordType.bestDay => l10n.statsRecordBestDay,
+    }.toUpperCase();
   }
+
+  String _valueFor(String locale, RecordTileItem item) {
+    final value = item.value;
+    if (value == null) return _none;
+    return switch (item.type) {
+      StatsRecordType.longestRoute => formatDistance(value, locale),
+      StatsRecordType.bestDay => '+${formatKm2(value, locale)} km²',
+    };
+  }
+
+  String _subtitleFor(String locale, RecordTileItem item) {
+    if (item.label != null) return item.label!;
+    final date = item.date;
+    return date == null ? _none : formatShortDate(date, locale);
+  }
+
+  static const _none = '–';
 }

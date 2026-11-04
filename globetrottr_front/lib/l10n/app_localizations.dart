@@ -1175,7 +1175,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsCountriesSummary.
   ///
   /// In en, this message translates to:
-  /// **'{regions} regions · {cities} cities'**
+  /// **'{regions, plural, =1{1 region} other{{regions} regions}} · {cities, plural, =1{1 city} other{{cities} cities}}'**
   String statsCountriesSummary(int regions, int cities);
 
   /// No description provided for @statsRecordsTitle.
@@ -1217,7 +1217,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsCountryCardSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'{area} · {cities} cities'**
+  /// **'{area} · {cities, plural, =1{1 city} other{{cities} cities}}'**
   String statsCountryCardSubtitle(String area, int cities);
 
   /// No description provided for @statsNoVisitedCountries.
@@ -1279,6 +1279,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Today'**
   String get statsLastVisitToday;
+
+  /// No description provided for @statsVisitYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get statsVisitYesterday;
+
+  /// No description provided for @statsWeekLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week} · {year}'**
+  String statsWeekLabel(int week, int year);
+
+  /// No description provided for @statsCitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{region} · city'**
+  String statsCitySubtitle(String region);
 
   /// No description provided for @statsCityDiscoveryTitle.
   ///

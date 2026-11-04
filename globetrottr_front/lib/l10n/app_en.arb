@@ -245,7 +245,7 @@
   "statsWeeklyChartUnitKm2": "km²",
   "statsCurrentWeek": "now",
   "statsVisitedCountriesTitle": "visited countries",
-  "statsCountriesSummary": "{regions} regions · {cities} cities",
+  "statsCountriesSummary": "{regions, plural, =1{1 region} other{{regions} regions}} · {cities, plural, =1{1 city} other{{cities} cities}}",
   "@statsCountriesSummary": {
     "placeholders": {
       "regions": { "type": "int" },
@@ -263,7 +263,7 @@
       "count": { "type": "int" }
     }
   },
-  "statsCountryCardSubtitle": "{area} · {cities} cities",
+  "statsCountryCardSubtitle": "{area} · {cities, plural, =1{1 city} other{{cities} cities}}",
   "@statsCountryCardSubtitle": {
     "placeholders": {
       "area": { "type": "String" },
@@ -280,6 +280,20 @@
   "statsFirstVisit": "First visit",
   "statsLastVisit": "Last visit",
   "statsLastVisitToday": "Today",
+  "statsVisitYesterday": "Yesterday",
+  "statsWeekLabel": "Week {week} · {year}",
+  "@statsWeekLabel": {
+    "placeholders": {
+      "week": { "type": "int" },
+      "year": { "type": "int" }
+    }
+  },
+  "statsCitySubtitle": "{region} · city",
+  "@statsCitySubtitle": {
+    "placeholders": {
+      "region": { "type": "String" }
+    }
+  },
   "statsCityDiscoveryTitle": "City discovery",
   "statsDistrictsDiscoveryTitle": "Districts · Discovery",
   "statsSubregionsDiscoveryTitle": "Subregions · Discovery",

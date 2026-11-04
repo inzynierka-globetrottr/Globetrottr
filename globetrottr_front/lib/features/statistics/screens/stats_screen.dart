@@ -9,6 +9,7 @@ import 'package:globetrottr_front/features/statistics/provider/statistics_overvi
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_countries_banner.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_date_navigator.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_discovery_card.dart';
+import 'package:globetrottr_front/features/statistics/screens/widgets/stats_labels.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metric_tile.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_period_tabs.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_records_grid.dart';
@@ -30,7 +31,8 @@ class StatsScreen extends ConsumerWidget {
       body: SafeArea(
         child: overviewAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text(err.toString())),
+          error: (err, stack) =>
+              Center(child: Text(l10n.errorSomethingWentWrong)),
           data: (state) => SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
             child: Column(
@@ -52,7 +54,7 @@ class StatsScreen extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            state.periodLabel,
+                            statsPeriodLabel(l10n, locale, state.range),
                             style: typography.caption.copyWith(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -71,7 +73,7 @@ class StatsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 StatsDateNavigator(
-                  label: state.periodLabel,
+                  label: statsPeriodLabel(l10n, locale, state.range),
                   onPrevious: () =>
                       ref.read(statsOverviewProvider.notifier).previousPeriod(),
                   onNext: () =>

@@ -8,6 +8,7 @@ import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/statistics/provider/region_detail_provider.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_detail_progress_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_discovery_card.dart';
+import 'package:globetrottr_front/features/statistics/screens/widgets/stats_labels.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metadata_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metrics_row.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +29,8 @@ class RegionDetailScreen extends ConsumerWidget {
       body: SafeArea(
         child: dataAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text(err.toString())),
+          error: (err, stack) =>
+              Center(child: Text(l10n.errorSomethingWentWrong)),
           data: (data) => SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
             child: Column(
@@ -115,11 +117,19 @@ class RegionDetailScreen extends ConsumerWidget {
                   rows: [
                     MetadataRowItem(
                       label: l10n.statsFirstVisit,
-                      value: data.firstVisit,
+                      value: statsVisitDateLabel(
+                        l10n,
+                        locale,
+                        data.firstVisit,
+                      ),
                     ),
                     MetadataRowItem(
                       label: l10n.statsLastVisit,
-                      value: data.lastVisit,
+                      value: statsVisitDateLabel(
+                        l10n,
+                        locale,
+                        data.lastVisit,
+                      ),
                     ),
                   ],
                 ),

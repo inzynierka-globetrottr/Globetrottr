@@ -3,13 +3,7 @@ import 'package:globetrottr_front/core/localization/localization_extensions.dart
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
-
-enum StatsPeriod {
-  week,
-  month,
-  year,
-  allTime,
-}
+import 'package:globetrottr_front/features/statistics/logic/stats_period.dart';
 
 class StatsPeriodTabs extends StatelessWidget {
   const StatsPeriodTabs({

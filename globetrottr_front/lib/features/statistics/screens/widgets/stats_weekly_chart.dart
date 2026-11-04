@@ -8,12 +8,12 @@ import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 class WeeklyBarItem {
   const WeeklyBarItem({
-    required this.label,
+    required this.isoWeek,
     required this.valueKm2,
     this.isCurrent = false,
   });
 
-  final String label;
+  final int isoWeek;
   final double valueKm2;
   final bool isCurrent;
 }
@@ -97,7 +97,9 @@ class StatsWeeklyChart extends StatelessWidget {
                 if (i > 0) const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    bars[i].isCurrent ? l10n.statsCurrentWeek : bars[i].label,
+                    bars[i].isCurrent
+                        ? l10n.statsCurrentWeek
+                        : '${bars[i].isoWeek}',
                     textAlign: TextAlign.center,
                     style: typography.small.copyWith(
                       fontSize: 11,

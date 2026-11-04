@@ -648,7 +648,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String statsCountriesSummary(int regions, int cities) {
-    return '$regions regions · $cities cities';
+    String _temp0 = intl.Intl.pluralLogic(
+      regions,
+      locale: localeName,
+      other: '$regions regions',
+      one: '1 region',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      cities,
+      locale: localeName,
+      other: '$cities cities',
+      one: '1 city',
+    );
+    return '$_temp0 · $_temp1';
   }
 
   @override
@@ -673,7 +685,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String statsCountryCardSubtitle(String area, int cities) {
-    return '$area · $cities cities';
+    String _temp0 = intl.Intl.pluralLogic(
+      cities,
+      locale: localeName,
+      other: '$cities cities',
+      one: '1 city',
+    );
+    return '$area · $_temp0';
   }
 
   @override
@@ -705,6 +723,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsLastVisitToday => 'Today';
+
+  @override
+  String get statsVisitYesterday => 'Yesterday';
+
+  @override
+  String statsWeekLabel(int week, int year) {
+    return 'Week $week · $year';
+  }
+
+  @override
+  String statsCitySubtitle(String region) {
+    return '$region · city';
+  }
 
   @override
   String get statsCityDiscoveryTitle => 'City discovery';

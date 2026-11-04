@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/app_illustration.dart';
@@ -11,6 +12,7 @@ import 'package:globetrottr_front/features/statistics/data/daily_exploration_sta
 import 'package:globetrottr_front/features/statistics/data/statistics_storage.dart';
 import 'package:globetrottr_front/features/statistics/data/user_region_stats.dart';
 import 'package:globetrottr_front/features/statistics/data/user_streak_stats.dart';
+import 'package:globetrottr_front/features/statistics/logic/stats_period.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_overview_provider.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 import 'package:globetrottr_front/features/statistics/screens/city_detail_screen.dart';
@@ -294,12 +296,31 @@ class _FakeStatisticsStorage implements StatisticsStorage {
   }) async {}
 }
 
+class _FixedDate extends StatsDateFilterNotifier {
+  _FixedDate(this.value);
+
+  final DateTime value;
+
+  @override
+  DateTime build() => value;
+}
+
+class _FixedPeriod extends StatsPeriodFilterNotifier {
+  _FixedPeriod(this.value);
+
+  final StatsPeriod value;
+
+  @override
+  StatsPeriod build() => value;
+}
+
 void main() {
   Future<void> pumpScreen(
     WidgetTester tester,
     Widget screen, {
     Locale locale = const Locale('en'),
     Size size = const Size(1170, 2532),
+    List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 3;
@@ -311,6 +332,7 @@ void main() {
           regionStorageProvider.overrideWithValue(_FakeRegionStorage()),
           statisticsStorageProvider.overrideWithValue(_FakeStatisticsStorage()),
           completedQuestsCountProvider.overrideWithValue(5),
+          ...overrides,
         ],
         child: MaterialApp(
           theme: AppTheme.light,
@@ -386,6 +408,41 @@ void main() {
       expect(find.text('Nagrywanie'), findsOneWidget);
       expect(find.text('5 dni'), findsOneWidget);
       expect(find.text('3 dni'), findsOneWidget);
+    });
+
+    testWidgets('Polish month label is the capitalized month and year', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        const StatsScreen(),
+        locale: const Locale('pl'),
+        overrides: [
+          statsDateFilterProvider.overrideWith(
+            () => _FixedDate(DateTime(2026, 10, 10)),
+          ),
+        ],
+      );
+
+      expect(find.text('Październik 2026'), findsWidgets);
+    });
+
+    testWidgets('week label uses the ISO week-year', (tester) async {
+      await pumpScreen(
+        tester,
+        const StatsScreen(),
+        locale: const Locale('pl'),
+        overrides: [
+          statsPeriodFilterProvider.overrideWith(
+            () => _FixedPeriod(StatsPeriod.week),
+          ),
+          statsDateFilterProvider.overrideWith(
+            () => _FixedDate(DateTime(2025, 12, 29)),
+          ),
+        ],
+      );
+
+      expect(find.text('Tydzień 1 · 2026'), findsWidgets);
     });
 
     testWidgets('stats screen shows only measured sections', (tester) async {
@@ -480,6 +537,14 @@ void main() {
       expect(find.text('Discovered'), findsOneWidget);
     });
 
+    testWidgets('English city subtitle names the region and the type', (
+      tester,
+    ) async {
+      await pumpScreen(tester, const CityDetailScreen(cityId: 100));
+
+      expect(find.text('Małopolskie · city'), findsOneWidget);
+    });
+
     testWidgets('city screen hides unmeasured metrics', (tester) async {
       await pumpScreen(tester, const CityDetailScreen(cityId: 100));
 
@@ -488,6 +553,32 @@ void main() {
       expect(find.text('Most visited'), findsNothing);
       expect(find.text('Time spent'), findsNothing);
       expect(find.byType(AppIllustration), findsNothing);
+    });
+  });
+
+  group('statistics plurals', () {
+    test('Polish country subtitle declines the number of cities', () {
+      final l10n = lookupAppLocalizations(const Locale('pl'));
+
+      expect(
+        l10n.statsCountryCardSubtitle('11,6 km²', 1),
+        '11,6 km² · 1 miasto',
+      );
+      expect(
+        l10n.statsCountryCardSubtitle('11,6 km²', 2),
+        '11,6 km² · 2 miasta',
+      );
+      expect(
+        l10n.statsCountryCardSubtitle('11,6 km²', 9),
+        '11,6 km² · 9 miast',
+      );
+    });
+
+    test('English summary uses singular for one', () {
+      final l10n = lookupAppLocalizations(const Locale('en'));
+
+      expect(l10n.statsCountriesSummary(1, 1), '1 region · 1 city');
+      expect(l10n.statsCountriesSummary(8, 12), '8 regions · 12 cities');
     });
   });
 }

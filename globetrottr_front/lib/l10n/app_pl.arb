@@ -187,7 +187,7 @@
   "statsWeeklyChartUnitKm2": "km²",
   "statsCurrentWeek": "teraz",
   "statsVisitedCountriesTitle": "odwiedzone kraje",
-  "statsCountriesSummary": "{regions} regionów · {cities} miast",
+  "statsCountriesSummary": "{regions, plural, =1{1 region} few{{regions} regiony} many{{regions} regionów} other{{regions} regionu}} · {cities, plural, =1{1 miasto} few{{cities} miasta} many{{cities} miast} other{{cities} miasta}}",
   "@statsCountriesSummary": {
     "placeholders": {
       "regions": { "type": "int" },
@@ -205,7 +205,7 @@
       "count": { "type": "int" }
     }
   },
-  "statsCountryCardSubtitle": "{area} · {cities} miast",
+  "statsCountryCardSubtitle": "{area} · {cities, plural, =1{1 miasto} few{{cities} miasta} many{{cities} miast} other{{cities} miasta}}",
   "@statsCountryCardSubtitle": {
     "placeholders": {
       "area": { "type": "String" },
@@ -222,6 +222,20 @@
   "statsFirstVisit": "Pierwsza wizyta",
   "statsLastVisit": "Ostatnia wizyta",
   "statsLastVisitToday": "Dziś",
+  "statsVisitYesterday": "Wczoraj",
+  "statsWeekLabel": "Tydzień {week} · {year}",
+  "@statsWeekLabel": {
+    "placeholders": {
+      "week": { "type": "int" },
+      "year": { "type": "int" }
+    }
+  },
+  "statsCitySubtitle": "{region} · miasto",
+  "@statsCitySubtitle": {
+    "placeholders": {
+      "region": { "type": "String" }
+    }
+  },
   "statsCityDiscoveryTitle": "Odkrycie miasta",
   "statsDistrictsDiscoveryTitle": "Dzielnice · Odkrycie",
   "statsSubregionsDiscoveryTitle": "Podregiony · Odkrycie",

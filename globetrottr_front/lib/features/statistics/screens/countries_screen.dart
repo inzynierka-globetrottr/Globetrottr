@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
+import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
@@ -16,13 +17,15 @@ class CountriesScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final typography = context.typography;
     final palette = context.palette;
+    final locale = Localizations.localeOf(context).toString();
     final dataAsync = ref.watch(countriesDataProvider);
 
     return Scaffold(
       body: SafeArea(
         child: dataAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text(err.toString())),
+          error: (err, stack) =>
+              Center(child: Text(l10n.errorSomethingWentWrong)),
           data: (data) => SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
             child: Column(
@@ -81,7 +84,14 @@ class CountriesScreen extends ConsumerWidget {
                     CountryAccordionCard(
                       countryCode: data.countries[i].countryCode,
                       countryName: data.countries[i].countryName,
-                      subtitle: data.countries[i].subtitle,
+                      subtitle: l10n.statsCountryCardSubtitle(
+                        formatKm2(
+                          data.countries[i].areaKm2,
+                          locale,
+                          decimals: 1,
+                        ),
+                        data.countries[i].citiesCount,
+                      ),
                       initiallyExpanded: i == 0,
                       subregions: [
                         for (final sub in data.countries[i].subregions)

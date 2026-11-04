@@ -1,5 +1,3 @@
-import 'package:flutter/widgets.dart';
-import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
@@ -10,13 +8,15 @@ class CountryGroupData {
   const CountryGroupData({
     required this.countryCode,
     required this.countryName,
-    required this.subtitle,
+    required this.areaKm2,
+    required this.citiesCount,
     required this.subregions,
   });
 
   final String countryCode;
   final String countryName;
-  final String subtitle;
+  final double areaKm2;
+  final int citiesCount;
   final List<SubregionItem> subregions;
 }
 
@@ -67,7 +67,8 @@ final countriesDataProvider = FutureProvider<CountriesData>((ref) async {
       countryMap[region.id] = CountryGroupData(
         countryCode: region.code ?? 'PL',
         countryName: region.name,
-        subtitle: '${(stat.discoveredAreaM2 / 1000000).toStringAsFixed(1)} km²',
+        areaKm2: stat.discoveredAreaM2 / 1000000,
+        citiesCount: 0,
         subregions: subregions.isNotEmpty
             ? subregions
             : children
@@ -99,7 +100,8 @@ final countriesDataProvider = FutureProvider<CountriesData>((ref) async {
         countryMap[ancestor.id] = CountryGroupData(
           countryCode: ancestor.code ?? 'PL',
           countryName: ancestor.name,
-          subtitle: '${(area / 1000000).toStringAsFixed(1)} km²',
+          areaKm2: area / 1000000,
+          citiesCount: 0,
           subregions: subregions.isNotEmpty
               ? subregions
               : children
@@ -110,10 +112,32 @@ final countriesDataProvider = FutureProvider<CountriesData>((ref) async {
     }
   }
 
+  final citiesPerCountry = <int, int>{};
+  for (final stat in allStats) {
+    if (stat.discoveredAreaM2 <= 0) continue;
+    final region = await regionStorage.findRegionById(stat.regionId);
+    if (region == null || region.type != RegionType.city) continue;
+    for (final ancestor in await regionStorage.getAncestorChain(region.id)) {
+      if (ancestor.type == RegionType.country) {
+        citiesPerCountry[ancestor.id] =
+            (citiesPerCountry[ancestor.id] ?? 0) + 1;
+      }
+    }
+  }
+
   return CountriesData(
     visitedRegionsCount: visitedRegions,
     visitedCitiesCount: visitedCities,
-    countries: countryMap.values.toList(),
+    countries: [
+      for (final entry in countryMap.entries)
+        CountryGroupData(
+          countryCode: entry.value.countryCode,
+          countryName: entry.value.countryName,
+          areaKm2: entry.value.areaKm2,
+          citiesCount: citiesPerCountry[entry.key] ?? 0,
+          subregions: entry.value.subregions,
+        ),
+    ],
   );
 });
 
@@ -141,8 +165,8 @@ class RegionDetailData {
   final double discoveredAreaKm2;
   final int citiesCount;
   final List<DiscoveryRowItem> subregions;
-  final String firstVisit;
-  final String lastVisit;
+  final DateTime? firstVisit;
+  final DateTime? lastVisit;
 }
 
 final regionDetailProvider = FutureProvider.family<RegionDetailData, int>((
@@ -152,12 +176,6 @@ final regionDetailProvider = FutureProvider.family<RegionDetailData, int>((
   ref.watch(statisticsRevisionProvider);
   final statsStorage = ref.watch(statisticsStorageProvider);
   final regionStorage = ref.watch(regionStorageProvider);
-
-  final currentLocale = ref.watch(localeProvider);
-  final isPolish =
-      (currentLocale?.languageCode ??
-          WidgetsBinding.instance.platformDispatcher.locale.languageCode) ==
-      'pl';
 
   final region = await regionStorage.findRegionById(regionId);
   final stat = await statsStorage.getRegionStats(regionId);
@@ -210,8 +228,8 @@ final regionDetailProvider = FutureProvider.family<RegionDetailData, int>((
     discoveredAreaKm2: areaKm2,
     citiesCount: citiesCount,
     subregions: subregions,
-    firstVisit: _formatVisitDate(stat?.firstVisitMs, isPolish: isPolish),
-    lastVisit: _formatVisitDate(stat?.lastVisitMs, isPolish: isPolish),
+    firstVisit: _visitDate(stat?.firstVisitMs),
+    lastVisit: _visitDate(stat?.lastVisitMs),
   );
 });
 
@@ -233,8 +251,8 @@ class CityDetailData {
   final double discoveryPercentage;
   final double discoveredAreaKm2;
   final List<DiscoveryRowItem> districts;
-  final String firstVisit;
-  final String lastVisit;
+  final DateTime? firstVisit;
+  final DateTime? lastVisit;
 }
 
 final cityDetailProvider = FutureProvider.family<CityDetailData, int>((
@@ -244,12 +262,6 @@ final cityDetailProvider = FutureProvider.family<CityDetailData, int>((
   ref.watch(statisticsRevisionProvider);
   final statsStorage = ref.watch(statisticsStorageProvider);
   final regionStorage = ref.watch(regionStorageProvider);
-
-  final currentLocale = ref.watch(localeProvider);
-  final isPolish =
-      (currentLocale?.languageCode ??
-          WidgetsBinding.instance.platformDispatcher.locale.languageCode) ==
-      'pl';
 
   final city = await regionStorage.findRegionById(cityId);
   final stat = await statsStorage.getRegionStats(cityId);
@@ -297,56 +309,12 @@ final cityDetailProvider = FutureProvider.family<CityDetailData, int>((
     discoveryPercentage: percentage,
     discoveredAreaKm2: areaKm2,
     districts: districts,
-    firstVisit: _formatVisitDate(stat?.firstVisitMs, isPolish: isPolish),
-    lastVisit: _formatVisitDate(stat?.lastVisitMs, isPolish: isPolish),
+    firstVisit: _visitDate(stat?.firstVisitMs),
+    lastVisit: _visitDate(stat?.lastVisitMs),
   );
 });
 
-String _formatVisitDate(int? timestampMs, {bool isPolish = false}) {
-  if (timestampMs == null || timestampMs <= 0) return '–';
-  final dt = DateTime.fromMillisecondsSinceEpoch(timestampMs);
-  final now = DateTime.now();
-  if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
-    return isPolish ? 'Dziś' : 'Today';
-  }
-  final yesterday = now.subtract(const Duration(days: 1));
-  if (dt.year == yesterday.year &&
-      dt.month == yesterday.month &&
-      dt.day == yesterday.day) {
-    return isPolish ? 'Wczoraj' : 'Yesterday';
-  }
-  if (isPolish) {
-    const months = [
-      'stycznia',
-      'lutego',
-      'marca',
-      'kwietnia',
-      'maja',
-      'czerwca',
-      'lipca',
-      'sierpnia',
-      'września',
-      'października',
-      'listopada',
-      'grudnia',
-    ];
-    final mStr = (dt.month >= 1 && dt.month <= 12) ? months[dt.month - 1] : '';
-    return '${dt.day} $mStr ${dt.year}';
-  }
-  const monthsEn = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-  final mStr = (dt.month >= 1 && dt.month <= 12) ? monthsEn[dt.month - 1] : '';
-  return '$mStr ${dt.day}, ${dt.year}';
+DateTime? _visitDate(int? timestampMs) {
+  if (timestampMs == null || timestampMs <= 0) return null;
+  return DateTime.fromMillisecondsSinceEpoch(timestampMs);
 }
