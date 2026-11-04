@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
+import 'package:globetrottr_front/core/router/friend_routes.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
@@ -83,7 +84,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                     depth: NeoDepth.lg,
                     fill: NeuFill.accent,
                     semanticLabel: l10n.friendsAdd,
-                    onPressed: () => context.go('/friends/add'),
+                    onPressed: () => context.go(FriendRoutes.add),
                     child: const AppIcon(AppIcons.plus),
                   ),
                 ],
@@ -119,7 +120,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                 ),
               ),
             if (state.friends.isEmpty)
-              side(FriendsEmptyCard(onAdd: () => context.go('/friends/add')))
+              side(FriendsEmptyCard(onAdd: () => context.go(FriendRoutes.add)))
             else
               side(
                 Column(
@@ -134,8 +135,9 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         for (final friend in state.friends)
                           FriendRow(
                             friend: friend,
-                            onOpen: () =>
-                                context.go('/friends/${friend.username}'),
+                            onOpen: () => context.go(
+                              FriendRoutes.profile(friend.username),
+                            ),
                           ),
                       ],
                     ),

@@ -12,7 +12,7 @@ class ProfileStats {
     this.level = const QuestLevel(),
     this.rank,
     this.totalKm2,
-    this.weeklyKm2 = noWeeks,
+    this._weeklyKm2 = const [],
     this.distanceKm,
     this.completedQuests,
     this.friendsSince,
@@ -20,17 +20,6 @@ class ProfileStats {
 
   /// How many weeks the weekly chart shows, the current one included.
   static const weeksShown = 8;
-
-  static const noWeeks = <double?>[
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ];
 
   final QuestLevel level;
 
@@ -40,9 +29,19 @@ class ProfileStats {
   /// The whole discovered area.
   final double? totalKm2;
 
+  final List<double?> _weeklyKm2;
+
   /// Area discovered for the first time in each of the last [weeksShown]
-  /// weeks, oldest first; the last one is the current week.
-  final List<double?> weeklyKm2;
+  /// weeks, oldest first; the last one is the current week. Weeks missing
+  /// from the data are null.
+  List<double?> get weeklyKm2 {
+    final known = _weeklyKm2.length.clamp(0, weeksShown);
+    return [
+      for (var i = known; i < weeksShown; i++) null,
+      ..._weeklyKm2.skip(_weeklyKm2.length - known),
+    ];
+  }
+
   final double? distanceKm;
   final int? completedQuests;
 

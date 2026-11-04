@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+import 'package:globetrottr_front/core/router/friend_routes.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/time/clock.dart';
 import 'package:globetrottr_front/features/fog/data/fog_service.dart';
@@ -12,7 +13,6 @@ import 'package:globetrottr_front/features/friends/data/friendship_response.dart
 import 'package:globetrottr_front/features/friends/provider/friend_comparison.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_profile_screen.dart';
-import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/map/data/open_free_map_tile_provider.dart';
 import 'package:globetrottr_front/features/profile/data/profile_service.dart';
 import 'package:globetrottr_front/features/quests/data/quest_service.dart';
@@ -23,20 +23,32 @@ import 'package:latlong2/latlong.dart';
 import '../quests/quest_test_support.dart';
 
 class _FakeFogService extends Fake implements FogService {
+  _FakeFogService({this.fails = false});
+
+  final bool fails;
+
   @override
-  Future<List<List<LatLng>>> getFriendFog(String friendUsername) async => [
-    const [LatLng(50.06, 19.93), LatLng(50.07, 19.95), LatLng(50.05, 19.96)],
-  ];
+  Future<List<List<LatLng>>> getFriendFog(String friendUsername) async {
+    if (fails) throw const NetworkException();
+    return [
+      const [LatLng(50.06, 19.93), LatLng(50.07, 19.95), LatLng(50.05, 19.96)],
+    ];
+  }
 }
 
 class _FakeFriendsService extends Fake implements FriendsService {
+  _FakeFriendsService([this.usernames = const ['marekgarek']]);
+
+  final List<String> usernames;
+
   @override
-  Future<List<FriendshipResponse>> getFriends() async => const [
-    FriendshipResponse(
-      username: 'marekgarek',
-      status: null,
-      isIncomingRequest: false,
-    ),
+  Future<List<FriendshipResponse>> getFriends() async => [
+    for (final username in usernames)
+      FriendshipResponse(
+        username: username,
+        status: null,
+        isIncomingRequest: false,
+      ),
   ];
 
   @override
@@ -55,45 +67,27 @@ class _FakeProfileService implements ProfileService {
 void main() {
   Future<void> pump(
     WidgetTester tester, {
-    String location = '/friends/marekgarek',
+    String? location,
+    List<String> friends = const ['marekgarek'],
+    bool fogFails = false,
     List<Override> overrides = const [],
   }) async {
     tester.view.physicalSize = const Size(1170, 4000);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     final router = GoRouter(
-      initialLocation: location,
-      routes: [
-        GoRoute(
-          path: '/friends',
-          builder: (_, _) => const FriendsScreen(),
-          routes: [
-            GoRoute(
-              path: ':username',
-              builder: (_, state) => FriendProfileScreen(
-                username: state.pathParameters['username']!,
-              ),
-              routes: [
-                GoRoute(
-                  path: 'map',
-                  builder: (_, state) => FriendMapScreen(
-                    friendUsername: state.pathParameters['username']!,
-                    initialView: FriendMapView.fromQuery(
-                      state.uri.queryParameters['view'],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
+      initialLocation: location ?? FriendRoutes.profile('marekgarek'),
+      routes: [friendsRoute],
     );
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          fogServiceProvider.overrideWithValue(_FakeFogService()),
-          friendsServiceProvider.overrideWithValue(_FakeFriendsService()),
+          fogServiceProvider.overrideWithValue(
+            _FakeFogService(fails: fogFails),
+          ),
+          friendsServiceProvider.overrideWithValue(
+            _FakeFriendsService(friends),
+          ),
           profileServiceProvider.overrideWithValue(_FakeProfileService()),
           basemapTileProvider.overrideWithValue(null),
           questServiceProvider.overrideWithValue(FakeQuestService(const [])),
@@ -122,7 +116,7 @@ void main() {
   }
 
   testWidgets('a friend in the list opens their profile', (tester) async {
-    await pump(tester, location: '/friends');
+    await pump(tester, location: FriendRoutes.list);
 
     await tester.tap(find.bySemanticsLabel('Open marekgarek'));
     await tester.pumpAndSettle();
@@ -223,5 +217,35 @@ void main() {
 
     expect(find.byType(FriendMapScreen), findsOneWidget);
     expect(find.text('Only you'), findsOneWidget);
+  });
+
+  for (final username in ['add', 'a/b?c#d', '100%']) {
+    testWidgets('a friend named "$username" opens their own profile and map', (
+      tester,
+    ) async {
+      await pump(tester, location: FriendRoutes.list, friends: [username]);
+
+      await tester.tap(find.bySemanticsLabel('Open $username'));
+      await tester.pumpAndSettle();
+
+      final profile = tester.widget<FriendProfileScreen>(
+        find.byType(FriendProfileScreen),
+      );
+      expect(profile.username, username);
+
+      await tester.tap(find.bySemanticsLabel('Open the map full screen'));
+      await tester.pumpAndSettle();
+
+      final map = tester.widget<FriendMapScreen>(find.byType(FriendMapScreen));
+      expect(map.friendUsername, username);
+    });
+  }
+
+  testWidgets('a failed fog request says so instead of an empty map', (
+    tester,
+  ) async {
+    await pump(tester, fogFails: true);
+
+    expect(find.text("Couldn't load the map"), findsOneWidget);
   });
 }

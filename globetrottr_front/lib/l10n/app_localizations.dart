@@ -650,6 +650,12 @@ abstract class AppLocalizations {
   /// **'Map of the area discovered by {username}'**
   String profileFogMap(String username);
 
+  /// No description provided for @friendFogLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the map'**
+  String get friendFogLoadError;
+
   /// No description provided for @friendMapArea.
   ///
   /// In en, this message translates to:

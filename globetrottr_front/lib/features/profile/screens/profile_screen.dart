@@ -35,9 +35,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     super.initState();
     Future.microtask(() {
       ref.read(profileProvider.notifier).loadProfile();
-      if (!ref.read(questsProvider).hasLoaded) {
-        ref.read(questsProvider.notifier).loadQuests();
-      }
+      ref.read(questsProvider.notifier).loadQuestsOnce();
     });
   }
 

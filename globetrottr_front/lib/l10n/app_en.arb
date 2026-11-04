@@ -129,6 +129,7 @@
   "profileOpenMap": "Open the map full screen",
   "profileFogMap": "Map of the area discovered by {username}",
   "@profileFogMap": {"placeholders": {"username": {"type": "String"}}},
+  "friendFogLoadError": "Couldn't load the map",
   "friendMapArea": "{area} km² discovered",
   "@friendMapArea": {"placeholders": {"area": {"type": "String"}}},
   "friendMapTheirs": "{username}'s area",

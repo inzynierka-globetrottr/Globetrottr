@@ -26,14 +26,7 @@ class FriendMapHeader extends ConsumerWidget {
     final totalKm2 = ref.watch(
       friendProfileStatsProvider(friendUsername).select((s) => s.totalKm2),
     );
-    final avatarUrl = ref.watch(
-      friendsProvider.select(
-        (state) => state.friends
-            .where((friend) => friend.username == friendUsername)
-            .firstOrNull
-            ?.avatarUrl,
-      ),
-    );
+    final avatarUrl = ref.watch(friendAvatarUrlProvider(friendUsername));
     return Row(
       spacing: 12,
       children: [

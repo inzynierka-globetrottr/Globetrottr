@@ -18,14 +18,7 @@ class FriendProfilePane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(friendProfileStatsProvider(username));
-    final avatarUrl = ref.watch(
-      friendsProvider.select(
-        (state) => state.friends
-            .where((friend) => friend.username == username)
-            .firstOrNull
-            ?.avatarUrl,
-      ),
-    );
+    final avatarUrl = ref.watch(friendAvatarUrlProvider(username));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 16,

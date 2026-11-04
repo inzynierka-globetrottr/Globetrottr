@@ -96,6 +96,7 @@
   "profileChangePhoto": "Zmień zdjęcie profilowe",
   "profileOpenMap": "Otwórz mapę na pełnym ekranie",
   "profileFogMap": "Mapa z terenem odkrytym przez {username}",
+  "friendFogLoadError": "Nie udało się wczytać mapy",
   "friendMapArea": "{area} km² odkrytego terenu",
   "friendMapTheirs": "Teren {username}",
   "friendMapTogether": "Razem ze mną",

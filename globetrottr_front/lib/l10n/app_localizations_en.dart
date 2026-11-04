@@ -330,6 +330,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get friendFogLoadError => 'Couldn\'t load the map';
+
+  @override
   String friendMapArea(String area) {
     return '$area km² discovered';
   }

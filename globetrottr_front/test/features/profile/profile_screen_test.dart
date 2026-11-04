@@ -11,7 +11,9 @@ import 'package:globetrottr_front/features/profile/data/profile_service.dart';
 import 'package:globetrottr_front/features/profile/data/user_profile_response.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/avatar_picker.dart';
+import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/data/quest_service.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
 
 import '../quests/quest_test_support.dart';
@@ -39,12 +41,33 @@ class _FakeProfileService implements ProfileService {
       Future<Never>.error(const NetworkException());
 }
 
+class _CountingQuestService extends Fake implements QuestService {
+  final pending = Completer<List<Quest>>();
+  int fetches = 0;
+
+  @override
+  Future<List<Quest>> fetchUserQuests() {
+    fetches++;
+    return pending.future;
+  }
+}
+
+class _FailingQuestService extends Fake implements QuestService {
+  @override
+  Future<List<Quest>> fetchUserQuests() async => throw const NetworkException();
+}
+
 void main() {
   late _FakeProfileService profiles;
 
   setUp(() => profiles = _FakeProfileService());
 
-  Future<void> pump(WidgetTester tester, {String? pickedImage}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    String? pickedImage,
+    QuestService? quests,
+    Widget home = const ProfileScreen(),
+  }) async {
     tester.view.physicalSize = const Size(1170, 4000);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
@@ -56,11 +79,12 @@ void main() {
             () async => pickedImage,
           ),
           questServiceProvider.overrideWithValue(
-            FakeQuestService([
-              testQuest(1, isCompleted: true),
-              testQuest(2, isCompleted: true),
-              testQuest(3),
-            ]),
+            quests ??
+                FakeQuestService([
+                  testQuest(1, isCompleted: true),
+                  testQuest(2, isCompleted: true),
+                  testQuest(3),
+                ]),
           ),
           clockProvider.overrideWithValue(() => DateTime(2026, 11, 4)),
         ],
@@ -73,7 +97,7 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const ProfileScreen(),
+          home: home,
         ),
       ),
     );
@@ -182,4 +206,43 @@ void main() {
 
     expect(profiles.uploaded, isEmpty);
   });
+
+  testWidgets('completed quests stay unknown when the quests fail to load', (
+    tester,
+  ) async {
+    await pump(tester, quests: _FailingQuestService());
+
+    expect(find.text('completed quests'), findsOneWidget);
+    expect(find.text('0'), findsNothing);
+    expect(find.text('–'), findsWidgets);
+  });
+
+  testWidgets('quests already loading are not requested again', (
+    tester,
+  ) async {
+    final quests = _CountingQuestService();
+    await pump(tester, quests: quests, home: const _LoadsQuestsFirst());
+
+    expect(find.byType(ProfileScreen), findsOneWidget);
+    expect(quests.fetches, 1);
+  });
+}
+
+/// Starts loading the quests, as the map does, before the profile opens.
+class _LoadsQuestsFirst extends ConsumerStatefulWidget {
+  const _LoadsQuestsFirst();
+
+  @override
+  ConsumerState<_LoadsQuestsFirst> createState() => _LoadsQuestsFirstState();
+}
+
+class _LoadsQuestsFirstState extends ConsumerState<_LoadsQuestsFirst> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(ref.read(questsProvider.notifier).loadQuests);
+  }
+
+  @override
+  Widget build(BuildContext context) => const ProfileScreen();
 }

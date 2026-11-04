@@ -4,20 +4,26 @@ import 'package:intl/intl.dart';
 
 const _unknown = '—';
 
-/// An area in km² as a number in the given language; a dash when unknown.
-String formatKm2(double? km2, String locale, {int decimals = 2}) {
-  if (km2 == null) return _unknown;
+/// A number with [decimals] decimals in the given language; a dash when
+/// unknown.
+String formatNumber(double? value, String locale, {int decimals = 0}) {
+  if (value == null) return _unknown;
   return NumberFormat.decimalPatternDigits(
     locale: locale,
     decimalDigits: decimals,
-  ).format(km2);
+  ).format(value);
 }
 
-/// A share (0 to 1) as a whole percent, without the sign; a dash when
-/// unknown.
-String formatPercent(double? share) {
+/// An area in km² as a number in the given language; a dash when unknown.
+String formatKm2(double? km2, String locale, {int decimals = 2}) =>
+    formatNumber(km2, locale, decimals: decimals);
+
+/// A share (0 to 1) as a percent, without the sign, whole unless [decimals]
+/// are asked for in [locale]; a dash when unknown.
+String formatPercent(double? share, {String? locale, int decimals = 0}) {
   if (share == null) return _unknown;
-  return (share * 100).round().toString();
+  if (decimals == 0) return (share * 100).round().toString();
+  return formatNumber(share * 100, locale ?? 'en', decimals: decimals);
 }
 
 /// A positive number rounded to [digits] significant digits, so a tiny share
@@ -25,11 +31,15 @@ String formatPercent(double? share) {
 String formatSignificant(double? value, String locale, {int digits = 2}) {
   if (value == null) return _unknown;
   if (value == 0) return '0';
-  final magnitude = (math.log(value.abs()) / math.ln10).floor();
-  return NumberFormat.decimalPatternDigits(
-    locale: locale,
-    decimalDigits: math.max(0, digits - 1 - magnitude),
-  ).format(value);
+  // The exponent after rounding, so 9.96 counts as 10.
+  final magnitude = int.parse(
+    value.abs().toStringAsExponential(digits - 1).split('e').last,
+  );
+  return formatNumber(
+    value,
+    locale,
+    decimals: math.max(0, digits - 1 - magnitude),
+  );
 }
 
 /// A day with the full month, as it follows "since", with the year when it is
@@ -58,5 +68,5 @@ String formatMonth(DateTime date, String locale, {DateTime? now}) {
 String formatDistance(double? meters, String locale) {
   if (meters == null) return '$_unknown m';
   if (meters < 1000) return '${meters.round()} m';
-  return '${formatKm2(meters / 1000, locale, decimals: 1)} km';
+  return '${formatNumber(meters / 1000, locale, decimals: 1)} km';
 }

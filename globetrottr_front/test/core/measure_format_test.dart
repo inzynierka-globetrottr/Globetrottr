@@ -28,6 +28,22 @@ void main() {
     test('an unknown share is a dash', () {
       expect(formatPercent(null), '—');
     });
+
+    test('decimals follow the language', () {
+      expect(formatPercent(0.42, locale: 'pl', decimals: 1), '42,0');
+      expect(formatPercent(0.0104, locale: 'en', decimals: 1), '1.0');
+    });
+  });
+
+  group('number', () {
+    test('rounds to the requested decimals in the language', () {
+      expect(formatNumber(1234.5, 'en'), '1,235');
+      expect(formatNumber(12.34, 'pl', decimals: 1), '12,3');
+    });
+
+    test('an unknown number is a dash', () {
+      expect(formatNumber(null, 'en'), '—');
+    });
   });
 
   group('distance', () {
@@ -54,6 +70,12 @@ void main() {
     test('a large value drops its decimals', () {
       expect(formatSignificant(12.4, 'en'), '12');
       expect(formatSignificant(1.24, 'en'), '1.2');
+    });
+
+    test('a value rounded up to the next power of ten keeps the digits', () {
+      expect(formatSignificant(9.96, 'en'), '10');
+      expect(formatSignificant(0.0996, 'en'), '0.10');
+      expect(formatSignificant(0.00999, 'en'), '0.010');
     });
 
     test('zero and unknown values', () {

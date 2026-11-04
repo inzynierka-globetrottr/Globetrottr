@@ -6,6 +6,7 @@ import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/fog_layer.dart';
 import 'package:globetrottr_front/features/fog/provider/friend_fog_provider.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/fog_camera_fit.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/friend_fog_error_notice.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_map_header.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_map_loading_overlay.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_map_panel.dart';
@@ -37,6 +38,12 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
   final MapController _mapController = MapController();
   late FriendMapView _view = widget.initialView;
 
+  /// The fog may already be loaded by the profile's preview.
+  late final CameraFit? _initialFit = fogCameraFit(
+    ref.read(friendFogProvider(widget.friendUsername)).value ?? const [],
+    padding: _fitPadding,
+  );
+
   @override
   void dispose() {
     _mapController.dispose();
@@ -47,10 +54,9 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
   Widget build(BuildContext context) {
     final fog = friendFogProvider(widget.friendUsername);
     ref.listen(fog, (previous, next) {
+      if (previous?.value == next.value) return;
       final fit = fogCameraFit(next.value ?? const [], padding: _fitPadding);
-      if (fit != null && previous?.value != next.value) {
-        _mapController.fitCamera(fit);
-      }
+      if (fit != null) _mapController.fitCamera(fit);
     });
     final fogAsyncValue = ref.watch(fog);
     final safe = MediaQuery.paddingOf(context);
@@ -63,11 +69,7 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
             options: MapOptions(
               initialCenter: MapConfig.initialCenter,
               initialZoom: MapConfig.defaultZoom,
-              // The fog may already be loaded by the profile's preview.
-              initialCameraFit: fogCameraFit(
-                fogAsyncValue.value ?? const [],
-                padding: _fitPadding,
-              ),
+              initialCameraFit: _initialFit,
               interactionOptions: const InteractionOptions(
                 enableMultiFingerGestureRace: true,
                 rotationThreshold: 10.0,
@@ -108,6 +110,8 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
             ),
           ),
           FriendMapLoadingOverlay(isLoading: fogAsyncValue.isLoading),
+          if (fogAsyncValue.hasError && !fogAsyncValue.isLoading)
+            const FriendFogErrorNotice(),
         ],
       ),
     );

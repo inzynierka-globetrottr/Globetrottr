@@ -24,7 +24,10 @@ class QuestLevelRow extends StatelessWidget {
     final palette = context.palette;
     final typography = context.typography;
     final levelText = level.level?.toString() ?? l10n.friendsLevelUnknown;
-    final completed = l10n.questsCompletedCount(level.completed);
+    final completedCount = level.completed;
+    final completed = completedCount == null
+        ? l10n.friendsLevelUnknown
+        : l10n.questsCompletedCount(completedCount);
     final xp = level.xp?.toString() ?? l10n.friendsLevelUnknown;
     return Semantics(
       button: true,

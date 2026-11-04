@@ -331,6 +331,9 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
+  String get friendFogLoadError => 'Nie udało się wczytać mapy';
+
+  @override
   String friendMapArea(String area) {
     return '$area km² odkrytego terenu';
   }

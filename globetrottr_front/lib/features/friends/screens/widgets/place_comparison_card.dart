@@ -41,7 +41,7 @@ class _PlaceRow extends StatelessWidget {
           size: 8,
           child: Text(
             context.l10n.mapPercent(
-              formatKm2(value * 100, locale, decimals: 1),
+              formatPercent(value, locale: locale, decimals: 1),
             ),
             style: (leads ? typography.label : typography.note).copyWith(
               fontFeatures: const [FontFeature.tabularFigures()],

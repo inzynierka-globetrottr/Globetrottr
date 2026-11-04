@@ -31,7 +31,7 @@ class ProfileStatsSection extends StatelessWidget {
               child: MetricTile(
                 icon: AppIcons.distance,
                 value: l10n.profileDistanceValue(
-                  formatKm2(stats.distanceKm, locale, decimals: 0),
+                  formatNumber(stats.distanceKm, locale),
                 ),
                 label: l10n.profileDistance,
               ),
