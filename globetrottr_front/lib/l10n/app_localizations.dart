@@ -482,41 +482,17 @@ abstract class AppLocalizations {
   /// **'Traveler'**
   String get profileDefaultUsername;
 
-  /// No description provided for @profileBioPlaceholder.
-  ///
-  /// In en, this message translates to:
-  /// **'Tell others about your journeys...'**
-  String get profileBioPlaceholder;
-
   /// No description provided for @profileCancel.
   ///
   /// In en, this message translates to:
   /// **'Cancel'**
   String get profileCancel;
 
-  /// No description provided for @profileSave.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get profileSave;
-
-  /// No description provided for @profileTotalPoints.
-  ///
-  /// In en, this message translates to:
-  /// **'Total Points'**
-  String get profileTotalPoints;
-
   /// No description provided for @profileStatistics.
   ///
   /// In en, this message translates to:
   /// **'Statistics'**
   String get profileStatistics;
-
-  /// No description provided for @profileAchievements.
-  ///
-  /// In en, this message translates to:
-  /// **'Achievements'**
-  String get profileAchievements;
 
   /// No description provided for @profileSettings.
   ///
@@ -553,6 +529,221 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to select image: {error}'**
   String profileImageSelectError(String error);
+
+  /// No description provided for @profileRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Routes'**
+  String get profileRoutes;
+
+  /// No description provided for @profileDiscovered.
+  ///
+  /// In en, this message translates to:
+  /// **'discovered area'**
+  String get profileDiscovered;
+
+  /// No description provided for @profileArea.
+  ///
+  /// In en, this message translates to:
+  /// **'{area} km²'**
+  String profileArea(String area);
+
+  /// No description provided for @profileWeeklyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New area per week'**
+  String get profileWeeklyTitle;
+
+  /// No description provided for @profileWeeklyUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'km²'**
+  String get profileWeeklyUnit;
+
+  /// No description provided for @profileWeekNow.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get profileWeekNow;
+
+  /// No description provided for @profileWeekValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Week of {date}: {area} km²'**
+  String profileWeekValue(String date, String area);
+
+  /// No description provided for @profileThisWeekValue.
+  ///
+  /// In en, this message translates to:
+  /// **'This week: {area} km²'**
+  String profileThisWeekValue(String area);
+
+  /// No description provided for @profileDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'distance travelled'**
+  String get profileDistance;
+
+  /// No description provided for @profileDistanceValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} km'**
+  String profileDistanceValue(String distance);
+
+  /// No description provided for @profileCompletedQuests.
+  ///
+  /// In en, this message translates to:
+  /// **'completed quests'**
+  String get profileCompletedQuests;
+
+  /// No description provided for @profileEarthShare.
+  ///
+  /// In en, this message translates to:
+  /// **'of the Earth\'s land discovered'**
+  String get profileEarthShare;
+
+  /// No description provided for @profileEarthShareValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}%'**
+  String profileEarthShareValue(String value);
+
+  /// No description provided for @profileShowDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Show details: level {level}'**
+  String profileShowDetails(String level);
+
+  /// No description provided for @profileXpProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} / {next} XP'**
+  String profileXpProgress(String xp, String next);
+
+  /// No description provided for @profileXpToNext.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP to level {level}'**
+  String profileXpToNext(String xp, int level);
+
+  /// No description provided for @profileFriendsSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends since {date}'**
+  String profileFriendsSince(String date);
+
+  /// No description provided for @profileChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change profile picture'**
+  String get profileChangePhoto;
+
+  /// No description provided for @profileOpenMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the map full screen'**
+  String get profileOpenMap;
+
+  /// No description provided for @profileFogMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map of the area discovered by {username}'**
+  String profileFogMap(String username);
+
+  /// No description provided for @friendFogLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the map'**
+  String get friendFogLoadError;
+
+  /// No description provided for @friendMapArea.
+  ///
+  /// In en, this message translates to:
+  /// **'{area} km² discovered'**
+  String friendMapArea(String area);
+
+  /// No description provided for @friendMapTheirs.
+  ///
+  /// In en, this message translates to:
+  /// **'{username}\'s area'**
+  String friendMapTheirs(String username);
+
+  /// No description provided for @friendMapTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'Together with me'**
+  String get friendMapTogether;
+
+  /// No description provided for @friendTabProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get friendTabProfile;
+
+  /// No description provided for @friendTabComparison.
+  ///
+  /// In en, this message translates to:
+  /// **'Comparison'**
+  String get friendTabComparison;
+
+  /// No description provided for @friendOnlyYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you'**
+  String get friendOnlyYou;
+
+  /// No description provided for @friendShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared'**
+  String get friendShared;
+
+  /// No description provided for @friendOnlyFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {username}'**
+  String friendOnlyFriend(String username);
+
+  /// No description provided for @friendSplitSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Area: only you {you}%, shared {shared}%, only {username} {friend}%'**
+  String friendSplitSummary(
+    String you,
+    String shared,
+    String username,
+    String friend,
+  );
+
+  /// No description provided for @friendDuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duel'**
+  String get friendDuel;
+
+  /// No description provided for @friendDuelDiscovered.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovered'**
+  String get friendDuelDiscovered;
+
+  /// No description provided for @friendDuelCountries.
+  ///
+  /// In en, this message translates to:
+  /// **'Countries'**
+  String get friendDuelCountries;
+
+  /// No description provided for @friendDuelQuests.
+  ///
+  /// In en, this message translates to:
+  /// **'Quests'**
+  String get friendDuelQuests;
+
+  /// No description provided for @friendDuelBetter.
+  ///
+  /// In en, this message translates to:
+  /// **'better result'**
+  String get friendDuelBetter;
 
   /// No description provided for @friendsTitle.
   ///
@@ -667,12 +858,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Undo'**
   String get friendsUndo;
-
-  /// No description provided for @friendsPlayerFog.
-  ///
-  /// In en, this message translates to:
-  /// **'Player fog: {username}'**
-  String friendsPlayerFog(String username);
 
   /// No description provided for @questsTitle.
   ///

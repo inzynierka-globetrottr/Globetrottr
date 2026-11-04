@@ -6,18 +6,15 @@ import 'package:globetrottr_front/features/quests/provider/quests_provider.dart'
 /// The player's level on the Quests tab.
 @immutable
 class QuestLevel {
-  const QuestLevel({
-    this.level,
-    this.xp,
-    this.nextLevelXp,
-    this.completed = 0,
-  });
+  const QuestLevel({this.level, this.xp, this.nextLevelXp, this.completed});
 
   /// Null while unknown.
   final int? level;
   final int? xp;
   final int? nextLevelXp;
-  final int completed;
+
+  /// Null until the quests are loaded.
+  final int? completed;
 
   /// How far the player is to the next level, from 0 to 1.
   double get fill {
@@ -36,7 +33,9 @@ final questLevelProvider = Provider<QuestLevel>((ref) {
   );
   final completed = ref.watch(
     questsProvider.select(
-      (state) => state.quests.where((quest) => quest.isCompleted).length,
+      (state) => state.hasLoaded
+          ? state.quests.where((quest) => quest.isCompleted).length
+          : null,
     ),
   );
   return QuestLevel(xp: xp, completed: completed);

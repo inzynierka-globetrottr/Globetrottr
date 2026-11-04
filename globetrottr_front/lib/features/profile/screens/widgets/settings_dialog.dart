@@ -4,10 +4,17 @@ import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/neu_button.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
+import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
+import 'package:globetrottr_front/features/profile/screens/widgets/logout_button.dart';
 
 class SettingsDialog extends ConsumerWidget {
-  const SettingsDialog({super.key});
+  const SettingsDialog({super.key, this.onChangePhoto});
+
+  /// Runs after the dialog has closed, so the picker and the upload outlive
+  /// it. No button for it when null.
+  final VoidCallback? onChangePhoto;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,6 +22,9 @@ class SettingsDialog extends ConsumerWidget {
     final palette = context.palette;
     final typography = context.typography;
     final currentLocale = ref.watch(localeProvider);
+    final hasProfile = ref.watch(
+      profileProvider.select((state) => state.profile != null),
+    );
 
     return Dialog(
       child: ConstrainedBox(
@@ -65,6 +75,20 @@ class SettingsDialog extends ConsumerWidget {
                   ref.read(localeProvider.notifier).setLocale(null);
                 },
               ),
+              const SizedBox(height: 24),
+              // TODO(neo): replace the dialog with the settings screen of
+              // the mock-up, which holds the account and the logout.
+              if (hasProfile && onChangePhoto != null) ...[
+                NeuButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onChangePhoto!();
+                  },
+                  child: Text(l10n.profileChangePhoto),
+                ),
+                const SizedBox(height: 12),
+              ],
+              const LogoutButton(),
             ],
           ),
         ),

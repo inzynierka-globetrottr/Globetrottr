@@ -224,22 +224,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileDefaultUsername => 'Podróżnik';
 
   @override
-  String get profileBioPlaceholder => 'Opowiedz innym o swoich podróżach...';
-
-  @override
   String get profileCancel => 'Anuluj';
 
   @override
-  String get profileSave => 'Zapisz';
-
-  @override
-  String get profileTotalPoints => 'Punkty łączne';
-
-  @override
   String get profileStatistics => 'Statystyki';
-
-  @override
-  String get profileAchievements => 'Osiągnięcia';
 
   @override
   String get profileSettings => 'Ustawienia';
@@ -261,6 +249,144 @@ class AppLocalizationsPl extends AppLocalizations {
   String profileImageSelectError(String error) {
     return 'Nie udało się wybrać zdjęcia: $error';
   }
+
+  @override
+  String get profileRoutes => 'Trasy';
+
+  @override
+  String get profileDiscovered => 'odkrytego terenu';
+
+  @override
+  String profileArea(String area) {
+    return '$area km²';
+  }
+
+  @override
+  String get profileWeeklyTitle => 'Nowy teren tygodniowo';
+
+  @override
+  String get profileWeeklyUnit => 'km²';
+
+  @override
+  String get profileWeekNow => 'teraz';
+
+  @override
+  String profileWeekValue(String date, String area) {
+    return 'Tydzień od $date: $area km²';
+  }
+
+  @override
+  String profileThisWeekValue(String area) {
+    return 'Ten tydzień: $area km²';
+  }
+
+  @override
+  String get profileDistance => 'przebyty dystans';
+
+  @override
+  String profileDistanceValue(String distance) {
+    return '$distance km';
+  }
+
+  @override
+  String get profileCompletedQuests => 'ukończone questy';
+
+  @override
+  String get profileEarthShare => 'lądów Ziemi odkrytych';
+
+  @override
+  String profileEarthShareValue(String value) {
+    return '$value %';
+  }
+
+  @override
+  String profileShowDetails(String level) {
+    return 'Pokaż szczegóły: poziom $level';
+  }
+
+  @override
+  String profileXpProgress(String xp, String next) {
+    return '$xp / $next XP';
+  }
+
+  @override
+  String profileXpToNext(String xp, int level) {
+    return '$xp XP do poziomu $level';
+  }
+
+  @override
+  String profileFriendsSince(String date) {
+    return 'Znajomi od $date';
+  }
+
+  @override
+  String get profileChangePhoto => 'Zmień zdjęcie profilowe';
+
+  @override
+  String get profileOpenMap => 'Otwórz mapę na pełnym ekranie';
+
+  @override
+  String profileFogMap(String username) {
+    return 'Mapa z terenem odkrytym przez $username';
+  }
+
+  @override
+  String get friendFogLoadError => 'Nie udało się wczytać mapy';
+
+  @override
+  String friendMapArea(String area) {
+    return '$area km² odkrytego terenu';
+  }
+
+  @override
+  String friendMapTheirs(String username) {
+    return 'Teren $username';
+  }
+
+  @override
+  String get friendMapTogether => 'Razem ze mną';
+
+  @override
+  String get friendTabProfile => 'Profil';
+
+  @override
+  String get friendTabComparison => 'Porównanie';
+
+  @override
+  String get friendOnlyYou => 'Tylko Ty';
+
+  @override
+  String get friendShared => 'Wspólne';
+
+  @override
+  String friendOnlyFriend(String username) {
+    return 'Tylko $username';
+  }
+
+  @override
+  String friendSplitSummary(
+    String you,
+    String shared,
+    String username,
+    String friend,
+  ) {
+    return 'Podział terenu: tylko Ty $you%, wspólne $shared%, tylko $username $friend%';
+  }
+
+  @override
+  String get friendDuel => 'Pojedynek';
+
+  @override
+  String get friendDuelDiscovered => 'Odkryto';
+
+  @override
+  String get friendDuelCountries => 'Kraje';
+
+  @override
+  String get friendDuelQuests => 'Questy';
+
+  @override
+  String get friendDuelBetter => 'lepszy wynik';
 
   @override
   String get friendsTitle => 'Znajomi';
@@ -338,11 +464,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get friendsUndo => 'Cofnij';
-
-  @override
-  String friendsPlayerFog(String username) {
-    return 'Mgła gracza: $username';
-  }
 
   @override
   String get questsTitle => 'Questy';

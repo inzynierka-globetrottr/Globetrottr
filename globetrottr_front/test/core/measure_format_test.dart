@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/localization/measure_format.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
   group('area', () {
@@ -27,6 +28,22 @@ void main() {
     test('an unknown share is a dash', () {
       expect(formatPercent(null), '—');
     });
+
+    test('decimals follow the language', () {
+      expect(formatPercent(0.42, locale: 'pl', decimals: 1), '42,0');
+      expect(formatPercent(0.0104, locale: 'en', decimals: 1), '1.0');
+    });
+  });
+
+  group('number', () {
+    test('rounds to the requested decimals in the language', () {
+      expect(formatNumber(1234.5, 'en'), '1,235');
+      expect(formatNumber(12.34, 'pl', decimals: 1), '12,3');
+    });
+
+    test('an unknown number is a dash', () {
+      expect(formatNumber(null, 'en'), '—');
+    });
   });
 
   group('distance', () {
@@ -41,6 +58,49 @@ void main() {
 
     test('an unknown distance is a dash', () {
       expect(formatDistance(null, 'pl'), '— m');
+    });
+  });
+
+  group('significant digits', () {
+    test('a tiny share keeps two significant digits', () {
+      expect(formatSignificant(0.0000083255, 'pl'), '0,0000083');
+      expect(formatSignificant(0.0000083255, 'en'), '0.0000083');
+    });
+
+    test('a large value drops its decimals', () {
+      expect(formatSignificant(12.4, 'en'), '12');
+      expect(formatSignificant(1.24, 'en'), '1.2');
+    });
+
+    test('a value rounded up to the next power of ten keeps the digits', () {
+      expect(formatSignificant(9.96, 'en'), '10');
+      expect(formatSignificant(0.0996, 'en'), '0.10');
+      expect(formatSignificant(0.00999, 'en'), '0.010');
+    });
+
+    test('zero and unknown values', () {
+      expect(formatSignificant(0, 'en'), '0');
+      expect(formatSignificant(null, 'en'), '—');
+    });
+  });
+
+  group('month', () {
+    setUpAll(initializeDateFormatting);
+
+    test('a short month stands on its own', () {
+      expect(formatShortMonth(DateTime(2026, 9, 14), 'pl'), 'wrz');
+      expect(formatShortMonth(DateTime(2026, 10, 5), 'pl'), 'paź');
+      expect(formatShortMonth(DateTime(2026, 9, 14), 'en'), 'Sep');
+    });
+
+    test('friends since uses the day and the month of a date', () {
+      final now = DateTime(2026, 11, 4);
+      expect(formatSinceDate(DateTime(2026, 3, 2), 'pl', now: now), '2 marca');
+      expect(formatSinceDate(DateTime(2026, 3, 2), 'en', now: now), 'March 2');
+      expect(
+        formatSinceDate(DateTime(2025, 3, 2), 'pl', now: now),
+        '2 marca 2025',
+      );
     });
   });
 }

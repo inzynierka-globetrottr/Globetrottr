@@ -223,22 +223,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileDefaultUsername => 'Traveler';
 
   @override
-  String get profileBioPlaceholder => 'Tell others about your journeys...';
-
-  @override
   String get profileCancel => 'Cancel';
 
   @override
-  String get profileSave => 'Save';
-
-  @override
-  String get profileTotalPoints => 'Total Points';
-
-  @override
   String get profileStatistics => 'Statistics';
-
-  @override
-  String get profileAchievements => 'Achievements';
 
   @override
   String get profileSettings => 'Settings';
@@ -260,6 +248,144 @@ class AppLocalizationsEn extends AppLocalizations {
   String profileImageSelectError(String error) {
     return 'Failed to select image: $error';
   }
+
+  @override
+  String get profileRoutes => 'Routes';
+
+  @override
+  String get profileDiscovered => 'discovered area';
+
+  @override
+  String profileArea(String area) {
+    return '$area km²';
+  }
+
+  @override
+  String get profileWeeklyTitle => 'New area per week';
+
+  @override
+  String get profileWeeklyUnit => 'km²';
+
+  @override
+  String get profileWeekNow => 'now';
+
+  @override
+  String profileWeekValue(String date, String area) {
+    return 'Week of $date: $area km²';
+  }
+
+  @override
+  String profileThisWeekValue(String area) {
+    return 'This week: $area km²';
+  }
+
+  @override
+  String get profileDistance => 'distance travelled';
+
+  @override
+  String profileDistanceValue(String distance) {
+    return '$distance km';
+  }
+
+  @override
+  String get profileCompletedQuests => 'completed quests';
+
+  @override
+  String get profileEarthShare => 'of the Earth\'s land discovered';
+
+  @override
+  String profileEarthShareValue(String value) {
+    return '$value%';
+  }
+
+  @override
+  String profileShowDetails(String level) {
+    return 'Show details: level $level';
+  }
+
+  @override
+  String profileXpProgress(String xp, String next) {
+    return '$xp / $next XP';
+  }
+
+  @override
+  String profileXpToNext(String xp, int level) {
+    return '$xp XP to level $level';
+  }
+
+  @override
+  String profileFriendsSince(String date) {
+    return 'Friends since $date';
+  }
+
+  @override
+  String get profileChangePhoto => 'Change profile picture';
+
+  @override
+  String get profileOpenMap => 'Open the map full screen';
+
+  @override
+  String profileFogMap(String username) {
+    return 'Map of the area discovered by $username';
+  }
+
+  @override
+  String get friendFogLoadError => 'Couldn\'t load the map';
+
+  @override
+  String friendMapArea(String area) {
+    return '$area km² discovered';
+  }
+
+  @override
+  String friendMapTheirs(String username) {
+    return '$username\'s area';
+  }
+
+  @override
+  String get friendMapTogether => 'Together with me';
+
+  @override
+  String get friendTabProfile => 'Profile';
+
+  @override
+  String get friendTabComparison => 'Comparison';
+
+  @override
+  String get friendOnlyYou => 'Only you';
+
+  @override
+  String get friendShared => 'Shared';
+
+  @override
+  String friendOnlyFriend(String username) {
+    return 'Only $username';
+  }
+
+  @override
+  String friendSplitSummary(
+    String you,
+    String shared,
+    String username,
+    String friend,
+  ) {
+    return 'Area: only you $you%, shared $shared%, only $username $friend%';
+  }
+
+  @override
+  String get friendDuel => 'Duel';
+
+  @override
+  String get friendDuelDiscovered => 'Discovered';
+
+  @override
+  String get friendDuelCountries => 'Countries';
+
+  @override
+  String get friendDuelQuests => 'Quests';
+
+  @override
+  String get friendDuelBetter => 'better result';
 
   @override
   String get friendsTitle => 'Friends';
@@ -336,11 +462,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get friendsUndo => 'Undo';
-
-  @override
-  String friendsPlayerFog(String username) {
-    return 'Player fog: $username';
-  }
 
   @override
   String get questsTitle => 'Quests';

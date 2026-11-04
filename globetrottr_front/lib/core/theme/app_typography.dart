@@ -11,6 +11,7 @@ class AppTypography extends ThemeExtension<AppTypography> {
     required this.digit,
     required this.titleLarge,
     required this.title,
+    required this.stat,
     required this.button,
     required this.value,
     required this.input,
@@ -48,6 +49,7 @@ class AppTypography extends ThemeExtension<AppTypography> {
       digit: style(26, FontWeight.w800),
       titleLarge: style(24, FontWeight.w800, letterSpacingEm: -0.01),
       title: style(22, FontWeight.w800, letterSpacingEm: -0.01),
+      stat: style(20, FontWeight.w800),
       button: style(17, FontWeight.w800, color: palette.onAccent),
       value: style(16, FontWeight.w800),
       input: style(16, FontWeight.w700),
@@ -89,6 +91,9 @@ class AppTypography extends ThemeExtension<AppTypography> {
   final TextStyle titleLarge;
   final TextStyle title;
 
+  /// A number on a metric tile.
+  final TextStyle stat;
+
   /// Label of a button filled with the accent.
   final TextStyle button;
 
@@ -125,6 +130,7 @@ class AppTypography extends ThemeExtension<AppTypography> {
     digit,
     titleLarge,
     title,
+    stat,
     button,
     value,
     input,
@@ -155,6 +161,7 @@ class AppTypography extends ThemeExtension<AppTypography> {
       digit: mix(digit, other.digit),
       titleLarge: mix(titleLarge, other.titleLarge),
       title: mix(title, other.title),
+      stat: mix(stat, other.stat),
       button: mix(button, other.button),
       value: mix(value, other.value),
       input: mix(input, other.input),

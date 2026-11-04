@@ -2,13 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/localization/locale_provider.dart';
+import 'package:globetrottr_front/features/profile/data/profile_service.dart';
 import 'package:globetrottr_front/features/profile/screens/widgets/settings_dialog.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
+
+class _OfflineProfileService implements ProfileService {
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      Future<Never>.error(const NetworkException());
+}
 
 void main() {
   Widget buildTestableWidget({required WidgetRefCallback onRef}) {
     return ProviderScope(
+      overrides: [
+        profileServiceProvider.overrideWithValue(_OfflineProfileService()),
+      ],
       child: Consumer(
         builder: (context, ref, _) {
           onRef(ref);
