@@ -1,14 +1,39 @@
 import 'dart:math' as math;
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
+import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
+import 'package:globetrottr_front/features/statistics/data/statistics_storage.dart';
+import 'package:globetrottr_front/features/statistics/data/user_region_stats.dart';
+import 'package:globetrottr_front/features/statistics/logic/statistics_tracker.dart';
+import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 
 import '../../../support/fake_location_service.dart';
 import '../../../support/fog_test_helpers.dart';
 import '../../../support/in_memory_track_log_storage.dart';
+
+class _BackfilledStatistics extends Fake implements StatisticsStorage {
+  @override
+  Future<double?> getRecord(String key) async =>
+      key == 'stats_backfilled' ? 1 : null;
+
+  @override
+  Future<List<UserRegionStats>> getAllRegionStats() async => [];
+}
+
+class _CountingTracker extends Fake implements StatisticsTracker {
+  int rebuilds = 0;
+
+  @override
+  Future<void> rebuildFromFogTiles(Iterable<TileAreaDelta> tiles) async {
+    rebuilds++;
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +45,39 @@ void main() {
   });
 
   group('FogNotifier', () {
+    test('startup does not rebuild statistics once backfilled', () async {
+      await env.tiles.commit(
+        upserts: [
+          const StoredFogTile(
+            id: FogTileId(15, 18197, 11098),
+            flag: 1,
+            rev: 1,
+            areaM2: 5000,
+          ),
+        ],
+        meta: const {},
+      );
+      final tracker = _CountingTracker();
+
+      for (var start = 0; start < 2; start++) {
+        final container = ProviderContainer(
+          overrides: [
+            ...env.overrides,
+            statisticsStorageProvider.overrideWithValue(
+              _BackfilledStatistics(),
+            ),
+            statisticsTrackerProvider.overrideWithValue(tracker),
+          ],
+        );
+        final source = await container.read(fogProvider.future);
+        await source.store.whenCaughtUp();
+        await pumpEventQueue();
+        container.dispose();
+      }
+
+      expect(tracker.rebuilds, 0);
+    });
+
     test('draws the existing track log when it starts', () async {
       await env.log.appendAll(walkEast('old'));
       final container = env.createContainer();

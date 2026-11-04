@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 
+typedef FogTileArea = ({FogTileId id, double areaM2});
+
 class StoredFogTile {
   const StoredFogTile({
     required this.id,
@@ -50,8 +52,8 @@ abstract class FogTileStorage {
   /// Tiles written by a commit newer than [rev], for differential sync.
   Future<List<StoredFogTile>> changedSince(int rev, {int limit = 1000});
 
-  /// All base-zoom tiles with recorded non-zero area.
-  Future<List<StoredFogTile>> loadBaseTilesWithArea();
+  /// Base-zoom tiles that reveal some area, without their pixels.
+  Future<List<FogTileArea>> loadBaseTileAreas();
 
   /// Writes [upserts] and [meta] atomically.
   Future<void> commit({

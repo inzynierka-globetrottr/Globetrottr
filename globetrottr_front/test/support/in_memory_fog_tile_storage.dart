@@ -52,10 +52,12 @@ class InMemoryFogTileStorage implements FogTileStorage {
   }
 
   @override
-  Future<List<StoredFogTile>> loadBaseTilesWithArea() async {
-    return _tiles.values
-        .where((t) => t.id.z == FogConfig.baseZoom && t.areaM2 > 0)
-        .toList();
+  Future<List<FogTileArea>> loadBaseTileAreas() async {
+    return [
+      for (final t in _tiles.values)
+        if (t.id.z == FogConfig.baseZoom && t.areaM2 > 0)
+          (id: t.id, areaM2: t.areaM2),
+    ];
   }
 
   @override

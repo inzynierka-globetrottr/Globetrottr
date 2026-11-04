@@ -114,14 +114,13 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       debugPrint('Replaying the track log into the fog failed: $error');
     } finally {
       _isReplaying = false;
-      await backfillStatsIfEmpty(store, true);
+      await backfillStatsIfEmpty();
     }
   }
 
-  Future<void> backfillStatsIfEmpty([
-    FogStore? store,
-    bool force = false,
-  ]) async {
+  /// Rebuilds the region statistics from the stored tiles once, or every
+  /// time when [force] is set (an explicit fog rebuild).
+  Future<void> backfillStatsIfEmpty({bool force = false}) async {
     try {
       final statsStorage = ref.read(statisticsStorageProvider);
       final isBackfilled = await statsStorage.getRecord('stats_backfilled');
@@ -136,11 +135,10 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       }
 
       final storage = ref.read(fogTileStorageProvider);
-      final tiles = await storage.loadBaseTilesWithArea();
+      final tiles = await storage.loadBaseTileAreas();
       if (tiles.isNotEmpty) {
         final deltas = [
-          for (final t in tiles)
-            if (t.areaM2 > 0) TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
+          for (final t in tiles) TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
         ];
         if (deltas.isNotEmpty) {
           await ref.read(statisticsTrackerProvider).rebuildFromFogTiles(deltas);
@@ -192,7 +190,7 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       );
     } finally {
       _isReplaying = false;
-      await backfillStatsIfEmpty(_openStore, true);
+      await backfillStatsIfEmpty(force: true);
     }
   }
 

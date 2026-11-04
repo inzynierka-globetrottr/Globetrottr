@@ -45,6 +45,21 @@ void runFogTileStorageContract(
       expect(stats.totalBytes, 0);
     });
 
+    test('lists the base tiles that have area', () async {
+      await storage.commit(
+        upserts: [
+          _tile(15, 100, 200),
+          _tile(15, 101, 200, area: 50),
+          _tile(14, 50, 100, area: 80),
+        ],
+        meta: const {},
+      );
+
+      final areas = await storage.loadBaseTileAreas();
+
+      expect(areas, [(id: const FogTileId(15, 101, 200), areaM2: 50.0)]);
+    });
+
     test('returns committed tiles byte for byte', () async {
       final bytes = List<int>.generate(300, (i) => (i * 7) % 256);
       await storage.commit(

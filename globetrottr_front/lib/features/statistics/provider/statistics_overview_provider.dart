@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/logic/stats_period.dart';
@@ -123,27 +122,11 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
     final fromDate = _fmtDate(range.start);
     final toDate = _fmtDate(range.end);
 
-    var dailyList = await statsStorage.getDailyStatsRange(
+    final dailyList = await statsStorage.getDailyStatsRange(
       fromDate: fromDate,
       toDate: toDate,
     );
-    var allRegionStats = await statsStorage.getAllRegionStats();
-
-    final hasAreaStats =
-        dailyList.any((d) => d.newAreaM2 > 0) ||
-        allRegionStats.any((r) => r.discoveredAreaM2 > 0);
-    if (!hasAreaStats) {
-      final fogStorage = ref.read(fogTileStorageProvider);
-      final baseTiles = await fogStorage.loadBaseTilesWithArea();
-      if (baseTiles.isNotEmpty) {
-        await ref.read(fogProvider.notifier).backfillStatsIfEmpty();
-        dailyList = await statsStorage.getDailyStatsRange(
-          fromDate: fromDate,
-          toDate: toDate,
-        );
-        allRegionStats = await statsStorage.getAllRegionStats();
-      }
-    }
+    final allRegionStats = await statsStorage.getAllRegionStats();
 
     final totalNewAreaM2 = dailyList.fold<double>(
       0.0,
