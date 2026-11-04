@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/debug/widgets/basemap_cache_dev_panel.dart';
 import 'package:globetrottr_front/debug/widgets/fog_dev_panel.dart';
 import 'package:globetrottr_front/debug/widgets/journey_generator_panel.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
@@ -26,6 +27,8 @@ class DevOptionsScreen extends ConsumerWidget {
           const JourneyGeneratorPanel(),
           const Divider(height: 32),
           const FogDevPanel(),
+          const Divider(height: 32),
+          const BasemapCacheDevPanel(),
         ],
       ),
     );

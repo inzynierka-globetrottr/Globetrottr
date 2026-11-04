@@ -53,4 +53,15 @@ class MapConfig {
 
   /// Deepest zoom the server has tiles for; the map scales them up beyond it.
   static const int basemapMaxZoom = 14;
+
+  static const String basemapCacheFolder = 'basemap_tiles';
+
+  /// Cached tiles are never revalidated, so this is how stale the map may
+  /// get. Expired tiles are deleted even offline, so it must outlast a trip.
+  static const Duration basemapCacheTtl = Duration(days: 180);
+
+  /// Raw and rendered tiles together. The package drops files by their last
+  /// access time, which Android mostly does not update on reads, so in
+  /// practice the oldest written tiles go first.
+  static const int basemapCacheMaxBytes = 250 * 1024 * 1024;
 }
