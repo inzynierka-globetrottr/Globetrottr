@@ -1,10 +1,17 @@
 package sniezynki.agh.globetrottr.quest;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 public record QuestResponseDto(
         Long id,
         String title,
+        String description,
         QuestType type,
         Integer rewardPoints,
         Double progress,
         boolean isStarted,
-        boolean isCompleted) {}
+        boolean isCompleted,
+        QuestCoordinateDto location,
+        List<QuestWaypointDto> waypoints,
+        LocalDateTime completedAt) {}

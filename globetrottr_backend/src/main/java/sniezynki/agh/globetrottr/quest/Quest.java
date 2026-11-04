@@ -19,6 +19,9 @@ public class Quest {
 
     private String title;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Enumerated(EnumType.STRING)
     private QuestType type;
 

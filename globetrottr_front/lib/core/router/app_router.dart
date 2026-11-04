@@ -13,6 +13,7 @@ import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dar
 import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/map/screens/map_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
+import 'package:globetrottr_front/features/quests/screens/quest_history_screen.dart';
 import 'package:globetrottr_front/features/quests/screens/quests_screen.dart';
 import 'package:globetrottr_front/features/statistics/screens/city_detail_screen.dart';
 import 'package:globetrottr_front/features/statistics/screens/countries_screen.dart';
@@ -48,6 +49,12 @@ final appRouter = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/quests',
         builder: (context, state) => const QuestsScreen(),
+        routes: [
+          GoRoute(
+            path: 'history',
+            builder: (context, state) => const QuestHistoryScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: '/profile',

@@ -7,6 +7,7 @@ import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/data/sync_service.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/map_stats_provider.dart';
+import 'package:globetrottr_front/features/quests/data/quest_service.dart';
 import 'package:globetrottr_front/features/regions/data/region.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/regions/data/sqflite_region_storage.dart';
@@ -128,6 +129,7 @@ void main() {
             statisticsStorageProvider.overrideWithValue(statsStorage),
             locationServiceProvider.overrideWithValue(fakeLocationService),
             syncServiceProvider.overrideWithValue(FakeSyncService()),
+            questServiceProvider.overrideWithValue(FakeQuestService()),
           ],
         );
         addTearDown(container.dispose);

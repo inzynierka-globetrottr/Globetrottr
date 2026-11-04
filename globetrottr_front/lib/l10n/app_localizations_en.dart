@@ -343,33 +343,80 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get questsBoardTitle => 'Quest Board';
+  String get questsTitle => 'Quests';
 
   @override
-  String questsAvailableSection(int count) {
-    return 'Available Quests ($count)';
+  String questsLevel(String level) {
+    return 'Level $level';
   }
 
   @override
-  String questsInProgressSection(int count) {
-    return 'In Progress ($count)';
+  String questsXp(String xp) {
+    return '$xp XP';
   }
 
   @override
-  String questsCompletedSection(int count) {
-    return 'Completed ($count)';
+  String questsCompletedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count quests',
+      one: '1 quest',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get questsNoQuestsInCategory => 'No quests in this category.';
-
-  @override
-  String questsProgressPercent(String percent) {
-    return '$percent% progress';
+  String questsHistoryLink(String level, String completed) {
+    return 'Level $level, $completed: history';
   }
 
   @override
-  String get questsCompletedStatus => 'Completed';
+  String get questsActiveLabel => 'Active quest';
+
+  @override
+  String get questsNoActive => 'No active quest';
+
+  @override
+  String get questsPickFromList => 'Pick a quest from the list';
+
+  @override
+  String questsPointOf(int current, int total) {
+    return 'Point $current of $total';
+  }
+
+  @override
+  String questsRouteDone(String done, String total) {
+    return '$done of $total km';
+  }
+
+  @override
+  String get questsShowPoint => 'Show point';
+
+  @override
+  String get questsShowRoute => 'Show route';
+
+  @override
+  String get questsPlaces => 'Places';
+
+  @override
+  String get questsRoutes => 'Routes';
+
+  @override
+  String questsPointCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count points',
+      one: '1 point',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String questsKilometers(String distance) {
+    return '$distance km';
+  }
 
   @override
   String questsRewardXp(int points) {
@@ -377,7 +424,46 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get questsStartQuest => 'Start Quest';
+  String questsStart(String title) {
+    return 'Start quest: $title';
+  }
+
+  @override
+  String questsSwap(String title) {
+    return 'Swap the active quest for: $title';
+  }
+
+  @override
+  String get questsSwapTitle => 'Swap the active quest?';
+
+  @override
+  String questsSwapBody(String active, String progress, String next) {
+    return '“$active” will be cancelled and you will lose its progress ($progress). You will start “$next” instead.';
+  }
+
+  @override
+  String questsSwapProgressPoint(int current, int total) {
+    return 'point $current of $total';
+  }
+
+  @override
+  String get questsSwapCancel => 'Cancel';
+
+  @override
+  String get questsSwapConfirm => 'Swap';
+
+  @override
+  String get questsHistoryTitle => 'Completed quests';
+
+  @override
+  String questsCompletedOn(String type, String date) {
+    return '$type · completed $date';
+  }
+
+  @override
+  String questFlagPoint(int current, int total, String distance) {
+    return 'point $current/$total · $distance';
+  }
 
   @override
   String get settingsTitle => 'Settings';

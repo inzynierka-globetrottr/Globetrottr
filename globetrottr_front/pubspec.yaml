@@ -44,6 +44,8 @@ dependencies:
     path: ^1.8.3
     permission_handler: ^12.0.1
     sqflite: ^2.4.2+1
+    vector_map_tiles: ^7.3.1
+    vector_tile_renderer: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -74,3 +76,7 @@ flutter:
                 weight: 700
               - asset: assets/fonts/manrope/Manrope-ExtraBold.ttf
                 weight: 800
+        # Map labels pick a font by family only (see AppTypography.mapBoldFontFamily).
+        - family: Manrope Bold
+          fonts:
+              - asset: assets/fonts/manrope/Manrope-Bold.ttf

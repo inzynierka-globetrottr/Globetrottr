@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
@@ -6,11 +7,12 @@ import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
+import 'package:globetrottr_front/features/quests/provider/quest_point_provider.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_flag.dart';
 
 /// The card that grows out of the quest flag: the quest's name, its
 /// progress and a button to its details.
-class QuestFlagCard extends StatelessWidget {
+class QuestFlagCard extends ConsumerWidget {
   const QuestFlagCard({
     super.key,
     required this.quest,
@@ -25,8 +27,22 @@ class QuestFlagCard extends StatelessWidget {
   static const _grow = Duration(milliseconds: 280);
   static const _fade = Duration(milliseconds: 200);
 
+  /// "point 4/5 · 280 m" for places, the percent done for a route.
+  String _progress(BuildContext context, QuestPoint? point) {
+    final l10n = context.l10n;
+    if (point == null) {
+      return l10n.questProgressShort(formatPercent(quest.progress));
+    }
+    final locale = Localizations.localeOf(context).toString();
+    return l10n.questFlagPoint(
+      point.index + 1,
+      point.total,
+      formatDistance(point.distanceMeters, locale),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
     final typography = context.typography;
     return LayoutBuilder(
@@ -72,12 +88,8 @@ class QuestFlagCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: typography.label,
                           ),
-                          // TODO(data): "point 4/5 · 280 m" and its bar of
-                          // points once quests have map points.
                           Text(
-                            context.l10n.questProgressShort(
-                              formatPercent(quest.progress),
-                            ),
+                            _progress(context, ref.watch(questPointProvider)),
                             style: typography.smallStrong.copyWith(
                               fontFeatures: const [
                                 FontFeature.tabularFigures(),
