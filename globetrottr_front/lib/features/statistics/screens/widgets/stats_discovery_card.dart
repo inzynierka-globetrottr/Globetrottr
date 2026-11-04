@@ -12,12 +12,14 @@ class DiscoveryRowItem {
     this.id,
     required this.name,
     required this.percentage,
+    this.subtitle,
     this.onTap,
   });
 
   final int? id;
   final String name;
   final double percentage;
+  final String? subtitle;
   final VoidCallback? onTap;
 }
 
@@ -92,11 +94,14 @@ class StatsDiscoveryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text(
-                      item.name,
-                      style: typography.itemTitle.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: typography.itemTitle.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                     Text(
@@ -109,6 +114,17 @@ class StatsDiscoveryCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (item.subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    item.subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: typography.caption.copyWith(
+                      color: palette.textMuted,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 8),
                 SizedBox(
                   height: barHeight,

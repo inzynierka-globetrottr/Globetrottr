@@ -15,6 +15,14 @@ class FogCacheEntry {
   /// Null means "known to have no fog data".
   FogMask? mask;
   double areaM2;
+
+  /// [FogMask.cellSums] as last written, taken before the first change
+  /// after loading, so a write can tell where its new area lies.
+  Int32List? writtenCellSums;
+
+  void keepWrittenCellSums() {
+    writtenCellSums ??= mask?.cellSums() ?? Int32List(256);
+  }
 }
 
 /// The mask of a stored tile, or null for a damaged one. The tiles are a cache
@@ -161,7 +169,7 @@ class FogTileCache {
   /// here: only the rasterizer knows whether a pixel really changed.
   FogMask maskToDrawInto(FogTileId id, Set<FogTileId> created) {
     touch(id);
-    final entry = _entries[id]!;
+    final entry = _entries[id]!..keepWrittenCellSums();
     if (entry.mask == null) {
       entry.mask = FogMask();
       created.add(id);
@@ -188,7 +196,7 @@ class FogTileCache {
       await ensureLoaded(ids);
       for (final id in ids) {
         touch(id);
-        final entry = _entries[id]!;
+        final entry = _entries[id]!..keepWrittenCellSums();
         final incoming = FogMask.fromBytes(masks[id.key]!);
         final existing = entry.mask;
         final bool changed;

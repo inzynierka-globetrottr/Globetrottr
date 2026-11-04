@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/time/clock.dart';
+import 'package:globetrottr_front/features/regions/data/region_pack_service.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
 import 'package:globetrottr_front/features/regions/data/sqflite_region_storage.dart';
 import 'package:globetrottr_front/features/statistics/data/daily_exploration_stats.dart';
@@ -14,6 +17,10 @@ final regionStorageProvider = Provider<RegionStorage>((ref) {
   final storage = SqfliteRegionStorage();
   ref.onDispose(storage.close);
   return storage;
+});
+
+final regionPackServiceProvider = Provider<RegionPackService>((ref) {
+  return RegionPackService(storage: ref.watch(regionStorageProvider));
 });
 
 final statisticsStorageProvider = Provider<StatisticsStorage>((ref) {
@@ -34,11 +41,23 @@ class StatisticsRevisionNotifier extends Notifier<int> {
   void bump() => state++;
 }
 
+/// Countries whose cities the tracker needs; `FogNotifier` installs their
+/// files and rebuilds the statistics.
+final missingRegionPacksProvider = Provider<StreamController<String>>((ref) {
+  final controller = StreamController<String>.broadcast();
+  ref.onDispose(controller.close);
+  return controller;
+});
+
 final statisticsTrackerProvider = Provider<StatisticsTracker>((ref) {
+  final missingPacks = ref.watch(missingRegionPacksProvider);
   return StatisticsTracker(
     regionStorage: ref.watch(regionStorageProvider),
     statisticsStorage: ref.watch(statisticsStorageProvider),
     onUpdated: () => ref.read(statisticsRevisionProvider.notifier).bump(),
+    onMissingPack: (code) {
+      if (!missingPacks.isClosed) missingPacks.add(code);
+    },
   );
 });
 

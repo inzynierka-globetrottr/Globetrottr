@@ -2,12 +2,15 @@ import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_cell_areas.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/provider/fog_provider.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
+import 'package:globetrottr_front/features/regions/data/region_pack_service.dart';
+import 'package:globetrottr_front/features/regions/data/region_storage.dart';
 import 'package:globetrottr_front/features/statistics/data/statistics_storage.dart';
 import 'package:globetrottr_front/features/statistics/data/user_region_stats.dart';
 import 'package:globetrottr_front/features/statistics/logic/statistics_tracker.dart';
@@ -26,11 +29,51 @@ class _BackfilledStatistics extends Fake implements StatisticsStorage {
   Future<List<UserRegionStats>> getAllRegionStats() async => [];
 }
 
+class _ClearableStatistics extends _BackfilledStatistics {
+  int clears = 0;
+
+  @override
+  Future<void> clearRegionStats() async => clears++;
+
+  @override
+  Future<void> setRecordIfMax(
+    String key,
+    double value, {
+    String? label,
+    int? timestampMs,
+  }) async {}
+}
+
+class _UpdatedRegions extends Fake implements RegionStorage {
+  bool changed = true;
+
+  @override
+  Future<bool> consumeVersionChange() async {
+    final result = changed;
+    changed = false;
+    return result;
+  }
+}
+
+class _InstallingPacks extends Fake implements RegionPackService {
+  final requested = <String>[];
+
+  @override
+  Future<bool> ensurePack(String countryCode) async {
+    requested.add(countryCode);
+    return true;
+  }
+}
+
 class _CountingTracker extends Fake implements StatisticsTracker {
   int rebuilds = 0;
 
   @override
-  Future<void> rebuildFromFogTiles(Iterable<TileAreaDelta> tiles) async {
+  Future<void> rebuildFromFogTiles(
+    Iterable<TileAreaDelta> tiles, {
+    Future<Map<FogTileId, FogCellAreas>> Function(List<FogTileId> ids)?
+    loadCells,
+  }) async {
     rebuilds++;
   }
 }
@@ -77,6 +120,77 @@ void main() {
 
       expect(tracker.rebuilds, 0);
     });
+
+    test('new boundaries clear and rebuild the region statistics', () async {
+      await env.tiles.commit(
+        upserts: [
+          const StoredFogTile(
+            id: FogTileId(15, 18197, 11098),
+            flag: 1,
+            rev: 1,
+            areaM2: 5000,
+          ),
+        ],
+        meta: const {},
+      );
+      final statistics = _ClearableStatistics();
+      final tracker = _CountingTracker();
+      final container = ProviderContainer(
+        overrides: [
+          ...env.overrides,
+          statisticsStorageProvider.overrideWithValue(statistics),
+          statisticsTrackerProvider.overrideWithValue(tracker),
+          regionStorageProvider.overrideWithValue(_UpdatedRegions()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final source = await container.read(fogProvider.future);
+      await source.store.whenCaughtUp();
+      await pumpEventQueue();
+
+      expect(statistics.clears, 1);
+      expect(tracker.rebuilds, 1);
+    });
+
+    test(
+      'a missing country file is installed and statistics rebuilt',
+      () async {
+        await env.tiles.commit(
+          upserts: [
+            const StoredFogTile(
+              id: FogTileId(15, 18197, 11098),
+              flag: 1,
+              rev: 1,
+              areaM2: 5000,
+            ),
+          ],
+          meta: const {},
+        );
+        final statistics = _ClearableStatistics();
+        final tracker = _CountingTracker();
+        final packs = _InstallingPacks();
+        final container = ProviderContainer(
+          overrides: [
+            ...env.overrides,
+            statisticsStorageProvider.overrideWithValue(statistics),
+            statisticsTrackerProvider.overrideWithValue(tracker),
+            regionPackServiceProvider.overrideWithValue(packs),
+          ],
+        );
+        addTearDown(container.dispose);
+        final source = await container.read(fogProvider.future);
+        await source.store.whenCaughtUp();
+        await pumpEventQueue();
+
+        container.read(missingRegionPacksProvider).add('CZ');
+        await pumpEventQueue();
+
+        expect(packs.requested, ['CZ']);
+        expect(statistics.clears, 1);
+        expect(tracker.rebuilds, 1);
+      },
+    );
 
     test('draws the existing track log when it starts', () async {
       await env.log.appendAll(walkEast('old'));

@@ -5,8 +5,11 @@ import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
+import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/provider/region_detail_provider.dart';
+import 'package:globetrottr_front/features/statistics/screens/stats_routes.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/country_accordion_card.dart';
+import 'package:globetrottr_front/features/statistics/screens/widgets/stats_attribution.dart';
 import 'package:go_router/go_router.dart';
 
 class CountriesScreen extends ConsumerWidget {
@@ -18,6 +21,7 @@ class CountriesScreen extends ConsumerWidget {
     final typography = context.typography;
     final palette = context.palette;
     final locale = Localizations.localeOf(context).toString();
+    final language = Localizations.localeOf(context).languageCode;
     final dataAsync = ref.watch(countriesDataProvider);
 
     return Scaffold(
@@ -83,7 +87,7 @@ class CountriesScreen extends ConsumerWidget {
                     if (i > 0) const SizedBox(height: 12),
                     CountryAccordionCard(
                       countryCode: data.countries[i].countryCode,
-                      countryName: data.countries[i].countryName,
+                      countryName: data.countries[i].countryName.of(language),
                       subtitle: l10n.statsCountryCardSubtitle(
                         formatKm2(
                           data.countries[i].areaKm2,
@@ -93,18 +97,32 @@ class CountriesScreen extends ConsumerWidget {
                         data.countries[i].citiesCount,
                       ),
                       initiallyExpanded: i == 0,
-                      subregions: [
-                        for (final sub in data.countries[i].subregions)
-                          SubregionItem(
-                            id: sub.id,
-                            name: sub.name,
-                            onTap: () => context.push(
-                              '/profile/statistics/region/${sub.id}',
+                      groups: [
+                        for (final state in data.countries[i].states)
+                          SubregionGroup(
+                            header: SubregionItem(
+                              id: state.id,
+                              name: state.name.of(language),
+                              onTap: () => context.push(
+                                statsRouteFor(RegionType.state, state.id)!,
+                              ),
                             ),
+                            items: [
+                              for (final city in state.cities)
+                                SubregionItem(
+                                  id: city.id,
+                                  name: city.name.of(language),
+                                  onTap: () => context.push(
+                                    statsRouteFor(city.type, city.id)!,
+                                  ),
+                                ),
+                            ],
                           ),
                       ],
                     ),
                   ],
+                const SizedBox(height: 24),
+                const StatsAttribution(),
               ],
             ),
           ),

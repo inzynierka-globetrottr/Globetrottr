@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/features/fog/bitmap/fog_cell_areas.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
@@ -29,6 +30,21 @@ class _FailingStorage extends InMemoryFogTileStorage {
   }
 }
 
+/// Fills the 16 x 16 pixels of one cell, given by its column and row.
+Future<void> _drawCell(FogTileCache cache, FogTileId id, int cx, int cy) async {
+  cache.pinned.add(id);
+  await cache.ensureLoaded([id]);
+  final created = <FogTileId>{};
+  final data = cache.maskToDrawInto(id, created).data;
+  for (var y = cy * 16; y < cy * 16 + 16; y++) {
+    for (var x = cx * 16; x < cx * 16 + 16; x++) {
+      data[y * FogTileId.size + x] = 255;
+    }
+  }
+  cache.markDrawn(created, {id});
+  cache.pinned.remove(id);
+}
+
 Future<void> _draw(FogTileCache cache, FogTileId id) async {
   cache.pinned.add(id);
   await cache.ensureLoaded([id]);
@@ -47,7 +63,7 @@ FogTileWriter _writer(FogTileCache cache) {
   );
 }
 
-Future<void> _write(FogTileWriter writer) {
+Future<FogWriteResult> _write(FogTileWriter writer) {
   return writer.write(revision: 0, totalAreaM2: 0, lastAppliedLogId: 0);
 }
 
@@ -93,6 +109,38 @@ void main() {
       expect(cache.dirty, isEmpty);
       expect((await storage.loadTiles([id])).single.id, id);
       expect(await storage.loadTiles([id.ancestorAt(10)]), hasLength(1));
+    });
+
+    test('the cell deltas of a write add up to the area it adds', () async {
+      final cache = FogTileCache(InMemoryFogTileStorage(), maxTiles: 256);
+      final writer = _writer(cache);
+      await _drawCell(cache, id, 2, 3);
+
+      final result = await _write(writer);
+
+      final cells = result.areaDeltas[id]!;
+      expect(cells.values, hasLength(FogCellAreas.count));
+      expect(cells.values[3 * FogCellAreas.side + 2], greaterThan(0));
+      expect(
+        cells.total,
+        closeTo(cells.values[3 * FogCellAreas.side + 2], 1e-6),
+      );
+      expect(cells.total, closeTo(cache[id]!.areaM2, 1e-3));
+    });
+
+    test('drawing the same pixels again adds no cell area', () async {
+      final cache = FogTileCache(InMemoryFogTileStorage(), maxTiles: 256);
+      final writer = _writer(cache);
+      await _drawCell(cache, id, 2, 3);
+      await _write(writer);
+      await _drawCell(cache, id, 2, 3);
+      await _drawCell(cache, id, 5, 5);
+
+      final result = await _write(writer);
+
+      final cells = result.areaDeltas[id]!;
+      expect(cells.values[3 * FogCellAreas.side + 2], 0);
+      expect(cells.values[5 * FogCellAreas.side + 5], greaterThan(0));
     });
 
     test('tiles waiting to be written survive eviction', () async {

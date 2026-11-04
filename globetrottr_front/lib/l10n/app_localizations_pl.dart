@@ -714,7 +714,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get statsCountiesDiscoveryTitle => 'Powiaty · Odkrycie';
 
   @override
-  String get statsSubregionsDiscoveryTitle => 'Podregiony · Odkrycie';
+  String get statsSubregionsDiscoveryTitle => 'Miejscowości i gminy · Odkrycie';
 
   @override
   String get statsDistrictsDiscoveryTitle => 'Dzielnice · Odkrycie';
@@ -738,6 +738,43 @@ class AppLocalizationsPl extends AppLocalizations {
   String get statsVisitYesterday => 'Wczoraj';
 
   @override
+  String statsCountiesCount(int discovered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$discovered z $total powiatów',
+      one: '$discovered z 1 powiatu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsCitiesCount(int discovered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$discovered z $total miast',
+      one: '$discovered z 1 miasta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsDistrictsCount(int discovered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$discovered z $total dzielnic',
+      one: '$discovered z 1 dzielnicy',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get regionsAttribution =>
+      'Granice © autorzy OpenStreetMap, Overture Maps Foundation';
+
+  @override
   String statsWeekLabel(int week, int year) {
     return 'Tydzień $week · $year';
   }
@@ -752,11 +789,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get statsNoSubregions => 'Brak odkrytych podregionów';
-
-  @override
-  String statsSubregionsCount(int discovered, int total) {
-    return '$discovered z $total powiatów';
-  }
 
   @override
   String get statsNoDiscoveredCities => 'Brak odkrytych miast';

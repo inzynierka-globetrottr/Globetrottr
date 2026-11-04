@@ -4,7 +4,7 @@ import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/logic/stats_period.dart';
 import 'package:globetrottr_front/features/statistics/logic/streak_service.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
-import 'package:globetrottr_front/features/statistics/screens/widgets/stats_discovery_card.dart';
+import 'package:globetrottr_front/features/statistics/provider/region_detail_provider.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_records_grid.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_weekly_chart.dart';
 
@@ -37,7 +37,9 @@ class StatsOverviewState {
   final int visitedCitiesCount;
   final List<String> countryCodes;
   final List<RecordTileItem> records;
-  final List<DiscoveryRowItem> discoveredCities;
+
+  /// The three most discovered cities.
+  final List<DiscoveredRegion> discoveredCities;
   final int openStreakDays;
   final int maxOpenStreakDays;
   final int recordingStreakDays;
@@ -46,13 +48,20 @@ class StatsOverviewState {
   StatsPeriod get period => range.period;
 }
 
-final completedQuestsCountProvider = Provider<int>((ref) {
-  try {
-    final quests = ref.watch(questsProvider).quests;
-    return quests.where((q) => q.isCompleted).length;
-  } catch (_) {
-    return 0;
-  }
+/// Quests completed within the given period.
+final completedQuestsInPeriodProvider = Provider.family<int, StatsPeriodRange>((
+  ref,
+  range,
+) {
+  final quests = ref.watch(questsProvider).quests;
+  final end = DateTime(range.end.year, range.end.month, range.end.day + 1);
+  return quests.where((q) {
+    final at = q.completedAt?.toLocal();
+    return q.isCompleted &&
+        at != null &&
+        !at.isBefore(range.start) &&
+        at.isBefore(end);
+  }).length;
 });
 
 class StatsPeriodFilterNotifier extends Notifier<StatsPeriod> {
@@ -136,7 +145,7 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       0.0,
       (sum, d) => sum + d.distanceM,
     );
-    final questsCount = ref.watch(completedQuestsCountProvider);
+    final questsCount = ref.watch(completedQuestsInPeriodProvider(range));
 
     final weeklyBars = <WeeklyBarItem>[];
     final thisWeek = statsPeriodRange(StatsPeriod.week, DateTime.now());
@@ -185,7 +194,7 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
     var visitedRegions = 0;
     var visitedCities = 0;
     final countryCodes = <String>{};
-    final discoveredCities = <DiscoveryRowItem>[];
+    final discoveredCities = <DiscoveredRegion>[];
 
     final activeStats = allRegionStats
         .where((s) => s.discoveredAreaM2 > 0)
@@ -203,9 +212,11 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       } else if (region.type == RegionType.city) {
         visitedCities++;
         discoveredCities.add(
-          DiscoveryRowItem(
+          DiscoveredRegion(
             id: region.id,
-            name: region.name,
+            type: region.type,
+            name: region.displayName,
+            areaKm2: regStat.discoveredAreaM2 / 1000000,
             percentage: regStat.discoveryPercentage,
           ),
         );
@@ -230,7 +241,7 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       visitedCitiesCount: visitedCities,
       countryCodes: countryCodes.toList(),
       records: records,
-      discoveredCities: discoveredCities,
+      discoveredCities: discoveredCities.take(3).toList(),
       openStreakDays: effectiveOpen,
       maxOpenStreakDays: streakStats.maxOpenStreak,
       recordingStreakDays: effectiveRec,

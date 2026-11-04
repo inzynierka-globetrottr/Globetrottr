@@ -28,6 +28,22 @@ class FogMask {
     return sum;
   }
 
+  /// [coveredSum] per cell of 16 x 16 pixels, row by row (see
+  /// `FogCellAreas`).
+  Int32List cellSums() {
+    final sums = Int32List(cellsPerSide * cellsPerSide);
+    for (var y = 0; y < size; y++) {
+      final row = (y >> 4) * cellsPerSide;
+      final offset = y * size;
+      for (var x = 0; x < size; x++) {
+        sums[row + (x >> 4)] += data[offset + x];
+      }
+    }
+    return sums;
+  }
+
+  static const int cellsPerSide = 16;
+
   /// Keeps the larger value of every pixel. Returns whether any pixel
   /// changed, so a caller can tell a merge that added nothing.
   bool mergeMax(FogMask other) {

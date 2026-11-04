@@ -1241,7 +1241,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsSubregionsDiscoveryTitle.
   ///
   /// In en, this message translates to:
-  /// **'Subregions · Discovery'**
+  /// **'Cities & Municipalities · Discovery'**
   String get statsSubregionsDiscoveryTitle;
 
   /// No description provided for @statsDistrictsDiscoveryTitle.
@@ -1286,6 +1286,30 @@ abstract class AppLocalizations {
   /// **'Yesterday'**
   String get statsVisitYesterday;
 
+  /// No description provided for @statsCountiesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{total, plural, =1{{discovered} of 1 county} other{{discovered} of {total} counties}}'**
+  String statsCountiesCount(int discovered, int total);
+
+  /// No description provided for @statsCitiesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{total, plural, =1{{discovered} of 1 city} other{{discovered} of {total} cities}}'**
+  String statsCitiesCount(int discovered, int total);
+
+  /// No description provided for @statsDistrictsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{total, plural, =1{{discovered} of 1 district} other{{discovered} of {total} districts}}'**
+  String statsDistrictsCount(int discovered, int total);
+
+  /// No description provided for @regionsAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Boundaries © OpenStreetMap contributors, Overture Maps Foundation'**
+  String get regionsAttribution;
+
   /// No description provided for @statsWeekLabel.
   ///
   /// In en, this message translates to:
@@ -1309,12 +1333,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No subregions discovered'**
   String get statsNoSubregions;
-
-  /// No description provided for @statsSubregionsCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{discovered} of {total} counties'**
-  String statsSubregionsCount(int discovered, int total);
 
   /// No description provided for @statsNoDiscoveredCities.
   ///

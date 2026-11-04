@@ -1,3 +1,4 @@
+import 'package:globetrottr_front/features/fog/bitmap/fog_cell_areas.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 
 class FogChange {
@@ -23,8 +24,8 @@ class FogChange {
   /// refreshed too: the newest trail segment the write put into the tiles.
   final int? trailWrittenUpTo;
 
-  /// Area delta in square meters for base zoom tiles written in this commit.
-  final Map<FogTileId, double> areaDeltas;
+  /// New ground area per cell of the base tiles that gained some.
+  final Map<FogTileId, FogCellAreas> areaDeltas;
 }
 
 class FogStoreDiagnostics {

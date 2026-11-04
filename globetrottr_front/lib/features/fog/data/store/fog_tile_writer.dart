@@ -2,11 +2,11 @@ import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:globetrottr_front/features/fog/bitmap/fog_cell_areas.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_mask.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_codec.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
-import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_tile_cache.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
@@ -25,8 +25,8 @@ class FogWriteResult {
   /// Every tile written, on any level of the pyramid.
   final Set<FogTileId> tiles;
 
-  /// Ground area delta in square meters for base zoom tiles written in this commit.
-  final Map<FogTileId, double> areaDeltas;
+  /// New ground area per cell of the base tiles that gained some.
+  final Map<FogTileId, FogCellAreas> areaDeltas;
 }
 
 List<EncodedFogTile> _encodeBatch(List<Uint8List> raw) {
@@ -117,19 +117,25 @@ class FogTileWriter {
       var areaDelta = 0.0;
       final upserts = <StoredFogTile>[];
       final newAreas = <FogTileId, double>{};
-      final tileAreaDeltas = <FogTileId, double>{};
+      final newCellSums = <FogTileId, Int32List>{};
+      final tileAreaDeltas = <FogTileId, FogCellAreas>{};
       for (var i = 0; i < ids.length; i++) {
         final id = ids[i];
         final entry = cache[id]!;
         var area = 0.0;
         if (id.z == baseZoom) {
-          area = _areaOf(id, entry.mask!);
-          final delta = area - entry.areaM2;
-          areaDelta += delta;
-          newAreas[id] = area;
-          if (delta > 0) {
-            tileAreaDeltas[id] = delta;
+          final sums = entry.mask!.cellSums();
+          final pixelArea = FogCellAreas.pixelAreaM2(id);
+          var covered = 0;
+          for (final s in sums) {
+            covered += s;
           }
+          area = covered / 255.0 * pixelArea;
+          areaDelta += area - entry.areaM2;
+          newAreas[id] = area;
+          newCellSums[id] = sums;
+          final cells = _cellDeltas(sums, entry, pixelArea);
+          if (cells != null) tileAreaDeltas[id] = cells;
         }
         upserts.add(
           StoredFogTile(
@@ -154,6 +160,7 @@ class FogTileWriter {
       );
 
       newAreas.forEach((id, area) => cache[id]!.areaM2 = area);
+      newCellSums.forEach((id, sums) => cache[id]!.writtenCellSums = sums);
       cache.dirty.removeAll(baseDirty);
       return FogWriteResult(
         revision: nextRevision,
@@ -187,15 +194,23 @@ class FogTileWriter {
     return [for (final part in parts) ...part];
   }
 
-  double _areaOf(FogTileId id, FogMask mask) {
-    final latitude = FogMercator.yToLat(
-      (id.y + 0.5) * FogTileId.size,
-      baseZoom,
-    );
-    final pixel = metersPerPixel(
-      latitude: latitude,
-      zoom: baseZoom.toDouble(),
-    );
-    return mask.coveredSum / 255.0 * pixel * pixel;
+  /// Where the tile gained area since its last write, or null when it
+  /// gained none. Coverage only grows, so a cell never loses area.
+  FogCellAreas? _cellDeltas(
+    Int32List sums,
+    FogCacheEntry entry,
+    double pixelArea,
+  ) {
+    final before = entry.writtenCellSums;
+    final values = Float32List(FogCellAreas.count);
+    var gained = false;
+    for (var i = 0; i < FogCellAreas.count; i++) {
+      final added = sums[i] - (before == null ? 0 : before[i]);
+      if (added > 0) {
+        values[i] = added / 255.0 * pixelArea;
+        gained = true;
+      }
+    }
+    return gained ? FogCellAreas(values) : null;
   }
 }

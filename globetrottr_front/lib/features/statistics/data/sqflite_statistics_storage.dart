@@ -151,6 +151,19 @@ class SqfliteStatisticsStorage implements StatisticsStorage {
   }
 
   @override
+  Future<void> replaceRegionStats(Iterable<UserRegionStats> stats) async {
+    final db = await _db;
+    await db.transaction((txn) async {
+      await txn.delete('user_region_stats');
+      final batch = txn.batch();
+      for (final s in stats) {
+        batch.insert('user_region_stats', s.toMap());
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  @override
   Future<void> clearRegionStats() async {
     final db = await _db;
     await db.delete('user_region_stats');

@@ -223,6 +223,28 @@
   "statsLastVisit": "Ostatnia wizyta",
   "statsLastVisitToday": "Dziś",
   "statsVisitYesterday": "Wczoraj",
+  "statsCountiesCount": "{total, plural, =1{{discovered} z 1 powiatu} other{{discovered} z {total} powiatów}}",
+  "@statsCountiesCount": {
+    "placeholders": {
+      "discovered": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "statsCitiesCount": "{total, plural, =1{{discovered} z 1 miasta} other{{discovered} z {total} miast}}",
+  "@statsCitiesCount": {
+    "placeholders": {
+      "discovered": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "statsDistrictsCount": "{total, plural, =1{{discovered} z 1 dzielnicy} other{{discovered} z {total} dzielnic}}",
+  "@statsDistrictsCount": {
+    "placeholders": {
+      "discovered": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "regionsAttribution": "Granice © autorzy OpenStreetMap, Overture Maps Foundation",
   "statsWeekLabel": "Tydzień {week} · {year}",
   "@statsWeekLabel": {
     "placeholders": {
@@ -237,16 +259,7 @@
     }
   },
   "statsCityDiscoveryTitle": "Odkrycie miasta",
-  "statsDistrictsDiscoveryTitle": "Dzielnice · Odkrycie",
-  "statsSubregionsDiscoveryTitle": "Podregiony · Odkrycie",
   "statsNoSubregions": "Brak odkrytych podregionów",
-  "statsSubregionsCount": "{discovered} z {total} powiatów",
-  "@statsSubregionsCount": {
-    "placeholders": {
-      "discovered": { "type": "int" },
-      "total": { "type": "int" }
-    }
-  },
   "statsNoDiscoveredCities": "Brak odkrytych miast",
   "statsStreaksTitle": "Serie",
   "statsAppOpenStreak": "Otwarcie aplikacji",

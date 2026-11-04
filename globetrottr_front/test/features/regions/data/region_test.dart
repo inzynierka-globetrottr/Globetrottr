@@ -1,32 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/regions/data/region.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 
-Uint8List _encodePolygon(List<List<List<double>>> rings) {
-  final byteData = ByteData(
-    2 +
-        rings.fold<int>(
-          0,
-          (sum, r) => sum + 2 + r.length * 8,
-        ),
-  );
-  var offset = 0;
-  byteData.setUint16(offset, rings.length, Endian.little);
-  offset += 2;
-  for (final ring in rings) {
-    byteData.setUint16(offset, ring.length, Endian.little);
-    offset += 2;
-    for (final pt in ring) {
-      byteData.setFloat32(offset, pt[0], Endian.little);
-      offset += 4;
-      byteData.setFloat32(offset, pt[1], Endian.little);
-      offset += 4;
-    }
-  }
-  return byteData.buffer.asUint8List();
-}
+import '../../../support/region_geometry_encoder.dart';
 
 void main() {
   group('Region.containsPoint', () {
@@ -71,13 +47,8 @@ void main() {
       // Right triangle: (10, 10), (20, 10), (10, 20)
       // Points inside: (12, 12)
       // Points outside triangle but inside bbox: (18, 18)
-      final triangleGeom = _encodePolygon([
-        [
-          [10.0, 10.0],
-          [20.0, 10.0],
-          [10.0, 20.0],
-          [10.0, 10.0],
-        ],
+      final triangleGeom = encodeRegionGeometry([
+        [(10.0, 10.0), (20.0, 10.0), (10.0, 20.0), (10.0, 10.0)],
       ]);
 
       final region = Region(
@@ -96,6 +67,35 @@ void main() {
 
       expect(region.containsPoint(12.0, 12.0), isTrue);
       expect(region.containsPoint(18.0, 18.0), isFalse);
+    });
+  });
+
+  group('Region.localizedName', () {
+    const czechia = Region(
+      id: 2,
+      parentId: null,
+      name: 'Česko',
+      nameEn: 'Czechia',
+      namePl: 'Czechy',
+      type: RegionType.country,
+      code: 'CZ',
+      totalAreaKm2: 78871,
+      minLat: 48.5,
+      maxLat: 51.1,
+      minLon: 12.1,
+      maxLon: 18.9,
+    );
+
+    test('Polish shows the Polish name', () {
+      expect(czechia.localizedName('pl'), 'Czechy');
+    });
+
+    test('English shows the English name', () {
+      expect(czechia.localizedName('en'), 'Czechia');
+    });
+
+    test('a language without a translation shows the local name', () {
+      expect(czechia.localizedName('de'), 'Česko');
     });
   });
 }

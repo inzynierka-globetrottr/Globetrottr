@@ -8,14 +8,15 @@ class CountryFlagChip extends StatelessWidget {
     this.showCodeLabel = true,
   });
 
-  final String countryCode;
+  /// Null for a region without an ISO code; it gets a plain chip.
+  final String? countryCode;
   final bool showCodeLabel;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final typography = context.typography;
-    final code = countryCode.toUpperCase();
+    final code = countryCode?.toUpperCase() ?? '';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -41,7 +42,7 @@ class CountryFlagChip extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: _buildFlag(context, code),
         ),
-        if (showCodeLabel) ...[
+        if (showCodeLabel && code.isNotEmpty) ...[
           const SizedBox(height: 3),
           Text(
             code,

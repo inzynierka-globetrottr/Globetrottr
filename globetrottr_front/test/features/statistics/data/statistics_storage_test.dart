@@ -62,6 +62,32 @@ void main() {
       expect(loaded.visitsCount, 3);
     });
 
+    test('replaceRegionStats removes rows not in the new set', () async {
+      await storage.saveRegionStats(const [
+        UserRegionStats(
+          regionId: 1,
+          discoveredAreaM2: 5,
+          discoveryPercentage: 1,
+        ),
+        UserRegionStats(
+          regionId: 2,
+          discoveredAreaM2: 7,
+          discoveryPercentage: 1,
+        ),
+      ]);
+
+      await storage.replaceRegionStats(const [
+        UserRegionStats(
+          regionId: 2,
+          discoveredAreaM2: 9,
+          discoveryPercentage: 2,
+        ),
+      ]);
+
+      final all = await storage.getAllRegionStats();
+      expect(all.map((s) => (s.regionId, s.discoveredAreaM2)), [(2, 9.0)]);
+    });
+
     test('caches and loads tile-to-region associations', () async {
       expect(await storage.getCachedTileRegion(z: 15, x: 100, y: 200), isNull);
 

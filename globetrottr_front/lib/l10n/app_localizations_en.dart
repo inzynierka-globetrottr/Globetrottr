@@ -704,7 +704,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsCountiesDiscoveryTitle => 'Counties · Discovery';
 
   @override
-  String get statsSubregionsDiscoveryTitle => 'Subregions · Discovery';
+  String get statsSubregionsDiscoveryTitle =>
+      'Cities & Municipalities · Discovery';
 
   @override
   String get statsDistrictsDiscoveryTitle => 'Districts · Discovery';
@@ -728,6 +729,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsVisitYesterday => 'Yesterday';
 
   @override
+  String statsCountiesCount(int discovered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$discovered of $total counties',
+      one: '$discovered of 1 county',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsCitiesCount(int discovered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$discovered of $total cities',
+      one: '$discovered of 1 city',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsDistrictsCount(int discovered, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$discovered of $total districts',
+      one: '$discovered of 1 district',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get regionsAttribution =>
+      'Boundaries © OpenStreetMap contributors, Overture Maps Foundation';
+
+  @override
   String statsWeekLabel(int week, int year) {
     return 'Week $week · $year';
   }
@@ -742,11 +780,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsNoSubregions => 'No subregions discovered';
-
-  @override
-  String statsSubregionsCount(int discovered, int total) {
-    return '$discovered of $total counties';
-  }
 
   @override
   String get statsNoDiscoveredCities => 'No discovered cities yet';

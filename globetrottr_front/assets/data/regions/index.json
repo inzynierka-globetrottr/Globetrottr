@@ -1,0 +1,1151 @@
+{
+ "version": 2,
+ "release": "2026-10-21.0",
+ "packs": [
+  {
+   "country": "AD",
+   "file": "regions_AD.db",
+   "bytes": 20480
+  },
+  {
+   "country": "AE",
+   "file": "regions_AE.db",
+   "bytes": 110592
+  },
+  {
+   "country": "AF",
+   "file": "regions_AF.db",
+   "bytes": 49152
+  },
+  {
+   "country": "AL",
+   "file": "regions_AL.db",
+   "bytes": 151552
+  },
+  {
+   "country": "AM",
+   "file": "regions_AM.db",
+   "bytes": 229376
+  },
+  {
+   "country": "AO",
+   "file": "regions_AO.db",
+   "bytes": 32768
+  },
+  {
+   "country": "AQ",
+   "file": "regions_AQ.db",
+   "bytes": 20480
+  },
+  {
+   "country": "AR",
+   "file": "regions_AR.db",
+   "bytes": 1138688
+  },
+  {
+   "country": "AS",
+   "file": "regions_AS.db",
+   "bytes": 32768
+  },
+  {
+   "country": "AT",
+   "file": "regions_AT.db",
+   "bytes": 724992
+  },
+  {
+   "country": "AU",
+   "file": "regions_AU.db",
+   "bytes": 5001216
+  },
+  {
+   "country": "AW",
+   "file": "regions_AW.db",
+   "bytes": 20480
+  },
+  {
+   "country": "AX",
+   "file": "regions_AX.db",
+   "bytes": 20480
+  },
+  {
+   "country": "AZ",
+   "file": "regions_AZ.db",
+   "bytes": 684032
+  },
+  {
+   "country": "BA",
+   "file": "regions_BA.db",
+   "bytes": 45056
+  },
+  {
+   "country": "BB",
+   "file": "regions_BB.db",
+   "bytes": 32768
+  },
+  {
+   "country": "BD",
+   "file": "regions_BD.db",
+   "bytes": 262144
+  },
+  {
+   "country": "BE",
+   "file": "regions_BE.db",
+   "bytes": 258048
+  },
+  {
+   "country": "BF",
+   "file": "regions_BF.db",
+   "bytes": 139264
+  },
+  {
+   "country": "BG",
+   "file": "regions_BG.db",
+   "bytes": 634880
+  },
+  {
+   "country": "BH",
+   "file": "regions_BH.db",
+   "bytes": 20480
+  },
+  {
+   "country": "BI",
+   "file": "regions_BI.db",
+   "bytes": 20480
+  },
+  {
+   "country": "BJ",
+   "file": "regions_BJ.db",
+   "bytes": 32768
+  },
+  {
+   "country": "BL",
+   "file": "regions_BL.db",
+   "bytes": 20480
+  },
+  {
+   "country": "BN",
+   "file": "regions_BN.db",
+   "bytes": 28672
+  },
+  {
+   "country": "BO",
+   "file": "regions_BO.db",
+   "bytes": 397312
+  },
+  {
+   "country": "BR",
+   "file": "regions_BR.db",
+   "bytes": 8273920
+  },
+  {
+   "country": "BS",
+   "file": "regions_BS.db",
+   "bytes": 20480
+  },
+  {
+   "country": "BT",
+   "file": "regions_BT.db",
+   "bytes": 270336
+  },
+  {
+   "country": "BW",
+   "file": "regions_BW.db",
+   "bytes": 20480
+  },
+  {
+   "country": "BY",
+   "file": "regions_BY.db",
+   "bytes": 917504
+  },
+  {
+   "country": "BZ",
+   "file": "regions_BZ.db",
+   "bytes": 32768
+  },
+  {
+   "country": "CA",
+   "file": "regions_CA.db",
+   "bytes": 1998848
+  },
+  {
+   "country": "CD",
+   "file": "regions_CD.db",
+   "bytes": 245760
+  },
+  {
+   "country": "CF",
+   "file": "regions_CF.db",
+   "bytes": 28672
+  },
+  {
+   "country": "CG",
+   "file": "regions_CG.db",
+   "bytes": 20480
+  },
+  {
+   "country": "CH",
+   "file": "regions_CH.db",
+   "bytes": 610304
+  },
+  {
+   "country": "CI",
+   "file": "regions_CI.db",
+   "bytes": 65536
+  },
+  {
+   "country": "CK",
+   "file": "regions_CK.db",
+   "bytes": 20480
+  },
+  {
+   "country": "CL",
+   "file": "regions_CL.db",
+   "bytes": 397312
+  },
+  {
+   "country": "CM",
+   "file": "regions_CM.db",
+   "bytes": 278528
+  },
+  {
+   "country": "CN",
+   "file": "regions_CN.db",
+   "bytes": 10424320
+  },
+  {
+   "country": "CO",
+   "file": "regions_CO.db",
+   "bytes": 872448
+  },
+  {
+   "country": "CP",
+   "file": "regions_CP.db",
+   "bytes": 20480
+  },
+  {
+   "country": "CR",
+   "file": "regions_CR.db",
+   "bytes": 212992
+  },
+  {
+   "country": "CU",
+   "file": "regions_CU.db",
+   "bytes": 135168
+  },
+  {
+   "country": "CV",
+   "file": "regions_CV.db",
+   "bytes": 20480
+  },
+  {
+   "country": "CW",
+   "file": "regions_CW.db",
+   "bytes": 20480
+  },
+  {
+   "country": "CY",
+   "file": "regions_CY.db",
+   "bytes": 180224
+  },
+  {
+   "country": "CZ",
+   "file": "regions_CZ.db",
+   "bytes": 1769472
+  },
+  {
+   "country": "DE",
+   "file": "regions_DE.db",
+   "bytes": 3231744
+  },
+  {
+   "country": "DJ",
+   "file": "regions_DJ.db",
+   "bytes": 20480
+  },
+  {
+   "country": "DK",
+   "file": "regions_DK.db",
+   "bytes": 110592
+  },
+  {
+   "country": "DM",
+   "file": "regions_DM.db",
+   "bytes": 20480
+  },
+  {
+   "country": "DO",
+   "file": "regions_DO.db",
+   "bytes": 20480
+  },
+  {
+   "country": "DZ",
+   "file": "regions_DZ.db",
+   "bytes": 724992
+  },
+  {
+   "country": "EC",
+   "file": "regions_EC.db",
+   "bytes": 520192
+  },
+  {
+   "country": "EE",
+   "file": "regions_EE.db",
+   "bytes": 1216512
+  },
+  {
+   "country": "EG",
+   "file": "regions_EG.db",
+   "bytes": 126976
+  },
+  {
+   "country": "ER",
+   "file": "regions_ER.db",
+   "bytes": 32768
+  },
+  {
+   "country": "ES",
+   "file": "regions_ES.db",
+   "bytes": 1978368
+  },
+  {
+   "country": "ET",
+   "file": "regions_ET.db",
+   "bytes": 32768
+  },
+  {
+   "country": "FI",
+   "file": "regions_FI.db",
+   "bytes": 552960
+  },
+  {
+   "country": "FJ",
+   "file": "regions_FJ.db",
+   "bytes": 40960
+  },
+  {
+   "country": "FK",
+   "file": "regions_FK.db",
+   "bytes": 20480
+  },
+  {
+   "country": "FM",
+   "file": "regions_FM.db",
+   "bytes": 40960
+  },
+  {
+   "country": "FO",
+   "file": "regions_FO.db",
+   "bytes": 40960
+  },
+  {
+   "country": "FR",
+   "file": "regions_FR.db",
+   "bytes": 9203712
+  },
+  {
+   "country": "GA",
+   "file": "regions_GA.db",
+   "bytes": 20480
+  },
+  {
+   "country": "GB",
+   "file": "regions_GB.db",
+   "bytes": 5001216
+  },
+  {
+   "country": "GE",
+   "file": "regions_GE.db",
+   "bytes": 311296
+  },
+  {
+   "country": "GF",
+   "file": "regions_GF.db",
+   "bytes": 20480
+  },
+  {
+   "country": "GH",
+   "file": "regions_GH.db",
+   "bytes": 32768
+  },
+  {
+   "country": "GL",
+   "file": "regions_GL.db",
+   "bytes": 20480
+  },
+  {
+   "country": "GM",
+   "file": "regions_GM.db",
+   "bytes": 49152
+  },
+  {
+   "country": "GN",
+   "file": "regions_GN.db",
+   "bytes": 53248
+  },
+  {
+   "country": "GP",
+   "file": "regions_GP.db",
+   "bytes": 32768
+  },
+  {
+   "country": "GQ",
+   "file": "regions_GQ.db",
+   "bytes": 32768
+  },
+  {
+   "country": "GR",
+   "file": "regions_GR.db",
+   "bytes": 57344
+  },
+  {
+   "country": "GT",
+   "file": "regions_GT.db",
+   "bytes": 45056
+  },
+  {
+   "country": "GU",
+   "file": "regions_GU.db",
+   "bytes": 20480
+  },
+  {
+   "country": "GW",
+   "file": "regions_GW.db",
+   "bytes": 40960
+  },
+  {
+   "country": "GY",
+   "file": "regions_GY.db",
+   "bytes": 49152
+  },
+  {
+   "country": "HK",
+   "file": "regions_HK.db",
+   "bytes": 20480
+  },
+  {
+   "country": "HN",
+   "file": "regions_HN.db",
+   "bytes": 45056
+  },
+  {
+   "country": "HR",
+   "file": "regions_HR.db",
+   "bytes": 1593344
+  },
+  {
+   "country": "HT",
+   "file": "regions_HT.db",
+   "bytes": 86016
+  },
+  {
+   "country": "HU",
+   "file": "regions_HU.db",
+   "bytes": 917504
+  },
+  {
+   "country": "ID",
+   "file": "regions_ID.db",
+   "bytes": 1695744
+  },
+  {
+   "country": "IE",
+   "file": "regions_IE.db",
+   "bytes": 184320
+  },
+  {
+   "country": "IL",
+   "file": "regions_IL.db",
+   "bytes": 167936
+  },
+  {
+   "country": "IM",
+   "file": "regions_IM.db",
+   "bytes": 20480
+  },
+  {
+   "country": "IN",
+   "file": "regions_IN.db",
+   "bytes": 942080
+  },
+  {
+   "country": "IQ",
+   "file": "regions_IQ.db",
+   "bytes": 282624
+  },
+  {
+   "country": "IR",
+   "file": "regions_IR.db",
+   "bytes": 1699840
+  },
+  {
+   "country": "IS",
+   "file": "regions_IS.db",
+   "bytes": 20480
+  },
+  {
+   "country": "IT",
+   "file": "regions_IT.db",
+   "bytes": 2490368
+  },
+  {
+   "country": "JE",
+   "file": "regions_JE.db",
+   "bytes": 20480
+  },
+  {
+   "country": "JM",
+   "file": "regions_JM.db",
+   "bytes": 28672
+  },
+  {
+   "country": "JO",
+   "file": "regions_JO.db",
+   "bytes": 57344
+  },
+  {
+   "country": "JP",
+   "file": "regions_JP.db",
+   "bytes": 942080
+  },
+  {
+   "country": "KE",
+   "file": "regions_KE.db",
+   "bytes": 512000
+  },
+  {
+   "country": "KG",
+   "file": "regions_KG.db",
+   "bytes": 360448
+  },
+  {
+   "country": "KH",
+   "file": "regions_KH.db",
+   "bytes": 57344
+  },
+  {
+   "country": "KI",
+   "file": "regions_KI.db",
+   "bytes": 28672
+  },
+  {
+   "country": "KM",
+   "file": "regions_KM.db",
+   "bytes": 32768
+  },
+  {
+   "country": "KP",
+   "file": "regions_KP.db",
+   "bytes": 49152
+  },
+  {
+   "country": "KR",
+   "file": "regions_KR.db",
+   "bytes": 643072
+  },
+  {
+   "country": "KY",
+   "file": "regions_KY.db",
+   "bytes": 20480
+  },
+  {
+   "country": "KZ",
+   "file": "regions_KZ.db",
+   "bytes": 860160
+  },
+  {
+   "country": "LA",
+   "file": "regions_LA.db",
+   "bytes": 28672
+  },
+  {
+   "country": "LB",
+   "file": "regions_LB.db",
+   "bytes": 270336
+  },
+  {
+   "country": "LC",
+   "file": "regions_LC.db",
+   "bytes": 20480
+  },
+  {
+   "country": "LK",
+   "file": "regions_LK.db",
+   "bytes": 32768
+  },
+  {
+   "country": "LR",
+   "file": "regions_LR.db",
+   "bytes": 28672
+  },
+  {
+   "country": "LS",
+   "file": "regions_LS.db",
+   "bytes": 20480
+  },
+  {
+   "country": "LT",
+   "file": "regions_LT.db",
+   "bytes": 1011712
+  },
+  {
+   "country": "LU",
+   "file": "regions_LU.db",
+   "bytes": 20480
+  },
+  {
+   "country": "LV",
+   "file": "regions_LV.db",
+   "bytes": 335872
+  },
+  {
+   "country": "LY",
+   "file": "regions_LY.db",
+   "bytes": 65536
+  },
+  {
+   "country": "MA",
+   "file": "regions_MA.db",
+   "bytes": 602112
+  },
+  {
+   "country": "MD",
+   "file": "regions_MD.db",
+   "bytes": 348160
+  },
+  {
+   "country": "ME",
+   "file": "regions_ME.db",
+   "bytes": 86016
+  },
+  {
+   "country": "MF",
+   "file": "regions_MF.db",
+   "bytes": 20480
+  },
+  {
+   "country": "MG",
+   "file": "regions_MG.db",
+   "bytes": 327680
+  },
+  {
+   "country": "MH",
+   "file": "regions_MH.db",
+   "bytes": 20480
+  },
+  {
+   "country": "MK",
+   "file": "regions_MK.db",
+   "bytes": 471040
+  },
+  {
+   "country": "ML",
+   "file": "regions_ML.db",
+   "bytes": 20480
+  },
+  {
+   "country": "MM",
+   "file": "regions_MM.db",
+   "bytes": 741376
+  },
+  {
+   "country": "MN",
+   "file": "regions_MN.db",
+   "bytes": 65536
+  },
+  {
+   "country": "MP",
+   "file": "regions_MP.db",
+   "bytes": 20480
+  },
+  {
+   "country": "MQ",
+   "file": "regions_MQ.db",
+   "bytes": 32768
+  },
+  {
+   "country": "MR",
+   "file": "regions_MR.db",
+   "bytes": 28672
+  },
+  {
+   "country": "MT",
+   "file": "regions_MT.db",
+   "bytes": 20480
+  },
+  {
+   "country": "MU",
+   "file": "regions_MU.db",
+   "bytes": 65536
+  },
+  {
+   "country": "MV",
+   "file": "regions_MV.db",
+   "bytes": 20480
+  },
+  {
+   "country": "MW",
+   "file": "regions_MW.db",
+   "bytes": 28672
+  },
+  {
+   "country": "MX",
+   "file": "regions_MX.db",
+   "bytes": 323584
+  },
+  {
+   "country": "MY",
+   "file": "regions_MY.db",
+   "bytes": 155648
+  },
+  {
+   "country": "MZ",
+   "file": "regions_MZ.db",
+   "bytes": 45056
+  },
+  {
+   "country": "NA",
+   "file": "regions_NA.db",
+   "bytes": 32768
+  },
+  {
+   "country": "NE",
+   "file": "regions_NE.db",
+   "bytes": 28672
+  },
+  {
+   "country": "NG",
+   "file": "regions_NG.db",
+   "bytes": 778240
+  },
+  {
+   "country": "NI",
+   "file": "regions_NI.db",
+   "bytes": 49152
+  },
+  {
+   "country": "NL",
+   "file": "regions_NL.db",
+   "bytes": 630784
+  },
+  {
+   "country": "NO",
+   "file": "regions_NO.db",
+   "bytes": 20480
+  },
+  {
+   "country": "NP",
+   "file": "regions_NP.db",
+   "bytes": 401408
+  },
+  {
+   "country": "NU",
+   "file": "regions_NU.db",
+   "bytes": 20480
+  },
+  {
+   "country": "NZ",
+   "file": "regions_NZ.db",
+   "bytes": 1253376
+  },
+  {
+   "country": "OM",
+   "file": "regions_OM.db",
+   "bytes": 45056
+  },
+  {
+   "country": "PA",
+   "file": "regions_PA.db",
+   "bytes": 233472
+  },
+  {
+   "country": "PE",
+   "file": "regions_PE.db",
+   "bytes": 1024000
+  },
+  {
+   "country": "PF",
+   "file": "regions_PF.db",
+   "bytes": 94208
+  },
+  {
+   "country": "PG",
+   "file": "regions_PG.db",
+   "bytes": 28672
+  },
+  {
+   "country": "PH",
+   "file": "regions_PH.db",
+   "bytes": 393216
+  },
+  {
+   "country": "PK",
+   "file": "regions_PK.db",
+   "bytes": 475136
+  },
+  {
+   "country": "PL",
+   "file": "regions_PL.db",
+   "bytes": 1613824
+  },
+  {
+   "country": "PM",
+   "file": "regions_PM.db",
+   "bytes": 20480
+  },
+  {
+   "country": "PT",
+   "file": "regions_PT.db",
+   "bytes": 921600
+  },
+  {
+   "country": "PY",
+   "file": "regions_PY.db",
+   "bytes": 212992
+  },
+  {
+   "country": "QA",
+   "file": "regions_QA.db",
+   "bytes": 20480
+  },
+  {
+   "country": "RE",
+   "file": "regions_RE.db",
+   "bytes": 28672
+  },
+  {
+   "country": "RO",
+   "file": "regions_RO.db",
+   "bytes": 741376
+  },
+  {
+   "country": "RS",
+   "file": "regions_RS.db",
+   "bytes": 167936
+  },
+  {
+   "country": "RU",
+   "file": "regions_RU.db",
+   "bytes": 21258240
+  },
+  {
+   "country": "RW",
+   "file": "regions_RW.db",
+   "bytes": 147456
+  },
+  {
+   "country": "SA",
+   "file": "regions_SA.db",
+   "bytes": 45056
+  },
+  {
+   "country": "SB",
+   "file": "regions_SB.db",
+   "bytes": 20480
+  },
+  {
+   "country": "SC",
+   "file": "regions_SC.db",
+   "bytes": 20480
+  },
+  {
+   "country": "SD",
+   "file": "regions_SD.db",
+   "bytes": 36864
+  },
+  {
+   "country": "SE",
+   "file": "regions_SE.db",
+   "bytes": 65536
+  },
+  {
+   "country": "SG",
+   "file": "regions_SG.db",
+   "bytes": 20480
+  },
+  {
+   "country": "SH",
+   "file": "regions_SH.db",
+   "bytes": 20480
+  },
+  {
+   "country": "SI",
+   "file": "regions_SI.db",
+   "bytes": 49152
+  },
+  {
+   "country": "SJ",
+   "file": "regions_SJ.db",
+   "bytes": 20480
+  },
+  {
+   "country": "SK",
+   "file": "regions_SK.db",
+   "bytes": 811008
+  },
+  {
+   "country": "SL",
+   "file": "regions_SL.db",
+   "bytes": 36864
+  },
+  {
+   "country": "SN",
+   "file": "regions_SN.db",
+   "bytes": 208896
+  },
+  {
+   "country": "SO",
+   "file": "regions_SO.db",
+   "bytes": 32768
+  },
+  {
+   "country": "SR",
+   "file": "regions_SR.db",
+   "bytes": 20480
+  },
+  {
+   "country": "SS",
+   "file": "regions_SS.db",
+   "bytes": 32768
+  },
+  {
+   "country": "ST",
+   "file": "regions_ST.db",
+   "bytes": 28672
+  },
+  {
+   "country": "SV",
+   "file": "regions_SV.db",
+   "bytes": 65536
+  },
+  {
+   "country": "SX",
+   "file": "regions_SX.db",
+   "bytes": 20480
+  },
+  {
+   "country": "SY",
+   "file": "regions_SY.db",
+   "bytes": 139264
+  },
+  {
+   "country": "SZ",
+   "file": "regions_SZ.db",
+   "bytes": 20480
+  },
+  {
+   "country": "TD",
+   "file": "regions_TD.db",
+   "bytes": 28672
+  },
+  {
+   "country": "TF",
+   "file": "regions_TF.db",
+   "bytes": 20480
+  },
+  {
+   "country": "TG",
+   "file": "regions_TG.db",
+   "bytes": 28672
+  },
+  {
+   "country": "TH",
+   "file": "regions_TH.db",
+   "bytes": 512000
+  },
+  {
+   "country": "TJ",
+   "file": "regions_TJ.db",
+   "bytes": 86016
+  },
+  {
+   "country": "TK",
+   "file": "regions_TK.db",
+   "bytes": 20480
+  },
+  {
+   "country": "TL",
+   "file": "regions_TL.db",
+   "bytes": 20480
+  },
+  {
+   "country": "TM",
+   "file": "regions_TM.db",
+   "bytes": 45056
+  },
+  {
+   "country": "TN",
+   "file": "regions_TN.db",
+   "bytes": 598016
+  },
+  {
+   "country": "TO",
+   "file": "regions_TO.db",
+   "bytes": 20480
+  },
+  {
+   "country": "TR",
+   "file": "regions_TR.db",
+   "bytes": 167936
+  },
+  {
+   "country": "TT",
+   "file": "regions_TT.db",
+   "bytes": 20480
+  },
+  {
+   "country": "TV",
+   "file": "regions_TV.db",
+   "bytes": 20480
+  },
+  {
+   "country": "TW",
+   "file": "regions_TW.db",
+   "bytes": 1892352
+  },
+  {
+   "country": "TZ",
+   "file": "regions_TZ.db",
+   "bytes": 49152
+  },
+  {
+   "country": "UA",
+   "file": "regions_UA.db",
+   "bytes": 1302528
+  },
+  {
+   "country": "UG",
+   "file": "regions_UG.db",
+   "bytes": 49152
+  },
+  {
+   "country": "UM",
+   "file": "regions_UM.db",
+   "bytes": 20480
+  },
+  {
+   "country": "US",
+   "file": "regions_US.db",
+   "bytes": 8531968
+  },
+  {
+   "country": "UY",
+   "file": "regions_UY.db",
+   "bytes": 163840
+  },
+  {
+   "country": "UZ",
+   "file": "regions_UZ.db",
+   "bytes": 778240
+  },
+  {
+   "country": "VC",
+   "file": "regions_VC.db",
+   "bytes": 20480
+  },
+  {
+   "country": "VE",
+   "file": "regions_VE.db",
+   "bytes": 884736
+  },
+  {
+   "country": "VG",
+   "file": "regions_VG.db",
+   "bytes": 20480
+  },
+  {
+   "country": "VI",
+   "file": "regions_VI.db",
+   "bytes": 20480
+  },
+  {
+   "country": "VN",
+   "file": "regions_VN.db",
+   "bytes": 1380352
+  },
+  {
+   "country": "VU",
+   "file": "regions_VU.db",
+   "bytes": 40960
+  },
+  {
+   "country": "WS",
+   "file": "regions_WS.db",
+   "bytes": 61440
+  },
+  {
+   "country": "XC",
+   "file": "regions_XC.db",
+   "bytes": 20480
+  },
+  {
+   "country": "XG",
+   "file": "regions_XG.db",
+   "bytes": 20480
+  },
+  {
+   "country": "XH",
+   "file": "regions_XH.db",
+   "bytes": 20480
+  },
+  {
+   "country": "XI",
+   "file": "regions_XI.db",
+   "bytes": 20480
+  },
+  {
+   "country": "XK",
+   "file": "regions_XK.db",
+   "bytes": 69632
+  },
+  {
+   "country": "XO",
+   "file": "regions_XO.db",
+   "bytes": 20480
+  },
+  {
+   "country": "XP",
+   "file": "regions_XP.db",
+   "bytes": 20480
+  },
+  {
+   "country": "XQ",
+   "file": "regions_XQ.db",
+   "bytes": 20480
+  },
+  {
+   "country": "XU",
+   "file": "regions_XU.db",
+   "bytes": 20480
+  },
+  {
+   "country": "XW",
+   "file": "regions_XW.db",
+   "bytes": 49152
+  },
+  {
+   "country": "XZ",
+   "file": "regions_XZ.db",
+   "bytes": 20480
+  },
+  {
+   "country": "YE",
+   "file": "regions_YE.db",
+   "bytes": 159744
+  },
+  {
+   "country": "ZA",
+   "file": "regions_ZA.db",
+   "bytes": 49152
+  },
+  {
+   "country": "ZM",
+   "file": "regions_ZM.db",
+   "bytes": 28672
+  },
+  {
+   "country": "ZW",
+   "file": "regions_ZW.db",
+   "bytes": 28672
+  }
+ ]
+}

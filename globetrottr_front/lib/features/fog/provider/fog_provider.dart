@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
+import 'package:globetrottr_front/features/fog/data/fog_tile_cells.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/data/sqflite_fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
@@ -69,8 +70,11 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       if (change.areaDeltas.isNotEmpty) {
         final deltas = [
           for (final entry in change.areaDeltas.entries)
-            if (entry.value > 0)
-              TileAreaDelta(id: entry.key, areaDeltaM2: entry.value),
+            TileAreaDelta(
+              id: entry.key,
+              areaDeltaM2: entry.value.total,
+              cells: entry.value,
+            ),
         ];
         if (deltas.isNotEmpty) {
           ref
@@ -82,6 +86,10 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
         }
       }
     });
+    final packs = ref
+        .read(missingRegionPacksProvider)
+        .stream
+        .listen((code) => unawaited(_installRegions(code)));
     final lifecycle = AppLifecycleListener(
       onStateChange: (state) {
         if (state == AppLifecycleState.resumed) return;
@@ -92,6 +100,7 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
     ref.onDispose(() {
       unawaited(logged.cancel());
       unawaited(storeChanges.cancel());
+      unawaited(packs.cancel());
       lifecycle.dispose();
       source.dispose();
       _store = null;
@@ -114,8 +123,40 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
       debugPrint('Replaying the track log into the fog failed: $error');
     } finally {
       _isReplaying = false;
-      await backfillStatsIfEmpty();
+      await _refreshStatistics();
     }
+  }
+
+  /// The cities of a country arrive the first time the user records there;
+  /// the tiles recorded before are then attributed again.
+  Future<void> _installRegions(String countryCode) async {
+    try {
+      if (!await ref.read(regionPackServiceProvider).ensurePack(countryCode)) {
+        return;
+      }
+      await ref.read(statisticsStorageProvider).clearRegionStats();
+    } catch (e) {
+      debugPrint('Installing the regions of $countryCode failed: $e');
+      return;
+    }
+    await backfillStatsIfEmpty(force: true);
+  }
+
+  /// New bundled boundaries change the region ids, so the statistics of the
+  /// old ones are dropped and rebuilt from the tiles.
+  Future<void> _refreshStatistics() async {
+    var boundariesChanged = false;
+    try {
+      boundariesChanged = await ref
+          .read(regionStorageProvider)
+          .consumeVersionChange();
+      if (boundariesChanged) {
+        await ref.read(statisticsStorageProvider).clearRegionStats();
+      }
+    } catch (e) {
+      debugPrint('Checking the boundary version failed: $e');
+    }
+    await backfillStatsIfEmpty(force: boundariesChanged);
   }
 
   /// Rebuilds the region statistics from the stored tiles once, or every
@@ -141,7 +182,12 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
           for (final t in tiles) TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
         ];
         if (deltas.isNotEmpty) {
-          await ref.read(statisticsTrackerProvider).rebuildFromFogTiles(deltas);
+          await ref
+              .read(statisticsTrackerProvider)
+              .rebuildFromFogTiles(
+                deltas,
+                loadCells: (ids) => loadCellAreas(storage, ids),
+              );
           await statsStorage.setRecordIfMax('stats_backfilled', 1.0);
         }
       }

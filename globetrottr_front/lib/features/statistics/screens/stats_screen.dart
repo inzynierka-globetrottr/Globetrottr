@@ -6,6 +6,7 @@ import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_overview_provider.dart';
+import 'package:globetrottr_front/features/statistics/screens/stats_routes.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_countries_banner.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_date_navigator.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_discovery_card.dart';
@@ -25,6 +26,7 @@ class StatsScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final typography = context.typography;
     final locale = Localizations.localeOf(context).toString();
+    final language = Localizations.localeOf(context).languageCode;
     final overviewAsync = ref.watch(statsOverviewProvider);
 
     return Scaffold(
@@ -134,13 +136,11 @@ class StatsScreen extends ConsumerWidget {
                     for (final city in state.discoveredCities)
                       DiscoveryRowItem(
                         id: city.id,
-                        name: city.name,
+                        name: city.name.of(language),
                         percentage: city.percentage,
-                        onTap: city.id != null
-                            ? () => context.push(
-                                '/profile/statistics/city/${city.id}',
-                              )
-                            : null,
+                        onTap: () => context.push(
+                          statsRouteFor(city.type, city.id)!,
+                        ),
                       ),
                   ],
                 ),

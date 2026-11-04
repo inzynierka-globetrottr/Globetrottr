@@ -7,15 +7,19 @@ import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/country_flag_chip.dart';
 
 class SubregionItem {
-  const SubregionItem({
-    required this.id,
-    required this.name,
-    this.onTap,
-  });
+  const SubregionItem({required this.id, required this.name, this.onTap});
 
   final int id;
   final String name;
   final VoidCallback? onTap;
+}
+
+/// A state of a country with the cities discovered in it.
+class SubregionGroup {
+  const SubregionGroup({required this.header, required this.items});
+
+  final SubregionItem header;
+  final List<SubregionItem> items;
 }
 
 class CountryAccordionCard extends StatefulWidget {
@@ -24,14 +28,14 @@ class CountryAccordionCard extends StatefulWidget {
     required this.countryCode,
     required this.countryName,
     required this.subtitle,
-    required this.subregions,
+    required this.groups,
     this.initiallyExpanded = false,
   });
 
-  final String countryCode;
+  final String? countryCode;
   final String countryName;
   final String subtitle;
-  final List<SubregionItem> subregions;
+  final List<SubregionGroup> groups;
   final bool initiallyExpanded;
 
   @override
@@ -107,45 +111,65 @@ class _CountryAccordionCardState extends State<CountryAccordionCard> {
               ),
             ),
           ),
-          if (_expanded && widget.subregions.isNotEmpty) ...[
+          if (_expanded && widget.groups.isNotEmpty) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(64, 0, 16, 12),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (final subregion in widget.subregions)
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: subregion.onTap,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                subregion.name,
-                                style: typography.action.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            AppIcon(
-                              AppIcons.chevronRight,
-                              size: 16,
-                              color: palette.textMuted,
-                            ),
-                          ],
-                        ),
+                  for (final group in widget.groups) ...[
+                    _row(context, group.header, isHeader: true),
+                    for (final item in group.items)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: _row(context, item, isHeader: false),
                       ),
-                    ),
+                  ],
                 ],
               ),
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _row(
+    BuildContext context,
+    SubregionItem item, {
+    required bool isHeader,
+  }) {
+    final palette = context.palette;
+    final typography = context.typography;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: item.onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                item.name,
+                style: isHeader
+                    ? typography.action.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      )
+                    : typography.body.copyWith(color: palette.textMuted),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (item.onTap != null) ...[
+              const SizedBox(width: 8),
+              AppIcon(
+                AppIcons.chevronRight,
+                size: 16,
+                color: palette.textMuted,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

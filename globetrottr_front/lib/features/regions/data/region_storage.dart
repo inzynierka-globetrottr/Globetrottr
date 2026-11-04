@@ -18,4 +18,14 @@ abstract interface class RegionStorage {
   });
   Future<List<Region>> getAncestorChain(int regionId);
   Future<void> insertRegions(Iterable<Region> regions);
+
+  /// True once after the bundled database replaced an older local copy.
+  Future<bool> consumeVersionChange();
+
+  /// Installed country files: ISO code to version.
+  Future<Map<String, int>> installedPacks();
+
+  /// Copies the regions of the country file at [packPath], replacing an
+  /// earlier version of it.
+  Future<void> installPack(String country, int version, String packPath);
 }

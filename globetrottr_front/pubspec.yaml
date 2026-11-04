@@ -63,6 +63,7 @@ flutter:
         - assets/icons/
         - assets/illustrations/
         - assets/data/
+        - assets/data/regions/
 
     # Static instances of the Manrope variable font (OFL, see assets/fonts/manrope/OFL.txt).
     fonts:

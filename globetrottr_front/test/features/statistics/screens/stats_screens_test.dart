@@ -18,6 +18,7 @@ import 'package:globetrottr_front/features/statistics/provider/statistics_provid
 import 'package:globetrottr_front/features/statistics/screens/city_detail_screen.dart';
 import 'package:globetrottr_front/features/statistics/screens/countries_screen.dart';
 import 'package:globetrottr_front/features/statistics/screens/region_detail_screen.dart';
+import 'package:globetrottr_front/features/statistics/screens/stats_routes.dart';
 import 'package:globetrottr_front/features/statistics/screens/stats_screen.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/country_accordion_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_countries_banner.dart';
@@ -32,6 +33,7 @@ import 'package:globetrottr_front/features/statistics/screens/widgets/stats_stre
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_records_grid.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_weekly_chart.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 class _FakeRegionStorage implements RegionStorage {
   static const poland = Region(
@@ -50,7 +52,9 @@ class _FakeRegionStorage implements RegionStorage {
   static const czechia = Region(
     id: 2,
     parentId: null,
-    name: 'Czechy',
+    name: 'Česko',
+    nameEn: 'Czechia',
+    namePl: 'Czechy',
     type: RegionType.country,
     code: 'CZ',
     totalAreaKm2: 78866.0,
@@ -167,6 +171,19 @@ class _FakeRegionStorage implements RegionStorage {
 
   @override
   Future<void> insertRegions(Iterable<Region> regions) async {}
+
+  @override
+  Future<bool> consumeVersionChange() async => false;
+
+  @override
+  Future<Map<String, int>> installedPacks() async => {};
+
+  @override
+  Future<void> installPack(
+    String country,
+    int version,
+    String packPath,
+  ) async {}
 }
 
 class _FakeStatisticsStorage implements StatisticsStorage {
@@ -240,6 +257,8 @@ class _FakeStatisticsStorage implements StatisticsStorage {
   Future<void> saveRegionStats(Iterable<UserRegionStats> stats) async {}
   @override
   Future<void> clearRegionStats() async {}
+  @override
+  Future<void> replaceRegionStats(Iterable<UserRegionStats> stats) async {}
   @override
   Future<int?> getCachedTileRegion({
     required int z,
@@ -331,7 +350,7 @@ void main() {
         overrides: [
           regionStorageProvider.overrideWithValue(_FakeRegionStorage()),
           statisticsStorageProvider.overrideWithValue(_FakeStatisticsStorage()),
-          completedQuestsCountProvider.overrideWithValue(5),
+          completedQuestsInPeriodProvider.overrideWith((ref, range) => 5),
           ...overrides,
         ],
         child: MaterialApp(
@@ -477,8 +496,8 @@ void main() {
     ) async {
       await pumpScreen(tester, const CountriesScreen());
 
-      expect(find.text('Czechy'), findsOneWidget);
-      await tester.tap(find.text('Czechy'));
+      expect(find.text('Czechia'), findsOneWidget);
+      await tester.tap(find.text('Czechia'));
       await tester.pumpAndSettle();
 
       expect(find.byType(CountryAccordionCard), findsWidgets);
@@ -579,6 +598,80 @@ void main() {
 
       expect(l10n.statsCountriesSummary(1, 1), '1 region · 1 city');
       expect(l10n.statsCountriesSummary(8, 12), '8 regions · 12 cities');
+    });
+  });
+
+  group('boundary attribution', () {
+    const credit =
+        'Boundaries © OpenStreetMap contributors, Overture Maps Foundation';
+
+    for (final (name, screen) in [
+      ('countries', const CountriesScreen()),
+      ('region', const RegionDetailScreen(regionId: 10)),
+      ('city', const CityDetailScreen(cityId: 100)),
+    ]) {
+      testWidgets('the $name screen credits the boundary data', (tester) async {
+        await pumpScreen(tester, screen);
+
+        expect(find.text(credit), findsOneWidget);
+      });
+    }
+  });
+
+  group('countries in Polish', () {
+    testWidgets('country names use the Polish name', (tester) async {
+      await pumpScreen(
+        tester,
+        const CountriesScreen(),
+        locale: const Locale('pl'),
+      );
+
+      expect(find.text('Czechy'), findsOneWidget);
+    });
+
+    testWidgets('an expanded country lists its states and cities', (
+      tester,
+    ) async {
+      await pumpScreen(tester, const CountriesScreen());
+
+      expect(find.text('Małopolskie'), findsOneWidget);
+      expect(find.text('Kraków'), findsOneWidget);
+    });
+  });
+
+  group('statistics routes', () {
+    testWidgets('a region id that is not a number shows not found', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/profile/statistics/region/abc',
+        routes: [
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const SizedBox(),
+            routes: [statisticsRoute],
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            regionStorageProvider.overrideWithValue(_FakeRegionStorage()),
+            statisticsStorageProvider.overrideWithValue(
+              _FakeStatisticsStorage(),
+            ),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light,
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Not found.'), findsOneWidget);
     });
   });
 }

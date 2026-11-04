@@ -65,7 +65,6 @@ void main() {
       tempDir = await Directory.systemTemp.createTemp('map_stats_test_');
       regionStorage = SqfliteRegionStorage(
         path: '${tempDir.path}/regions.db',
-        autoSeed: false,
       );
       await regionStorage.init();
 

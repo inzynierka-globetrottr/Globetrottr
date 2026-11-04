@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/regions/data/region.dart';
@@ -6,6 +7,38 @@ import 'package:globetrottr_front/features/regions/data/region_storage.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/regions/data/sqflite_region_storage.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import '../../../support/region_db_fixture.dart';
+import '../../../support/region_geometry_encoder.dart';
+
+const _poland = Region(
+  id: 1,
+  parentId: null,
+  name: 'Polska',
+  type: RegionType.country,
+  code: 'PL',
+  totalAreaKm2: 311934,
+  minLat: 49,
+  maxLat: 54.9,
+  minLon: 14.1,
+  maxLon: 24.2,
+);
+
+final _krakow = Region(
+  id: 1000001,
+  parentId: null,
+  name: 'Kraków',
+  type: RegionType.city,
+  code: null,
+  totalAreaKm2: 326.9,
+  minLat: 49.97,
+  maxLat: 50.13,
+  minLon: 19.79,
+  maxLon: 20.22,
+  geometry: encodeRegionGeometry(
+    rectangle(minLon: 19.79, minLat: 49.97, maxLon: 20.22, maxLat: 50.13),
+  ),
+);
 
 void main() {
   sqfliteFfiInit();
@@ -15,10 +48,7 @@ void main() {
     late RegionStorage storage;
 
     setUp(() async {
-      storage = SqfliteRegionStorage(
-        path: inMemoryDatabasePath,
-        autoSeed: false,
-      );
+      storage = SqfliteRegionStorage(path: inMemoryDatabasePath);
       await storage.init();
     });
 
@@ -224,95 +254,69 @@ void main() {
       expect(ancestors[2].id, 1);
     });
 
-    test('auto seeds initial regions when autoSeed is true', () async {
-      final seededStorage = SqfliteRegionStorage(
-        path: 'seeded_regions_test.db',
+    test('installed pack regions are found by point', () async {
+      final dir = await Directory.systemTemp.createTemp('regions_pack');
+      addTearDown(() => dir.delete(recursive: true));
+      await writeRegionsDb(
+        '${dir.path}/regions_PL.db',
+        version: 2,
+        regions: [_krakow],
       );
-      await seededStorage.init();
 
-      final poland = await seededStorage.findRegionById(1);
-      expect(poland, isNotNull);
-      expect(poland!.name, 'Polska');
-      expect(poland.code, 'PL');
+      await storage.installPack('PL', 2, '${dir.path}/regions_PL.db');
 
-      final krakow = await seededStorage.findRegionById(1001);
-      expect(krakow, isNotNull);
-      expect(krakow!.name, 'Kraków');
+      final found = await storage.findRegionsByPoint(lat: 50.06, lon: 19.94);
+      expect(found.map((r) => r.name), ['Kraków']);
+      expect(await storage.installedPacks(), {'PL': 2});
+    });
+  });
 
-      // Check point query in Kraków Old Town (50.0614, 19.9366)
-      final regions = await seededStorage.findRegionsByPoint(
-        lat: 50.0614,
-        lon: 19.9366,
-      );
-      expect(regions, isNotEmpty);
-      expect(regions.any((r) => r.name == 'Kraków'), isTrue);
-      expect(regions.any((r) => r.name == 'Polska'), isTrue);
+  group('SqfliteRegionStorage bundled copy', () {
+    late Directory dir;
 
-      await seededStorage.close();
-      await databaseFactory.deleteDatabase('seeded_regions_test.db');
+    setUp(() async {
+      dir = await Directory.systemTemp.createTemp('regions_copy');
     });
 
-    test(
-      'loads worldwide regions from bundled regions_world.db asset',
-      () async {
-        final worldStorage = SqfliteRegionStorage(
-          path: File('assets/data/regions_world.db').absolute.path,
-          autoSeed: false,
-        );
-        await worldStorage.init();
+    tearDown(() => dir.delete(recursive: true));
 
-        final poland = await worldStorage.findRegionById(1);
-        expect(poland, isNotNull);
-        expect(poland!.name, 'Polska');
-        expect(poland.code, 'PL');
+    test('bundled DB replaces an older copy', () async {
+      final local = '${dir.path}/regions_world.db';
+      await writeRegionsDb(local, version: 1, regions: [_krakow]);
+      final bundled = await regionsDbBytes(
+        dir,
+        'bundled.db',
+        version: 2,
+        regions: [_poland],
+      );
+      final storage = SqfliteRegionStorage(
+        path: local,
+        loadAsset: () async => ByteData.sublistView(bundled),
+      );
+      addTearDown(storage.close);
 
-        // Check Krakow (50.0614, 19.9366)
-        final krakowRegions = await worldStorage.findRegionsByPoint(
-          lat: 50.0614,
-          lon: 19.9366,
-        );
-        expect(krakowRegions, isNotEmpty);
-        expect(krakowRegions.any((r) => r.name == 'Kraków'), isTrue);
-        expect(
-          krakowRegions.any(
-            (r) =>
-                r.name == 'województwo małopolskie' || r.name == 'Małopolskie',
-          ),
-          isTrue,
-        );
-        expect(krakowRegions.any((r) => r.name == 'Polska'), isTrue);
-        // Ensure neighbor voivodeship is rejected by polygon check
-        expect(
-          krakowRegions.any((r) => r.name == 'województwo śląskie'),
-          isFalse,
-        );
+      expect((await storage.findRegionById(1))?.name, 'Polska');
+      expect(await storage.findRegionById(_krakow.id), isNull);
+      expect(await storage.consumeVersionChange(), isTrue);
+      expect(await storage.consumeVersionChange(), isFalse);
+    });
 
-        // Check Tokyo (35.6762, 139.6503)
-        final tokyoRegions = await worldStorage.findRegionsByPoint(
-          lat: 35.6762,
-          lon: 139.6503,
-        );
-        expect(tokyoRegions, isNotEmpty);
-        expect(tokyoRegions.any((r) => r.name == 'Tokyo'), isTrue);
+    test('current copy is not reloaded', () async {
+      final local = '${dir.path}/regions_world.db';
+      await writeRegionsDb(local, version: 2, regions: [_poland]);
+      var loads = 0;
+      final storage = SqfliteRegionStorage(
+        path: local,
+        loadAsset: () async {
+          loads++;
+          return ByteData(0);
+        },
+      );
+      addTearDown(storage.close);
 
-        // Check London (51.5074, -0.1278)
-        final londonRegions = await worldStorage.findRegionsByPoint(
-          lat: 51.5074,
-          lon: -0.1278,
-        );
-        expect(londonRegions, isNotEmpty);
-        expect(londonRegions.any((r) => r.name == 'London'), isTrue);
-
-        // Check New York (40.7128, -74.0060)
-        final nyRegions = await worldStorage.findRegionsByPoint(
-          lat: 40.7128,
-          lon: -74.0060,
-        );
-        expect(nyRegions, isNotEmpty);
-        expect(nyRegions.any((r) => r.name == 'New York'), isTrue);
-
-        await worldStorage.close();
-      },
-    );
+      expect((await storage.findRegionById(1))?.name, 'Polska');
+      expect(loads, 0);
+      expect(await storage.consumeVersionChange(), isFalse);
+    });
   });
 }

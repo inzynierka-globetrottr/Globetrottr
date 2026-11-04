@@ -1,7 +1,6 @@
 import 'package:globetrottr_front/core/time/clock.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
-import 'package:globetrottr_front/features/regions/data/region.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -79,34 +78,13 @@ class AreaProgressNotifier extends Notifier<AreaProgress> {
       final regionStorage = ref.read(regionStorageProvider);
       final statsStorage = ref.read(statisticsStorageProvider);
 
-      Region? primary;
-      final cachedRegionId = await statsStorage.getCachedTileRegion(
-        z: tileId.z,
-        x: tileId.x,
-        y: tileId.y,
+      // The tile cache belongs to the statistics tracker, which also marks
+      // border tiles there; the pill asks for the point itself.
+      final regions = await regionStorage.findRegionsByPoint(
+        lat: lat,
+        lon: lon,
       );
-
-      if (cachedRegionId != null) {
-        primary = await regionStorage.findRegionById(cachedRegionId);
-      }
-
-      if (primary == null) {
-        final regions = await regionStorage.findRegionsByPoint(
-          lat: lat,
-          lon: lon,
-        );
-        if (seq != _querySeq || !ref.mounted) return;
-
-        if (regions.isNotEmpty) {
-          primary = regions.first;
-          await statsStorage.cacheTileRegion(
-            z: tileId.z,
-            x: tileId.x,
-            y: tileId.y,
-            regionId: primary.id,
-          );
-        }
-      }
+      final primary = regions.isEmpty ? null : regions.first;
 
       if (seq != _querySeq || !ref.mounted) return;
 
@@ -232,8 +210,8 @@ class SessionNewAreaNotifier extends Notifier<double?> {
         final isRecording = ref.read(locationProvider).isRecording;
         if (isRecording && change.areaDeltas.isNotEmpty) {
           var addedM2 = 0.0;
-          for (final d in change.areaDeltas.values) {
-            if (d > 0) addedM2 += d;
+          for (final cells in change.areaDeltas.values) {
+            addedM2 += cells.total;
           }
           if (addedM2 > 0) {
             _m2 += addedM2;
