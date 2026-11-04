@@ -36,10 +36,12 @@ class SqfliteRegionStorage implements RegionStorage {
   final String? path;
   final int bundledVersion;
   final Future<ByteData> Function()? _loadAsset;
-  Database? _database;
+  Future<Database>? _database;
   bool _versionChanged = false;
 
-  Future<Database> get _db async => _database ??= await _open();
+  /// One open for all callers: the first ones arrive together at launch
+  /// (map pill, statistics, fog catch-up) and must not copy the asset twice.
+  Future<Database> get _db => _database ??= _open();
 
   @override
   Future<void> init() async {
@@ -48,8 +50,9 @@ class SqfliteRegionStorage implements RegionStorage {
 
   @override
   Future<void> close() async {
-    await _database?.close();
+    final database = _database;
     _database = null;
+    await (await database)?.close();
   }
 
   Future<Database> _open() async {
@@ -103,10 +106,15 @@ class SqfliteRegionStorage implements RegionStorage {
     try {
       final data = await loadAsset();
       file.parent.createSync(recursive: true);
-      await file.writeAsBytes(
+      // A copy cut short (the app killed mid-write) must not look current.
+      final partial = File('$location.tmp');
+      await partial.writeAsBytes(
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
         flush: true,
       );
+      final journal = File('$location-journal');
+      if (journal.existsSync()) journal.deleteSync();
+      await partial.rename(location);
       _versionChanged = existed;
     } catch (e) {
       debugPrint('Could not unpack the bundled regions_world.db: $e');

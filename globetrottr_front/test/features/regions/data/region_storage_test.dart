@@ -301,6 +301,34 @@ void main() {
       expect(await storage.consumeVersionChange(), isFalse);
     });
 
+    test('concurrent first reads copy the bundled DB once', () async {
+      final bundled = await regionsDbBytes(
+        dir,
+        'bundled.db',
+        version: 2,
+        regions: [_poland],
+      );
+      var loads = 0;
+      final storage = SqfliteRegionStorage(
+        path: '${dir.path}/regions_world.db',
+        loadAsset: () async {
+          loads++;
+          return ByteData.sublistView(bundled);
+        },
+      );
+      addTearDown(storage.close);
+
+      final found = await Future.wait([
+        storage.findRegionById(1),
+        storage.findRegionById(1),
+        storage.findChildren(1),
+      ]);
+
+      expect(loads, 1);
+      expect((found.first as Region?)?.name, 'Polska');
+      expect(File('${dir.path}/regions_world.db.tmp').existsSync(), isFalse);
+    });
+
     test('current copy is not reloaded', () async {
       final local = '${dir.path}/regions_world.db';
       await writeRegionsDb(local, version: 2, regions: [_poland]);
