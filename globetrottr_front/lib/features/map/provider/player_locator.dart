@@ -19,7 +19,8 @@ class PlayerLocator {
         _ref.read(locationProvider).currentPosition;
     if (position != null) return position;
     await _ref.read(locationProvider.notifier).startTracking();
-    return null;
+    return _ref.read(playerMotionProvider).value ??
+        _ref.read(locationProvider).currentPosition;
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../support/fake_location_service.dart';
@@ -43,6 +44,32 @@ void main() {
       expect(state.isTracking, isTrue);
       expect(state.currentPosition, const LatLng(50.0, 19.0));
     });
+
+    test(
+      'seeds currentPosition from last known position when available',
+      () async {
+        env.location.lastKnownPosition = Position(
+          latitude: 50.06,
+          longitude: 19.94,
+          timestamp: DateTime.now(),
+          accuracy: 1,
+          altitude: 0,
+          altitudeAccuracy: 0,
+          heading: 0,
+          headingAccuracy: 0,
+          speed: 0,
+          speedAccuracy: 0,
+        );
+        final container = createContainer();
+        final notifier = container.read(locationProvider.notifier);
+
+        await notifier.startTracking();
+
+        final state = container.read(locationProvider);
+        expect(state.isTracking, isTrue);
+        expect(state.currentPosition, const LatLng(50.06, 19.94));
+      },
+    );
 
     test('keeps the position moving while it is not recording', () async {
       final container = createContainer();

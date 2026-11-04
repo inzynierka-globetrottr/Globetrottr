@@ -35,6 +35,10 @@ class LocationNotifier extends Notifier<TrackingState> {
         },
       );
       state = state.copyWith(isTracking: true, clearError: true);
+      final last = await _locationService.getLastKnownPosition();
+      if (last != null && state.currentPosition == null) {
+        _onPosition(last);
+      }
     } catch (e) {
       state = state.copyWith(isTracking: false, errorMessage: e.toString());
     }

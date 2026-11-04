@@ -23,7 +23,11 @@ class FakeLocationService extends Fake implements LocationService {
       StreamController<TrackLogEntry>.broadcast();
   String? _sessionId;
   int _sessionCounter = 0;
+  Position? lastKnownPosition;
   Exception? startError;
+
+  @override
+  Future<Position?> getLastKnownPosition() async => lastKnownPosition;
 
   @override
   String? get sessionId => _sessionId;

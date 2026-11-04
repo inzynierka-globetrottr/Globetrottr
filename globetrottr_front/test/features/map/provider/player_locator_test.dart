@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/player_locator.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../support/fake_location_service.dart';
@@ -69,5 +70,27 @@ void main() {
 
     expect(await container.read(playerLocatorProvider).locate(), isNull);
     expect(container.read(locationProvider).errorMessage, isNotNull);
+  });
+
+  test('returns position if startTracking resolves one', () async {
+    env.location.lastKnownPosition = Position(
+      latitude: 50.06,
+      longitude: 19.94,
+      timestamp: DateTime.now(),
+      accuracy: 1,
+      altitude: 0,
+      altitudeAccuracy: 0,
+      heading: 0,
+      headingAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+    );
+    final container = env.createContainer();
+    addTearDown(container.dispose);
+
+    expect(
+      await container.read(playerLocatorProvider).locate(),
+      const LatLng(50.06, 19.94),
+    );
   });
 }

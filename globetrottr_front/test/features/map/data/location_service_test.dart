@@ -290,4 +290,15 @@ void main() {
       expect(LocationService.isUsablePosition(_at(50, -181)), isFalse);
     });
   });
+
+  group('LocationService.getLastKnownPosition', () {
+    test('returns cached position if already set', () async {
+      final service = LocationService(MapStorage(), InMemoryTrackLogStorage());
+      await service.recordPosition(_at(50.06, 19.94));
+
+      final last = await service.getLastKnownPosition();
+      expect(last?.latitude, 50.06);
+      expect(last?.longitude, 19.94);
+    });
+  });
 }

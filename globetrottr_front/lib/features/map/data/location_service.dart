@@ -50,6 +50,21 @@ class LocationService {
   @visibleForTesting
   String? get sessionId => _sessionId;
 
+  Future<Position?> getLastKnownPosition() async {
+    final cached = _lastPosition;
+    if (cached != null) return cached;
+    try {
+      final position = await Geolocator.getLastKnownPosition();
+      if (position != null && isUsablePosition(position)) {
+        _lastPosition = position;
+        return position;
+      }
+    } on Object catch (error) {
+      debugPrint('Could not get last known position: $error');
+    }
+    return null;
+  }
+
   /// Every recorded position after it was stored in the permanent track log,
   /// with its log id assigned.
   Stream<TrackLogEntry> get loggedPoints => _logged.stream;
@@ -104,6 +119,7 @@ class LocationService {
       locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
+        forceLocationManager: true,
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: ForegroundNotificationConfig(
           notificationText: translateErrorDart(
