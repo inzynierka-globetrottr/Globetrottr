@@ -5,6 +5,10 @@ class FriendsState {
   final List<FriendshipResponse> receivedInvites;
   final List<FriendshipResponse> sentInvites;
   final bool isLoading;
+
+  /// Whether the lists have arrived at least once, so empty lists mean
+  /// there is nothing rather than that nothing has come or the load failed.
+  final bool hasLoaded;
   final String? errorMessage;
 
   const FriendsState({
@@ -12,6 +16,7 @@ class FriendsState {
     this.receivedInvites = const [],
     this.sentInvites = const [],
     this.isLoading = false,
+    this.hasLoaded = false,
     this.errorMessage,
   });
 
@@ -20,6 +25,7 @@ class FriendsState {
     List<FriendshipResponse>? receivedInvites,
     List<FriendshipResponse>? sentInvites,
     bool? isLoading,
+    bool? hasLoaded,
     String? errorMessage,
     bool clearError = false,
   }) => FriendsState(
@@ -27,6 +33,7 @@ class FriendsState {
     receivedInvites: receivedInvites ?? this.receivedInvites,
     sentInvites: sentInvites ?? this.sentInvites,
     isLoading: isLoading ?? this.isLoading,
+    hasLoaded: hasLoaded ?? this.hasLoaded,
     errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
   );
 }

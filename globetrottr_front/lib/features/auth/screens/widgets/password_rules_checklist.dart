@@ -57,41 +57,60 @@ class _RuleChip extends StatelessWidget {
     final l10n = context.l10n;
     final palette = context.palette;
     final shadows = context.shadows;
+    final motion = context.motion;
     final label = _label(l10n);
-    final color = met ? palette.onAccent : palette.textMuted;
     return Semantics(
       label: '$label, ${met ? l10n.authRuleMet : l10n.authRuleNotMet}',
       excludeSemantics: true,
-      child: NeuSurface(
-        shadows: met
-            ? shadows.raisedAccent(NeoDepth.xs)
-            : shadows.inset(NeoDepth.xs),
-        color: met ? palette.accent : null,
-        borderRadius: BorderRadius.circular(_height / 2),
-        height: _height,
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 4,
-            children: [
-              AppIcon(
-                met ? AppIcons.check : AppIcons.close,
-                size: 12,
-                color: color,
+      // The pill fills with the accent and the tick pops in once the rule
+      // is met, and the other way round.
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(end: met ? 1 : 0),
+        duration: motion.short,
+        curve: motion.curve,
+        builder: (context, fill, _) {
+          final color = Color.lerp(palette.textMuted, palette.onAccent, fill);
+          return NeuSurface(
+            shadows: lerpShadows(
+              shadows.inset(NeoDepth.xs),
+              shadows.raisedAccent(NeoDepth.xs),
+              fill,
+            ),
+            color: Color.lerp(palette.background, palette.accent, fill),
+            borderRadius: BorderRadius.circular(_height / 2),
+            height: _height,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 4,
+                children: [
+                  AnimatedSwitcher(
+                    duration: motion.short,
+                    switchInCurve: motion.popCurve,
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
+                    child: AppIcon(
+                      met ? AppIcons.check : AppIcons.close,
+                      key: ValueKey(met),
+                      size: 12,
+                      color: color,
+                    ),
+                  ),
+                  Text(
+                    label,
+                    style:
+                        (met
+                                ? context.typography.captionStrong
+                                : context.typography.caption)
+                            .copyWith(color: color),
+                  ),
+                ],
               ),
-              Text(
-                label,
-                style:
-                    (met
-                            ? context.typography.captionStrong
-                            : context.typography.caption)
-                        .copyWith(color: color),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

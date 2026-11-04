@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
-import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/debug/widgets/dev_floating_button.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/map_controls.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/map_status_pill.dart';
@@ -72,12 +71,6 @@ class MapOverlay extends ConsumerWidget {
             left: _margin,
             child: const DevFloatingButton(heroTag: 'map_dev_fab'),
           ),
-        const Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: NeuBottomNavbar(activeItem: NavbarItem.map, overMap: true),
-        ),
       ],
     );
   }

@@ -24,9 +24,6 @@ class QuestFlagCard extends ConsumerWidget {
   final bool open;
   final VoidCallback onDetails;
 
-  static const _grow = Duration(milliseconds: 280);
-  static const _fade = Duration(milliseconds: 200);
-
   /// "point 4/5 · 280 m" for places, the percent done for a route.
   String _progress(BuildContext context, QuestPoint? point) {
     final l10n = context.l10n;
@@ -45,12 +42,13 @@ class QuestFlagCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
     final typography = context.typography;
+    final motion = context.motion;
     return LayoutBuilder(
       builder: (context, constraints) {
         final fullWidth = constraints.maxWidth;
         return AnimatedContainer(
-          duration: _grow,
-          curve: Curves.ease,
+          duration: motion.long,
+          curve: motion.curve,
           width: open ? fullWidth : QuestFlag.size,
           height: QuestFlag.size,
           clipBehavior: Clip.antiAlias,
@@ -69,7 +67,8 @@ class QuestFlagCard extends ConsumerWidget {
             minWidth: fullWidth,
             maxWidth: fullWidth,
             child: AnimatedOpacity(
-              duration: _fade,
+              duration: motion.short,
+              curve: motion.curve,
               opacity: open ? 1 : 0,
               child: Padding(
                 padding: const EdgeInsets.only(left: 54, right: 8),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/animated_column.dart';
 import 'package:globetrottr_front/core/widgets/neu_divider.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
-/// A raised card holding rows separated by grooves.
+/// A raised card holding rows separated by grooves. Rows that come or go
+/// unfold or fold away, matched by their keys.
 class NeuListCard extends StatelessWidget {
   const NeuListCard({super.key, required this.rows});
 
@@ -15,13 +17,6 @@ class NeuListCard extends StatelessWidget {
     shadows: context.shadows.raised(NeoDepth.xl),
     borderRadius: BorderRadius.circular(24),
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-    child: Column(
-      children: [
-        for (var i = 0; i < rows.length; i++) ...[
-          if (i > 0) const NeuDivider(),
-          rows[i],
-        ],
-      ],
-    ),
+    child: AnimatedColumn(separator: const NeuDivider(), children: rows),
   );
 }

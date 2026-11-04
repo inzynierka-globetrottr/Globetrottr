@@ -1063,6 +1063,18 @@ abstract class AppLocalizations {
   /// **'Login must be between 3 and 50 characters'**
   String get validationUsernameLength;
 
+  /// No description provided for @validationNicknameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname is required'**
+  String get validationNicknameRequired;
+
+  /// No description provided for @validationNicknameLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname must be between 3 and 50 characters'**
+  String get validationNicknameLength;
+
   /// No description provided for @validationEmailRequired.
   ///
   /// In en, this message translates to:

@@ -14,6 +14,10 @@ import 'package:globetrottr_front/features/map/screens/widgets/map_view_option.d
 Future<void> showLayersSheet(BuildContext context) =>
     showModalBottomSheet<void>(
       context: context,
+      // Over the navigation of the tabs rather than in the map tab under
+      // it, so it hides the navigation and cannot be left open behind
+      // another tab.
+      useRootNavigator: true,
       // As tall as its content instead of the default part of the screen.
       isScrollControlled: true,
       builder: (_) => const LayersSheet(),

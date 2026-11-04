@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/async/single_flight.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/friends/data/friends_service.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
@@ -10,6 +11,7 @@ import 'package:globetrottr_front/features/profile/data/profile_service.dart';
 class FriendsNotifier extends Notifier<FriendsState> {
   late FriendsService _service;
   late ProfileService _profileService;
+  final _perPerson = SingleFlight<String>();
 
   @override
   FriendsState build() {
@@ -70,6 +72,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
 
       state = state.copyWith(
         isLoading: false,
+        hasLoaded: true,
         friends: results[0],
         receivedInvites: results[1],
         sentInvites: results[2],
@@ -81,7 +84,10 @@ class FriendsNotifier extends Notifier<FriendsState> {
         sent: results[2].map((f) => f.username),
       );
     } on AppException catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.message);
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.message,
+      );
     } catch (e) {
       debugPrint('Unexpected error loading friends: $e');
       state = state.copyWith(
@@ -91,7 +97,18 @@ class FriendsNotifier extends Notifier<FriendsState> {
     }
   }
 
-  Future<void> sendInvite(String username) async {
+  // One request per person at a time: a second tap while the first is on
+  // the way, on the same or another button for that person, sends nothing.
+  Future<void> sendInvite(String username) =>
+      _perPerson.run(username, () => _sendInvite(username));
+
+  Future<void> acceptInvite(String username) =>
+      _perPerson.run(username, () => _acceptInvite(username));
+
+  Future<void> deleteRelationship(String username) =>
+      _perPerson.run(username, () => _deleteRelationship(username));
+
+  Future<void> _sendInvite(String username) async {
     try {
       await _service.sendInvite(username);
       final newInvite = FriendshipResponse(
@@ -114,7 +131,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     }
   }
 
-  Future<void> acceptInvite(String username) async {
+  Future<void> _acceptInvite(String username) async {
     try {
       await _service.acceptInvite(username);
 
@@ -151,7 +168,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
     }
   }
 
-  Future<void> deleteRelationship(String username) async {
+  Future<void> _deleteRelationship(String username) async {
     try {
       await _service.deleteRelationship(username);
 

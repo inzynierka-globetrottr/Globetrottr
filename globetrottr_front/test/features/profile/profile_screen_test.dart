@@ -222,6 +222,7 @@ void main() {
   ) async {
     final quests = _CountingQuestService();
     await pump(tester, quests: quests, home: const _LoadsQuestsFirst());
+    await tester.pump();
 
     expect(find.byType(ProfileScreen), findsOneWidget);
     expect(quests.fetches, 1);
@@ -237,12 +238,18 @@ class _LoadsQuestsFirst extends ConsumerStatefulWidget {
 }
 
 class _LoadsQuestsFirstState extends ConsumerState<_LoadsQuestsFirst> {
+  bool _started = false;
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(ref.read(questsProvider.notifier).loadQuests);
+    Future.microtask(() {
+      ref.read(questsProvider.notifier).loadQuests();
+      setState(() => _started = true);
+    });
   }
 
   @override
-  Widget build(BuildContext context) => const ProfileScreen();
+  Widget build(BuildContext context) =>
+      _started ? const ProfileScreen() : const SizedBox();
 }

@@ -1,7 +1,7 @@
+import 'package:flutter/widgets.dart';
 import 'package:globetrottr_front/features/friends/screens/add_friend_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_profile_screen.dart';
-import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:go_router/go_router.dart';
 
 /// Locations of the friends' screens. A friend's screens sit under their own
@@ -22,29 +22,29 @@ class FriendRoutes {
       '${profile(username)}/map${view == null ? '' : '?view=${view.name}'}';
 }
 
-final friendsRoute = GoRoute(
-  path: FriendRoutes.list,
-  builder: (context, state) => const FriendsScreen(),
-  routes: [
-    GoRoute(
-      path: 'add',
-      builder: (context, state) => const AddFriendScreen(),
-    ),
-    GoRoute(
-      path: '${FriendRoutes._user}/:username',
-      builder: (context, state) =>
-          FriendProfileScreen(username: state.pathParameters['username']!),
-      routes: [
-        GoRoute(
-          path: 'map',
-          builder: (context, state) => FriendMapScreen(
-            friendUsername: state.pathParameters['username']!,
-            initialView: FriendMapView.fromQuery(
-              state.uri.queryParameters['view'],
-            ),
+typedef DeeperRoute =
+    GoRoute Function(
+      String path,
+      Widget Function(GoRouterState state) screen, {
+      List<RouteBase> routes,
+    });
+
+/// The friends' screens opened above the tabs, under the friends tab.
+List<RouteBase> friendDeeperRoutes(DeeperRoute deeper) => [
+  deeper('add', (_) => const AddFriendScreen()),
+  deeper(
+    '${FriendRoutes._user}/:username',
+    (state) => FriendProfileScreen(username: state.pathParameters['username']!),
+    routes: [
+      deeper(
+        'map',
+        (state) => FriendMapScreen(
+          friendUsername: state.pathParameters['username']!,
+          initialView: FriendMapView.fromQuery(
+            state.uri.queryParameters['view'],
           ),
         ),
-      ],
-    ),
-  ],
-);
+      ),
+    ],
+  ),
+];

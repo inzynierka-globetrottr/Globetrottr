@@ -1,10 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 
 /// A ring around [child] filled clockwise from the top by [fill] (0 to 1).
 /// Its radius and stroke are fractions of the widget's width, so it scales
-/// with the circle it sits in.
+/// with the circle it sits in. A changed fill is reached gradually.
 class ProgressRing extends StatelessWidget {
   const ProgressRing({
     super.key,
@@ -26,16 +27,25 @@ class ProgressRing extends StatelessWidget {
   final Widget? child;
 
   @override
-  Widget build(BuildContext context) => CustomPaint(
-    painter: _RingPainter(
-      fill: fill,
-      color: color,
-      trackColor: trackColor,
-      radiusRatio: radiusRatio,
-      strokeRatio: strokeRatio,
-    ),
-    child: child,
-  );
+  Widget build(BuildContext context) {
+    final motion = context.motion;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(end: fill),
+      duration: motion.long,
+      curve: motion.curve,
+      child: child,
+      builder: (context, shown, child) => CustomPaint(
+        painter: _RingPainter(
+          fill: shown,
+          color: color,
+          trackColor: trackColor,
+          radiusRatio: radiusRatio,
+          strokeRatio: strokeRatio,
+        ),
+        child: child,
+      ),
+    );
+  }
 }
 
 class _RingPainter extends CustomPainter {

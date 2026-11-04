@@ -609,6 +609,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Login must be between 3 and 50 characters';
 
   @override
+  String get validationNicknameRequired => 'Nickname is required';
+
+  @override
+  String get validationNicknameLength =>
+      'Nickname must be between 3 and 50 characters';
+
+  @override
   String get validationEmailRequired => 'Email is required';
 
   @override

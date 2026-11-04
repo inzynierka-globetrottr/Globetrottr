@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/features/map/camera_flight.dart';
 import 'package:globetrottr_front/features/map/camera_health.dart';
 import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
@@ -35,16 +37,23 @@ class MapScreen extends ConsumerStatefulWidget {
 }
 
 class _MapScreenState extends ConsumerState<MapScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, TabVisibility {
   final MapController _mapController = MapController();
   late final AnimationController _flight = AnimationController(
     vsync: this,
-    duration: MapConfig.recenterFlight,
   )..addListener(_fly);
   CameraFlight? _route;
+
+  /// Read once per flight in [_flyTo], as it cannot change on the way.
+  Curve _flightCurve = Curves.linear;
   StreamSubscription<MapEvent>? _cameraWatch;
   String? _lastCameraProblem;
   bool _questOpen = false;
+
+  /// Whether the camera has come down to the player, or the user or the app
+  /// moved it before the first position arrived, which the landing must not
+  /// undo.
+  bool _landed = false;
 
   @override
   void initState() {
@@ -54,13 +63,23 @@ class _MapScreenState extends ConsumerState<MapScreen>
       ref.read(questsProvider.notifier).loadQuestsOnce();
     });
     _cameraWatch = _mapController.mapEventStream.listen(_onMapEvent);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _answerQuestFocus());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final position = ref.read(locationProvider).currentPosition;
+      if (mounted && position != null) _land(position);
+    });
   }
+
+  void _land(LatLng position) {
+    if (!_landed) _flyTo(position, duration: context.motion.landing);
+  }
+
+  @override
+  void onTabShown() => _answerQuestFocus();
 
   /// Shows the active quest when the Quests tab asked for it: flies to its
   /// next point, or fits its route, and opens its card.
   void _answerQuestFocus() {
-    if (!mounted || !ref.read(questMapFocusProvider)) return;
+    if (!ref.read(questMapFocusProvider)) return;
     ref.read(questMapFocusProvider.notifier).clear();
     final quest = ref.read(activeQuestProvider);
     if (quest == null) return;
@@ -71,6 +90,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
       _flyTo(point.position);
     } else if (route.length > 1) {
       _flight.stop();
+      _landed = true;
       _mapController.fitCamera(
         CameraFit.coordinates(
           coordinates: route,
@@ -83,7 +103,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 
   void _onMapEvent(MapEvent event) {
-    if (interruptsCameraFlight(event.source)) _flight.stop();
+    if (interruptsCameraFlight(event.source)) {
+      _flight.stop();
+      _landed = true;
+    }
     _logCameraProblem(event);
   }
 
@@ -117,19 +140,23 @@ class _MapScreenState extends ConsumerState<MapScreen>
     );
   }
 
-  void _flyTo(LatLng center) {
+  void _flyTo(LatLng center, {Duration? duration}) {
+    _landed = true;
     final camera = _mapController.camera;
     final route = CameraFlight(
       from: (center: camera.center, zoom: camera.zoom),
       to: (center: center, zoom: MapConfig.defaultZoom),
     );
     if (route.isStill) return;
+    final motion = context.motion;
     _route = route;
+    _flightCurve = motion.flightCurve;
+    _flight.duration = duration ?? motion.flight;
     unawaited(_flight.forward(from: 0));
   }
 
   void _fly() {
-    final view = _route?.at(Curves.easeInOut.transform(_flight.value));
+    final view = _route?.at(_flightCurve.transform(_flight.value));
     if (view != null) _mapController.move(view.center, view.zoom);
   }
 
@@ -145,7 +172,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   Widget build(BuildContext context) {
     ref.listen<TrackingState>(locationProvider, (previous, next) {
       if (previous?.currentPosition == null && next.currentPosition != null) {
-        _mapController.move(next.currentPosition!, MapConfig.defaultZoom);
+        _land(next.currentPosition!);
       }
     });
 
@@ -161,7 +188,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
             mapController: _mapController,
             options: const MapOptions(
               initialCenter: MapConfig.initialCenter,
-              initialZoom: MapConfig.defaultZoom,
+              initialZoom: MapConfig.startZoom,
               // North stays up, as in the mock-up, which has no compass.
               interactionOptions: InteractionOptions(
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,

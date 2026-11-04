@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/widgets/neu_dialog.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
@@ -17,7 +18,7 @@ Future<bool> confirmQuestSwap(
   required Quest active,
   required Quest next,
 }) async {
-  final swap = await showDialog<bool>(
+  final swap = await showNeuDialog<bool>(
     context: context,
     builder: (_) => QuestSwapDialog(active: active, next: next),
   );

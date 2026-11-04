@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
+import 'package:globetrottr_front/core/widgets/neu_dialog.dart';
+import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
-import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/core/widgets/neu_icon_button.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_state.dart';
@@ -27,19 +28,17 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with TabVisibility {
   static const _side = 20.0;
 
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      ref.read(profileProvider.notifier).loadProfile();
-      ref.read(questsProvider.notifier).loadQuestsOnce();
-    });
+  void onTabShown() {
+    ref.read(profileProvider.notifier).loadProfile();
+    ref.read(questsProvider.notifier).loadQuestsOnce();
   }
 
-  void _openSettings() => showDialog<void>(
+  void _openSettings() => showNeuDialog<void>(
     context: context,
     builder: (_) =>
         SettingsDialog(onChangePhoto: () => pickAndUploadAvatar(context, ref)),
@@ -69,11 +68,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final stats = ref.watch(myProfileStatsProvider);
 
     return Scaffold(
-      // The profile scrolls on under the floating navigation.
-      extendBody: true,
-      bottomNavigationBar: const NeuBottomNavbar(
-        activeItem: NavbarItem.profile,
-      ),
       // Read inside the scaffold, whose padding includes the navigation.
       body: Builder(
         builder: (context) {

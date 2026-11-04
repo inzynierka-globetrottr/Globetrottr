@@ -3,6 +3,7 @@ import 'package:globetrottr_front/core/localization/localization_extensions.dart
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/animated_column.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/neu_divider.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
@@ -28,8 +29,6 @@ class InvitesCard extends StatefulWidget {
 }
 
 class _InvitesCardState extends State<InvitesCard> {
-  static const _duration = Duration(milliseconds: 240);
-
   bool _open = false;
 
   @override
@@ -46,22 +45,30 @@ class _InvitesCardState extends State<InvitesCard> {
             onTap: () => setState(() => _open = !_open),
           ),
           AnimatedSize(
-            duration: _duration,
-            curve: Curves.easeInOut,
+            duration: context.motion.medium,
+            curve: context.motion.curve,
             alignment: Alignment.topCenter,
             child: _open
                 ? Padding(
                     padding: const EdgeInsets.fromLTRB(14, 0, 14, 4),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        for (final invite in invites) ...[
-                          const NeuDivider(),
-                          InviteRow(
-                            invite: invite,
-                            onAccept: () => widget.onAccept(invite.username),
-                            onReject: () => widget.onReject(invite.username),
-                          ),
-                        ],
+                        const NeuDivider(),
+                        AnimatedColumn(
+                          separator: const NeuDivider(),
+                          children: [
+                            for (final invite in invites)
+                              InviteRow(
+                                key: ValueKey(invite.username),
+                                invite: invite,
+                                onAccept: () =>
+                                    widget.onAccept(invite.username),
+                                onReject: () =>
+                                    widget.onReject(invite.username),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   )
@@ -142,7 +149,8 @@ class _Header extends StatelessWidget {
                 ),
                 AnimatedRotation(
                   turns: open ? 0.25 : 0,
-                  duration: _InvitesCardState._duration,
+                  duration: context.motion.medium,
+                  curve: context.motion.curve,
                   child: AppIcon(
                     AppIcons.chevronRight,
                     size: 16,

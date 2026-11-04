@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/unfold_in.dart';
 
 /// A short message about a whole form, shown above its main button: an
-/// error, or plain information.
+/// error, or plain information. It unfolds when it appears.
 class FormMessage extends StatelessWidget {
   const FormMessage.error(this.text, {super.key}) : _isError = true;
 
@@ -14,10 +15,12 @@ class FormMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = context.typography.note;
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      style: _isError ? style.copyWith(color: context.palette.danger) : style,
+    return UnfoldIn(
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: _isError ? style.copyWith(color: context.palette.danger) : style,
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:globetrottr_front/core/localization/localization_extensions.dart
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/animated_number.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 import 'package:globetrottr_front/core/widgets/progress_ring.dart';
@@ -28,7 +29,6 @@ class QuestLevelRow extends StatelessWidget {
     final completed = completedCount == null
         ? l10n.friendsLevelUnknown
         : l10n.questsCompletedCount(completedCount);
-    final xp = level.xp?.toString() ?? l10n.friendsLevelUnknown;
     return Semantics(
       button: true,
       label: l10n.questsHistoryLink(levelText, completed),
@@ -65,8 +65,11 @@ class QuestLevelRow extends StatelessWidget {
                   spacing: 2,
                   children: [
                     Text(l10n.questsLevel(levelText), style: typography.value),
-                    Text(
-                      l10n.questsXp(xp),
+                    AnimatedNumber(
+                      value: level.xp?.toDouble(),
+                      format: (xp) => l10n.questsXp(
+                        xp?.round().toString() ?? l10n.friendsLevelUnknown,
+                      ),
                       style: typography.note.copyWith(
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),

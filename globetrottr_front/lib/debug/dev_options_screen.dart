@@ -17,6 +17,10 @@ class DevOptionsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           OutlinedButton(
+            onPressed: () => context.push('/dev/animations'),
+            child: const Text('Animations'),
+          ),
+          OutlinedButton(
             onPressed: () async {
               await ref.read(authProvider.notifier).continueAsGuest();
               if (context.mounted) GoRouter.maybeOf(context)?.go('/map');

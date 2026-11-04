@@ -13,6 +13,7 @@ import 'package:globetrottr_front/features/friends/data/friendship_response.dart
 import 'package:globetrottr_front/features/friends/provider/friend_comparison.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_profile_screen.dart';
+import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/map/data/open_free_map_tile_provider.dart';
 import 'package:globetrottr_front/features/profile/data/profile_service.dart';
 import 'package:globetrottr_front/features/quests/data/quest_service.dart';
@@ -77,7 +78,19 @@ void main() {
     addTearDown(tester.view.reset);
     final router = GoRouter(
       initialLocation: location ?? FriendRoutes.profile('marekgarek'),
-      routes: [friendsRoute],
+      routes: [
+        GoRoute(
+          path: FriendRoutes.list,
+          builder: (_, _) => const FriendsScreen(),
+          routes: friendDeeperRoutes(
+            (path, screen, {routes = const []}) => GoRoute(
+              path: path,
+              builder: (_, state) => screen(state),
+              routes: routes,
+            ),
+          ),
+        ),
+      ],
     );
     await tester.pumpWidget(
       ProviderScope(

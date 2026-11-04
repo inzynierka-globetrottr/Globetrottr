@@ -226,6 +226,8 @@
 
   "validationUsernameRequired": "Login is required",
   "validationUsernameLength": "Login must be between 3 and 50 characters",
+  "validationNicknameRequired": "Nickname is required",
+  "validationNicknameLength": "Nickname must be between 3 and 50 characters",
   "validationEmailRequired": "Email is required",
   "validationEmailInvalid": "Email should be valid",
   "validationPasswordRequired": "Password is required",

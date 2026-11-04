@@ -155,6 +155,46 @@ void main() {
     expect(container.read(mapViewProvider), MapView.fog);
   });
 
+  testWidgets('the layers sheet covers the navigation of the tabs', (
+    tester,
+  ) async {
+    var navigated = false;
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            // A tab keeps its own navigator under the shared navigation.
+            body: Navigator(
+              onGenerateRoute: (_) => MaterialPageRoute<void>(
+                builder: (context) => Center(
+                  child: TextButton(
+                    onPressed: () => showLayersSheet(context),
+                    child: const Text('layers'),
+                  ),
+                ),
+              ),
+            ),
+            bottomNavigationBar: TextButton(
+              onPressed: () => navigated = true,
+              child: const Text('navigation'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('layers'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('navigation'), warnIfMissed: false);
+
+    expect(navigated, isFalse);
+    expect(find.byType(LayersSheet), findsOneWidget);
+  });
+
   testWidgets('tapping the quest point opens the quest', (tester) async {
     var tapped = false;
     await pump(
