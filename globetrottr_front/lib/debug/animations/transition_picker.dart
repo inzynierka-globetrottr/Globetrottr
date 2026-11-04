@@ -3,28 +3,46 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_motion_provider.dart';
 
-/// Switches the tab and deeper screen transitions of the whole app, to
-/// compare them on a phone. Temporary, until one of each is chosen.
+/// Switches the variants of the motion of the whole app, to compare them on
+/// a phone. Temporary, until one of each is chosen.
 class TransitionPicker extends ConsumerWidget {
   const TransitionPicker({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final motion = ref.watch(appMotionProvider);
-    final notifier = ref.read(appMotionProvider.notifier);
+    final chosen = ref.watch(motionChoicesProvider);
+    final notifier = ref.read(motionChoicesProvider.notifier);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _Choices(
+          title: 'Durations (quick: 150/180/220 ms, mockup: 200/240/280 ms)',
+          values: MotionPace.values,
+          selected: chosen.pace,
+          onSelected: (value) => notifier.choose(pace: value),
+        ),
+        _Choices(
+          title: 'Button rising back',
+          values: PressFeel.values,
+          selected: chosen.press,
+          onSelected: (value) => notifier.choose(press: value),
+        ),
+        _Choices(
+          title: 'Navigation pill',
+          values: NavPillMotion.values,
+          selected: chosen.navPill,
+          onSelected: (value) => notifier.choose(navPill: value),
+        ),
+        _Choices(
           title: 'Tab transition',
           values: TabTransition.values,
-          selected: motion.tabTransition,
+          selected: chosen.tab,
           onSelected: (value) => notifier.choose(tab: value),
         ),
         _Choices(
           title: 'Deeper screen transition',
           values: DeeperTransition.values,
-          selected: motion.deeperTransition,
+          selected: chosen.deeper,
           onSelected: (value) => notifier.choose(deeper: value),
         ),
       ],

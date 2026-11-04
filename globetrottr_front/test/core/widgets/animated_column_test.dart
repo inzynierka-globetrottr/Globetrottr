@@ -97,7 +97,10 @@ void main() {
     double opacityOf(WidgetTester tester, String item) => tester
         .widget<FadeTransition>(
           find
-              .ancestor(of: find.text(item), matching: find.byType(FadeTransition))
+              .ancestor(
+                of: find.text(item),
+                matching: find.byType(FadeTransition),
+              )
               .first,
         )
         .opacity
@@ -135,6 +138,35 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(order(tester), ['a', 'c']);
+  });
+
+  testWidgets('a folding child takes no more taps', (tester) async {
+    var taps = 0;
+    Future<void> showButtons(List<String> items) => tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AnimatedColumn(
+            children: [
+              for (final item in items)
+                TextButton(
+                  key: ValueKey(item),
+                  onPressed: () => taps++,
+                  child: Text(item),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await showButtons(['a', 'b']);
+    await showButtons(['a']);
+    await tester.pump(AppMotion.standard.medium ~/ 4);
+
+    await tester.tap(find.text('b'), warnIfMissed: false);
+    expect(taps, 0);
+
+    await tester.tap(find.text('a'));
+    expect(taps, 1);
   });
 
   testWidgets('a child put back while folding unfolds again', (tester) async {

@@ -163,25 +163,30 @@ class _AnimatedColumnState extends State<AnimatedColumn>
       for (var i = 0; i < _entries.length; i++)
         KeyedSubtree(
           key: _entries[i].key,
-          child: UnfoldTransition(
-            sizeFactor: _entries[i].fadeOnly
-                ? kAlwaysCompleteAnimation
-                : _entries[i].curved,
-            // The same shape at every position, so a child that becomes
-            // the first one keeps its state.
-            child: FadeTransition(
-              opacity: _entries[i].curved,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(height: i == 0 ? 0 : widget.spacing / 2),
-                  Offstage(
-                    offstage: i == 0,
-                    child: widget.separator ?? const SizedBox.shrink(),
-                  ),
-                  SizedBox(height: i == 0 ? 0 : widget.spacing / 2),
-                  _entries[i].child,
-                ],
+          // A row folding away is already gone for the user, so a second
+          // tap on its button cannot repeat the action that removed it.
+          child: IgnorePointer(
+            ignoring: _entries[i].leaving,
+            child: UnfoldTransition(
+              sizeFactor: _entries[i].fadeOnly
+                  ? kAlwaysCompleteAnimation
+                  : _entries[i].curved,
+              // The same shape at every position, so a child that becomes
+              // the first one keeps its state.
+              child: FadeTransition(
+                opacity: _entries[i].curved,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(height: i == 0 ? 0 : widget.spacing / 2),
+                    Offstage(
+                      offstage: i == 0,
+                      child: widget.separator ?? const SizedBox.shrink(),
+                    ),
+                    SizedBox(height: i == 0 ? 0 : widget.spacing / 2),
+                    _entries[i].child,
+                  ],
+                ),
               ),
             ),
           ),

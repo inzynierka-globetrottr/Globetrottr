@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
+import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
@@ -94,7 +95,9 @@ class NeuBottomNavbar extends StatelessWidget {
             return Stack(
               children: [
                 AnimatedPositioned(
-                  duration: motion.short,
+                  duration: motion.navPill == NavPillMotion.slide
+                      ? motion.short
+                      : Duration.zero,
                   curve: motion.curve,
                   left: activeItem.index * (tabWidth + _spacing),
                   top: 0,

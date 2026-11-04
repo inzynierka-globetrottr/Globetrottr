@@ -6,6 +6,7 @@ import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_motion_provider.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/debug/animations/animations_screen.dart';
+import 'package:globetrottr_front/debug/animations/form_demos.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
 
 void main() {
@@ -48,15 +49,40 @@ void main() {
 
     await tester.tap(find.text(TabTransition.fadeIn.name));
     await tester.tap(find.text(DeeperTransition.rise.name));
+    await tester.tap(find.text(MotionPace.mockup.name));
+    await tester.tap(find.text(PressFeel.none.name));
+    // The deeper screen transitions, listed below, have a slide too.
+    await tester.tap(find.text(NavPillMotion.slide.name).first);
     await tester.pump();
 
     final motion = container.read(appMotionProvider);
     expect(motion.tabTransition, TabTransition.fadeIn);
     expect(motion.deeperTransition, DeeperTransition.rise);
+    expect(motion.short, const Duration(milliseconds: 200));
+    expect(motion.pressHold, Duration.zero);
+    expect(motion.navPill, NavPillMotion.slide);
+  });
+
+  testWidgets('clearing the field error demo empties the field too', (
+    tester,
+  ) async {
+    await show(tester, replaceWith: const Scaffold(body: FieldErrorDemo()));
+
+    await tester.tap(find.text('Validate'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter your login'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'explorer');
+    await tester.tap(find.text('Clear'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Enter your login'), findsNothing);
+    expect(find.text('explorer'), findsNothing);
   });
 
   testWidgets('slow motion ends with the screen', (tester) async {
     await show(tester);
+    await tester.scrollUntilVisible(find.text('Slow motion x5'), 300);
     await tester.tap(find.text('Slow motion x5'));
     await tester.pump();
     expect(timeDilation, AnimationsScreen.slowMotion);

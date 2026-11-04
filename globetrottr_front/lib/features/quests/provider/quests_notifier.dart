@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/async/single_flight.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/features/quests/data/quest_service.dart';
 import 'package:globetrottr_front/features/quests/provider/quests_state.dart';
 
 class QuestsNotifier extends Notifier<QuestsState> {
   late QuestService _service;
+  final _flight = SingleFlight<Symbol>();
 
   @override
   QuestsState build() {
@@ -40,7 +42,12 @@ class QuestsNotifier extends Notifier<QuestsState> {
     await loadQuests();
   }
 
-  Future<void> startQuest(int questId) async {
+  /// Only one quest can be active, so while one start is on the way any
+  /// other start, of this or another quest, is dropped.
+  Future<void> startQuest(int questId) =>
+      _flight.run(#start, () => _startQuest(questId));
+
+  Future<void> _startQuest(int questId) async {
     try {
       await _service.startQuest(questId);
       await loadQuests();

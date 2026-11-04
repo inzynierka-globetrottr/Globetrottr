@@ -63,9 +63,12 @@ void main() {
     );
   });
 
-  testWidgets('the pill slides to a newly active tab', (tester) async {
+  testWidgets('a sliding pill moves to a newly active tab', (tester) async {
     Widget navbar(NavbarItem item) => MaterialApp(
-      theme: AppTheme.light,
+      theme: AppTheme.from(
+        AppPalette.light,
+        motion: AppMotion.standard.copyWith(navPill: NavPillMotion.slide),
+      ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
@@ -90,6 +93,33 @@ void main() {
     await tester.pumpWidget(navbar(NavbarItem.friends));
     await tester.pump(AppMotion.standard.short ~/ 2);
     expect(pill(tester).left, inExclusiveRange(start, end));
+  });
+
+  testWidgets('a jumping pill is under the new tab at once', (tester) async {
+    Widget navbar(NavbarItem item) => MaterialApp(
+      theme: AppTheme.from(
+        AppPalette.light,
+        motion: AppMotion.standard.copyWith(navPill: NavPillMotion.jump),
+      ),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        bottomNavigationBar: NeuBottomNavbar(
+          activeItem: item,
+          onSelect: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpWidget(navbar(NavbarItem.map));
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(navbar(NavbarItem.friends));
+    await tester.pump();
+
+    expect(
+      pill(tester).contains(tester.getCenter(find.text('Friends'))),
+      isTrue,
+    );
   });
 
   testWidgets('keeps a gap above the system gesture bar', (tester) async {

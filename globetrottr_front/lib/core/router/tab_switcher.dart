@@ -107,21 +107,26 @@ class _TabSwitcherState extends State<TabSwitcher>
       for (var i = 0; i < widget.tabs.length; i++)
         Offstage(
           offstage: i != widget.current && i != _leaving,
-          child: TickerMode(
-            enabled: i == widget.current,
-            child: TabActive(
-              active: i == widget.current,
-              child: FadeTransition(
-                opacity: i == widget.current
-                    ? _comingOpacity
-                    : (i == _leaving
-                          ? _leavingOpacity
-                          : kAlwaysCompleteAnimation),
-                child: ScaleTransition(
-                  scale: i == widget.current
-                      ? _comingScale
-                      : kAlwaysCompleteAnimation,
-                  child: widget.tabs[i],
+          // A leaving tab may lie above the chosen one, so it must not take
+          // the taps meant for it.
+          child: IgnorePointer(
+            ignoring: i != widget.current,
+            child: TickerMode(
+              enabled: i == widget.current,
+              child: TabActive(
+                active: i == widget.current,
+                child: FadeTransition(
+                  opacity: i == widget.current
+                      ? _comingOpacity
+                      : (i == _leaving
+                            ? _leavingOpacity
+                            : kAlwaysCompleteAnimation),
+                  child: ScaleTransition(
+                    scale: i == widget.current
+                        ? _comingScale
+                        : kAlwaysCompleteAnimation,
+                    child: widget.tabs[i],
+                  ),
                 ),
               ),
             ),

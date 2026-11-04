@@ -50,8 +50,46 @@ void main() {
     return rect;
   }
 
+  testWidgets('under instant the screen below is gone at once', (
+    tester,
+  ) async {
+    for (final below in [fadePage, deeperPage]) {
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            pageBuilder: (context, state) =>
+                below(context, state, const Text('below')),
+            routes: [
+              GoRoute(
+                path: 'deeper',
+                pageBuilder: (context, state) =>
+                    deeperPage(context, state, const Text('deeper')),
+              ),
+            ],
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+      );
+      await tester.pumpAndSettle();
+
+      router.go('/deeper');
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('below'), findsNothing);
+      expect(find.text('deeper'), findsOneWidget);
+    }
+  });
+
   for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
-    for (final transition in DeeperTransition.values) {
+    // An instant screen leaves nothing below to compare.
+    for (final transition in DeeperTransition.values.where(
+      (t) => t != DeeperTransition.instant,
+    )) {
       testWidgets(
         'under ${transition.name} on ${platform.name} a fading screen moves '
         'aside like a screen built by the theme',

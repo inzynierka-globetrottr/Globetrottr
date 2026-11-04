@@ -54,6 +54,38 @@ void main() {
     expect(opacityOf(tester, 'second'), 1);
   });
 
+  testWidgets('a tab fading out takes no taps from the new one', (
+    tester,
+  ) async {
+    final taps = <String>[];
+    Widget tab(String name) => GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => taps.add(name),
+      child: Text(name),
+    );
+    Future<void> showTappable(int current) => tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.from(
+          AppPalette.light,
+          motion: AppMotion.standard.copyWith(
+            tabTransition: TabTransition.fadeThrough,
+          ),
+        ),
+        home: TabSwitcher(
+          current: current,
+          tabs: [tab('first'), tab('second')],
+        ),
+      ),
+    );
+    // The leaving tab lies above the new one, as it comes later in the list.
+    await showTappable(1);
+    await showTappable(0);
+    await tester.pump(AppMotion.standard.long * 0.2);
+
+    await tester.tapAt(tester.getCenter(find.byType(TabSwitcher)));
+    expect(taps, ['first']);
+  });
+
   testWidgets('instant: the new tab is there at once', (tester) async {
     await show(tester, 0, TabTransition.instant);
     await show(tester, 1, TabTransition.instant);

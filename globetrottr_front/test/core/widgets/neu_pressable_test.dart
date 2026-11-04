@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/theme/app_motion.dart';
+import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_pressable.dart';
@@ -22,10 +23,11 @@ void main() {
   Future<TestGesture> press(
     WidgetTester tester, {
     bool disableAnimations = false,
+    AppMotion motion = AppMotion.standard,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.light,
+        theme: AppTheme.from(AppPalette.light, motion: motion),
         home: MediaQuery(
           data: MediaQueryData(disableAnimations: disableAnimations),
           child: Center(
@@ -59,17 +61,37 @@ void main() {
     await gesture.up();
   });
 
-  testWidgets('a released surface rises back gradually', (tester) async {
-    final gesture = await press(tester);
+  testWidgets('with a rise a released surface rises back gradually', (
+    tester,
+  ) async {
+    const rise = Duration(milliseconds: 150);
+    final gesture = await press(
+      tester,
+      motion: AppMotion.standard.copyWith(pressRise: rise),
+    );
     await tester.pump(AppMotion.standard.pressHold);
     await gesture.up();
     await tester.pump();
 
-    await tester.pump(AppMotion.standard.short ~/ 4);
+    await tester.pump(rise ~/ 4);
     expect(shown(tester).single.inset, isTrue);
     expect(shown(tester).single.offset.dx, lessThan(4));
 
     await tester.pumpAndSettle();
+    expect(shown(tester), raised);
+  });
+
+  testWidgets('without a rise a released surface is raised at once', (
+    tester,
+  ) async {
+    final gesture = await press(
+      tester,
+      motion: AppMotion.standard.copyWith(pressRise: Duration.zero),
+    );
+    await tester.pump(AppMotion.standard.pressHold);
+    await gesture.up();
+    await tester.pump();
+
     expect(shown(tester), raised);
   });
 

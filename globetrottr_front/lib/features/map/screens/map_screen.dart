@@ -43,6 +43,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
     vsync: this,
   )..addListener(_fly);
   CameraFlight? _route;
+
+  /// Read once per flight in [_flyTo], as it cannot change on the way.
+  Curve _flightCurve = Curves.linear;
   StreamSubscription<MapEvent>? _cameraWatch;
   String? _lastCameraProblem;
   bool _questOpen = false;
@@ -145,15 +148,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
       to: (center: center, zoom: MapConfig.defaultZoom),
     );
     if (route.isStill) return;
+    final motion = context.motion;
     _route = route;
-    _flight.duration = duration ?? context.motion.flight;
+    _flightCurve = motion.flightCurve;
+    _flight.duration = duration ?? motion.flight;
     unawaited(_flight.forward(from: 0));
   }
 
   void _fly() {
-    final view = _route?.at(
-      context.motion.flightCurve.transform(_flight.value),
-    );
+    final view = _route?.at(_flightCurve.transform(_flight.value));
     if (view != null) _mapController.move(view.center, view.zoom);
   }
 

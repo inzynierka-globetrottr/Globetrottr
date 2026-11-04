@@ -77,13 +77,26 @@ class FieldErrorDemo extends StatefulWidget {
 
 class _FieldErrorDemoState extends State<FieldErrorDemo> {
   final _form = GlobalKey<FormState>();
+  final _login = TextEditingController();
+
+  @override
+  void dispose() {
+    _login.dispose();
+    super.dispose();
+  }
+
+  // The text lives in the controller, which a form reset does not touch.
+  void _clear() {
+    _login.clear();
+    _form.currentState!.reset();
+  }
 
   @override
   Widget build(BuildContext context) => DemoSection(
     title: 'Field error',
     controls: {
       'Validate': () => _form.currentState!.validate(),
-      'Clear': () => _form.currentState!.reset(),
+      'Clear': _clear,
     },
     child: Form(
       key: _form,
@@ -91,6 +104,7 @@ class _FieldErrorDemoState extends State<FieldErrorDemo> {
         spacing: 18,
         children: [
           NeuTextField(
+            controller: _login,
             label: 'Login',
             placeholder: 'Leave empty and validate',
             validator: (value) =>

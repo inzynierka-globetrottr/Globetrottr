@@ -7,8 +7,8 @@ const _dialogStartScale = 0.95;
 /// How much the page behind an open dialog is dimmed.
 const _barrierAlpha = 0.5;
 
-/// Shows a dialog that fades in while growing a little, like the deeper
-/// screens zoom in. Tapping outside closes it.
+/// Shows a dialog that fades in while growing a little. Tapping outside
+/// closes it.
 Future<T?> showNeuDialog<T>({
   required BuildContext context,
   required WidgetBuilder builder,
