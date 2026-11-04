@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/locale_provider.dart';
@@ -8,9 +6,7 @@ import 'package:globetrottr_front/features/quests/provider/quests_provider.dart'
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/logic/streak_service.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
-import 'package:globetrottr_front/features/statistics/screens/widgets/stats_activity_section.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_discovery_card.dart';
-import 'package:globetrottr_front/features/statistics/screens/widgets/stats_most_visited_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_period_tabs.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_records_grid.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_weekly_chart.dart';
@@ -22,17 +18,14 @@ class StatsOverviewState {
     required this.periodLabel,
     required this.newAreaKm2,
     required this.distanceKm,
-    required this.newStreetsCount,
     required this.questsCount,
     required this.weeklyBars,
     required this.visitedCountriesCount,
     required this.visitedRegionsCount,
     required this.visitedCitiesCount,
     required this.countryCodes,
-    required this.activities,
     required this.records,
     required this.discoveredCities,
-    required this.mostVisitedPlaces,
     this.openStreakDays = 0,
     this.maxOpenStreakDays = 0,
     this.recordingStreakDays = 0,
@@ -44,17 +37,14 @@ class StatsOverviewState {
   final String periodLabel;
   final double newAreaKm2;
   final double distanceKm;
-  final int newStreetsCount;
   final int questsCount;
   final List<WeeklyBarItem> weeklyBars;
   final int visitedCountriesCount;
   final int visitedRegionsCount;
   final int visitedCitiesCount;
   final List<String> countryCodes;
-  final List<ActivityDistanceItem> activities;
   final List<RecordTileItem> records;
   final List<DiscoveryRowItem> discoveredCities;
-  final List<MostVisitedItem> mostVisitedPlaces;
   final int openStreakDays;
   final int maxOpenStreakDays;
   final int recordingStreakDays;
@@ -66,17 +56,14 @@ class StatsOverviewState {
     String? periodLabel,
     double? newAreaKm2,
     double? distanceKm,
-    int? newStreetsCount,
     int? questsCount,
     List<WeeklyBarItem>? weeklyBars,
     int? visitedCountriesCount,
     int? visitedRegionsCount,
     int? visitedCitiesCount,
     List<String>? countryCodes,
-    List<ActivityDistanceItem>? activities,
     List<RecordTileItem>? records,
     List<DiscoveryRowItem>? discoveredCities,
-    List<MostVisitedItem>? mostVisitedPlaces,
     int? openStreakDays,
     int? maxOpenStreakDays,
     int? recordingStreakDays,
@@ -88,7 +75,6 @@ class StatsOverviewState {
       periodLabel: periodLabel ?? this.periodLabel,
       newAreaKm2: newAreaKm2 ?? this.newAreaKm2,
       distanceKm: distanceKm ?? this.distanceKm,
-      newStreetsCount: newStreetsCount ?? this.newStreetsCount,
       questsCount: questsCount ?? this.questsCount,
       weeklyBars: weeklyBars ?? this.weeklyBars,
       visitedCountriesCount:
@@ -96,10 +82,8 @@ class StatsOverviewState {
       visitedRegionsCount: visitedRegionsCount ?? this.visitedRegionsCount,
       visitedCitiesCount: visitedCitiesCount ?? this.visitedCitiesCount,
       countryCodes: countryCodes ?? this.countryCodes,
-      activities: activities ?? this.activities,
       records: records ?? this.records,
       discoveredCities: discoveredCities ?? this.discoveredCities,
-      mostVisitedPlaces: mostVisitedPlaces ?? this.mostVisitedPlaces,
       openStreakDays: openStreakDays ?? this.openStreakDays,
       maxOpenStreakDays: maxOpenStreakDays ?? this.maxOpenStreakDays,
       recordingStreakDays: recordingStreakDays ?? this.recordingStreakDays,
@@ -275,60 +259,7 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       0.0,
       (sum, d) => sum + d.distanceM,
     );
-    // TODO(data): Traversed OpenStreetMap road names matching from vector road tiles.
-    final totalStreets = dailyList.fold<int>(
-      0,
-      (sum, d) => sum + d.newStreetsCount,
-    );
-
     final questsCount = ref.watch(completedQuestsCountProvider);
-
-    // TODO(data): Activity type classification for cycling, running, and other motion.
-    final walkKm =
-        dailyList.fold<double>(0.0, (sum, d) => sum + d.walkDistanceM) / 1000.0;
-    final bikeKm =
-        dailyList.fold<double>(0.0, (sum, d) => sum + d.bikeDistanceM) / 1000.0;
-    final runKm =
-        dailyList.fold<double>(0.0, (sum, d) => sum + d.runDistanceM) / 1000.0;
-    final otherKm =
-        dailyList.fold<double>(0.0, (sum, d) => sum + d.otherDistanceM) /
-        1000.0;
-    final maxActivity = [walkKm, bikeKm, runKm, otherKm].reduce(math.max);
-
-    final activities = [
-      ActivityDistanceItem(
-        label: isPolish ? 'Pieszo' : 'Walk',
-        distanceKm: walkKm,
-        percentage: maxActivity > 0
-            ? (walkKm / maxActivity).clamp(0.0, 1.0)
-            : 0.0,
-        type: StatsActivityType.walk,
-      ),
-      ActivityDistanceItem(
-        label: isPolish ? 'Rower' : 'Bike',
-        distanceKm: bikeKm,
-        percentage: maxActivity > 0
-            ? (bikeKm / maxActivity).clamp(0.0, 1.0)
-            : 0.0,
-        type: StatsActivityType.bike,
-      ),
-      ActivityDistanceItem(
-        label: isPolish ? 'Bieg' : 'Run',
-        distanceKm: runKm,
-        percentage: maxActivity > 0
-            ? (runKm / maxActivity).clamp(0.0, 1.0)
-            : 0.0,
-        type: StatsActivityType.run,
-      ),
-      ActivityDistanceItem(
-        label: isPolish ? 'Inne' : 'Other',
-        distanceKm: otherKm,
-        percentage: maxActivity > 0
-            ? (otherKm / maxActivity).clamp(0.0, 1.0)
-            : 0.0,
-        type: StatsActivityType.other,
-      ),
-    ];
 
     final weeklyBars = <WeeklyBarItem>[];
     final now = DateTime.now();
@@ -351,27 +282,10 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       );
     }
 
-    // TODO(data): Track highest recorded elevation and furthest journey distance from GPS fixes.
-    final highest = await statsStorage.getRecordEntry('max_altitude');
-    final furthest = await statsStorage.getRecordEntry('furthest_distance');
     final longest = await statsStorage.getRecordEntry('longest_route_distance');
     final bestDay = await statsStorage.getBestDayStats();
 
     final records = [
-      RecordTileItem(
-        header: isPolish ? 'NAJWYŻEJ' : 'HIGHEST',
-        value: highest != null ? '${highest.value.round()} m' : '–',
-        subtitle: highest?.label ?? '–',
-        type: StatsRecordType.highest,
-      ),
-      RecordTileItem(
-        header: isPolish ? 'NAJDALEJ' : 'FURTHEST',
-        value: furthest != null
-            ? '${(furthest.value / 1000).toStringAsFixed(1)} km'
-            : '–',
-        subtitle: furthest?.label ?? '–',
-        type: StatsRecordType.furthest,
-      ),
       RecordTileItem(
         header: isPolish ? 'NAJDŁUŻSZA TRASA' : 'LONGEST ROUTE',
         value: longest != null
@@ -425,20 +339,6 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
 
     discoveredCities.sort((a, b) => b.percentage.compareTo(a.percentage));
 
-    final mostVisitedList =
-        allRegionStats.where((s) => s.visitsCount > 0).toList()
-          ..sort((a, b) => b.visitsCount.compareTo(a.visitsCount));
-
-    final mostVisitedPlaces = <MostVisitedItem>[];
-    for (final s in mostVisitedList.take(5)) {
-      final region = await regionStorage.findRegionById(s.regionId);
-      if (region != null) {
-        mostVisitedPlaces.add(
-          MostVisitedItem(name: region.name, count: s.visitsCount),
-        );
-      }
-    }
-
     final streakStats = await statsStorage.loadStreakStats();
     const streakService = StreakService();
     final effectiveOpen = streakService.effectiveOpenStreak(streakStats);
@@ -450,17 +350,14 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
       periodLabel: periodLabel,
       newAreaKm2: totalNewAreaM2 / 1000000.0,
       distanceKm: totalDistanceM / 1000.0,
-      newStreetsCount: totalStreets,
       questsCount: questsCount,
       weeklyBars: weeklyBars,
       visitedCountriesCount: visitedCountries,
       visitedRegionsCount: visitedRegions,
       visitedCitiesCount: visitedCities,
       countryCodes: countryCodes.toList(),
-      activities: activities,
       records: records,
       discoveredCities: discoveredCities,
-      mostVisitedPlaces: mostVisitedPlaces,
       openStreakDays: effectiveOpen,
       maxOpenStreakDays: streakStats.maxOpenStreak,
       recordingStreakDays: effectiveRec,

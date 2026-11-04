@@ -4,7 +4,7 @@ import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
-enum StatsRecordType { highest, furthest, longestRoute, bestDay }
+enum StatsRecordType { longestRoute, bestDay }
 
 class RecordTileItem {
   const RecordTileItem({
@@ -96,10 +96,6 @@ class StatsRecordsGrid extends StatelessWidget {
   String _headerFor(BuildContext context, RecordTileItem item) {
     final l10n = context.l10n;
     switch (item.type) {
-      case StatsRecordType.highest:
-        return l10n.statsRecordHighest.toUpperCase();
-      case StatsRecordType.furthest:
-        return l10n.statsRecordFurthest.toUpperCase();
       case StatsRecordType.longestRoute:
         return l10n.statsRecordLongestRoute.toUpperCase();
       case StatsRecordType.bestDay:

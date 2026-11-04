@@ -636,9 +636,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get statsDistance => 'Dystans';
 
   @override
-  String get statsNewStreets => 'Nowe ulice';
-
-  @override
   String get statsQuests => 'Questy';
 
   @override
@@ -659,28 +656,7 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
-  String get statsDistanceByActivity => 'Dystans według aktywności · km';
-
-  @override
-  String get statsActivityWalk => 'Pieszo';
-
-  @override
-  String get statsActivityBike => 'Rower';
-
-  @override
-  String get statsActivityRun => 'Bieg';
-
-  @override
-  String get statsActivityOther => 'Inne';
-
-  @override
   String get statsRecordsTitle => 'Rekordy';
-
-  @override
-  String get statsRecordHighest => 'Najwyżej';
-
-  @override
-  String get statsRecordFurthest => 'Najdalej';
 
   @override
   String get statsRecordLongestRoute => 'Najdłuższa trasa';
@@ -690,9 +666,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get statsCitiesDiscoveryTitle => 'Odkrycie miast';
-
-  @override
-  String get statsMostVisitedTitle => 'Najczęściej odwiedzane';
 
   @override
   String get statsCountriesTitle => 'Kraje';
@@ -729,12 +702,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get statsMetricCities => 'Miasta';
 
   @override
-  String get statsMetricStreets => 'Ulice';
-
-  @override
-  String get statsMetricRoutes => 'Trasy';
-
-  @override
   String get statsFirstVisit => 'Pierwsza wizyta';
 
   @override
@@ -742,9 +709,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get statsLastVisitToday => 'Dziś';
-
-  @override
-  String get statsTimeSpent => 'Spędzony czas';
 
   @override
   String get statsCityDiscoveryTitle => 'Odkrycie miasta';
@@ -759,9 +723,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get statsNoDiscoveredCities => 'Brak odkrytych miast';
-
-  @override
-  String get statsNoVisitedPlaces => 'Brak odwiedzonych miejsc';
 
   @override
   String get statsStreaksTitle => 'Serie';

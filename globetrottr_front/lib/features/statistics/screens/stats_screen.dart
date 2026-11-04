@@ -6,12 +6,10 @@ import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_overview_provider.dart';
-import 'package:globetrottr_front/features/statistics/screens/widgets/stats_activity_section.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_countries_banner.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_date_navigator.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_discovery_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metric_tile.dart';
-import 'package:globetrottr_front/features/statistics/screens/widgets/stats_most_visited_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_period_tabs.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_records_grid.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_streaks_card.dart';
@@ -100,22 +98,9 @@ class StatsScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: StatsMetricTile(
-                        label: l10n.statsNewStreets,
-                        value: '${state.newStreetsCount}',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: StatsMetricTile(
-                        label: l10n.statsQuests,
-                        value: '${state.questsCount}',
-                      ),
-                    ),
-                  ],
+                StatsMetricTile(
+                  label: l10n.statsQuests,
+                  value: '${state.questsCount}',
                 ),
                 const SizedBox(height: 12),
                 StatsStreaksCard(
@@ -134,10 +119,6 @@ class StatsScreen extends ConsumerWidget {
                   countryCodes: state.countryCodes,
                   onTap: () => context.push('/profile/statistics/countries'),
                 ),
-                const SizedBox(height: 20),
-                SectionHeader(l10n.statsDistanceByActivity),
-                const SizedBox(height: 12),
-                StatsActivitySection(activities: state.activities),
                 const SizedBox(height: 20),
                 SectionHeader(l10n.statsRecordsTitle),
                 const SizedBox(height: 12),
@@ -160,13 +141,6 @@ class StatsScreen extends ConsumerWidget {
                             : null,
                       ),
                   ],
-                ),
-                const SizedBox(height: 20),
-                SectionHeader(l10n.statsMostVisitedTitle),
-                const SizedBox(height: 12),
-                StatsMostVisitedCard(
-                  emptyMessage: l10n.statsNoVisitedPlaces,
-                  items: state.mostVisitedPlaces,
                 ),
               ],
             ),

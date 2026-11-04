@@ -632,9 +632,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsDistance => 'Distance';
 
   @override
-  String get statsNewStreets => 'New streets';
-
-  @override
   String get statsQuests => 'Quests';
 
   @override
@@ -655,28 +652,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get statsDistanceByActivity => 'Distance by activity · km';
-
-  @override
-  String get statsActivityWalk => 'Walk';
-
-  @override
-  String get statsActivityBike => 'Bike';
-
-  @override
-  String get statsActivityRun => 'Run';
-
-  @override
-  String get statsActivityOther => 'Other';
-
-  @override
   String get statsRecordsTitle => 'Records';
-
-  @override
-  String get statsRecordHighest => 'Highest';
-
-  @override
-  String get statsRecordFurthest => 'Furthest';
 
   @override
   String get statsRecordLongestRoute => 'Longest route';
@@ -686,9 +662,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsCitiesDiscoveryTitle => 'City discovery';
-
-  @override
-  String get statsMostVisitedTitle => 'Most visited';
 
   @override
   String get statsCountriesTitle => 'Countries';
@@ -725,12 +698,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsMetricCities => 'Cities';
 
   @override
-  String get statsMetricStreets => 'Streets';
-
-  @override
-  String get statsMetricRoutes => 'Routes';
-
-  @override
   String get statsFirstVisit => 'First visit';
 
   @override
@@ -738,9 +705,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsLastVisitToday => 'Today';
-
-  @override
-  String get statsTimeSpent => 'Time spent';
 
   @override
   String get statsCityDiscoveryTitle => 'City discovery';
@@ -755,9 +719,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsNoDiscoveredCities => 'No discovered cities yet';
-
-  @override
-  String get statsNoVisitedPlaces => 'No visited places yet';
 
   @override
   String get statsStreaksTitle => 'Streaks';

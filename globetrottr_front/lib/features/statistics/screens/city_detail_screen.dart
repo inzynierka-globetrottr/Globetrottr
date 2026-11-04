@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/localization/measure_format.dart';
-import 'package:globetrottr_front/core/theme/app_illustrations.dart';
-import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
-import 'package:globetrottr_front/core/widgets/app_illustration.dart';
 import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
-import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/statistics/provider/region_detail_provider.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_detail_progress_card.dart';
@@ -65,25 +61,6 @@ class CityDetailScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                NeuSurface(
-                  shadows: context.shadows.raised(NeoDepth.xl),
-                  borderRadius: BorderRadius.circular(24),
-                  padding: const EdgeInsets.all(12),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      height: 180,
-                      color: context.palette.fog,
-                      child: const Center(
-                        child: AppIllustration(
-                          AppIllustrations.viewFog,
-                          size: 160,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 StatsDetailProgressCard(
                   title: l10n.statsCityDiscoveryTitle,
                   percentage: data.discoveryPercentage,
@@ -95,14 +72,6 @@ class CityDetailScreen extends ConsumerWidget {
                       value:
                           '${formatKm2(data.discoveredAreaKm2, locale, decimals: data.discoveredAreaKm2 > 0 && data.discoveredAreaKm2 < 0.1 ? 2 : 1)} km²',
                       label: l10n.statsMetricDiscovered,
-                    ),
-                    StatMetricItem(
-                      value: '${data.streetsCount}',
-                      label: l10n.statsMetricStreets,
-                    ),
-                    StatMetricItem(
-                      value: '${data.routesCount}',
-                      label: l10n.statsMetricRoutes,
                     ),
                   ],
                 ),
@@ -124,14 +93,6 @@ class CityDetailScreen extends ConsumerWidget {
                     MetadataRowItem(
                       label: l10n.statsLastVisit,
                       value: data.lastVisit,
-                    ),
-                    MetadataRowItem(
-                      label: l10n.statsMostVisitedTitle,
-                      value: data.mostVisitedPlace,
-                    ),
-                    MetadataRowItem(
-                      label: l10n.statsTimeSpent,
-                      value: data.timeSpent,
                     ),
                   ],
                 ),

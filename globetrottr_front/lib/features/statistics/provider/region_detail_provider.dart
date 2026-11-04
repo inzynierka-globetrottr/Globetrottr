@@ -127,11 +127,9 @@ class RegionDetailData {
     required this.discoveryPercentage,
     required this.discoveredAreaKm2,
     required this.citiesCount,
-    required this.streetsCount,
     required this.subregions,
     required this.firstVisit,
     required this.lastVisit,
-    required this.highestPoint,
   });
 
   final int id;
@@ -142,11 +140,9 @@ class RegionDetailData {
   final double discoveryPercentage;
   final double discoveredAreaKm2;
   final int citiesCount;
-  final int streetsCount;
   final List<DiscoveryRowItem> subregions;
   final String firstVisit;
   final String lastVisit;
-  final String highestPoint;
 }
 
 final regionDetailProvider = FutureProvider.family<RegionDetailData, int>((
@@ -204,16 +200,6 @@ final regionDetailProvider = FutureProvider.family<RegionDetailData, int>((
     );
   }
 
-  final highestAlt = await statsStorage.getRecordEntry(
-    'max_altitude_$regionId',
-  );
-  final globalHighest = await statsStorage.getRecordEntry('max_altitude');
-  final highestStr = highestAlt != null
-      ? '${highestAlt.value.round()} m · ${highestAlt.label ?? regionName}'
-      : (globalHighest != null
-            ? '${globalHighest.value.round()} m · ${globalHighest.label ?? regionName}'
-            : '–');
-
   return RegionDetailData(
     id: regionId,
     name: regionName,
@@ -223,11 +209,9 @@ final regionDetailProvider = FutureProvider.family<RegionDetailData, int>((
     discoveryPercentage: percentage,
     discoveredAreaKm2: areaKm2,
     citiesCount: citiesCount,
-    streetsCount: 0,
     subregions: subregions,
     firstVisit: _formatVisitDate(stat?.firstVisitMs, isPolish: isPolish),
     lastVisit: _formatVisitDate(stat?.lastVisitMs, isPolish: isPolish),
-    highestPoint: highestStr,
   );
 });
 
@@ -238,13 +222,9 @@ class CityDetailData {
     required this.regionName,
     required this.discoveryPercentage,
     required this.discoveredAreaKm2,
-    required this.streetsCount,
-    required this.routesCount,
     required this.districts,
     required this.firstVisit,
     required this.lastVisit,
-    required this.mostVisitedPlace,
-    required this.timeSpent,
   });
 
   final int id;
@@ -252,13 +232,9 @@ class CityDetailData {
   final String regionName;
   final double discoveryPercentage;
   final double discoveredAreaKm2;
-  final int streetsCount;
-  final int routesCount;
   final List<DiscoveryRowItem> districts;
   final String firstVisit;
   final String lastVisit;
-  final String mostVisitedPlace;
-  final String timeSpent;
 }
 
 final cityDetailProvider = FutureProvider.family<CityDetailData, int>((
@@ -314,23 +290,15 @@ final cityDetailProvider = FutureProvider.family<CityDetailData, int>((
     );
   }
 
-  final timeSpentHours = (stat != null && stat.timeSpentSeconds > 0)
-      ? '${(stat.timeSpentSeconds / 3600).toStringAsFixed(0)} h'
-      : '–';
-
   return CityDetailData(
     id: cityId,
     name: cityName,
     regionName: regionName,
     discoveryPercentage: percentage,
     discoveredAreaKm2: areaKm2,
-    streetsCount: 0,
-    routesCount: stat?.visitsCount ?? 0,
     districts: districts,
     firstVisit: _formatVisitDate(stat?.firstVisitMs, isPolish: isPolish),
     lastVisit: _formatVisitDate(stat?.lastVisitMs, isPolish: isPolish),
-    mostVisitedPlace: stat != null && stat.visitsCount > 0 ? cityName : '–',
-    timeSpent: timeSpentHours,
   );
 });
 

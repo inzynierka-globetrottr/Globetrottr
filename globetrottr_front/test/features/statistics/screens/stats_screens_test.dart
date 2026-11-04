@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/widgets/app_illustration.dart';
 import 'package:globetrottr_front/features/regions/data/region.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
@@ -17,7 +18,6 @@ import 'package:globetrottr_front/features/statistics/screens/countries_screen.d
 import 'package:globetrottr_front/features/statistics/screens/region_detail_screen.dart';
 import 'package:globetrottr_front/features/statistics/screens/stats_screen.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/country_accordion_card.dart';
-import 'package:globetrottr_front/features/statistics/screens/widgets/stats_activity_section.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_countries_banner.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_date_navigator.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_detail_progress_card.dart';
@@ -25,7 +25,6 @@ import 'package:globetrottr_front/features/statistics/screens/widgets/stats_disc
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metadata_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metric_tile.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metrics_row.dart';
-import 'package:globetrottr_front/features/statistics/screens/widgets/stats_most_visited_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_period_tabs.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_streaks_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_records_grid.dart';
@@ -339,7 +338,7 @@ void main() {
       expect(find.text('Statistics'), findsOneWidget);
       expect(find.byType(StatsPeriodTabs), findsOneWidget);
       expect(find.byType(StatsDateNavigator), findsOneWidget);
-      expect(find.byType(StatsMetricTile), findsNWidgets(4));
+      expect(find.byType(StatsMetricTile), findsNWidgets(3));
       expect(find.byType(StatsStreaksCard), findsOneWidget);
       expect(find.text('App opened'), findsOneWidget);
       expect(find.text('Recording'), findsOneWidget);
@@ -347,14 +346,11 @@ void main() {
       expect(find.text('3 days'), findsOneWidget);
       expect(find.byType(StatsWeeklyChart), findsOneWidget);
       expect(find.byType(StatsCountriesBanner), findsOneWidget);
-      expect(find.byType(StatsActivitySection), findsOneWidget);
       expect(find.byType(StatsRecordsGrid), findsOneWidget);
       expect(find.byType(StatsDiscoveryCard), findsOneWidget);
-      expect(find.byType(StatsMostVisitedCard), findsOneWidget);
 
       expect(find.text('New area'), findsOneWidget);
       expect(find.text('Distance'), findsOneWidget);
-      expect(find.text('New streets'), findsOneWidget);
       expect(find.text('Quests'), findsOneWidget);
     });
 
@@ -384,13 +380,27 @@ void main() {
       expect(find.text('Statystyki'), findsOneWidget);
       expect(find.text('Nowy teren'), findsOneWidget);
       expect(find.text('Dystans'), findsOneWidget);
-      expect(find.text('Nowe ulice'), findsOneWidget);
       expect(find.text('Questy'), findsOneWidget);
       expect(find.byType(StatsStreaksCard), findsOneWidget);
       expect(find.text('Otwarcie aplikacji'), findsOneWidget);
       expect(find.text('Nagrywanie'), findsOneWidget);
       expect(find.text('5 dni'), findsOneWidget);
       expect(find.text('3 dni'), findsOneWidget);
+    });
+
+    testWidgets('stats screen shows only measured sections', (tester) async {
+      await pumpScreen(tester, const StatsScreen());
+
+      expect(find.text('New streets'), findsNothing);
+      expect(find.text('DISTANCE BY ACTIVITY · KM'), findsNothing);
+      expect(find.text('MOST VISITED'), findsNothing);
+      expect(find.text('HIGHEST'), findsNothing);
+      expect(find.text('FURTHEST'), findsNothing);
+      expect(find.text('LONGEST ROUTE'), findsOneWidget);
+      expect(find.text('BEST DAY'), findsOneWidget);
+      expect(find.text('Quests'), findsOneWidget);
+      expect(find.byType(StatsWeeklyChart), findsOneWidget);
+      expect(find.byType(StatsStreaksCard), findsOneWidget);
     });
   });
 
@@ -416,6 +426,14 @@ void main() {
 
       expect(find.byType(CountryAccordionCard), findsWidgets);
     });
+
+    testWidgets('countries screen has no placeholder illustration', (
+      tester,
+    ) async {
+      await pumpScreen(tester, const CountriesScreen());
+
+      expect(find.byType(AppIllustration), findsNothing);
+    });
   });
 
   group('RegionDetailScreen tests', () {
@@ -433,7 +451,16 @@ void main() {
       expect(find.text('Region discovery'), findsOneWidget);
       expect(find.text('Discovered'), findsOneWidget);
       expect(find.text('Cities'), findsOneWidget);
-      expect(find.text('Streets'), findsOneWidget);
+    });
+
+    testWidgets('region screen hides streets and highest point', (
+      tester,
+    ) async {
+      await pumpScreen(tester, const RegionDetailScreen(regionId: 10));
+
+      expect(find.text('Streets'), findsNothing);
+      expect(find.text('Highest'), findsNothing);
+      expect(find.text('Cities'), findsOneWidget);
     });
   });
 
@@ -451,8 +478,16 @@ void main() {
 
       expect(find.text('City discovery'), findsOneWidget);
       expect(find.text('Discovered'), findsOneWidget);
-      expect(find.text('Streets'), findsOneWidget);
-      expect(find.text('Routes'), findsOneWidget);
+    });
+
+    testWidgets('city screen hides unmeasured metrics', (tester) async {
+      await pumpScreen(tester, const CityDetailScreen(cityId: 100));
+
+      expect(find.text('Streets'), findsNothing);
+      expect(find.text('Routes'), findsNothing);
+      expect(find.text('Most visited'), findsNothing);
+      expect(find.text('Time spent'), findsNothing);
+      expect(find.byType(AppIllustration), findsNothing);
     });
   });
 }

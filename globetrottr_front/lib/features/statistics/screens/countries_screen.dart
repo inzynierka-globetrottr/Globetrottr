@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
-import 'package:globetrottr_front/core/theme/app_illustrations.dart';
-import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
-import 'package:globetrottr_front/core/widgets/app_illustration.dart';
 import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
-import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/statistics/provider/region_detail_provider.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/country_accordion_card.dart';
@@ -63,25 +59,6 @@ class CountriesScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                NeuSurface(
-                  shadows: context.shadows.raised(NeoDepth.xl),
-                  borderRadius: BorderRadius.circular(24),
-                  padding: const EdgeInsets.all(12),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      height: 180,
-                      color: context.palette.illustrationBackground,
-                      child: const Center(
-                        child: AppIllustration(
-                          AppIllustrations.viewVoronoi,
-                          size: 160,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
                 SectionHeader(
                   l10n.statsVisitedSection(data.countries.length),
                 ),

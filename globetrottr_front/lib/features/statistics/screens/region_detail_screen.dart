@@ -78,10 +78,6 @@ class RegionDetailScreen extends ConsumerWidget {
                       value: '${data.citiesCount}',
                       label: l10n.statsMetricCities,
                     ),
-                    StatMetricItem(
-                      value: '${data.streetsCount}',
-                      label: l10n.statsMetricStreets,
-                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -124,10 +120,6 @@ class RegionDetailScreen extends ConsumerWidget {
                     MetadataRowItem(
                       label: l10n.statsLastVisit,
                       value: data.lastVisit,
-                    ),
-                    MetadataRowItem(
-                      label: l10n.statsRecordHighest,
-                      value: data.highestPoint,
                     ),
                   ],
                 ),
