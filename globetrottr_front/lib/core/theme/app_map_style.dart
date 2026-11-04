@@ -13,14 +13,17 @@ import 'package:vector_tile_renderer/vector_tile_renderer.dart';
 /// the tile layer loads tiles with the matching offset. Only properties the
 /// vector tile renderer supports are used, checked by a test.
 abstract final class AppMapStyle {
-  static final _themes = Expando<Theme>();
+  static final _themes = Expando<Map<String, Theme>>();
 
-  /// The renderer theme for [palette], read once per palette instance.
-  static Theme themeOf(AppMapPalette palette) =>
-      _themes[palette] ??= ThemeReader().read(json(palette));
+  /// The renderer theme for [palette] with labels in [languageCode], read
+  /// once per palette instance and language.
+  static Theme themeOf(AppMapPalette palette, String languageCode) =>
+      (_themes[palette] ??= {})[languageCode] ??= ThemeReader().read(
+        json(palette, languageCode),
+      );
 
-  static Map<String, dynamic> json(AppMapPalette p) {
-    final layers = _layers(p);
+  static Map<String, dynamic> json(AppMapPalette p, String languageCode) {
+    final layers = _layers(p, _nameIn(languageCode));
     return {
       'version': 8,
       'id': 'globetrottr',
@@ -31,11 +34,14 @@ abstract final class AppMapStyle {
     };
   }
 
-  static List<Map<String, dynamic>> _layers(AppMapPalette p) => [
+  static List<Map<String, dynamic>> _layers(
+    AppMapPalette p,
+    List<Object> name,
+  ) => [
     {
       'id': 'background',
       'type': 'background',
-      'paint': {'background-color': _hex(p.land)},
+      'paint': {'background-color': _color(p.land)},
     },
     _fill('landuse', 'landuse', p.landuse, filter: _classIn(_landuse)),
     _fill(
@@ -52,8 +58,8 @@ abstract final class AppMapStyle {
       ..._fill('building', 'building', p.building),
       'minzoom': 14,
       'paint': {
-        'fill-color': _hex(p.building),
-        'fill-outline-color': _hex(p.buildingOutline),
+        'fill-color': _color(p.building),
+        'fill-outline-color': _color(p.buildingOutline),
       },
     },
     {
@@ -69,7 +75,7 @@ abstract final class AppMapStyle {
       ),
       'minzoom': 14,
       'paint': {
-        'line-color': _hex(p.path),
+        'line-color': _color(p.path),
         'line-width': _width(_pathWidth),
         'line-dasharray': [3, 2],
       },
@@ -98,13 +104,20 @@ abstract final class AppMapStyle {
       'type': 'line',
       'source': MapConfig.basemapSource,
       'source-layer': 'boundary',
-      'filter': [
-        '==',
-        ['get', 'admin_level'],
-        2,
-      ],
+      'filter': _all([
+        [
+          '==',
+          ['get', 'admin_level'],
+          2,
+        ],
+        [
+          '!=',
+          ['get', 'maritime'],
+          1,
+        ],
+      ]),
       'paint': {
-        'line-color': _hex(p.label),
+        'line-color': _color(p.label),
         'line-opacity': 0.35,
         'line-width': 1,
         'line-dasharray': [3, 2],
@@ -115,6 +128,7 @@ abstract final class AppMapStyle {
       'waterway',
       p.waterLabel,
       p.labelHalo,
+      name,
       size: 12,
       minzoom: 13,
       onLine: true,
@@ -124,6 +138,7 @@ abstract final class AppMapStyle {
       'water_name',
       p.waterLabel,
       p.labelHalo,
+      name,
       size: 12,
       filter: [
         '==',
@@ -136,6 +151,7 @@ abstract final class AppMapStyle {
       'transportation_name',
       p.label,
       p.labelHalo,
+      name,
       size: _width([
         [15, 9.5],
         [18, 12],
@@ -150,6 +166,7 @@ abstract final class AppMapStyle {
       'transportation_name',
       p.label,
       p.labelHalo,
+      name,
       size: _width([
         [13, 10],
         [18, 13],
@@ -164,6 +181,7 @@ abstract final class AppMapStyle {
       'poi',
       p.poiLabel,
       p.labelHalo,
+      name,
       size: 11,
       minzoom: 16,
       maxWidth: 8,
@@ -178,6 +196,7 @@ abstract final class AppMapStyle {
       'place',
       p.placeLabel,
       p.labelHalo,
+      name,
       size: _width([
         [11, 10],
         [15, 13],
@@ -198,6 +217,7 @@ abstract final class AppMapStyle {
       'place',
       p.placeLabel,
       p.labelHalo,
+      name,
       size: _width([
         [8, 11],
         [14, 15],
@@ -212,6 +232,7 @@ abstract final class AppMapStyle {
       'place',
       p.placeLabel,
       p.labelHalo,
+      name,
       size: _width([
         [4, 12],
         [12, 20],
@@ -307,9 +328,11 @@ abstract final class AppMapStyle {
     'tunnel',
   ];
 
-  static const _name = [
+  /// The name in the app language where the map data has one, otherwise
+  /// the local name.
+  static List<Object> _nameIn(String languageCode) => [
     'coalesce',
-    ['get', 'name:pl'],
+    ['get', 'name:$languageCode'],
     ['get', 'name'],
   ];
 
@@ -341,7 +364,7 @@ abstract final class AppMapStyle {
     'source': MapConfig.basemapSource,
     'source-layer': sourceLayer,
     'filter': ?filter,
-    'paint': {'fill-color': _hex(color)},
+    'paint': {'fill-color': _color(color)},
   };
 
   static Map<String, dynamic> _line(
@@ -357,7 +380,7 @@ abstract final class AppMapStyle {
     'source-layer': sourceLayer,
     'filter': filter,
     'layout': {'line-cap': 'round', 'line-join': 'round'},
-    'paint': {'line-color': _hex(color), 'line-width': _width(width)},
+    'paint': {'line-color': _color(color), 'line-width': _width(width)},
   };
 
   static Map<String, dynamic> _road(
@@ -377,7 +400,8 @@ abstract final class AppMapStyle {
     String id,
     String sourceLayer,
     Color color,
-    Color halo, {
+    Color halo,
+    List<Object> name, {
     required Object size,
     double? minzoom,
     double? maxzoom,
@@ -397,7 +421,7 @@ abstract final class AppMapStyle {
     'filter': ?filter,
     'layout': {
       if (onLine) 'symbol-placement': 'line',
-      'text-field': _name,
+      'text-field': name,
       'text-font': [
         if (bold) AppTypography.mapBoldFontFamily else AppTypography.fontFamily,
       ],
@@ -406,13 +430,22 @@ abstract final class AppMapStyle {
       ...extraLayout,
     },
     'paint': {
-      'text-color': _hex(color),
-      'text-halo-color': _hex(halo),
+      'text-color': _color(color),
+      'text-halo-color': _color(halo),
       'text-halo-width': 1.6,
       ...extraPaint,
     },
   };
 
-  static String _hex(Color color) =>
-      '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+  static String _color(Color color) {
+    final argb = color.toARGB32();
+    final alpha = argb >>> 24;
+    if (alpha == 0xFF) {
+      return '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+    }
+    final r = (argb >> 16) & 0xFF;
+    final g = (argb >> 8) & 0xFF;
+    final b = argb & 0xFF;
+    return 'rgba($r, $g, $b, ${(alpha / 0xFF).toStringAsFixed(3)})';
+  }
 }

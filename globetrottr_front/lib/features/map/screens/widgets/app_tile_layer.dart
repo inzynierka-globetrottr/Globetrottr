@@ -19,7 +19,10 @@ class AppTileLayer extends ConsumerWidget {
     return VectorTileLayer(
       // The layer reads its cache limit only when it is created.
       key: ValueKey(limit),
-      theme: AppMapStyle.themeOf(context.mapPalette),
+      theme: AppMapStyle.themeOf(
+        context.mapPalette,
+        Localizations.localeOf(context).languageCode,
+      ),
       tileProviders: TileProviders({
         MapConfig.basemapSource: tiles,
       }),

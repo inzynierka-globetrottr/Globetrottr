@@ -100,16 +100,21 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 
 ---
 
-## Base map (In progress, branch `feat/map-tile-cache`)
+## Base map (Done; tile cache in progress, branch `feat/map-tile-cache`)
 
 **Decisions:**
-- The base map is drawn on the device from OpenFreeMap vector tiles in the app style (Done, branch `feat/openfreemap-tiles`). Why: one style for the whole app, colours from the theme.
+- Vector tiles from OpenFreeMap drawn with our own style built from the map palette. Why: no API key, no cost and full control of the look, so the map fits the app. Rejected: Carto raster tiles (fixed look).
+- The tile URL names a data release and is read from the OpenFreeMap TileJSON, and read again periodically, because old releases are removed. Own tile provider instead of the package's, which takes a fixed URL and has no timeout.
+- Labels are in the app language, with the local name where the map data has no translation.
+- The map palette switches at once instead of blending during a theme animation, because every new style redraws all tiles.
 - Tiles are cached by the map package itself in the app support storage, not the temporary folder, because the system can wipe that one right before a trip with no signal (offline-first).
 - Cached tiles are never revalidated; they expire after 180 days, so the map can be that stale. Expiry also runs offline, so it must outlast any trip. Rejected: an own cache with background refresh (the package cache always answers first and would have to be worked around).
 - Size limit 250 MB by default (owner's decision). Above it the package drops the oldest tiles first; true least-recently-used would need an own cache, since Android mostly does not record file reads. The dev panel keeps a limit selector to try other values, next to the cache size, tiles, area covered, a refresh and a clear button.
 - The cache is not user data: logout keeps it.
 
 **Planned / Ideas:**
+- **Attribution (Planned, required before the app is given to anyone outside the team):** the map must credit OpenFreeMap, OpenMapTiles and OpenStreetMap contributors (ODbL), for example with a collapsible attribution button that fits the mock-up.
+- **Dark map palette (Planned):** together with the dark mode of the app.
 - **Port the base map to MapLibre Native** (Planned, owner's decision): the map stutters while tiles load, in release builds too. Measured on a phone: the cost is the drawing of the current map package in both of its modes (raster turns tiles into images on the GPU thread, vector redraws every path each frame); our fog is negligible and the package's next major brings no rendering change. A native renderer keeps tiles on the GPU, as in the owner's travel_tracker app. The bitmap fog stays; only its drawing moves onto or over the new map. Start with a prototype that measures smoothness and how a Flutter fog overlay keeps up with the map.
 - **Cache scans per map widget** (Known issue, solved by the port): the current package walks and stats the whole cache folder a few seconds after each map widget appears and again every 20 written tiles, so a quest list with map previews repeats the scan per card on a cache of up to 250 MB. Not measured yet. If the port is delayed, previews without the file cache (or static images) avoid it.
 - **Prefetch around the player** (Planned): while online and recording, fetch tiles ahead so the map survives losing signal. Share the mechanism with the road-tile prefetch of Map views.
