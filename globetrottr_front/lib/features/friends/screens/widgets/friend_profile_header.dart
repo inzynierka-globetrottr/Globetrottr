@@ -3,7 +3,7 @@ import 'package:globetrottr_front/core/localization/localization_extensions.dart
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
-import 'package:globetrottr_front/core/widgets/neu_icon_tabs.dart';
+import 'package:globetrottr_front/core/widgets/neu_tabs.dart';
 
 /// What a friend's screen shows.
 enum FriendView { profile, comparison }
@@ -39,16 +39,16 @@ class FriendProfileHeader extends StatelessWidget {
             ),
           ),
         ),
-        NeuIconTabs<FriendView>(
+        NeuTabs<FriendView>(
           selected: view,
           onSelected: onView,
           tabs: [
-            (
+            NeuTab(
               value: FriendView.profile,
               icon: AppIcons.navProfile,
               label: l10n.friendTabProfile,
             ),
-            (
+            NeuTab(
               value: FriendView.comparison,
               icon: AppIcons.compare,
               label: l10n.friendTabComparison,

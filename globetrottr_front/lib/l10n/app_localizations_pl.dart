@@ -271,8 +271,8 @@ class AppLocalizationsPl extends AppLocalizations {
   String get profileWeekNow => 'teraz';
 
   @override
-  String profileWeekValue(int week, String area) {
-    return 'Tydzień $week: $area km²';
+  String profileWeekValue(String date, String area) {
+    return 'Tydzień od $date: $area km²';
   }
 
   @override
@@ -329,6 +329,19 @@ class AppLocalizationsPl extends AppLocalizations {
   String profileFogMap(String username) {
     return 'Mapa z terenem odkrytym przez $username';
   }
+
+  @override
+  String friendMapArea(String area) {
+    return '$area km² odkrytego terenu';
+  }
+
+  @override
+  String friendMapTheirs(String username) {
+    return 'Teren $username';
+  }
+
+  @override
+  String get friendMapTogether => 'Razem ze mną';
 
   @override
   String get friendTabProfile => 'Profil';
@@ -448,11 +461,6 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get friendsUndo => 'Cofnij';
-
-  @override
-  String friendsPlayerFog(String username) {
-    return 'Mgła gracza: $username';
-  }
 
   @override
   String get questsTitle => 'Questy';

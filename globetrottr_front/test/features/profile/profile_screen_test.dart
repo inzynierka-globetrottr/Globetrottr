@@ -90,8 +90,8 @@ void main() {
     expect(find.text('Statistics'), findsOneWidget);
     expect(find.text('— km²'), findsOneWidget);
     expect(find.text('New area per week'), findsOneWidget);
-    for (final week in ['38', '41', '44', 'now']) {
-      expect(find.text(week), findsOneWidget);
+    for (final label in ['14', 'Sep', '28', 'Oct', '26', 'now']) {
+      expect(find.text(label), findsOneWidget);
     }
     expect(find.text('— km'), findsOneWidget);
     expect(find.text('2'), findsOneWidget);

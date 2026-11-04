@@ -75,6 +75,9 @@ final appRouter = Provider<GoRouter>((ref) {
                 path: 'map',
                 builder: (context, state) => FriendMapScreen(
                   friendUsername: state.pathParameters['username']!,
+                  initialView: FriendMapView.fromQuery(
+                    state.uri.queryParameters['view'],
+                  ),
                 ),
               ),
             ],

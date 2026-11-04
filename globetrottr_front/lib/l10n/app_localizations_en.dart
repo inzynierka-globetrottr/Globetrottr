@@ -270,8 +270,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileWeekNow => 'now';
 
   @override
-  String profileWeekValue(int week, String area) {
-    return 'Week $week: $area km²';
+  String profileWeekValue(String date, String area) {
+    return 'Week of $date: $area km²';
   }
 
   @override
@@ -328,6 +328,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String profileFogMap(String username) {
     return 'Map of the area discovered by $username';
   }
+
+  @override
+  String friendMapArea(String area) {
+    return '$area km² discovered';
+  }
+
+  @override
+  String friendMapTheirs(String username) {
+    return '$username\'s area';
+  }
+
+  @override
+  String get friendMapTogether => 'Together with me';
 
   @override
   String get friendTabProfile => 'Profile';
@@ -446,11 +459,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get friendsUndo => 'Undo';
-
-  @override
-  String friendsPlayerFog(String username) {
-    return 'Player fog: $username';
-  }
 
   @override
   String get questsTitle => 'Quests';

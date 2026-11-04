@@ -65,6 +65,12 @@ void main() {
   group('month', () {
     setUpAll(initializeDateFormatting);
 
+    test('a short month stands on its own', () {
+      expect(formatShortMonth(DateTime(2026, 9, 14), 'pl'), 'wrz');
+      expect(formatShortMonth(DateTime(2026, 10, 5), 'pl'), 'paź');
+      expect(formatShortMonth(DateTime(2026, 9, 14), 'en'), 'Sep');
+    });
+
     test('friends since uses the day and the month of a date', () {
       final now = DateTime(2026, 11, 4);
       expect(formatSinceDate(DateTime(2026, 3, 2), 'pl', now: now), '2 marca');

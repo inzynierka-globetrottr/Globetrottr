@@ -569,8 +569,8 @@ abstract class AppLocalizations {
   /// No description provided for @profileWeekValue.
   ///
   /// In en, this message translates to:
-  /// **'Week {week}: {area} km²'**
-  String profileWeekValue(int week, String area);
+  /// **'Week of {date}: {area} km²'**
+  String profileWeekValue(String date, String area);
 
   /// No description provided for @profileThisWeekValue.
   ///
@@ -649,6 +649,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Map of the area discovered by {username}'**
   String profileFogMap(String username);
+
+  /// No description provided for @friendMapArea.
+  ///
+  /// In en, this message translates to:
+  /// **'{area} km² discovered'**
+  String friendMapArea(String area);
+
+  /// No description provided for @friendMapTheirs.
+  ///
+  /// In en, this message translates to:
+  /// **'{username}\'s area'**
+  String friendMapTheirs(String username);
+
+  /// No description provided for @friendMapTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'Together with me'**
+  String get friendMapTogether;
 
   /// No description provided for @friendTabProfile.
   ///
@@ -834,12 +852,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Undo'**
   String get friendsUndo;
-
-  /// No description provided for @friendsPlayerFog.
-  ///
-  /// In en, this message translates to:
-  /// **'Player fog: {username}'**
-  String friendsPlayerFog(String username);
 
   /// No description provided for @questsTitle.
   ///

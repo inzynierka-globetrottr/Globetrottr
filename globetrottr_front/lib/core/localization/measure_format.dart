@@ -40,6 +40,10 @@ String formatSinceDate(DateTime date, String locale, {DateTime? now}) {
       .format(date);
 }
 
+/// A short month on its own, e.g. "Sep" or "wrz".
+String formatShortMonth(DateTime date, String locale) =>
+    DateFormat('LLL', locale).format(date);
+
 /// A day with a short month, e.g. "28 Sep" or "28 wrz".
 String formatShortDate(DateTime date, String locale) =>
     DateFormat('d MMM', locale).format(date);

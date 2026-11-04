@@ -106,8 +106,8 @@
   "profileWeeklyTitle": "New area per week",
   "profileWeeklyUnit": "km²",
   "profileWeekNow": "now",
-  "profileWeekValue": "Week {week}: {area} km²",
-  "@profileWeekValue": {"placeholders": {"week": {"type": "int"}, "area": {"type": "String"}}},
+  "profileWeekValue": "Week of {date}: {area} km²",
+  "@profileWeekValue": {"placeholders": {"date": {"type": "String"}, "area": {"type": "String"}}},
   "profileThisWeekValue": "This week: {area} km²",
   "@profileThisWeekValue": {"placeholders": {"area": {"type": "String"}}},
   "profileDistance": "distance travelled",
@@ -129,6 +129,11 @@
   "profileOpenMap": "Open the map full screen",
   "profileFogMap": "Map of the area discovered by {username}",
   "@profileFogMap": {"placeholders": {"username": {"type": "String"}}},
+  "friendMapArea": "{area} km² discovered",
+  "@friendMapArea": {"placeholders": {"area": {"type": "String"}}},
+  "friendMapTheirs": "{username}'s area",
+  "@friendMapTheirs": {"placeholders": {"username": {"type": "String"}}},
+  "friendMapTogether": "Together with me",
   "friendTabProfile": "Profile",
   "friendTabComparison": "Comparison",
   "friendOnlyYou": "Only you",
@@ -168,14 +173,6 @@
   "@friendsYourFriends": {"placeholders": {"count": {"type": "int"}}},
   "@friendsOpen": {"placeholders": {"username": {"type": "String"}}},
   "@friendsArea": {"placeholders": {"area": {"type": "String"}}},
-  "friendsPlayerFog": "Player fog: {username}",
-  "@friendsPlayerFog": {
-    "placeholders": {
-      "username": {
-        "type": "String"
-      }
-    }
-  },
 
   "questsTitle": "Quests",
   "questsLevel": "Level {level}",

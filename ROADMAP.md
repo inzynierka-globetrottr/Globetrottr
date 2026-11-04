@@ -54,7 +54,7 @@ Source of truth for the plan and the key design decisions of every part of the a
 
 The app moves from the current dark neumorphic look to a light neumorphic style with one configurable accent colour. The reference is the HTML mock-up `globetrotttr-neo-neumorphic.html` (branch `design/neo-mockup`); screens in its "Locked in" group are approved, the rest are still being iterated.
 
-**Current frontend:** the whole app uses the light theme tokens, the bundled Manrope font and the shared neumorphic components; the bottom navigation follows the mock-up. The auth, Friends, Add friend, map, Quests, profile and friend's profile screens follow the mock-up; numbers the backend does not provide yet are neutral placeholders. The friend's full-screen map and the settings still have their old layouts.
+**Current frontend:** the whole app uses the light theme tokens, the bundled Manrope font and the shared neumorphic components; the bottom navigation follows the mock-up. The auth, Friends, Add friend, map, Quests, profile and friend's profile screens follow the mock-up; numbers the backend does not provide yet are neutral placeholders. The settings still have their old layout.
 
 **Stages** (each ends with a review by the owner):
 1. Theme tokens, bundled Manrope font, shared components, bottom navigation, fog colour (Done; not yet checked on a phone).
@@ -63,6 +63,7 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 4. Map: area pill, recording, quest flag with its card, layers sheet (Done; not yet checked on a phone).
 5. Quests: active quest, places and routes with a map preview, swapping the active quest, history of completed quests (Done; checked on the emulator, not yet on a phone).
 6. Profile and a friend's profile with the comparison (Done, branch `feat/143-profile-screens`; checked in widget renders, not yet on a phone). Both share one layout; only the own profile reaches routes and statistics (two labelled shortcut tiles under the avatar, owner's choice over a list at the bottom, header tabs, links inside the cards and icon-only buttons) and settings (the corner button), and only a friend's shows their fog, with the discovered area on the same card as the map. Profile stats: new area per week, distance, completed quests and the share of the Earth's land; they should change often and be about discovering, not just moving. No badges on the profile until the app has them.
+   - Mock-up follow-ups (Planned): weeks in the bar chart are labelled by the date of their Monday, with the month only at its first week (owner's choice over months under the bars and a selected week in the header; week numbers read badly). The friend's map opens a full-screen fog with a switch between their fog and both fogs coloured by owner.
 
 **Decisions:**
 - Port in stages, cheapest visual gain first. Screens outside the "Locked in" group (statistics, routes, countries, regions, cities, badges, settings) wait for approval and data.
@@ -92,7 +93,8 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - The backend has no levels yet: the level is a placeholder and the XP is the profile's total points.
 - Product decisions from the mock-up: one active quest at a time, its next point is shown on the map without navigation; friends are added by exact nickname, without suggestions; the own profile has no map; the "passing through" feature is dropped.
 - The profile drops the bio and the avatar upload from its layout. Until the settings screen is approved, the corner button opens the settings dialog, which also holds changing the picture and the logout (the mock-up puts the logout in settings). The picture is picked after the dialog closes; the avatar shows the upload and a failed upload says why.
-- The comparison map shows only the friend's fog until friends' fog moves to tiles; then it shows both. The split, duel and places stay empty until the data exists.
+- The friend's full-screen map has two views, their area and together with the user's (with the split of the area); the profile's map opens the first, the comparison's map the second. Until friends' fog moves to tiles both show only the friend's fog. The split, duel and places stay empty until the data exists.
+- The weekly chart labels a week by the day its Monday falls on, with the month where it changes, as in the mock-up (dates read better than week numbers).
 - Quests tab from the mock-up: the active quest card on top (points as steps, a route as a progress bar, an empty dashed card when none is active), below it the available quests grouped by type (places, routes) with no time estimates. A quest opens into a map preview with one button that starts it, or swaps it in after a warning that the active quest and its progress are lost. Completed quests are not listed; the level row opens their history.
 
 **Open questions:**

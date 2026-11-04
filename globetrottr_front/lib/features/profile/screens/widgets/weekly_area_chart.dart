@@ -7,11 +7,12 @@ import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/time/clock.dart';
-import 'package:globetrottr_front/core/time/iso_week.dart';
+import 'package:globetrottr_front/core/time/week_start.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 /// New area per week as bars, oldest first; the current week is the last
-/// one, in gold. Weeks are labelled with their ISO numbers.
+/// one, in gold. A week is labelled with the day its Monday falls on, and
+/// with the month where the month changes.
 class WeeklyAreaChart extends ConsumerWidget {
   const WeeklyAreaChart({super.key, required this.weeklyKm2});
 
@@ -29,12 +30,15 @@ class WeeklyAreaChart extends ConsumerWidget {
     final palette = context.palette;
     final typography = context.typography;
     final locale = Localizations.localeOf(context).toString();
-    final weeks = recentIsoWeeks(ref.watch(clockProvider)(), weeklyKm2.length);
+    final weeks = recentWeekStarts(
+      ref.watch(clockProvider)(),
+      weeklyKm2.length,
+    );
     final known = weeklyKm2.whereType<double>();
     final top = known.isEmpty ? 0.0 : known.reduce(math.max);
     final last = weeklyKm2.length - 1;
-    final tabular = typography.smallStrong.copyWith(
-      color: palette.text,
+    final strong = typography.smallStrong.copyWith(color: palette.text);
+    final tabular = strong.copyWith(
       fontFeatures: const [FontFeature.tabularFigures()],
     );
 
@@ -44,7 +48,7 @@ class WeeklyAreaChart extends ConsumerWidget {
       return Semantics(
         label: i == last
             ? l10n.profileThisWeekValue(area)
-            : l10n.profileWeekValue(weeks[i], area),
+            : l10n.profileWeekValue(formatShortDate(weeks[i], locale), area),
         excludeSemantics: true,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -95,23 +99,62 @@ class WeeklyAreaChart extends ConsumerWidget {
           ),
           ExcludeSemantics(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               spacing: _gap,
               children: [
                 for (var i = 0; i < weeks.length; i++)
                   Expanded(
-                    child: Text(
-                      i == last ? l10n.profileWeekNow : '${weeks[i]}',
-                      textAlign: TextAlign.center,
-                      style: i == last
-                          ? typography.smallStrong.copyWith(color: palette.text)
-                          : typography.small,
-                    ),
+                    child: i == last
+                        ? Text(
+                            l10n.profileWeekNow,
+                            textAlign: TextAlign.center,
+                            style: strong,
+                          )
+                        : _WeekLabel(
+                            day: '${weeks[i].day}',
+                            month:
+                                i == 0 || weeks[i].month != weeks[i - 1].month
+                                ? formatShortMonth(weeks[i], locale)
+                                : null,
+                          ),
                   ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The day of a week's Monday, with the month under it when given. The
+/// month line keeps its height, so all days sit on one line.
+class _WeekLabel extends StatelessWidget {
+  const _WeekLabel({required this.day, this.month});
+
+  final String day;
+  final String? month;
+
+  static const _lineHeight = 1.2;
+
+  @override
+  Widget build(BuildContext context) {
+    final typography = context.typography;
+    final monthStyle = typography.smallStrong.copyWith(
+      color: context.palette.text,
+      height: _lineHeight,
+    );
+    return Column(
+      children: [
+        Text(
+          day,
+          style: typography.small.copyWith(
+            height: _lineHeight,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        Text(month ?? '', style: monthStyle, maxLines: 1),
+      ],
     );
   }
 }

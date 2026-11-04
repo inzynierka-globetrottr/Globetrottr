@@ -4,6 +4,7 @@ import 'package:globetrottr_front/features/friends/provider/friend_comparison.da
 import 'package:globetrottr_front/features/friends/screens/widgets/area_split_card.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/duel_card.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/friend_fog_preview.dart';
+import 'package:globetrottr_front/features/friends/screens/widgets/friend_map_panel.dart';
 import 'package:globetrottr_front/features/friends/screens/widgets/place_comparison_card.dart';
 
 /// The user against a friend: both areas on one map, the duel and the
@@ -23,7 +24,10 @@ class FriendComparisonPane extends ConsumerWidget {
         AreaSplitCard(
           username: username,
           split: comparison.split,
-          map: FriendFogPreview(username: username),
+          map: FriendFogPreview(
+            username: username,
+            mapView: FriendMapView.together,
+          ),
         ),
         DuelCard(username: username, comparison: comparison),
         if (comparison.places.isNotEmpty)

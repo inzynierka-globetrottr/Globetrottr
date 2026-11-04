@@ -10,6 +10,7 @@ import 'package:globetrottr_front/features/fog/data/fog_service.dart';
 import 'package:globetrottr_front/features/friends/data/friends_service.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
 import 'package:globetrottr_front/features/friends/provider/friend_comparison.dart';
+import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_profile_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/map/data/open_free_map_tile_provider.dart';
@@ -75,8 +76,12 @@ void main() {
               routes: [
                 GoRoute(
                   path: 'map',
-                  builder: (_, state) =>
-                      Text('map of ${state.pathParameters['username']}'),
+                  builder: (_, state) => FriendMapScreen(
+                    friendUsername: state.pathParameters['username']!,
+                    initialView: FriendMapView.fromQuery(
+                      state.uri.queryParameters['view'],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -186,12 +191,37 @@ void main() {
     expect(find.text('Duel'), findsNothing);
   });
 
-  testWidgets('the map button opens the friend map', (tester) async {
+  testWidgets('the profile map opens the friend fog on their area', (
+    tester,
+  ) async {
     await pump(tester);
 
     await tester.tap(find.bySemanticsLabel('Open the map full screen'));
     await tester.pumpAndSettle();
 
-    expect(find.text('map of marekgarek'), findsOneWidget);
+    expect(find.byType(FriendMapScreen), findsOneWidget);
+    expect(find.text('— km² discovered'), findsOneWidget);
+    expect(find.text("marekgarek's area"), findsOneWidget);
+    expect(find.text('Together with me'), findsOneWidget);
+    expect(find.text('Only you'), findsNothing);
+
+    await tester.tap(find.text('Together with me'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Only you'), findsOneWidget);
+    expect(find.text('Only marekgarek'), findsOneWidget);
+  });
+
+  testWidgets('the comparison map opens the fog together with mine', (
+    tester,
+  ) async {
+    await pump(tester);
+    await openComparison(tester);
+
+    await tester.tap(find.bySemanticsLabel('Open the map full screen'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FriendMapScreen), findsOneWidget);
+    expect(find.text('Only you'), findsOneWidget);
   });
 }
