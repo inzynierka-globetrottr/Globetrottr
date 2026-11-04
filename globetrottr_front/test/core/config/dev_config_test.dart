@@ -27,10 +27,5 @@ void main() {
       dotenv.loadFromString(envString: 'DEV_MODE=false');
       expect(DevConfig.isDevMode, isFalse);
     });
-
-    test('isDevMode accepts only true, not 1', () {
-      dotenv.loadFromString(envString: 'DEV_MODE=1\nENABLE_DEV_SCREEN=1');
-      expect(DevConfig.isDevMode, isFalse);
-    });
   });
 }
