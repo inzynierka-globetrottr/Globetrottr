@@ -60,24 +60,28 @@ void main() {
       expect(seen.map((p) => p.latitude), [50]);
     });
 
-    test(
-      'resets the stream reference when the position stream errors',
-      () async {
-        final fixes = StreamController<Position>();
-        addTearDown(fixes.close);
-        final service = LocationService(
-          MapStorage(),
-          InMemoryTrackLogStorage(),
-        );
-        service.followPositions(fixes.stream);
-        expect(service.hasStream, isTrue);
+    test('keeps saving fixes after a stream error', () async {
+      final fixes = StreamController<Position>();
+      addTearDown(fixes.close);
+      final mapStorage = _GatedMapStorage()..gate.complete(1);
+      final trackLog = InMemoryTrackLogStorage();
+      final service = LocationService(mapStorage, trackLog);
+      service.followPositions(fixes.stream);
+      service.setRecording(true);
 
-        fixes.addError(StateError('Location disabled'));
-        await pumpEventQueue();
+      fixes.add(_at(50.06, 19.94));
+      await pumpEventQueue();
+      fixes.addError(StateError('Location disabled'));
+      await pumpEventQueue();
+      fixes.add(_at(50.07, 19.94));
+      await pumpEventQueue();
 
-        expect(service.hasStream, isFalse);
-      },
-    );
+      expect(
+        (await trackLog.entriesAfter(0)).map((e) => e.latitude),
+        [50.06, 50.07],
+      );
+      expect(service.hasStream, isTrue);
+    });
   });
 
   group('LocationService.recordPosition', () {

@@ -104,7 +104,6 @@ class LocationService {
       locationSettings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: MapConfig.distanceFilter,
-        forceLocationManager: true,
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: ForegroundNotificationConfig(
           notificationText: translateErrorDart(
@@ -142,14 +141,11 @@ class LocationService {
   @visibleForTesting
   void followPositions(Stream<Position> fixes) {
     _broadcastStream = fixes.where(isUsablePosition).asBroadcastStream();
+    // An error (location switched off for a moment) must not end the
+    // recording: the stream goes on once fixes come back.
     _dbSubscription = _broadcastStream!.listen(
       recordPosition,
-      onError: (Object error) {
-        debugPrint('Location stream error: $error');
-        _dbSubscription?.cancel();
-        _dbSubscription = null;
-        _broadcastStream = null;
-      },
+      onError: (Object error) => debugPrint('Location stream error: $error'),
     );
   }
 
