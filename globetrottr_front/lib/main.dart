@@ -8,7 +8,7 @@ import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:globetrottr_front/core/router/app_router.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/debug/widgets/build_stamp.dart';
-import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
+import 'package:globetrottr_front/features/statistics/screens/widgets/app_open_recorder.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
 
 Future<void> main() async {
@@ -29,45 +29,34 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends ConsumerStatefulWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  ConsumerState<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends ConsumerState<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(streakStatsProvider.notifier).recordAppOpen();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouter);
     final locale = ref.watch(localeProvider);
 
-    return MaterialApp.router(
-      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      theme: AppTheme.light,
-      routerConfig: router,
-      locale: locale,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      builder: kDebugMode
-          ? (context, child) => Stack(
-              fit: StackFit.expand,
-              children: [?child, const BuildStamp()],
-            )
-          : null,
+    return AppOpenRecorder(
+      child: MaterialApp.router(
+        onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+        theme: AppTheme.light,
+        routerConfig: router,
+        locale: locale,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: kDebugMode
+            ? (context, child) => Stack(
+                fit: StackFit.expand,
+                children: [?child, const BuildStamp()],
+              )
+            : null,
+      ),
     );
   }
 }

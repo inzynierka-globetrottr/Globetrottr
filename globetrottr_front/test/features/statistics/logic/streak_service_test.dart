@@ -73,63 +73,48 @@ void main() {
       });
     });
 
-    group('recordTripCompleted', () {
-      test(
-        'increments recording streak when trip meets distance threshold',
-        () {
-          const initial = UserStreakStats.empty;
-          final now = DateTime(2026, 11, 3, 11);
+    group('recordRecordingDay', () {
+      test('the first recording day starts a streak', () {
+        final updated = service.recordRecordingDay(
+          UserStreakStats.empty,
+          now: DateTime(2026, 11, 3, 11),
+        );
 
-          final updated = service.recordTripCompleted(
-            initial,
-            now: now,
-            distanceM: 250,
-            newAreaM2: 0,
-          );
+        expect(updated.currentRecordingStreak, 1);
+        expect(updated.maxRecordingStreak, 1);
+        expect(updated.lastRecordingDate, '2026-11-03');
+      });
 
-          expect(updated.currentRecordingStreak, 1);
-          expect(updated.maxRecordingStreak, 1);
-          expect(updated.lastRecordingDate, '2026-11-03');
-        },
-      );
+      test('a second recording on the same day keeps the streak', () {
+        final first = service.recordRecordingDay(
+          UserStreakStats.empty,
+          now: DateTime(2026, 11, 3, 11),
+        );
 
-      test(
-        'does not increment recording streak if trip is trivial (<100m and 0 new area)',
-        () {
-          const initial = UserStreakStats.empty;
-          final now = DateTime(2026, 11, 3, 11);
+        final second = service.recordRecordingDay(
+          first,
+          now: DateTime(2026, 11, 3, 20),
+        );
 
-          final updated = service.recordTripCompleted(
-            initial,
-            now: now,
-            distanceM: 40,
-            newAreaM2: 0,
-          );
+        expect(second.currentRecordingStreak, 1);
+      });
 
-          expect(updated.currentRecordingStreak, 0);
-          expect(updated.lastRecordingDate, isNull);
-        },
-      );
+      test('a recording on the next day extends the streak', () {
+        final first = service.recordRecordingDay(
+          UserStreakStats.empty,
+          now: DateTime(2026, 11, 3, 23, 50),
+        );
 
-      test(
-        'increments recording streak if distance is short but new area was discovered',
-        () {
-          const initial = UserStreakStats.empty;
-          final now = DateTime(2026, 11, 3, 11);
+        final second = service.recordRecordingDay(
+          first,
+          now: DateTime(2026, 11, 4, 0, 20),
+        );
 
-          final updated = service.recordTripCompleted(
-            initial,
-            now: now,
-            distanceM: 50,
-            newAreaM2: 1500,
-          );
+        expect(second.currentRecordingStreak, 2);
+        expect(second.maxRecordingStreak, 2);
+      });
 
-          expect(updated.currentRecordingStreak, 1);
-          expect(updated.lastRecordingDate, '2026-11-03');
-        },
-      );
-
-      test('resets recording streak when more than one day is skipped', () {
+      test('a skipped day restarts the streak', () {
         const initial = UserStreakStats(
           currentOpenStreak: 5,
           maxOpenStreak: 5,
@@ -138,13 +123,10 @@ void main() {
           maxRecordingStreak: 12,
           lastRecordingDate: '2026-10-30',
         );
-        final now = DateTime(2026, 11, 3, 11);
 
-        final updated = service.recordTripCompleted(
+        final updated = service.recordRecordingDay(
           initial,
-          now: now,
-          distanceM: 500,
-          newAreaM2: 200,
+          now: DateTime(2026, 11, 3, 11),
         );
 
         expect(updated.currentRecordingStreak, 1);

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/time/clock.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
 import 'package:globetrottr_front/features/regions/data/sqflite_region_storage.dart';
 import 'package:globetrottr_front/features/statistics/data/daily_exploration_stats.dart';
@@ -7,6 +8,7 @@ import 'package:globetrottr_front/features/statistics/data/statistics_storage.da
 import 'package:globetrottr_front/features/statistics/data/user_region_stats.dart';
 import 'package:globetrottr_front/features/statistics/data/user_streak_stats.dart';
 import 'package:globetrottr_front/features/statistics/logic/statistics_tracker.dart';
+import 'package:globetrottr_front/features/statistics/logic/streak_service.dart';
 
 final regionStorageProvider = Provider<RegionStorage>((ref) {
   final storage = SqfliteRegionStorage();
@@ -52,13 +54,17 @@ class StreakStatsNotifier extends AsyncNotifier<UserStreakStats> {
     return storage.loadStreakStats();
   }
 
-  Future<void> recordAppOpen() async {
-    final tracker = ref.read(statisticsTrackerProvider);
+  Future<void> recordAppOpen({DateTime? now}) async {
     final storage = ref.read(statisticsStorageProvider);
-    final current = state.value ?? await storage.loadStreakStats();
-    final updated = tracker.streakService.recordAppOpen(current);
+    final current = await storage.loadStreakStats();
+    final updated = const StreakService().recordAppOpen(
+      current,
+      now: now ?? ref.read(clockProvider)(),
+    );
+    if (updated.lastOpenDate == current.lastOpenDate) return;
     await storage.saveStreakStats(updated);
     state = AsyncData(updated);
+    ref.read(statisticsRevisionProvider.notifier).bump();
   }
 }
 

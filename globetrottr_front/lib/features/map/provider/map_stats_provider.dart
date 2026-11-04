@@ -1,3 +1,4 @@
+import 'package:globetrottr_front/core/time/clock.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 import 'package:globetrottr_front/features/regions/data/region.dart';
@@ -12,6 +13,7 @@ import 'package:globetrottr_front/features/map/data/location_service.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
+import 'package:globetrottr_front/features/statistics/logic/streak_service.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -139,6 +141,10 @@ class SessionNewAreaNotifier extends Notifier<double?> {
   LatLng? _lastPosition;
   StreamSubscription<FogChange>? _changesSub;
   StreamSubscription<TrackLogEntry>? _loggedSub;
+  DateTime? _day;
+  double _dayDistanceM = 0.0;
+  double _dayAreaM2 = 0.0;
+  bool _dayCounted = false;
 
   static const double _metersPerDegree = 111319.9;
 
@@ -152,13 +158,17 @@ class SessionNewAreaNotifier extends Notifier<double?> {
         _m2 = 0.0;
         _distanceM = 0.0;
         _lastPosition = null;
-        _sessionStartTime = DateTime.now();
+        _sessionStartTime = ref.read(clockProvider)();
+        _day = null;
         state = 0.0;
       } else if (prev ?? false) {
         unawaited(ref.read(fogProvider.notifier).flush());
         if (_distanceM > 0 || _m2 > 0) {
           final durationSec = _sessionStartTime != null
-              ? DateTime.now().difference(_sessionStartTime!).inSeconds
+              ? ref
+                    .read(clockProvider)()
+                    .difference(_sessionStartTime!)
+                    .inSeconds
               : 0;
           try {
             ref
@@ -199,7 +209,9 @@ class SessionNewAreaNotifier extends Notifier<double?> {
         if (isRecording) {
           final pt = LatLng(entry.latitude, entry.longitude);
           if (_lastPosition != null) {
-            _distanceM += _metersBetween(_lastPosition!, pt);
+            final step = _metersBetween(_lastPosition!, pt);
+            _distanceM += step;
+            _accrue(distanceM: step);
           }
           _lastPosition = pt;
         }
@@ -226,6 +238,7 @@ class SessionNewAreaNotifier extends Notifier<double?> {
           if (addedM2 > 0) {
             _m2 += addedM2;
             state = _m2 / 1000000.0;
+            _accrue(areaM2: addedM2);
           }
         }
       } catch (e) {
@@ -247,7 +260,38 @@ class SessionNewAreaNotifier extends Notifier<double?> {
     if (m2 > 0) {
       _m2 += m2;
       state = _m2 / 1000000.0;
+      _accrue(areaM2: m2);
     }
+  }
+
+  /// Counts today as a recording day as soon as today's part of the
+  /// recording passes the streak threshold, so a recording that the app
+  /// never sees stop, or one across midnight, still counts.
+  void _accrue({double distanceM = 0, double areaM2 = 0}) {
+    final now = ref.read(clockProvider)();
+    final day = _day;
+    if (day == null ||
+        day.year != now.year ||
+        day.month != now.month ||
+        day.day != now.day) {
+      _day = now;
+      _dayDistanceM = 0.0;
+      _dayAreaM2 = 0.0;
+      _dayCounted = false;
+    }
+    _dayDistanceM += distanceM;
+    _dayAreaM2 += areaM2;
+    if (_dayCounted) return;
+    if (_dayDistanceM < StreakService.minDistanceForRecordingStreak &&
+        _dayAreaM2 < StreakService.minAreaForRecordingStreak) {
+      return;
+    }
+    _dayCounted = true;
+    ref.read(statisticsTrackerProvider).recordRecordingDay(now: now).catchError(
+      (Object error) {
+        debugPrint('Failed to record the recording day: $error');
+      },
+    );
   }
 
   void reset() {

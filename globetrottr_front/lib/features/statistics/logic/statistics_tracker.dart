@@ -263,15 +263,6 @@ class StatisticsTracker {
       ),
     );
 
-    final currentStreaks = await statisticsStorage.loadStreakStats();
-    final updatedStreaks = streakService.recordTripCompleted(
-      currentStreaks,
-      distanceM: distanceM,
-      newAreaM2: 0,
-      now: moment,
-    );
-    await statisticsStorage.saveStreakStats(updatedStreaks);
-
     if (maxAltitudeM != null) {
       await statisticsStorage.setRecordIfMax(
         'max_altitude',
@@ -287,6 +278,16 @@ class StatisticsTracker {
     );
 
     onUpdated?.call();
+  }
+
+  Future<void> recordRecordingDay({DateTime? now}) {
+    return _queue.run(() async {
+      final current = await statisticsStorage.loadStreakStats();
+      final updated = streakService.recordRecordingDay(current, now: now);
+      if (updated.lastRecordingDate == current.lastRecordingDate) return;
+      await statisticsStorage.saveStreakStats(updated);
+      onUpdated?.call();
+    });
   }
 
   String _formatDate(DateTime dt) {

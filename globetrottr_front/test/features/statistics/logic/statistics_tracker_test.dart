@@ -126,7 +126,7 @@ void main() {
     );
 
     test(
-      'recordTripSession updates daily distance and recording streak',
+      'recordTripSession updates daily distance',
       () async {
         final now = DateTime(2026, 11, 3, 14);
 
@@ -144,14 +144,30 @@ void main() {
         expect(daily.walkDistanceM, 3500.0);
         expect(daily.durationSeconds, 1800);
 
-        final streak = await statsStorage.loadStreakStats();
-        expect(streak.currentRecordingStreak, 1);
-        expect(streak.lastRecordingDate, '2026-11-03');
-
         final maxAlt = await statsStorage.getRecord('max_altitude');
         expect(maxAlt, 250.0);
       },
     );
+
+    test(
+      'recordRecordingDay on consecutive days makes a two-day streak',
+      () async {
+        await tracker.recordRecordingDay(now: DateTime(2026, 11, 3, 9));
+        await tracker.recordRecordingDay(now: DateTime(2026, 11, 4, 9));
+
+        final streak = await statsStorage.loadStreakStats();
+        expect(streak.currentRecordingStreak, 2);
+        expect(streak.lastRecordingDate, '2026-11-04');
+      },
+    );
+
+    test('recordRecordingDay twice on one day counts one day', () async {
+      await tracker.recordRecordingDay(now: DateTime(2026, 11, 3, 9));
+      await tracker.recordRecordingDay(now: DateTime(2026, 11, 3, 18));
+
+      final streak = await statsStorage.loadStreakStats();
+      expect(streak.currentRecordingStreak, 1);
+    });
 
     test(
       'rebuildFromFogTiles recalculates stats from an entire set of fog tiles',

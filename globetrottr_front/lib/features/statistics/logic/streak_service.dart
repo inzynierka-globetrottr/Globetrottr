@@ -31,17 +31,13 @@ class StreakService {
     );
   }
 
-  UserStreakStats recordTripCompleted(
+  /// Counts the day of [now] as a recording day. The caller decides whether
+  /// the recording passed [minDistanceForRecordingStreak] or
+  /// [minAreaForRecordingStreak].
+  UserStreakStats recordRecordingDay(
     UserStreakStats current, {
-    required double distanceM,
-    required double newAreaM2,
     DateTime? now,
   }) {
-    if (distanceM < minDistanceForRecordingStreak &&
-        newAreaM2 < minAreaForRecordingStreak) {
-      return current;
-    }
-
     final currentMoment = now ?? DateTime.now();
     final todayStr = _formatDate(currentMoment);
 
