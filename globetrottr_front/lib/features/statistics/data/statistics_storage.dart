@@ -30,6 +30,11 @@ abstract interface class StatisticsStorage {
   Future<void> saveRegionStats(Iterable<UserRegionStats> stats);
   Future<void> clearRegionStats();
 
+  /// Forgets which region each tile belongs to.
+  Future<void> clearTileRegionCache();
+
+  Future<void> setRecord(String key, double value);
+
   /// Replaces all region statistics with [stats] in one transaction.
   Future<void> replaceRegionStats(Iterable<UserRegionStats> stats);
 

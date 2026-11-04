@@ -11,6 +11,7 @@ import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/regions/data/region_pack_service.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
+import 'package:globetrottr_front/features/regions/data/regions_db_version.dart';
 import 'package:globetrottr_front/features/statistics/data/statistics_storage.dart';
 import 'package:globetrottr_front/features/statistics/data/user_region_stats.dart';
 import 'package:globetrottr_front/features/statistics/logic/statistics_tracker.dart';
@@ -21,9 +22,19 @@ import '../../../support/fog_test_helpers.dart';
 import '../../../support/in_memory_track_log_storage.dart';
 
 class _BackfilledStatistics extends Fake implements StatisticsStorage {
+  double? regionsVersion = kBundledRegionsDbVersion.toDouble();
+  double pending = 0;
+
   @override
-  Future<double?> getRecord(String key) async =>
-      key == 'stats_backfilled' ? 1 : null;
+  Future<double?> getRecord(String key) async => switch (key) {
+    'stats_backfilled' => 1,
+    'regions_version' => regionsVersion,
+    'stats_rebuild_pending' => pending,
+    _ => null,
+  };
+
+  @override
+  Future<void> setRecord(String key, double value) async {}
 
   @override
   Future<List<UserRegionStats>> getAllRegionStats() async => [];
@@ -73,9 +84,14 @@ class _CountingTracker extends Fake implements StatisticsTracker {
     Iterable<TileAreaDelta> tiles, {
     Future<Map<FogTileId, FogCellAreas>> Function(List<FogTileId> ids)?
     loadCells,
+    bool keepVisits = true,
+    bool resetTileCache = false,
   }) async {
     rebuilds++;
+    keptVisits = keepVisits;
   }
+
+  bool? keptVisits;
 }
 
 void main() {
@@ -133,7 +149,7 @@ void main() {
         ],
         meta: const {},
       );
-      final statistics = _ClearableStatistics();
+      final statistics = _ClearableStatistics()..regionsVersion = 1;
       final tracker = _CountingTracker();
       final container = ProviderContainer(
         overrides: [
@@ -149,8 +165,9 @@ void main() {
       await source.store.whenCaughtUp();
       await pumpEventQueue();
 
-      expect(statistics.clears, 1);
+      expect(statistics.clears, 0);
       expect(tracker.rebuilds, 1);
+      expect(tracker.keptVisits, isFalse);
     });
 
     test(
@@ -187,10 +204,31 @@ void main() {
         await pumpEventQueue();
 
         expect(packs.requested, ['CZ']);
-        expect(statistics.clears, 1);
+        expect(statistics.clears, 0);
         expect(tracker.rebuilds, 1);
+        expect(tracker.keptVisits, isTrue);
       },
     );
+
+    test('a rebuild cut short runs again at the next start', () async {
+      final statistics = _ClearableStatistics()..pending = 1;
+      final tracker = _CountingTracker();
+      final container = ProviderContainer(
+        overrides: [
+          ...env.overrides,
+          statisticsStorageProvider.overrideWithValue(statistics),
+          statisticsTrackerProvider.overrideWithValue(tracker),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final source = await container.read(fogProvider.future);
+      await source.store.whenCaughtUp();
+      await pumpEventQueue();
+
+      expect(tracker.rebuilds, 1);
+      expect(tracker.keptVisits, isTrue);
+    });
 
     test('draws the existing track log when it starts', () async {
       await env.log.appendAll(walkEast('old'));

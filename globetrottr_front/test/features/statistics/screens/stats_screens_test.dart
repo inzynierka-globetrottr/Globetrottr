@@ -176,6 +176,15 @@ class _FakeRegionStorage implements RegionStorage {
   Future<bool> consumeVersionChange() async => false;
 
   @override
+  Future<List<Region>> findRegionsByIds(Iterable<int> ids) async => [
+    for (final id in ids) ?await findRegionById(id),
+  ];
+
+  @override
+  Future<bool> regionContains(Region region, double lat, double lon) async =>
+      region.containsPoint(lat, lon);
+
+  @override
   Future<Map<String, int>> installedPacks() async => {};
 
   @override
@@ -259,6 +268,12 @@ class _FakeStatisticsStorage implements StatisticsStorage {
   Future<void> clearRegionStats() async {}
   @override
   Future<void> replaceRegionStats(Iterable<UserRegionStats> stats) async {}
+
+  @override
+  Future<void> clearTileRegionCache() async {}
+
+  @override
+  Future<void> setRecord(String key, double value) async {}
   @override
   Future<int?> getCachedTileRegion({
     required int z,

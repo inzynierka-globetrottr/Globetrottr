@@ -26,9 +26,15 @@ class StatisticsSyncPayloadBuilder {
     var visitedCountries = 0;
     var countryTotalM2 = 0.0;
     final regionsPayload = <Map<String, Object?>>[];
-    for (final s in regionStats) {
-      if (s.discoveredAreaM2 <= 0) continue;
-      final region = await regions.findRegionById(s.regionId);
+    final discovered = regionStats.where((s) => s.discoveredAreaM2 > 0);
+    final byId = {
+      for (final r in await regions.findRegionsByIds(
+        discovered.map((s) => s.regionId),
+      ))
+        r.id: r,
+    };
+    for (final s in discovered) {
+      final region = byId[s.regionId];
       if (region?.type == RegionType.country) {
         visitedCountries++;
         countryTotalM2 += s.discoveredAreaM2;

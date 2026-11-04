@@ -84,6 +84,11 @@ class _Regions extends Fake implements RegionStorage {
       _regions.where((r) => r.id == id).firstOrNull;
 
   @override
+  Future<List<Region>> findRegionsByIds(Iterable<int> ids) async => [
+    for (final id in ids) ?await findRegionById(id),
+  ];
+
+  @override
   Future<List<Region>> findChildren(int parentId) async =>
       _regions.where((r) => r.parentId == parentId).toList();
 

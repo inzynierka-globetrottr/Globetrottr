@@ -37,6 +37,9 @@ class _EmptyStatistics extends Fake implements StatisticsStorage {
 class _NoRegions extends Fake implements RegionStorage {
   @override
   Future<Region?> findRegionById(int id) async => null;
+
+  @override
+  Future<List<Region>> findRegionsByIds(Iterable<int> ids) async => [];
 }
 
 Quest _completed(int id, DateTime at) => Quest(
@@ -68,6 +71,11 @@ class _FixedDate extends StatsDateFilterNotifier {
 }
 
 class _FiveCities extends Fake implements RegionStorage {
+  @override
+  Future<List<Region>> findRegionsByIds(Iterable<int> ids) async => [
+    for (final id in ids) ?await findRegionById(id),
+  ];
+
   @override
   Future<Region?> findRegionById(int id) async => Region(
     id: id,

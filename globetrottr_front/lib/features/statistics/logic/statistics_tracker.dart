@@ -120,8 +120,13 @@ class StatisticsTracker {
     Iterable<TileAreaDelta> tiles, {
     Future<Map<FogTileId, FogCellAreas>> Function(List<FogTileId> ids)?
     loadCells,
+    bool keepVisits = true,
+    bool resetTileCache = false,
   }) {
-    return _queue.run(() => _processRebuildFromFogTiles(tiles, loadCells));
+    return _queue.run(() async {
+      if (resetTileCache) await statisticsStorage.clearTileRegionCache();
+      await _processRebuildFromFogTiles(tiles, loadCells, keepVisits);
+    });
   }
 
   static const _cellBatch = 500;
@@ -130,6 +135,7 @@ class StatisticsTracker {
     Iterable<TileAreaDelta> tiles,
     Future<Map<FogTileId, FogCellAreas>> Function(List<FogTileId> ids)?
     loadCells,
+    bool keepVisits,
   ) async {
     final attribution = _Attribution();
     final border = <TileAreaDelta>[];
@@ -156,8 +162,9 @@ class StatisticsTracker {
     }
 
     final existing = {
-      for (final s in await statisticsStorage.getAllRegionStats())
-        s.regionId: s,
+      if (keepVisits)
+        for (final s in await statisticsStorage.getAllRegionStats())
+          s.regionId: s,
     };
     await statisticsStorage.replaceRegionStats([
       for (final MapEntry(key: regionId, value: area)
@@ -196,7 +203,7 @@ class StatisticsTracker {
     final candidates = await _candidates(tile.id);
     if (cells == null) {
       final (lat, lon) = _pixelLatLng(tile.id, 128, 128);
-      final leaf = _leafAt(candidates, lat, lon);
+      final leaf = await _leafAt(candidates, lat, lon);
       if (leaf != null) {
         into.credit(await _chain(leaf.id, into), tile.areaDeltaM2);
       }
@@ -212,7 +219,7 @@ class StatisticsTracker {
           cx * FogCellAreas.pixelsPerCell + half,
           cy * FogCellAreas.pixelsPerCell + half,
         );
-        final leaf = _leafAt(candidates, lat, lon);
+        final leaf = await _leafAt(candidates, lat, lon);
         if (leaf != null) into.credit(await _chain(leaf.id, into), area);
       }
     }
@@ -238,7 +245,7 @@ class StatisticsTracker {
       (255.5, 255.5),
     ]) {
       final (lat, lon) = _pixelLatLng(id, px, py);
-      probes.add(_leafAt(candidates, lat, lon)?.id);
+      probes.add((await _leafAt(candidates, lat, lon))?.id);
     }
     final int value;
     if (probes.every((p) => p == null)) {
@@ -270,9 +277,13 @@ class StatisticsTracker {
 
   /// The smallest region containing the point; [candidates] come sorted by
   /// area.
-  static Region? _leafAt(List<Region> candidates, double lat, double lon) {
+  Future<Region?> _leafAt(
+    List<Region> candidates,
+    double lat,
+    double lon,
+  ) async {
     for (final region in candidates) {
-      if (region.containsPoint(lat, lon)) return region;
+      if (await regionStorage.regionContains(region, lat, lon)) return region;
     }
     return null;
   }

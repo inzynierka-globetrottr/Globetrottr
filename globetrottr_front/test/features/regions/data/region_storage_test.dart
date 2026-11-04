@@ -254,6 +254,17 @@ void main() {
       expect(ancestors[2].id, 1);
     });
 
+    test('lookups leave the boundary out but point checks use it', () async {
+      await storage.insertRegions([_krakow]);
+
+      final light = (await storage.findRegionById(_krakow.id))!;
+
+      expect(light.geometry, isNull);
+      expect(await storage.regionContains(light, 50.06, 19.94), isTrue);
+      expect(await storage.regionContains(light, 50.2, 19.94), isFalse);
+      expect(await storage.findRegionsByIds([_krakow.id, 999]), hasLength(1));
+    });
+
     test('installed pack regions are found by point', () async {
       final dir = await Directory.systemTemp.createTemp('regions_pack');
       addTearDown(() => dir.delete(recursive: true));

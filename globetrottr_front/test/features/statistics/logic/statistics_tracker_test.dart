@@ -148,6 +148,14 @@ class _CountingRegions implements RegionStorage {
   Future<bool> consumeVersionChange() => _inner.consumeVersionChange();
 
   @override
+  Future<List<Region>> findRegionsByIds(Iterable<int> ids) =>
+      _inner.findRegionsByIds(ids);
+
+  @override
+  Future<bool> regionContains(Region region, double lat, double lon) =>
+      _inner.regionContains(region, lat, lon);
+
+  @override
   Future<Map<String, int>> installedPacks() => _inner.installedPacks();
 
   @override
@@ -469,6 +477,27 @@ void main() {
       final krakow = await statsStorage.getRegionStats(100);
       expect(krakow?.discoveredAreaM2, 40000);
       expect(krakow?.firstVisitMs, 1000);
+    });
+
+    test('a rebuild after new boundaries drops old visit dates', () async {
+      await statsStorage.saveRegionStats(const [
+        UserRegionStats(
+          regionId: 100,
+          discoveredAreaM2: 1,
+          discoveryPercentage: 0,
+          firstVisitMs: 1000,
+        ),
+      ]);
+
+      await tracker.rebuildFromFogTiles(
+        const [
+          TileAreaDelta(id: FogTileId(15, 18199, 11116), areaDeltaM2: 40000),
+        ],
+        keepVisits: false,
+        resetTileCache: true,
+      );
+
+      expect((await statsStorage.getRegionStats(100))?.firstVisitMs, isNull);
     });
 
     test('rebuild resolves each leaf once', () async {

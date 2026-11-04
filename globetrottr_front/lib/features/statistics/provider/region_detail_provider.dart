@@ -80,18 +80,48 @@ class _Discovered {
     RegionStorage regionStorage,
     StatisticsStorage statsStorage,
   ) async {
-    final regions = <int, Region>{};
-    final stats = <int, UserRegionStats>{};
-    final chains = <int, List<Region>>{};
-    for (final stat in await statsStorage.getAllRegionStats()) {
-      if (stat.discoveredAreaM2 <= 0) continue;
-      final region = await regionStorage.findRegionById(stat.regionId);
-      if (region == null) continue;
-      regions[region.id] = region;
-      stats[region.id] = stat;
-      chains[region.id] = await regionStorage.getAncestorChain(region.id);
+    final stats = {
+      for (final stat in await statsStorage.getAllRegionStats())
+        if (stat.discoveredAreaM2 > 0) stat.regionId: stat,
+    };
+    final known = {
+      for (final r in await regionStorage.findRegionsByIds(stats.keys)) r.id: r,
+    };
+    // Ancestors level by level, a few queries for the whole tree.
+    var missing = {
+      for (final r in known.values)
+        if (r.parentId != null && !known.containsKey(r.parentId)) r.parentId!,
+    };
+    while (missing.isNotEmpty) {
+      final parents = await regionStorage.findRegionsByIds(missing);
+      for (final r in parents) {
+        known[r.id] = r;
+      }
+      missing = {
+        for (final r in parents)
+          if (r.parentId != null && !known.containsKey(r.parentId)) r.parentId!,
+      };
+      if (parents.isEmpty) break;
     }
-    return _Discovered(regions, stats, chains);
+    List<Region> chainOf(Region region) {
+      final chain = <Region>[];
+      Region? current = region;
+      while (current != null && chain.length < 10) {
+        chain.add(current);
+        current = known[current.parentId];
+      }
+      return chain;
+    }
+
+    final regions = {
+      for (final id in stats.keys)
+        if (known[id] != null) id: known[id]!,
+    };
+    return _Discovered(
+      regions,
+      {for (final id in regions.keys) id: stats[id]!},
+      {for (final r in regions.values) r.id: chainOf(r)},
+    );
   }
 
   Iterable<Region> ofType(RegionType type) =>

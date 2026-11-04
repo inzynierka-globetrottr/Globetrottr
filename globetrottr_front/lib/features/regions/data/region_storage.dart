@@ -19,6 +19,13 @@ abstract interface class RegionStorage {
   Future<List<Region>> getAncestorChain(int regionId);
   Future<void> insertRegions(Iterable<Region> regions);
 
+  /// Regions by id, without their boundaries.
+  Future<List<Region>> findRegionsByIds(Iterable<int> ids);
+
+  /// Whether [region]'s boundary contains the point; the boundary is read
+  /// on demand, since lookups return regions without it.
+  Future<bool> regionContains(Region region, double lat, double lon);
+
   /// True once after the bundled database replaced an older local copy.
   Future<bool> consumeVersionChange();
 

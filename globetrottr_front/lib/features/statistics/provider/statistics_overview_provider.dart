@@ -199,8 +199,14 @@ class StatsOverviewNotifier extends AsyncNotifier<StatsOverviewState> {
     final activeStats = allRegionStats
         .where((s) => s.discoveredAreaM2 > 0)
         .toList();
+    final regionsById = {
+      for (final r in await regionStorage.findRegionsByIds(
+        activeStats.map((s) => s.regionId),
+      ))
+        r.id: r,
+    };
     for (final regStat in activeStats) {
-      final region = await regionStorage.findRegionById(regStat.regionId);
+      final region = regionsById[regStat.regionId];
       if (region == null) continue;
       if (region.type == RegionType.country) {
         visitedCountries++;

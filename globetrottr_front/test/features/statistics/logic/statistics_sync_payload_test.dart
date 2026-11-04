@@ -54,6 +54,11 @@ Region _region(int id, String name, RegionType type, String? code) => Region(
 
 class _Regions extends Fake implements RegionStorage {
   @override
+  Future<List<Region>> findRegionsByIds(Iterable<int> ids) async => [
+    for (final id in ids) ?await findRegionById(id),
+  ];
+
+  @override
   Future<Region?> findRegionById(int id) async => switch (id) {
     1 => _region(1, 'Polska', RegionType.country, 'PL'),
     100 => _region(100, 'Kraków', RegionType.city, null),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/async/serial_queue.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_cells.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
@@ -12,6 +13,7 @@ import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 import 'package:globetrottr_front/features/map/data/track_log_storage.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/player_motion.dart';
+import 'package:globetrottr_front/features/regions/data/regions_db_version.dart';
 import 'package:globetrottr_front/features/statistics/logic/statistics_tracker.dart';
 import 'package:globetrottr_front/features/statistics/provider/statistics_providers.dart';
 
@@ -128,40 +130,66 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
   }
 
   /// The cities of a country arrive the first time the user records there;
-  /// the tiles recorded before are then attributed again.
+  /// the tiles recorded before are then attributed again. The statistics
+  /// stay as they are until the rebuild replaces them.
   Future<void> _installRegions(String countryCode) async {
     try {
       if (!await ref.read(regionPackServiceProvider).ensurePack(countryCode)) {
         return;
       }
-      await ref.read(statisticsStorageProvider).clearRegionStats();
     } catch (e) {
       debugPrint('Installing the regions of $countryCode failed: $e');
       return;
     }
-    await backfillStatsIfEmpty(force: true);
+    await _forcedRebuild(keepVisits: true);
   }
 
-  /// New bundled boundaries change the region ids, so the statistics of the
-  /// old ones are dropped and rebuilt from the tiles.
+  static const _builtWithKey = 'regions_version';
+  static const _pendingKey = 'stats_rebuild_pending';
+
+  /// Rebuilds after new bundled boundaries (their ids differ, so visit
+  /// dates cannot be carried over) or after a rebuild that was cut short.
+  /// Both are kept in `stats.db`, so a kill at any point retries.
   Future<void> _refreshStatistics() async {
     var boundariesChanged = false;
+    var pending = false;
     try {
-      boundariesChanged = await ref
-          .read(regionStorageProvider)
-          .consumeVersionChange();
-      if (boundariesChanged) {
-        await ref.read(statisticsStorageProvider).clearRegionStats();
-      }
+      final statsStorage = ref.read(statisticsStorageProvider);
+      boundariesChanged =
+          await statsStorage.getRecord(_builtWithKey) !=
+          kBundledRegionsDbVersion.toDouble();
+      pending = (await statsStorage.getRecord(_pendingKey) ?? 0) > 0;
     } catch (e) {
-      debugPrint('Checking the boundary version failed: $e');
+      debugPrint('Checking the statistics state failed: $e');
     }
-    await backfillStatsIfEmpty(force: boundariesChanged);
+    if (boundariesChanged || pending) {
+      await _forcedRebuild(keepVisits: !boundariesChanged);
+    } else {
+      await backfillStatsIfEmpty();
+    }
+  }
+
+  bool _rebuildWaiting = false;
+  final _rebuilds = SerialQueue();
+
+  /// Requests that arrive while a rebuild waits to start join it, so
+  /// several country files installed at once cost one rebuild.
+  Future<void> _forcedRebuild({required bool keepVisits}) async {
+    if (_rebuildWaiting) return;
+    _rebuildWaiting = true;
+    await _rebuilds.run(() async {
+      _rebuildWaiting = false;
+      await backfillStatsIfEmpty(force: true, keepVisits: keepVisits);
+    });
   }
 
   /// Rebuilds the region statistics from the stored tiles once, or every
-  /// time when [force] is set (an explicit fog rebuild).
-  Future<void> backfillStatsIfEmpty({bool force = false}) async {
+  /// time when [force] is set; a forced rebuild starts from an empty tile
+  /// cache and replaces the statistics in one step.
+  Future<void> backfillStatsIfEmpty({
+    bool force = false,
+    bool keepVisits = true,
+  }) async {
     try {
       final statsStorage = ref.read(statisticsStorageProvider);
       final isBackfilled = await statsStorage.getRecord('stats_backfilled');
@@ -174,23 +202,27 @@ class FogNotifier extends AsyncNotifier<FogTileSource> {
         await statsStorage.setRecordIfMax('stats_backfilled', 1.0);
         return;
       }
+      if (force) await statsStorage.setRecord(_pendingKey, 1);
 
       final storage = ref.read(fogTileStorageProvider);
       final tiles = await storage.loadBaseTileAreas();
-      if (tiles.isNotEmpty) {
-        final deltas = [
-          for (final t in tiles) TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
-        ];
-        if (deltas.isNotEmpty) {
-          await ref
-              .read(statisticsTrackerProvider)
-              .rebuildFromFogTiles(
-                deltas,
-                loadCells: (ids) => loadCellAreas(storage, ids),
-              );
-          await statsStorage.setRecordIfMax('stats_backfilled', 1.0);
-        }
-      }
+      await ref
+          .read(statisticsTrackerProvider)
+          .rebuildFromFogTiles(
+            [
+              for (final t in tiles)
+                TileAreaDelta(id: t.id, areaDeltaM2: t.areaM2),
+            ],
+            loadCells: (ids) => loadCellAreas(storage, ids),
+            keepVisits: keepVisits,
+            resetTileCache: force,
+          );
+      await statsStorage.setRecordIfMax('stats_backfilled', 1.0);
+      await statsStorage.setRecord(
+        _builtWithKey,
+        kBundledRegionsDbVersion.toDouble(),
+      );
+      if (force) await statsStorage.setRecord(_pendingKey, 0);
     } catch (e) {
       debugPrint('Backfilling stats from fog failed: $e');
     }

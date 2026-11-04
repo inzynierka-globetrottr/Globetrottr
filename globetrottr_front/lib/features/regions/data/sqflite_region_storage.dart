@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:globetrottr_front/features/regions/data/region.dart';
+import 'package:globetrottr_front/features/regions/data/region_geometry.dart';
 import 'package:globetrottr_front/features/regions/data/region_storage.dart';
 import 'package:globetrottr_front/features/regions/data/regions_db_version.dart';
 import 'package:path/path.dart' as p;
@@ -14,6 +15,11 @@ import 'package:sqflite/sqflite.dart';
 const _levelOrder =
     "CASE r.type WHEN 'district' THEN 0 WHEN 'city' THEN 1 "
     "WHEN 'county' THEN 2 WHEN 'state' THEN 3 ELSE 4 END";
+
+/// Every column but the boundary, which can be hundreds of KB for a country.
+const _light =
+    'id, parent_id, name, name_en, name_pl, type, code, total_area_km2, '
+    'min_lat, max_lat, min_lon, max_lon';
 
 const _columns =
     'id, parent_id, name, name_en, name_pl, type, code, total_area_km2, '
@@ -38,6 +44,9 @@ class SqfliteRegionStorage implements RegionStorage {
   final Future<ByteData> Function()? _loadAsset;
   Future<Database>? _database;
   bool _versionChanged = false;
+  final _boundaries = <int, Uint8List?>{};
+  var _boundaryBytes = 0;
+  static const _boundaryCacheBytes = 32 << 20;
 
   /// One open for all callers: the first ones arrive together at launch
   /// (map pill, statistics, fog catch-up) and must not copy the asset twice.
@@ -175,25 +184,37 @@ class SqfliteRegionStorage implements RegionStorage {
 
   @override
   Future<Region?> findRegionById(int id) async {
+    final found = await findRegionsByIds([id]);
+    return found.isEmpty ? null : found.first;
+  }
+
+  @override
+  Future<List<Region>> findRegionsByIds(Iterable<int> ids) async {
+    final unique = ids.toSet().toList();
+    if (unique.isEmpty) return const [];
     final db = await _db;
-    final rows = await db.query(
-      'regions',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return Region.fromMap(rows.first);
+    final regions = <Region>[];
+    for (var start = 0; start < unique.length; start += 500) {
+      final batch = unique.sublist(
+        start,
+        (start + 500).clamp(0, unique.length),
+      );
+      final rows = await db.rawQuery(
+        'SELECT $_light FROM regions WHERE id IN '
+        '(${List.filled(batch.length, '?').join(',')})',
+        batch,
+      );
+      regions.addAll(rows.map(Region.fromMap));
+    }
+    return regions;
   }
 
   @override
   Future<List<Region>> findChildren(int parentId) async {
     final db = await _db;
-    final rows = await db.query(
-      'regions',
-      where: 'parent_id = ?',
-      whereArgs: [parentId],
-      orderBy: 'name ASC',
+    final rows = await db.rawQuery(
+      'SELECT $_light FROM regions WHERE parent_id = ? ORDER BY name ASC',
+      [parentId],
     );
     return rows.map(Region.fromMap).toList();
   }
@@ -203,21 +224,17 @@ class SqfliteRegionStorage implements RegionStorage {
     required double lat,
     required double lon,
   }) async {
-    final db = await _db;
-    final rows = await db.rawQuery(
-      '''
-      SELECT r.* FROM regions r
-      WHERE r.min_lon <= ? AND r.max_lon >= ?
-        AND r.min_lat <= ? AND r.max_lat >= ?
-      ORDER BY $_levelOrder, r.total_area_km2 ASC
-      ''',
-      [lon, lon, lat, lat],
+    final candidates = await findRegionsInBBox(
+      minLat: lat,
+      minLon: lon,
+      maxLat: lat,
+      maxLon: lon,
     );
-
-    return rows
-        .map(Region.fromMap)
-        .where((r) => r.containsPoint(lat, lon))
-        .toList();
+    final found = <Region>[];
+    for (final region in candidates) {
+      if (await regionContains(region, lat, lon)) found.add(region);
+    }
+    return found;
   }
 
   @override
@@ -230,7 +247,7 @@ class SqfliteRegionStorage implements RegionStorage {
     final db = await _db;
     final rows = await db.rawQuery(
       '''
-      SELECT r.* FROM regions r
+      SELECT $_light FROM regions r
       WHERE r.min_lon <= ? AND r.max_lon >= ?
         AND r.min_lat <= ? AND r.max_lat >= ?
       ORDER BY $_levelOrder, r.total_area_km2 ASC
@@ -241,13 +258,51 @@ class SqfliteRegionStorage implements RegionStorage {
   }
 
   @override
+  Future<bool> regionContains(Region region, double lat, double lon) async {
+    if (lat < region.minLat ||
+        lat > region.maxLat ||
+        lon < region.minLon ||
+        lon > region.maxLon) {
+      return false;
+    }
+    final boundary = region.geometry ?? await _boundary(region.id);
+    if (boundary == null || boundary.isEmpty) return true;
+    return regionGeometryContains(boundary, lat, lon);
+  }
+
+  /// Recently used boundaries, so a rebuild reads each one once.
+  Future<Uint8List?> _boundary(int id) async {
+    if (_boundaries.containsKey(id)) {
+      final boundary = _boundaries.remove(id);
+      return _boundaries[id] = boundary;
+    }
+    final db = await _db;
+    final rows = await db.rawQuery(
+      'SELECT geometry FROM regions WHERE id = ?',
+      [id],
+    );
+    final value = rows.isEmpty ? null : rows.first['geometry'];
+    final boundary = value == null
+        ? null
+        : Uint8List.fromList(value as List<int>);
+    _boundaries[id] = boundary;
+    _boundaryBytes += boundary?.length ?? 0;
+    while (_boundaryBytes > _boundaryCacheBytes && _boundaries.length > 1) {
+      final oldest = _boundaries.keys.first;
+      _boundaryBytes -= _boundaries.remove(oldest)?.length ?? 0;
+    }
+    return boundary;
+  }
+
+  @override
   Future<List<Region>> getAncestorChain(int regionId) async {
     final chain = <Region>[];
     var current = await findRegionById(regionId);
     while (current != null) {
       chain.add(current);
-      if (current.parentId == null) break;
-      current = await findRegionById(current.parentId!);
+      final parent = current.parentId;
+      if (parent == null) break;
+      current = await findRegionById(parent);
     }
     return chain;
   }
