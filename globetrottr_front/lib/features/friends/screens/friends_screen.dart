@@ -135,7 +135,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                           FriendRow(
                             friend: friend,
                             onOpen: () =>
-                                context.push('/friends/${friend.username}/map'),
+                                context.go('/friends/${friend.username}'),
                           ),
                       ],
                     ),

@@ -23,6 +23,14 @@ enum AppIcons {
   route('route'),
   warning('warning'),
   footsteps('footsteps'),
+  chevronDown('chevron_down'),
+  settings('settings'),
+  expand('expand'),
+  compare('compare'),
+  distance('distance'),
+  earth('earth'),
+  stats('stats'),
+  map('map'),
 
   /// The globe of the logo, drawn over a disc in the accent colour.
   globe('globe', tintable: false),

@@ -10,7 +10,7 @@ import 'package:globetrottr_front/core/widgets/neu_list_row.dart';
 import 'package:globetrottr_front/core/widgets/user_avatar_bubble.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
 import 'package:globetrottr_front/features/friends/provider/friend_activity_provider.dart';
-import 'package:globetrottr_front/features/friends/screens/widgets/level_badge.dart';
+import 'package:globetrottr_front/core/widgets/level_badge.dart';
 
 /// A friend with their level, discovered area and a button that opens them.
 class FriendRow extends ConsumerWidget {

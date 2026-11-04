@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/localization/measure_format.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
   group('area', () {
@@ -41,6 +42,37 @@ void main() {
 
     test('an unknown distance is a dash', () {
       expect(formatDistance(null, 'pl'), '— m');
+    });
+  });
+
+  group('significant digits', () {
+    test('a tiny share keeps two significant digits', () {
+      expect(formatSignificant(0.0000083255, 'pl'), '0,0000083');
+      expect(formatSignificant(0.0000083255, 'en'), '0.0000083');
+    });
+
+    test('a large value drops its decimals', () {
+      expect(formatSignificant(12.4, 'en'), '12');
+      expect(formatSignificant(1.24, 'en'), '1.2');
+    });
+
+    test('zero and unknown values', () {
+      expect(formatSignificant(0, 'en'), '0');
+      expect(formatSignificant(null, 'en'), '—');
+    });
+  });
+
+  group('month', () {
+    setUpAll(initializeDateFormatting);
+
+    test('friends since uses the day and the month of a date', () {
+      final now = DateTime(2026, 11, 4);
+      expect(formatSinceDate(DateTime(2026, 3, 2), 'pl', now: now), '2 marca');
+      expect(formatSinceDate(DateTime(2026, 3, 2), 'en', now: now), 'March 2');
+      expect(
+        formatSinceDate(DateTime(2025, 3, 2), 'pl', now: now),
+        '2 marca 2025',
+      );
     });
   });
 }

@@ -10,6 +10,7 @@ import 'package:globetrottr_front/debug/preview_screen.dart';
 import 'package:globetrottr_front/features/auth/provider/auth_provider.dart';
 import 'package:globetrottr_front/features/friends/screens/add_friend_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friend_map_screen.dart';
+import 'package:globetrottr_front/features/friends/screens/friend_profile_screen.dart';
 import 'package:globetrottr_front/features/friends/screens/friends_screen.dart';
 import 'package:globetrottr_front/features/map/screens/map_screen.dart';
 import 'package:globetrottr_front/features/profile/screens/profile_screen.dart';
@@ -64,12 +65,21 @@ final appRouter = Provider<GoRouter>((ref) {
             path: 'add',
             builder: (context, state) => const AddFriendScreen(),
           ),
+          GoRoute(
+            path: ':username',
+            builder: (context, state) => FriendProfileScreen(
+              username: state.pathParameters['username']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'map',
+                builder: (context, state) => FriendMapScreen(
+                  friendUsername: state.pathParameters['username']!,
+                ),
+              ),
+            ],
+          ),
         ],
-      ),
-      GoRoute(
-        path: '/friends/:username/map',
-        builder: (context, state) =>
-            FriendMapScreen(friendUsername: state.pathParameters['username']!),
       ),
       if (kDebugMode || DevConfig.isDevMode)
         GoRoute(

@@ -16,6 +16,7 @@ class NeuIconButton extends StatelessWidget {
     this.depth = NeoDepth.sm,
     this.fill = NeuFill.page,
     this.semanticLabel,
+    this.overMap = false,
   });
 
   final Widget child;
@@ -24,6 +25,10 @@ class NeuIconButton extends StatelessWidget {
   final NeoDepth depth;
   final NeuFill fill;
   final String? semanticLabel;
+
+  /// Floats over a map and casts the map controls' shadow instead of
+  /// [depth].
+  final bool overMap;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +42,11 @@ class NeuIconButton extends StatelessWidget {
     final page = fill == NeuFill.page;
     return NeuPressable(
       onPressed: onPressed,
-      shadows: page ? shadows.raised(depth) : shadows.raisedAccent(depth),
+      shadows: overMap
+          ? shadows.mapControl
+          : page
+          ? shadows.raised(depth)
+          : shadows.raisedAccent(depth),
       pressedShadows: page
           ? shadows.inset(NeoDepth.xs)
           : shadows.insetAccent(NeoDepth.xs),
