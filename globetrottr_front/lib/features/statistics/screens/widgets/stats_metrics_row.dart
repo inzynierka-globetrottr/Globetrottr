@@ -47,9 +47,7 @@ class StatsMetricsRow extends StatelessWidget {
           Text(
             item.value,
             textAlign: TextAlign.center,
-            style: typography.itemTitle.copyWith(
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
+            style: typography.valueLarge.copyWith(
               height: 1.2,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
@@ -59,8 +57,6 @@ class StatsMetricsRow extends StatelessWidget {
             item.label,
             textAlign: TextAlign.center,
             style: typography.caption.copyWith(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
               color: palette.textMuted,
             ),
           ),

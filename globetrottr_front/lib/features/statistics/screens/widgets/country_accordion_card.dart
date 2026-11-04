@@ -80,17 +80,12 @@ class _CountryAccordionCardState extends State<CountryAccordionCard> {
                       children: [
                         Text(
                           widget.countryName,
-                          style: typography.itemTitle.copyWith(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: typography.valueLarge,
                         ),
                         const SizedBox(height: 2),
                         Text(
                           widget.subtitle,
                           style: typography.caption.copyWith(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
                             color: palette.textMuted,
                           ),
                         ),
@@ -152,10 +147,7 @@ class _CountryAccordionCardState extends State<CountryAccordionCard> {
               child: Text(
                 item.name,
                 style: isHeader
-                    ? typography.action.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      )
+                    ? typography.action
                     : typography.body.copyWith(color: palette.textMuted),
                 overflow: TextOverflow.ellipsis,
               ),

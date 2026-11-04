@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/localization/measure_format.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
-import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/regions/data/region_type.dart';
 import 'package:globetrottr_front/features/statistics/provider/region_detail_provider.dart';
 import 'package:globetrottr_front/features/statistics/screens/stats_routes.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/country_accordion_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_attribution.dart';
+import 'package:globetrottr_front/features/statistics/screens/widgets/stats_screen_header.dart';
 import 'package:go_router/go_router.dart';
 
 class CountriesScreen extends ConsumerWidget {
@@ -35,35 +35,12 @@ class CountriesScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    const NeuBackButton(),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.statsCountriesTitle,
-                            style: typography.title.copyWith(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          Text(
-                            l10n.statsCountriesSummary(
-                              data.visitedRegionsCount,
-                              data.visitedCitiesCount,
-                            ),
-                            style: typography.caption.copyWith(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                StatsScreenHeader(
+                  title: l10n.statsCountriesTitle,
+                  subtitle: l10n.statsCountriesSummary(
+                    data.visitedRegionsCount,
+                    data.visitedCitiesCount,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 SectionHeader(

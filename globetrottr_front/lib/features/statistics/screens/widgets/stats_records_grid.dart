@@ -68,7 +68,6 @@ class StatsRecordsGrid extends StatelessWidget {
           Text(
             _headerFor(context, item),
             style: typography.smallStrong.copyWith(
-              fontSize: 11,
               letterSpacing: 0.08 * 11,
               color: palette.textMuted,
             ),
@@ -76,10 +75,8 @@ class StatsRecordsGrid extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             _valueFor(locale, item),
-            style: typography.itemTitle.copyWith(
-              fontSize: 21,
+            style: typography.statValue.copyWith(
               height: 1.25,
-              fontWeight: FontWeight.w800,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
@@ -87,7 +84,6 @@ class StatsRecordsGrid extends StatelessWidget {
           Text(
             _subtitleFor(locale, item),
             style: typography.caption.copyWith(
-              fontWeight: FontWeight.w700,
               color: palette.textMuted,
             ),
             maxLines: 1,

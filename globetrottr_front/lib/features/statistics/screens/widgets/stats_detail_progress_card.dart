@@ -43,19 +43,14 @@ class StatsDetailProgressCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: typography.itemTitle.copyWith(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: typography.itemTitle,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 formattedPercent,
-                style: typography.itemTitle.copyWith(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                style: typography.title.copyWith(
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),

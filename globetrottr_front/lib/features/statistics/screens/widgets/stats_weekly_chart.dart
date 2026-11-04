@@ -52,10 +52,7 @@ class StatsWeeklyChart extends StatelessWidget {
               Expanded(
                 child: Text(
                   l10n.statsWeeklyNewArea,
-                  style: typography.itemTitle.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: typography.value,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -63,7 +60,6 @@ class StatsWeeklyChart extends StatelessWidget {
               Text(
                 l10n.statsWeeklyChartUnitKm2,
                 style: typography.caption.copyWith(
-                  fontWeight: FontWeight.w700,
                   color: palette.textMuted,
                 ),
               ),
@@ -102,8 +98,6 @@ class StatsWeeklyChart extends StatelessWidget {
                         : '${bars[i].isoWeek}',
                     textAlign: TextAlign.center,
                     style: typography.small.copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
                       color: palette.textMuted,
                     ),
                   ),
@@ -137,9 +131,7 @@ class StatsWeeklyChart extends StatelessWidget {
       children: [
         Text(
           formattedValue,
-          style: typography.smallStrong.copyWith(
-            fontSize: 10,
-            fontWeight: FontWeight.w800,
+          style: typography.micro.copyWith(
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
@@ -151,16 +143,8 @@ class StatsWeeklyChart extends StatelessWidget {
             color: barColor,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
-              BoxShadow(
-                color: palette.shadowDark.withValues(alpha: 0.55),
-                offset: const Offset(2, 2),
-                blurRadius: 5,
-              ),
-              BoxShadow(
-                color: palette.shadowLight.withValues(alpha: 0.9),
-                offset: const Offset(-2, -2),
-                blurRadius: 4,
-              ),
+              for (final s in context.shadows.raised(NeoDepth.xs))
+                s.toBoxShadow(),
             ],
           ),
         ),

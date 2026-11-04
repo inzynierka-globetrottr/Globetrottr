@@ -78,19 +78,14 @@ class StatsCountriesBanner extends StatelessWidget {
                 children: [
                   Text(
                     '$countriesCount',
-                    style: typography.display.copyWith(
-                      fontSize: 38,
+                    style: typography.statHero.copyWith(
                       height: 1.0,
-                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     l10n.statsVisitedCountriesTitle,
-                    style: typography.action.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: typography.action,
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -112,10 +107,7 @@ class StatsCountriesBanner extends StatelessWidget {
                       Expanded(
                         child: Text(
                           l10n.statsCountriesSummary(regionsCount, citiesCount),
-                          style: typography.label.copyWith(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: typography.label,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/localization/measure_format.dart';
-import 'package:globetrottr_front/core/theme/theme_context.dart';
-import 'package:globetrottr_front/core/widgets/neu_back_button.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/statistics/provider/region_detail_provider.dart';
 import 'package:globetrottr_front/features/statistics/screens/stats_not_found_screen.dart';
@@ -13,6 +11,7 @@ import 'package:globetrottr_front/features/statistics/screens/widgets/stats_labe
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metadata_card.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_metrics_row.dart';
 import 'package:globetrottr_front/features/statistics/screens/widgets/stats_attribution.dart';
+import 'package:globetrottr_front/features/statistics/screens/widgets/stats_screen_header.dart';
 
 class CityDetailScreen extends ConsumerWidget {
   const CityDetailScreen({super.key, required this.cityId});
@@ -22,7 +21,6 @@ class CityDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final typography = context.typography;
     final locale = Localizations.localeOf(context).toString();
     final language = Localizations.localeOf(context).languageCode;
     final dataAsync = ref.watch(cityDetailProvider(cityId));
@@ -40,34 +38,11 @@ class CityDetailScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        children: [
-                          const NeuBackButton(),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  data.name.of(language),
-                                  style: typography.title.copyWith(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text(
-                                  l10n.statsCitySubtitle(
-                                    data.regionName?.of(language) ?? '–',
-                                  ),
-                                  style: typography.caption.copyWith(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      StatsScreenHeader(
+                        title: data.name.of(language),
+                        subtitle: l10n.statsCitySubtitle(
+                          data.regionName?.of(language) ?? '–',
+                        ),
                       ),
                       const SizedBox(height: 16),
                       StatsDetailProgressCard(

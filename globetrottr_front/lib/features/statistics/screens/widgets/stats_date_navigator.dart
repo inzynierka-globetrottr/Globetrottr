@@ -49,10 +49,7 @@ class StatsDateNavigator extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: typography.itemTitle.copyWith(
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-            ),
+            style: typography.valueLarge,
           ),
         ),
         GestureDetector(

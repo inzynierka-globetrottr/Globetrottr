@@ -92,7 +92,6 @@ class _StreakTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: typography.caption.copyWith(
                     color: palette.textMuted,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -102,8 +101,7 @@ class _StreakTile extends StatelessWidget {
           Text(
             l10n.statsStreakDays(days),
             maxLines: 1,
-            style: typography.titleLarge.copyWith(
-              fontSize: 20,
+            style: typography.statValue.copyWith(
               letterSpacing: -0.02 * 20,
               color: isAccent ? palette.accent : palette.text,
               fontFeatures: const [FontFeature.tabularFigures()],
@@ -113,10 +111,8 @@ class _StreakTile extends StatelessWidget {
           Text(
             l10n.statsStreakMax(maxDays),
             maxLines: 1,
-            style: typography.caption.copyWith(
-              fontSize: 11,
+            style: typography.small.copyWith(
               color: palette.textMuted,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],

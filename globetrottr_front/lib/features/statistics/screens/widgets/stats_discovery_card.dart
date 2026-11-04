@@ -98,17 +98,12 @@ class StatsDiscoveryCard extends StatelessWidget {
                       child: Text(
                         item.name,
                         overflow: TextOverflow.ellipsis,
-                        style: typography.itemTitle.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: typography.value,
                       ),
                     ),
                     Text(
                       formattedPercent,
-                      style: typography.itemTitle.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                      style: typography.action.copyWith(
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),

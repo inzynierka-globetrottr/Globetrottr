@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 
 class CountryFlagChip extends StatelessWidget {
@@ -28,15 +29,8 @@ class CountryFlagChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(5),
             color: palette.background,
             boxShadow: [
-              BoxShadow(
-                color: palette.shadowDark.withValues(alpha: 0.55),
-                offset: const Offset(2, 2),
-                blurRadius: 5,
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                spreadRadius: 1,
-              ),
+              for (final s in context.shadows.shade(NeoDepth.xs))
+                s.toBoxShadow(),
             ],
           ),
           clipBehavior: Clip.antiAlias,
@@ -46,8 +40,7 @@ class CountryFlagChip extends StatelessWidget {
           const SizedBox(height: 3),
           Text(
             code,
-            style: typography.smallStrong.copyWith(
-              fontSize: 10,
+            style: typography.micro.copyWith(
               letterSpacing: 0.6,
             ),
           ),
@@ -145,9 +138,7 @@ class CountryFlagChip extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             code,
-            style: typography.smallStrong.copyWith(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
+            style: typography.micro.copyWith(
               color: palette.text,
             ),
           ),

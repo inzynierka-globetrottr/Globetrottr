@@ -25,6 +25,10 @@ class AppTypography extends ThemeExtension<AppTypography> {
     required this.sectionLabel,
     required this.small,
     required this.smallStrong,
+    required this.statHero,
+    required this.statValue,
+    required this.valueLarge,
+    required this.micro,
   });
 
   factory AppTypography.fromPalette(AppPalette palette) {
@@ -67,6 +71,10 @@ class AppTypography extends ThemeExtension<AppTypography> {
       ),
       small: style(11, FontWeight.w700, color: muted),
       smallStrong: style(11, FontWeight.w800, color: muted),
+      statHero: style(38, FontWeight.w800, letterSpacingEm: -0.03),
+      statValue: style(21, FontWeight.w800),
+      valueLarge: style(17, FontWeight.w800),
+      micro: style(10, FontWeight.w800, color: muted),
     );
   }
 
@@ -119,6 +127,18 @@ class AppTypography extends ThemeExtension<AppTypography> {
   final TextStyle small;
   final TextStyle smallStrong;
 
+  /// The large count of a statistics banner.
+  final TextStyle statHero;
+
+  /// Values of statistics tiles and records.
+  final TextStyle statValue;
+
+  /// Names and values a step above [value], like a country in a list.
+  final TextStyle valueLarge;
+
+  /// Axis labels and flag codes.
+  final TextStyle micro;
+
   List<TextStyle> get all => [
     display,
     headline,
@@ -139,6 +159,10 @@ class AppTypography extends ThemeExtension<AppTypography> {
     sectionLabel,
     small,
     smallStrong,
+    statHero,
+    statValue,
+    valueLarge,
+    micro,
   ];
 
   /// Rebuilding from a palette is the only change the app needs.
@@ -169,6 +193,10 @@ class AppTypography extends ThemeExtension<AppTypography> {
       sectionLabel: mix(sectionLabel, other.sectionLabel),
       small: mix(small, other.small),
       smallStrong: mix(smallStrong, other.smallStrong),
+      statHero: mix(statHero, other.statHero),
+      statValue: mix(statValue, other.statValue),
+      valueLarge: mix(valueLarge, other.valueLarge),
+      micro: mix(micro, other.micro),
     );
   }
 }

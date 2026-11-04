@@ -56,7 +56,6 @@ class StatsPeriodTabs extends StatelessWidget {
                     label,
                     style: typography.action.copyWith(
                       color: palette.accent,
-                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
@@ -68,7 +67,6 @@ class StatsPeriodTabs extends StatelessWidget {
                     label,
                     style: typography.action.copyWith(
                       color: palette.textMuted,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),

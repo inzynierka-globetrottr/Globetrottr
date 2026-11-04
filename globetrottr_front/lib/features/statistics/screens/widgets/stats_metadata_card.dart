@@ -50,9 +50,7 @@ class StatsMetadataCard extends StatelessWidget {
         children: [
           Text(
             item.label,
-            style: typography.caption.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+            style: typography.note.copyWith(
               color: palette.textMuted,
             ),
           ),
@@ -62,7 +60,6 @@ class StatsMetadataCard extends StatelessWidget {
               item.value,
               textAlign: TextAlign.right,
               style: typography.action.copyWith(
-                fontWeight: FontWeight.w800,
                 color: palette.text,
               ),
               overflow: TextOverflow.ellipsis,

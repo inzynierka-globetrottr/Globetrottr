@@ -32,14 +32,12 @@ class StatsMetricTile extends StatelessWidget {
             label,
             style: typography.caption.copyWith(
               color: palette.textMuted,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             value,
             style: typography.titleLarge.copyWith(
-              fontSize: 24,
               letterSpacing: -0.02 * 24,
               color: isAccent ? palette.accent : palette.text,
               fontFeatures: const [FontFeature.tabularFigures()],
