@@ -110,6 +110,8 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - The cache is not user data: logout keeps it.
 
 **Planned / Ideas:**
+- **Port the base map to MapLibre Native** (Planned, owner's decision): the map stutters while tiles load, in release builds too. Measured on a phone: the cost is the drawing of the current map package in both of its modes (raster turns tiles into images on the GPU thread, vector redraws every path each frame); our fog is negligible and the package's next major brings no rendering change. A native renderer keeps tiles on the GPU, as in the owner's travel_tracker app. The bitmap fog stays; only its drawing moves onto or over the new map. Start with a prototype that measures smoothness and how a Flutter fog overlay keeps up with the map.
+- **Cache scans per map widget** (Known issue, solved by the port): the current package walks and stats the whole cache folder a few seconds after each map widget appears and again every 20 written tiles, so a quest list with map previews repeats the scan per card on a cache of up to 250 MB. Not measured yet. If the port is delayed, previews without the file cache (or static images) avoid it.
 - **Prefetch around the player** (Planned): while online and recording, fetch tiles ahead so the map survives losing signal. Share the mechanism with the road-tile prefetch of Map views.
 - **Offline regions** (Idea): download a region in advance. Bulk downloads probably go against OpenFreeMap fair use, so this likely needs our own tile host.
 
