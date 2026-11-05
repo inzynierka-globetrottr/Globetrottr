@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/async/work_counter.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_range.dart';
@@ -62,8 +61,8 @@ class FogTileSource extends ChangeNotifier {
   }
 
   /// Starts loading what [camera] currently shows (plus a ring around it).
-  void ensureVisible(MapCamera camera) {
-    if (!camera.isUsableForFog) return;
+  void ensureVisible(FogCamera camera) {
+    if (!camera.isUsable) return;
     ensureRange(camera.visibleTiles(levelFor(camera.zoom)));
   }
 

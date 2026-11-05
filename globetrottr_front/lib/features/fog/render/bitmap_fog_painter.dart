@@ -3,7 +3,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/theme/dev_style.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_pyramid.dart';
@@ -42,7 +41,7 @@ class BitmapFogPainter extends CustomPainter {
   /// Narrowest edge on the screen; a sharper one would show its pixels.
   static const double _minEdgePixels = 1.5;
 
-  final MapCamera camera;
+  final FogCamera camera;
 
   /// Colour of the undiscovered area, opacity included.
   final Color color;
@@ -56,7 +55,7 @@ class BitmapFogPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final timer = Stopwatch()..start();
-    final usable = camera.isUsableForFog;
+    final usable = camera.isUsable;
     canvas.saveLayer(Offset.zero & size, Paint());
     canvas.drawColor(color, BlendMode.srcOver);
     canvas.saveLayer(
@@ -161,10 +160,22 @@ class BitmapFogPainter extends CustomPainter {
         _ => DevColors.gridLoading,
       };
       line.color = color;
-      final origin = _screen(id.x * _tile, id.y * _tile, id.z);
-      final right = _screen((id.x + 1) * _tile, id.y * _tile, id.z);
-      final corner = _screen((id.x + 1) * _tile, (id.y + 1) * _tile, id.z);
-      final down = _screen(id.x * _tile, (id.y + 1) * _tile, id.z);
+      final origin = camera.worldToScreen(id.x * _tile, id.y * _tile, id.z);
+      final right = camera.worldToScreen(
+        (id.x + 1) * _tile,
+        id.y * _tile,
+        id.z,
+      );
+      final corner = camera.worldToScreen(
+        (id.x + 1) * _tile,
+        (id.y + 1) * _tile,
+        id.z,
+      );
+      final down = camera.worldToScreen(
+        id.x * _tile,
+        (id.y + 1) * _tile,
+        id.z,
+      );
       canvas.drawPath(
         ui.Path()
           ..moveTo(origin.dx, origin.dy)
@@ -257,11 +268,11 @@ class BitmapFogPainter extends CustomPainter {
   }
 
   /// Maps tile pixels to the screen using the projected corners, so rotation
-  /// and any camera state are handled by the map itself.
+  /// and any camera state are handled by the camera itself.
   Float64List _tileMatrix(FogTileId id) {
-    final origin = _screen(id.x * _tile, id.y * _tile, id.z);
-    final right = _screen((id.x + 1) * _tile, id.y * _tile, id.z);
-    final down = _screen(id.x * _tile, (id.y + 1) * _tile, id.z);
+    final origin = camera.worldToScreen(id.x * _tile, id.y * _tile, id.z);
+    final right = camera.worldToScreen((id.x + 1) * _tile, id.y * _tile, id.z);
+    final down = camera.worldToScreen(id.x * _tile, (id.y + 1) * _tile, id.z);
     return Float64List.fromList([
       (right.dx - origin.dx) / _tile,
       (right.dy - origin.dy) / _tile,
@@ -282,13 +293,6 @@ class BitmapFogPainter extends CustomPainter {
     ]);
   }
 
-  Offset _screen(double worldX, double worldY, int z) {
-    final point = camera.latLngToScreenPoint(
-      LatLng(FogMercator.yToLat(worldY, z), FogMercator.xToLng(worldX, z)),
-    );
-    return Offset(point.x, point.y);
-  }
-
   /// Draws what the tile images do not show yet: the points since the last
   /// flush, and the stretch from the newest one to the player.
   void _drawLive(Canvas canvas, FogTileSource source, Size size) {
@@ -307,20 +311,19 @@ class BitmapFogPainter extends CustomPainter {
     );
     for (final segment in store.trail.segments) {
       shapes.add(
-        _screen(segment.ax, segment.ay, z),
-        _screen(segment.bx, segment.by, z),
+        camera.worldToScreen(segment.ax, segment.ay, z),
+        camera.worldToScreen(segment.bx, segment.by, z),
       );
     }
 
     final position = head?.value;
     if (position == null) return;
-    final point = camera.latLngToScreenPoint(position);
-    final end = Offset(point.x, point.y);
+    final end = camera.toScreen(position);
     final anchor = store.trail.anchor;
     final joined =
         anchor != null &&
         store.joinsTrail(position.latitude, position.longitude);
-    shapes.add(joined ? _screen(anchor.x, anchor.y, z) : end, end);
+    shapes.add(joined ? camera.worldToScreen(anchor.x, anchor.y, z) : end, end);
   }
 
   /// Matches the strength of a thin route in the coarse tiles, so nothing
@@ -344,8 +347,6 @@ class BitmapFogPainter extends CustomPainter {
         oldDelegate.source != source ||
         oldDelegate.options != options ||
         oldDelegate.head != head ||
-        oldDelegate.camera.center != camera.center ||
-        oldDelegate.camera.zoom != camera.zoom ||
-        oldDelegate.camera.rotation != camera.rotation;
+        oldDelegate.camera != camera;
   }
 }

@@ -1,14 +1,13 @@
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_scale.dart';
 import 'package:globetrottr_front/features/fog/data/store/fog_store.dart';
 import 'package:globetrottr_front/features/fog/data/fog_tile_storage.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
@@ -22,18 +21,17 @@ const Size viewSize = Size(400, 800);
 final Color fogColor = AppPalette.light.fog;
 final int fogAlpha = (fogColor.a * 255).round();
 
-MapCamera cameraAt({
+FogCamera cameraAt({
   double? zoom,
   double rotation = 0,
   double lat = krakowLat,
   double lng = krakowLng,
 }) {
-  return MapCamera(
-    crs: const Epsg3857(),
+  return FogCamera(
     center: LatLng(lat, lng),
     zoom: zoom ?? FogConfig.baseZoom.toDouble(),
     rotation: rotation,
-    nonRotatedSize: const math.Point<double>(400, 800),
+    size: viewSize,
   );
 }
 
@@ -81,12 +79,10 @@ Future<int Function(int x, int y)> renderAlpha(CustomPainter painter) async {
   return (int x, int y) => bytes.getUint8((y * 400 + x) * 4 + 3);
 }
 
-Offset screenOf(MapCamera camera, double lat, double lng) {
-  final p = camera.latLngToScreenPoint(LatLng(lat, lng));
-  return Offset(p.x, p.y);
-}
+Offset screenOf(FogCamera camera, double lat, double lng) =>
+    camera.toScreen(LatLng(lat, lng));
 
-Future<FogTileSource> readySource(FogStore store, MapCamera camera) async {
+Future<FogTileSource> readySource(FogStore store, FogCamera camera) async {
   final source = FogTileSource(store);
   source.ensureVisible(camera);
   await source.whenIdle();
@@ -94,7 +90,7 @@ Future<FogTileSource> readySource(FogStore store, MapCamera camera) async {
 }
 
 BitmapFogPainter painterFor(
-  MapCamera camera, {
+  FogCamera camera, {
   FogTileSource? source,
   LatLng? head,
   bool softEdge = false,
