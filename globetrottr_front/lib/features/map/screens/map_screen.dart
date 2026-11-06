@@ -7,6 +7,7 @@ import 'package:globetrottr_front/core/config/dev_config.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/features/map/camera_flight.dart';
 import 'package:globetrottr_front/features/map/camera_health.dart';
+import 'package:globetrottr_front/features/map/finite_camera_constraint.dart';
 import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
 import 'package:globetrottr_front/features/map/provider/location_provider.dart';
 import 'package:globetrottr_front/features/map/provider/player_locator.dart';
@@ -162,6 +163,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
             options: const MapOptions(
               initialCenter: MapConfig.initialCenter,
               initialZoom: MapConfig.defaultZoom,
+              cameraConstraint: FiniteCameraConstraint(),
               // North stays up, as in the mock-up, which has no compass.
               interactionOptions: InteractionOptions(
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,

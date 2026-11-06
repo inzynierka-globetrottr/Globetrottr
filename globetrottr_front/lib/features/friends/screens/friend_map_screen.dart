@@ -1,6 +1,7 @@
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/features/map/finite_camera_constraint.dart';
 import 'package:globetrottr_front/features/map/screens/widgets/app_tile_layer.dart';
 import 'package:globetrottr_front/core/config/map_config.dart';
 import 'package:globetrottr_front/features/fog/fog_layer.dart';
@@ -38,6 +39,7 @@ class _FriendMapScreenState extends ConsumerState<FriendMapScreen> {
             options: const MapOptions(
               initialCenter: MapConfig.initialCenter,
               initialZoom: MapConfig.defaultZoom,
+              cameraConstraint: FiniteCameraConstraint(),
               interactionOptions: InteractionOptions(
                 enableMultiFingerGestureRace: true,
                 rotationThreshold: 10.0,
