@@ -62,21 +62,30 @@ class _FadeIn extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: animation,
-    builder: (context, page) => Offstage(
-      offstage: animation.status == AnimationStatus.reverse,
-      child: page,
-    ),
-    child: ColoredBox(
-      color: context.palette.background,
-      child: FadeTransition(
-        opacity: AnimationMin(
-          animation.drive(CurveTween(curve: curve)),
-          ReverseAnimation(secondaryAnimation).drive(CurveTween(curve: curve)),
-        ),
-        child: child,
+  Widget build(BuildContext context) {
+    // The length of the route comes from the app theme, which the system
+    // setting that turns animations off does not reach, so then the screen
+    // is fully shown at once instead.
+    final disabled = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final fade = CurveTween(curve: curve);
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, page) => Offstage(
+        offstage: animation.status == AnimationStatus.reverse,
+        child: page,
       ),
-    ),
-  );
+      child: ColoredBox(
+        color: context.palette.background,
+        child: FadeTransition(
+          opacity: disabled
+              ? kAlwaysCompleteAnimation
+              : AnimationMin(
+                  animation.drive(fade),
+                  ReverseAnimation(secondaryAnimation).drive(fade),
+                ),
+          child: child,
+        ),
+      ),
+    );
+  }
 }

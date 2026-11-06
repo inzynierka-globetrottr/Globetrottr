@@ -94,6 +94,26 @@ void main() {
     expect(opacityOf(tester, 'deeper'), 1);
   });
 
+  testWidgets('the system setting that turns animations off shows every '
+      'screen at once, going in and back', (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await pumpBelow(tester);
+
+    pushDeeper();
+    // The first frame of a new route is offstage, to measure its heroes.
+    await tester.pump();
+    await tester.pump();
+    expect(opacityOf(tester, 'deeper'), 1);
+    await tester.pumpAndSettle();
+
+    navigator.currentState!.pop();
+    await tester.pump();
+    expect(find.text('deeper'), findsNothing);
+    expect(opacityOf(tester, 'below'), 1);
+  });
+
   test('every platform fades in the short step of the scale', () {
     final builders = AppTheme.from(
       AppPalette.light,
