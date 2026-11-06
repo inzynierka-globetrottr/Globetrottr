@@ -66,7 +66,7 @@ class MotionChoices {
     this.pace = MotionPace.quick,
     this.press = PressFeel.instant,
     this.navPill = NavPillMotion.jump,
-    this.tab = TabTransition.instant,
+    this.tab = TabTransition.fadeIn,
     this.deeper = DeeperTransition.instant,
   });
 

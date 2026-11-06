@@ -47,7 +47,7 @@ void main() {
       tester.element(find.byType(AnimationsScreen)),
     );
 
-    await tester.tap(find.text(TabTransition.fadeIn.name));
+    await tester.tap(find.text(TabTransition.fadeThrough.name));
     await tester.tap(find.text(DeeperTransition.rise.name));
     await tester.tap(find.text(MotionPace.mockup.name));
     await tester.tap(find.text(PressFeel.none.name));
@@ -56,7 +56,7 @@ void main() {
     await tester.pump();
 
     final motion = container.read(appMotionProvider);
-    expect(motion.tabTransition, TabTransition.fadeIn);
+    expect(motion.tabTransition, TabTransition.fadeThrough);
     expect(motion.deeperTransition, DeeperTransition.rise);
     expect(motion.short, const Duration(milliseconds: 200));
     expect(motion.pressHold, Duration.zero);

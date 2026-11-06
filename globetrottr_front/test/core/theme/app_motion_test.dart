@@ -47,8 +47,8 @@ void main() {
     expect(AppMotion.standard.navPill, NavPillMotion.jump);
   });
 
-  test('tabs and deeper screens change at once', () {
-    expect(AppMotion.standard.tabTransition, TabTransition.instant);
+  test('a tab fades in and a deeper screen comes in at once', () {
+    expect(AppMotion.standard.tabTransition, TabTransition.fadeIn);
     expect(AppMotion.standard.deeperTransition, DeeperTransition.instant);
   });
 

@@ -105,7 +105,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
     curve: Curves.ease,
     popCurve: Curves.easeOutBack,
     flightCurve: Curves.easeInOut,
-    tabTransition: TabTransition.instant,
+    tabTransition: TabTransition.fadeIn,
     deeperTransition: DeeperTransition.instant,
     navPill: NavPillMotion.jump,
   );
