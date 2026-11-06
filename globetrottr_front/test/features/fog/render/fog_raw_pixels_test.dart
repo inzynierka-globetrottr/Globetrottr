@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
@@ -10,7 +10,7 @@ import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
 
 BitmapFogPainter _painter(
-  MapCamera camera, {
+  FogCamera camera, {
   required bool raw,
   bool softEdge = false,
   dynamic source,

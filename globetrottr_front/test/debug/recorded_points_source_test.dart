@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/debug/recorded_points_source.dart';
 import 'package:globetrottr_front/features/map/data/track_log_entry.dart';
 
-import '../support/fog_render_helpers.dart';
 import '../support/fog_test_helpers.dart';
+import '../support/map_camera_helpers.dart';
 import '../support/in_memory_track_log_storage.dart';
 
 class _GatedStorage extends InMemoryTrackLogStorage {
@@ -50,7 +50,7 @@ void main() {
     test('loads the points around the camera', () async {
       final source = RecordedPointsSource(await filled());
 
-      await source.ensure(cameraAt());
+      await source.ensure(mapCameraAt());
 
       expect(source.points.length, 30);
       expect(source.points.every((e) => e.sessionId == 'a'), isTrue);
@@ -62,7 +62,7 @@ void main() {
       await storage.appendAll(walkEast('a', points: 5));
       final source = RecordedPointsSource(storage);
 
-      await source.ensure(cameraAt(zoom: 9));
+      await source.ensure(mapCameraAt(zoom: 9));
 
       expect(source.points, isEmpty);
       expect(storage.queries, 0);
@@ -71,9 +71,9 @@ void main() {
 
     test('clears the points when the map is zoomed out', () async {
       final source = RecordedPointsSource(await filled());
-      await source.ensure(cameraAt());
+      await source.ensure(mapCameraAt());
 
-      await source.ensure(cameraAt(zoom: 9));
+      await source.ensure(mapCameraAt(zoom: 9));
 
       expect(source.points, isEmpty);
       source.dispose();
@@ -85,15 +85,15 @@ void main() {
         final storage = _GatedStorage();
         await storage.appendAll(walkEast('a', points: 30));
         final source = RecordedPointsSource(storage);
-        final first = source.ensure(cameraAt());
+        final first = source.ensure(mapCameraAt());
         storage.gates.last.complete();
         await first;
 
-        final nearby = cameraAt(
+        final nearby = mapCameraAt(
           lng: offsetMeters(krakowLat, krakowLng, east: 40).lng,
         );
         await source.ensure(nearby);
-        await source.ensure(cameraAt());
+        await source.ensure(mapCameraAt());
 
         expect(storage.queries, 1);
         source.dispose();
@@ -104,11 +104,11 @@ void main() {
       final storage = _GatedStorage();
       await storage.appendAll(walkEast('a', points: 30));
       final source = RecordedPointsSource(storage);
-      final first = source.ensure(cameraAt());
+      final first = source.ensure(mapCameraAt());
       storage.gates.last.complete();
       await first;
 
-      final away = cameraAt(
+      final away = mapCameraAt(
         lat: offsetMeters(krakowLat, krakowLng, north: 5000).lat,
       );
       final second = source.ensure(away);
@@ -124,8 +124,8 @@ void main() {
       final storage = _GatedStorage();
       await storage.appendAll(walkEast('a', points: 30));
       final source = RecordedPointsSource(storage);
-      final stale = source.ensure(cameraAt());
-      final away = cameraAt(
+      final stale = source.ensure(mapCameraAt());
+      final away = mapCameraAt(
         lat: offsetMeters(krakowLat, krakowLng, north: 5000).lat,
       );
       final fresh = source.ensure(away);
@@ -141,7 +141,7 @@ void main() {
 
     test('adds a new point that is inside the loaded area', () async {
       final source = RecordedPointsSource(await filled());
-      await source.ensure(cameraAt());
+      await source.ensure(mapCameraAt());
       var notified = 0;
       source.addListener(() => notified++);
       final at = offsetMeters(krakowLat, krakowLng, north: 20);
@@ -156,7 +156,7 @@ void main() {
 
     test('ignores a new point outside the loaded area', () async {
       final source = RecordedPointsSource(await filled());
-      await source.ensure(cameraAt());
+      await source.ensure(mapCameraAt());
 
       source.add(
         logEntry('a', 99, (lat: krakowLat + 2, lng: krakowLng), id: 500),
@@ -170,7 +170,7 @@ void main() {
       final storage = _GatedStorage();
       final source = RecordedPointsSource(storage);
 
-      await source.ensure(cameraAt(zoom: double.nan));
+      await source.ensure(mapCameraAt(zoom: double.nan));
 
       expect(storage.queries, 0);
       source.dispose();
@@ -181,7 +181,7 @@ void main() {
       await log.appendAll(walkEast('a', points: 50));
       final source = RecordedPointsSource(log, maxPoints: 20);
 
-      await source.ensure(cameraAt());
+      await source.ensure(mapCameraAt());
 
       expect(source.points.length, 20);
       source.dispose();
@@ -191,12 +191,12 @@ void main() {
       final storage = _GatedStorage();
       await storage.appendAll(walkEast('a', points: 30));
       final source = RecordedPointsSource(storage);
-      final first = source.ensure(cameraAt());
+      final first = source.ensure(mapCameraAt());
       storage.gates.last.complete();
       await first;
 
       source.clear();
-      final second = source.ensure(cameraAt());
+      final second = source.ensure(mapCameraAt());
       storage.gates.last.complete();
       await second;
 
@@ -209,7 +209,7 @@ void main() {
       final storage = _GatedStorage();
       await storage.appendAll(walkEast('a', points: 30));
       final source = RecordedPointsSource(storage);
-      final pending = source.ensure(cameraAt());
+      final pending = source.ensure(mapCameraAt());
 
       source.dispose();
       storage.gates.last.complete();

@@ -7,6 +7,7 @@ import 'package:globetrottr_front/debug/widgets/recorded_points_layer.dart';
 
 import '../support/fog_render_helpers.dart';
 import '../support/fog_test_helpers.dart';
+import '../support/map_camera_helpers.dart';
 import '../support/in_memory_track_log_storage.dart';
 
 /// Strongest alpha in the 7x7 pixels around where [camera] puts a point.
@@ -15,7 +16,7 @@ int _alphaAt(
   MapCamera camera,
   ({double lat, double lng}) at,
 ) {
-  final p = screenOf(camera, at.lat, at.lng);
+  final p = mapScreenOf(camera, at.lat, at.lng);
   var strongest = 0;
   for (var dx = -3; dx <= 3; dx++) {
     for (var dy = -3; dy <= 3; dy++) {
@@ -33,7 +34,7 @@ Future<(RecordedPointsSource, MapCamera)> _loaded(
   double zoom = 17,
   double rotation = 0,
 }) async {
-  final camera = cameraAt(
+  final camera = mapCameraAt(
     zoom: zoom,
     rotation: rotation,
     lng: offsetMeters(krakowLat, krakowLng, east: 100).lng,
@@ -48,7 +49,7 @@ void main() {
 
   group('RecordedPointsPainter', () {
     test('draws nothing without points', () async {
-      final camera = cameraAt();
+      final camera = mapCameraAt();
       final source = RecordedPointsSource(InMemoryTrackLogStorage());
 
       final alpha = await renderAlpha(RecordedPointsPainter(camera, source));
@@ -90,7 +91,7 @@ void main() {
         final alpha = await renderAlpha(RecordedPointsPainter(camera, source));
 
         final middle = offsetMeters(krakowLat, krakowLng, east: 30);
-        final at = screenOf(camera, middle.lat, middle.lng);
+        final at = mapScreenOf(camera, middle.lat, middle.lng);
         expect(alpha(at.dx.round(), at.dy.round()), greaterThan(60));
         final beside = alpha(at.dx.round(), at.dy.round() + 12);
         expect(beside, 0);
@@ -114,7 +115,7 @@ void main() {
         final alpha = await renderAlpha(RecordedPointsPainter(camera, source));
 
         final middle = offsetMeters(krakowLat, krakowLng, east: 30);
-        final at = screenOf(camera, middle.lat, middle.lng);
+        final at = mapScreenOf(camera, middle.lat, middle.lng);
         expect(alpha(at.dx.round(), at.dy.round()), 0);
         source.dispose();
       },
@@ -131,7 +132,7 @@ void main() {
       final alpha = await renderAlpha(RecordedPointsPainter(camera, source));
 
       final middle = offsetMeters(krakowLat, krakowLng, east: 30);
-      final at = screenOf(camera, middle.lat, middle.lng);
+      final at = mapScreenOf(camera, middle.lat, middle.lng);
       expect(alpha(at.dx.round(), at.dy.round()), 0);
       source.dispose();
     });
@@ -156,7 +157,7 @@ void main() {
       final (source, _) = await _loaded(log);
 
       final alpha = await renderAlpha(
-        RecordedPointsPainter(cameraAt(zoom: double.nan), source),
+        RecordedPointsPainter(mapCameraAt(zoom: double.nan), source),
       );
 
       expect(alpha(200, 400), 0);
@@ -174,7 +175,7 @@ void main() {
       );
       expect(
         painter.shouldRepaint(
-          RecordedPointsPainter(cameraAt(zoom: 16), source),
+          RecordedPointsPainter(mapCameraAt(zoom: 16), source),
         ),
         isTrue,
       );

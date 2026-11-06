@@ -1,18 +1,17 @@
 import 'dart:math' as math;
 
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/bitmap/fog_tile_id.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:globetrottr_front/features/fog/fog_config.dart';
 
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
 
 BitmapFogPainter _painter(
-  MapCamera camera, {
+  FogCamera camera, {
   required bool grid,
   dynamic source,
 }) {
@@ -27,16 +26,12 @@ BitmapFogPainter _painter(
 /// Strongest alpha in the 5x5 pixels around a world pixel of a tile corner.
 int _alphaAtCorner(
   int Function(int x, int y) alpha,
-  MapCamera camera,
+  FogCamera camera,
   int z,
   double worldX,
   double worldY,
 ) {
-  final at = screenOf(
-    camera,
-    FogMercator.yToLat(worldY, z),
-    FogMercator.xToLng(worldX, z),
-  );
+  final at = camera.worldToScreen(worldX, worldY, z);
   var strongest = 0;
   for (var dx = -2; dx <= 2; dx++) {
     for (var dy = -2; dy <= 2; dy++) {
@@ -195,13 +190,7 @@ void main() {
 
     test('is skipped when too many tiles would be drawn', () async {
       final camera = cameraAt(zoom: 17.4, lat: 50, lng: 19.9);
-      final tiny = MapCamera(
-        crs: const Epsg3857(),
-        center: const LatLng(50, 20),
-        zoom: 3,
-        rotation: 0,
-        nonRotatedSize: const math.Point<double>(400, 800),
-      );
+      final tiny = cameraAt(zoom: 3, lat: 50, lng: 20);
 
       final on = await renderAlpha(_painter(tiny, grid: true));
 

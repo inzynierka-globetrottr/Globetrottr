@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -61,7 +61,7 @@ int _worst(List<int> a, List<int> b) {
 /// Alpha along the middle column of the screen, through the lower edge of the
 /// walk, without and with its tiles.
 Future<(List<int>, List<int>)> _edgeBeforeAndAfter(
-  MapCamera camera,
+  FogCamera camera,
   int points,
 ) async {
   final store = await openStore();

@@ -1,6 +1,5 @@
-import 'dart:math' as math;
+import 'dart:ui';
 
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/features/fog/render/fog_camera.dart';
 import 'package:latlong2/latlong.dart';
@@ -9,24 +8,19 @@ import 'package:globetrottr_front/features/fog/fog_config.dart';
 import '../../../support/fog_render_helpers.dart';
 import '../../../support/fog_test_helpers.dart';
 
-MapCamera _camera({
+FogCamera _camera({
   LatLng center = const LatLng(krakowLat, krakowLng),
   double zoom = 17,
-  math.Point<double> size = const math.Point<double>(400, 800),
+  double rotation = 0,
+  Size size = viewSize,
 }) {
-  return MapCamera(
-    crs: const Epsg3857(),
-    center: center,
-    zoom: zoom,
-    rotation: 0,
-    nonRotatedSize: size,
-  );
+  return FogCamera(center: center, zoom: zoom, rotation: rotation, size: size);
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final broken = <String, MapCamera>{
+  final broken = <String, FogCamera>{
     'NaN latitude': _camera(center: const LatLng(double.nan, krakowLng)),
     'NaN longitude': _camera(center: const LatLng(krakowLat, double.nan)),
     'infinite longitude': _camera(
@@ -34,18 +28,19 @@ void main() {
     ),
     'NaN zoom': _camera(zoom: double.nan),
     'infinite zoom': _camera(zoom: double.infinity),
-    'unknown size': _camera(size: const math.Point<double>(-1, -1)),
-    'zero size': _camera(size: const math.Point<double>(0, 0)),
+    'NaN rotation': _camera(rotation: double.nan),
+    'unknown size': _camera(size: const Size(-1, -1)),
+    'zero size': _camera(size: Size.zero),
   };
 
-  group('isUsableForFog', () {
+  group('isUsable', () {
     test('accepts a normal camera', () {
-      expect(_camera().isUsableForFog, isTrue);
+      expect(_camera().isUsable, isTrue);
     });
 
     for (final entry in broken.entries) {
       test('rejects a camera with ${entry.key}', () {
-        expect(entry.value.isUsableForFog, isFalse);
+        expect(entry.value.isUsable, isFalse);
       });
     }
   });

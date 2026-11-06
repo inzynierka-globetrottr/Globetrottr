@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/features/fog/render/adapters/flutter_map_fog_camera.dart';
 import 'package:globetrottr_front/features/fog/render/bitmap_fog_painter.dart';
 import 'package:globetrottr_front/features/fog/render/fog_render_options.dart';
 import 'package:globetrottr_front/features/fog/render/fog_tile_source.dart';
@@ -23,7 +24,7 @@ class BitmapFogLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final camera = MapCamera.of(context);
+    final camera = MapCamera.of(context).toFogCamera();
     source?.ensureVisible(camera);
 
     return SizedBox.expand(
