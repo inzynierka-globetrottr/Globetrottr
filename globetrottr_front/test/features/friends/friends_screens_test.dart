@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
+import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
+import 'package:globetrottr_front/core/widgets/form_message.dart';
+import 'package:globetrottr_front/core/widgets/unfold_transition.dart';
 import 'package:globetrottr_front/features/friends/data/friends_service.dart';
 import 'package:globetrottr_front/features/friends/data/friendship_response.dart';
 import 'package:globetrottr_front/features/friends/data/invite_status.dart';
@@ -30,9 +35,18 @@ class _FakeFriendsService implements FriendsService {
   final List<String> invited = [];
   final List<String> accepted = [];
   AppException? failWith;
+  AppException? loadFailWith;
+
+  /// Holds the friends back until completed, as a slow backend would.
+  Completer<void>? arrival;
 
   @override
-  Future<List<FriendshipResponse>> getFriends() async => friends;
+  Future<List<FriendshipResponse>> getFriends() async {
+    await arrival?.future;
+    final error = loadFailWith;
+    if (error != null) throw error;
+    return friends;
+  }
 
   @override
   Future<List<FriendshipResponse>> getReceivedInvites() async => received;
@@ -138,6 +152,46 @@ void main() {
     expect(find.text('— km²'), findsNWidgets(2));
     expect(find.text('–'), findsOneWidget);
     expect(find.text('You'), findsOneWidget);
+  });
+
+  testWidgets('no empty card shows while the friends are on their way', (
+    tester,
+  ) async {
+    friends
+      ..friends = [_person('ola')]
+      ..arrival = Completer<void>();
+    await pump(tester, const FriendsScreen());
+
+    expect(find.text('No friends yet'), findsNothing);
+
+    friends.arrival!.complete();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(AppMotion.standard.medium ~/ 2);
+
+    final list = find
+        .ancestor(of: find.text('ola'), matching: find.byType(UnfoldTransition))
+        .last;
+    expect(
+      tester.widget<UnfoldTransition>(list).listenable,
+      isA<Animation<double>>(),
+    );
+    expect(
+      (tester.widget<UnfoldTransition>(list).listenable as Animation<double>)
+          .value,
+      1,
+    );
+    expect(find.text('No friends yet'), findsNothing);
+  });
+
+  testWidgets('a failed load shows no empty card, only the error', (
+    tester,
+  ) async {
+    friends.loadFailWith = const NetworkException();
+    await pump(tester, const FriendsScreen());
+
+    expect(find.text('No friends yet'), findsNothing);
+    expect(find.byType(FormMessage), findsOneWidget);
   });
 
   testWidgets('without friends one card replaces the strip and the list', (

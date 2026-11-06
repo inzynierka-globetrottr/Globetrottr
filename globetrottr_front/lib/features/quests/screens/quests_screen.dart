@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
 import 'package:globetrottr_front/core/localization/app_error_localizations.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/animated_column.dart';
 import 'package:globetrottr_front/core/widgets/form_message.dart';
-import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/core/widgets/neu_list_card.dart';
 import 'package:globetrottr_front/features/profile/provider/profile_provider.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
@@ -30,20 +31,18 @@ class QuestsScreen extends ConsumerStatefulWidget {
   ConsumerState<QuestsScreen> createState() => _QuestsScreenState();
 }
 
-class _QuestsScreenState extends ConsumerState<QuestsScreen> {
+class _QuestsScreenState extends ConsumerState<QuestsScreen>
+    with TabVisibility {
   static const _side = 20.0;
 
   int? _openQuestId;
 
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      ref.read(questsProvider.notifier).loadQuests();
-      if (ref.read(profileProvider).profile == null) {
-        ref.read(profileProvider.notifier).loadProfile();
-      }
-    });
+  void onTabShown() {
+    ref.read(questsProvider.notifier).loadQuests();
+    if (ref.read(profileProvider).profile == null) {
+      ref.read(profileProvider.notifier).loadProfile();
+    }
   }
 
   void _toggle(Quest quest) => setState(
@@ -51,6 +50,7 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen> {
   );
 
   Future<void> _start(Quest quest) async {
+    if (ref.read(questsProvider).isStarting) return;
     final active = ref.read(activeQuestProvider);
     if (active != null &&
         !await confirmQuestSwap(context, active: active, next: quest)) {
@@ -83,6 +83,7 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen> {
     final board = ref.watch(questBoardProvider);
 
     Widget group(AppIcons icon, String title, List<Quest> quests) => Column(
+      key: ValueKey(title),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 12,
       children: [
@@ -96,6 +97,7 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen> {
                 expanded: _openQuestId == quest.id,
                 onToggle: () => _toggle(quest),
                 onStart: () => _start(quest),
+                starting: state.isStarting,
                 swaps: active != null,
               ),
           ],
@@ -104,32 +106,41 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen> {
     );
 
     return Scaffold(
-      // The list scrolls on under the floating navigation.
-      extendBody: true,
-      bottomNavigationBar: const NeuBottomNavbar(
-        activeItem: NavbarItem.quests,
-      ),
-      // Read inside the scaffold, whose padding includes the navigation.
+      // The padding includes the floating navigation, which the list scrolls
+      // on under.
       body: Builder(
         builder: (context) => SingleChildScrollView(
           padding: _scrollPadding(MediaQuery.paddingOf(context)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          // Sections that come with the data or go away unfold and fold; a
+          // new active quest replaces the old card the same way. The first
+          // data only fades in, as nothing below has to move.
+          child: AnimatedColumn(
             spacing: 16,
+            appearing: !state.hasLoaded,
             children: [
-              Text(l10n.questsTitle, style: context.typography.headline),
+              Text(
+                l10n.questsTitle,
+                key: const ValueKey('title'),
+                style: context.typography.headline,
+              ),
               QuestLevelRow(
+                key: const ValueKey('level'),
                 level: ref.watch(questLevelProvider),
                 onTap: () => context.go('/quests/history'),
               ),
               if (state.errorMessage != null)
                 FormMessage.error(
                   context.localizeErrorMessage(state.errorMessage),
+                  key: const ValueKey('error'),
                 ),
               if (active != null)
-                ActiveQuestCard(quest: active, onShow: _showOnMap)
-              else
-                const EmptyActiveQuestCard(),
+                ActiveQuestCard(
+                  key: ValueKey('active ${active.id}'),
+                  quest: active,
+                  onShow: _showOnMap,
+                )
+              else if (state.hasLoaded)
+                const EmptyActiveQuestCard(key: ValueKey('no active')),
               if (board.places.isNotEmpty)
                 group(AppIcons.pin, l10n.questsPlaces, board.places),
               if (board.routes.isNotEmpty)

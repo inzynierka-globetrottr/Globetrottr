@@ -4,6 +4,10 @@ import 'package:latlong2/latlong.dart';
 class MapConfig {
   static const double defaultVisionRadius = 50.0;
   static const double defaultZoom = 16.0;
+
+  /// The overview the map opens with before the first position is known;
+  /// the camera then comes down to the player at [defaultZoom].
+  static const double startZoom = 6.0;
   static const int distanceFilter = 5;
 
   /// Longest stretch between two fixes treated as one continuous path, about
@@ -16,9 +20,6 @@ class MapConfig {
   static const double playerStepMeters = 0.3;
   static const Duration playerFastestStep = Duration(milliseconds: 33);
   static const Duration playerSlowestStep = Duration(milliseconds: 66);
-
-  /// How long the camera flies to the player after the recenter button.
-  static const Duration recenterFlight = Duration(milliseconds: 450);
 
   /// Room left around a quest route fitted on the map, so the controls on
   /// top and the navigation at the bottom do not cover it.

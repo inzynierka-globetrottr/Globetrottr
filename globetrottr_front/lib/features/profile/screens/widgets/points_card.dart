@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
+import 'package:globetrottr_front/core/widgets/animated_number.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 class PointsCard extends StatelessWidget {
@@ -32,7 +33,11 @@ class PointsCard extends StatelessWidget {
             children: [
               Text(context.l10n.profileTotalPoints, style: typography.body),
               const SizedBox(height: 2),
-              Text('$totalPoints', style: typography.digit),
+              AnimatedNumber(
+                value: totalPoints.toDouble(),
+                format: (points) => '${points?.round()}',
+                style: typography.digit,
+              ),
             ],
           ),
         ],

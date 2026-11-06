@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_map_palette.dart';
+import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/app_typography.dart';
@@ -13,6 +14,7 @@ class AppTheme {
   static ThemeData from(
     AppPalette palette, {
     AppMapPalette map = AppMapPalette.light,
+    AppMotion motion = AppMotion.standard,
   }) {
     final brightness = ThemeData.estimateBrightnessForColor(palette.background);
     final typography = AppTypography.fromPalette(palette);
@@ -55,7 +57,9 @@ class AppTheme {
         map,
         typography,
         AppShadows.fromPalette(palette),
+        motion,
       ],
+      pageTransitionsTheme: motion.pageTransitions,
     );
   }
 }

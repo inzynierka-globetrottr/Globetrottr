@@ -5,3 +5,4 @@ graphify-out/
 .private/
 CLAUDE.local.md
 launch.cmd
+.claude/worktrees/

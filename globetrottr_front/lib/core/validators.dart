@@ -1,16 +1,43 @@
 import 'package:globetrottr_front/l10n/app_localizations.dart';
 
-String? validateUsername(String? value, [AppLocalizations? l10n]) {
-  if (value == null || value.trim().isEmpty) {
-    return l10n?.validationUsernameRequired ?? 'Login is required';
-  }
-  final length = value.trim().length;
-  if (length < 3 || length > 50) {
-    return l10n?.validationUsernameLength ??
-        'Login must be between 3 and 50 characters';
+/// Length limits of a nickname on the backend.
+const nicknameMinLength = 3;
+const nicknameMaxLength = 50;
+
+/// The rules of [validateUsername] and [validateNickname], which differ only
+/// in the name their messages give the field.
+String? _validateName(
+  String? value, {
+  required String required,
+  required String length,
+}) {
+  final name = value?.trim() ?? '';
+  if (name.isEmpty) return required;
+  if (name.length < nicknameMinLength || name.length > nicknameMaxLength) {
+    return length;
   }
   return null;
 }
+
+String? validateUsername(String? value, [AppLocalizations? l10n]) =>
+    _validateName(
+      value,
+      required: l10n?.validationUsernameRequired ?? 'Login is required',
+      length:
+          l10n?.validationUsernameLength ??
+          'Login must be between 3 and 50 characters',
+    );
+
+/// For a field that asks for a nickname only, unlike the login field that
+/// also takes an e-mail.
+String? validateNickname(String? value, [AppLocalizations? l10n]) =>
+    _validateName(
+      value,
+      required: l10n?.validationNicknameRequired ?? 'Nickname is required',
+      length:
+          l10n?.validationNicknameLength ??
+          'Nickname must be between 3 and 50 characters',
+    );
 
 String? validateEmail(String? value, [AppLocalizations? l10n]) {
   if (value == null || value.trim().isEmpty) {

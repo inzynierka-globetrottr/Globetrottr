@@ -493,6 +493,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get validationUsernameLength => 'Login musi mieć od 3 do 50 znaków';
 
   @override
+  String get validationNicknameRequired => 'Nick jest wymagany';
+
+  @override
+  String get validationNicknameLength => 'Nick musi mieć od 3 do 50 znaków';
+
+  @override
   String get validationEmailRequired => 'Email jest wymagany';
 
   @override

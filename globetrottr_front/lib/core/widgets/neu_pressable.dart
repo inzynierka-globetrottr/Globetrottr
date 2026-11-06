@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
+import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
 
 /// A raised surface that sinks in while pressed. The common part of every
@@ -45,35 +48,70 @@ class _NeuPressableState extends State<NeuPressable> {
 
   bool _pressed = false;
 
+  /// Running while the press is younger than the shortest hold.
+  Timer? _hold;
+  bool _lifted = false;
+
   void _setPressed(bool value) {
     if (_pressed != value) setState(() => _pressed = value);
+  }
+
+  void _press() {
+    _lifted = false;
+    _hold?.cancel();
+    _hold = Timer(context.motion.pressHold, () {
+      _hold = null;
+      if (mounted && _lifted) _setPressed(false);
+    });
+    _setPressed(true);
+  }
+
+  void _lift() {
+    _lifted = true;
+    if (_hold == null) _setPressed(false);
+  }
+
+  @override
+  void dispose() {
+    _hold?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onPressed != null;
-    final shadows = _pressed ? widget.pressedShadows : widget.shadows;
+    final motion = context.motion;
     final content = Opacity(
       opacity: enabled ? 1 : _disabledOpacity,
       child: Center(child: widget.child),
     );
-    final surface = widget.borderRadius == null
-        ? NeuSurface.circle(
-            shadows: shadows,
-            color: widget.color,
-            size: widget.width,
-            padding: widget.padding,
-            child: content,
-          )
-        : NeuSurface(
-            shadows: shadows,
-            borderRadius: widget.borderRadius,
-            color: widget.color,
-            width: widget.width,
-            height: widget.height,
-            padding: widget.padding,
-            child: content,
-          );
+    // It sinks in and rises back at once, as a tap is shorter than any
+    // animation.
+    final shadows = _pressed ? widget.pressedShadows : widget.shadows;
+    // A new fill, such as start turning into stop, blends in.
+    final surface = TweenAnimationBuilder<Color?>(
+      tween: ColorTween(end: widget.color ?? context.palette.background),
+      duration: motion.short,
+      curve: motion.curve,
+      child: content,
+      builder: (context, color, content) => widget.borderRadius == null
+          ? NeuSurface.circle(
+              shadows: shadows,
+              color: color,
+              size: widget.width,
+              padding: widget.padding,
+              child: content,
+            )
+          : NeuSurface(
+              shadows: shadows,
+              borderRadius: widget.borderRadius,
+              color: color,
+              width: widget.width,
+              height: widget.height,
+              padding: widget.padding,
+              child: content,
+            ),
+    );
 
     return Semantics(
       button: true,
@@ -82,9 +120,9 @@ class _NeuPressableState extends State<NeuPressable> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onPressed,
-        onTapDown: enabled ? (_) => _setPressed(true) : null,
-        onTapUp: enabled ? (_) => _setPressed(false) : null,
-        onTapCancel: enabled ? () => _setPressed(false) : null,
+        onTapDown: enabled ? (_) => _press() : null,
+        onTapUp: enabled ? (_) => _lift() : null,
+        onTapCancel: enabled ? _lift : null,
         child: surface,
       ),
     );

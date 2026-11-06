@@ -28,7 +28,7 @@ void main() {
     final gesture = await tester.startGesture(
       tester.getCenter(find.byType(NeuIconButton)),
     );
-    await tester.pump();
+    await tester.pumpAndSettle();
     final surface = tester.widget<NeuSurface>(find.byType(NeuSurface));
     await gesture.up();
     return surface.shadows;

@@ -86,7 +86,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 leadingIcon: AppIcons.fieldUser,
                 controller: _nickController,
                 autofillHints: const [AutofillHints.newUsername],
-                validator: (value) => validateUsername(value, l10n),
+                validator: (value) => validateNickname(value, l10n),
               ),
               NeuTextField(
                 label: l10n.authEmailLabel,

@@ -8,6 +8,7 @@ import 'package:globetrottr_front/core/widgets/neu_list_card.dart';
 import 'package:globetrottr_front/core/widgets/section_header.dart';
 import 'package:globetrottr_front/features/quests/data/quest.dart';
 import 'package:globetrottr_front/features/quests/provider/quest_board_provider.dart';
+import 'package:globetrottr_front/features/quests/provider/quests_provider.dart';
 import 'package:globetrottr_front/features/quests/screens/widgets/quest_list_item.dart';
 
 /// The completed quests, newest first, grouped by the month they were
@@ -23,6 +24,16 @@ class _QuestHistoryScreenState extends ConsumerState<QuestHistoryScreen> {
   static const _side = 20.0;
 
   int? _openQuestId;
+
+  // Opened over the Quests tab, which has its quests already; only a
+  // screen opened on its own has to load them.
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref.read(questsProvider.notifier).loadQuestsOnce(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

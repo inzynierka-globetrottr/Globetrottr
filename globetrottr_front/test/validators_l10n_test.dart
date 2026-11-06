@@ -13,6 +13,17 @@ void main() {
       pl = await AppLocalizations.delegate.load(const Locale('pl'));
     });
 
+    test('validateNickname speaks of the nickname', () {
+      expect(validateNickname('', en), 'Nickname is required');
+      expect(validateNickname('', pl), 'Nick jest wymagany');
+      expect(
+        validateNickname('ab', en),
+        'Nickname must be between 3 and 50 characters',
+      );
+      expect(validateNickname('ab', pl), 'Nick musi mieć od 3 do 50 znaków');
+      expect(validateNickname('explorer', en), isNull);
+    });
+
     test('validateUsername returns localized errors', () {
       expect(validateUsername('', en), 'Login is required');
       expect(validateUsername('', pl), 'Login jest wymagany');

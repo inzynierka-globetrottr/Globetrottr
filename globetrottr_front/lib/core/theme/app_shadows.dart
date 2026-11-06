@@ -1,3 +1,5 @@
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/theme/app_palette.dart';
 
@@ -40,6 +42,47 @@ class NeoShadow {
 
   @override
   int get hashCode => Object.hash(offset, blur, color, inset);
+
+  /// Closer to the surface by [factor]: 0 lies flat and casts nothing.
+  NeoShadow _scaled(double factor) => NeoShadow(
+    offset: offset * factor,
+    blur: blur,
+    color: color.withValues(alpha: color.a * factor),
+    inset: inset,
+  );
+}
+
+/// The shadows between [from] (t = 0) and [to] (t = 1). Lists of the same
+/// kind blend shadow by shadow; otherwise, as a raised surface cannot turn
+/// into a sunk one directly, [from] flattens in the first half and [to]
+/// grows in the second.
+List<NeoShadow> lerpShadows(
+  List<NeoShadow> from,
+  List<NeoShadow> to,
+  double t,
+) {
+  if (t <= 0) return from;
+  if (t >= 1) return to;
+  final sameKind =
+      from.length == to.length &&
+      Iterable<int>.generate(
+        from.length,
+      ).every((i) => from[i].inset == to[i].inset);
+  if (sameKind) {
+    return [
+      for (var i = 0; i < from.length; i++)
+        NeoShadow(
+          offset: Offset.lerp(from[i].offset, to[i].offset, t)!,
+          blur: lerpDouble(from[i].blur, to[i].blur, t)!,
+          color: Color.lerp(from[i].color, to[i].color, t)!,
+          inset: from[i].inset,
+        ),
+    ];
+  }
+  if (t == 0.5) return const [];
+  return t < 0.5
+      ? [for (final s in from) s._scaled(1 - 2 * t)]
+      : [for (final s in to) s._scaled(2 * t - 1)];
 }
 
 /// How far a neumorphic surface stands out (or sinks in): the offset of its

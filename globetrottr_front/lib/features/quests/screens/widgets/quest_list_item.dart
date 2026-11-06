@@ -23,6 +23,7 @@ class QuestListItem extends StatelessWidget {
     required this.expanded,
     required this.onToggle,
     this.onStart,
+    this.starting = false,
     this.swaps = false,
   });
 
@@ -33,10 +34,12 @@ class QuestListItem extends StatelessWidget {
   /// Null for a completed quest.
   final VoidCallback? onStart;
 
+  /// A start, of this or another quest, is on the way, so the button is
+  /// disabled.
+  final bool starting;
+
   /// Starting it replaces the active quest.
   final bool swaps;
-
-  static const _toggle = Duration(milliseconds: 240);
 
   @override
   Widget build(BuildContext context) {
@@ -81,8 +84,8 @@ class QuestListItem extends StatelessWidget {
           ),
         ),
         AnimatedSize(
-          duration: _toggle,
-          curve: Curves.ease,
+          duration: context.motion.medium,
+          curve: context.motion.curve,
           alignment: Alignment.topCenter,
           child: expanded
               ? Padding(
@@ -99,7 +102,7 @@ class QuestListItem extends StatelessWidget {
                             semanticLabel: swaps
                                 ? l10n.questsSwap(quest.title)
                                 : l10n.questsStart(quest.title),
-                            onPressed: onStart,
+                            onPressed: starting ? null : onStart,
                             child: const AppIcon(AppIcons.footsteps),
                           ),
                         ),
