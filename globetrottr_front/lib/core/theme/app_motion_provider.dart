@@ -65,14 +65,12 @@ class MotionChoices {
   const MotionChoices({
     this.pace = MotionPace.quick,
     this.press = PressFeel.instant,
-    this.navPill = NavPillMotion.jump,
     this.tab = TabTransition.fadeIn,
     this.deeper = DeeperTransition.instant,
   });
 
   final MotionPace pace;
   final PressFeel press;
-  final NavPillMotion navPill;
   final TabTransition tab;
   final DeeperTransition deeper;
 
@@ -80,7 +78,6 @@ class MotionChoices {
   AppMotion get motion => press.applyTo(
     pace.applyTo(
       AppMotion.standard.copyWith(
-        navPill: navPill,
         tabTransition: tab,
         deeperTransition: deeper,
       ),
@@ -90,13 +87,11 @@ class MotionChoices {
   MotionChoices copyWith({
     MotionPace? pace,
     PressFeel? press,
-    NavPillMotion? navPill,
     TabTransition? tab,
     DeeperTransition? deeper,
   }) => MotionChoices(
     pace: pace ?? this.pace,
     press: press ?? this.press,
-    navPill: navPill ?? this.navPill,
     tab: tab ?? this.tab,
     deeper: deeper ?? this.deeper,
   );
@@ -109,13 +104,11 @@ class MotionChoicesNotifier extends Notifier<MotionChoices> {
   void choose({
     MotionPace? pace,
     PressFeel? press,
-    NavPillMotion? navPill,
     TabTransition? tab,
     DeeperTransition? deeper,
   }) => state = state.copyWith(
     pace: pace,
     press: press,
-    navPill: navPill,
     tab: tab,
     deeper: deeper,
   );

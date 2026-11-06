@@ -43,10 +43,6 @@ void main() {
     expect(AppMotion.standard.pressHold, isNot(Duration.zero));
   });
 
-  test('the navigation pill jumps to the chosen tab', () {
-    expect(AppMotion.standard.navPill, NavPillMotion.jump);
-  });
-
   test('a tab fades in and a deeper screen comes in at once', () {
     expect(AppMotion.standard.tabTransition, TabTransition.fadeIn);
     expect(AppMotion.standard.deeperTransition, DeeperTransition.instant);

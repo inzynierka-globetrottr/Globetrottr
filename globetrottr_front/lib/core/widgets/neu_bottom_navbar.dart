@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:globetrottr_front/core/localization/localization_extensions.dart';
 import 'package:globetrottr_front/core/theme/app_icons.dart';
-import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/theme_context.dart';
 import 'package:globetrottr_front/core/widgets/app_icon.dart';
@@ -32,8 +31,9 @@ enum NavbarItem {
   };
 }
 
-/// The floating bottom navigation. The accent pill slides to the active tab,
-/// and over the map the bar casts a darker shadow.
+/// The floating bottom navigation. The accent pill and the label colours
+/// are on the active tab at once; over the map the bar casts a darker
+/// shadow.
 class NeuBottomNavbar extends StatelessWidget {
   const NeuBottomNavbar({
     super.key,
@@ -94,11 +94,7 @@ class NeuBottomNavbar extends StatelessWidget {
                 (constraints.maxWidth - _spacing * (count - 1)) / count;
             return Stack(
               children: [
-                AnimatedPositioned(
-                  duration: motion.navPill == NavPillMotion.slide
-                      ? motion.short
-                      : Duration.zero,
-                  curve: motion.curve,
+                Positioned(
                   left: activeItem.index * (tabWidth + _spacing),
                   top: 0,
                   bottom: 0,
@@ -153,38 +149,24 @@ class _NavbarTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final typography = context.typography;
-    final motion = context.motion;
+    final color = isActive ? palette.onAccent : palette.textMuted;
     return Semantics(
       button: true,
       selected: isActive,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: isActive ? null : onTap,
-        // The colour follows the pill, so a label is never white on the page.
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(end: isActive ? 1 : 0),
-          duration: motion.short,
-          curve: motion.curve,
-          builder: (context, active, _) {
-            final color = Color.lerp(
-              palette.textMuted,
-              palette.onAccent,
-              active,
-            );
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 3,
-              children: [
-                AppIcon(item.icon, color: color),
-                Text(
-                  item.label(context.l10n),
-                  style:
-                      (isActive ? typography.captionStrong : typography.caption)
-                          .copyWith(color: color),
-                ),
-              ],
-            );
-          },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 3,
+          children: [
+            AppIcon(item.icon, color: color),
+            Text(
+              item.label(context.l10n),
+              style: (isActive ? typography.captionStrong : typography.caption)
+                  .copyWith(color: color),
+            ),
+          ],
         ),
       ),
     );

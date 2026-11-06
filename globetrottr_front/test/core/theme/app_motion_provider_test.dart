@@ -52,16 +52,13 @@ void main() {
   test('a choice keeps the others', () {
     choices().choose(
       pace: MotionPace.mockup,
-      navPill: NavPillMotion.slide,
       tab: TabTransition.fadeThrough,
     );
     choices().choose(deeper: DeeperTransition.zoom);
 
     final chosen = container.read(motionChoicesProvider);
     expect(chosen.pace, MotionPace.mockup);
-    expect(chosen.navPill, NavPillMotion.slide);
     expect(chosen.tab, TabTransition.fadeThrough);
-    expect(motion().navPill, NavPillMotion.slide);
     expect(motion().tabTransition, TabTransition.fadeThrough);
     expect(motion().deeperTransition, DeeperTransition.zoom);
   });

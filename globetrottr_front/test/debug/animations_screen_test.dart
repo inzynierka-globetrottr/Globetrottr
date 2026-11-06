@@ -51,8 +51,6 @@ void main() {
     await tester.tap(find.text(DeeperTransition.rise.name));
     await tester.tap(find.text(MotionPace.mockup.name));
     await tester.tap(find.text(PressFeel.none.name));
-    // The deeper screen transitions, listed below, have a slide too.
-    await tester.tap(find.text(NavPillMotion.slide.name).first);
     await tester.pump();
 
     final motion = container.read(appMotionProvider);
@@ -60,7 +58,6 @@ void main() {
     expect(motion.deeperTransition, DeeperTransition.rise);
     expect(motion.short, const Duration(milliseconds: 200));
     expect(motion.pressHold, Duration.zero);
-    expect(motion.navPill, NavPillMotion.slide);
   });
 
   testWidgets('clearing the field error demo empties the field too', (

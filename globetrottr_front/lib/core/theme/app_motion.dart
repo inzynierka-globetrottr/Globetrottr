@@ -63,15 +63,6 @@ class _InstantPageTransitionsBuilder extends PageTransitionsBuilder {
   ) => child;
 }
 
-/// How the accent pill of the navigation reaches a newly chosen tab.
-enum NavPillMotion {
-  /// It slides over the tabs in between.
-  slide,
-
-  /// It is under the new tab at once.
-  jump,
-}
-
 /// How the design moves. Every animated element picks a step of the scale
 /// instead of its own value.
 @immutable
@@ -89,7 +80,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     required this.flightCurve,
     required this.tabTransition,
     required this.deeperTransition,
-    required this.navPill,
   });
 
   /// The scale is quicker than the mock-up's CSS transitions, as those felt
@@ -107,7 +97,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     flightCurve: Curves.easeInOut,
     tabTransition: TabTransition.fadeIn,
     deeperTransition: DeeperTransition.instant,
-    navPill: NavPillMotion.jump,
   );
 
   /// A press, a fade, a change of colour or shadow.
@@ -142,7 +131,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
   final Curve flightCurve;
   final TabTransition tabTransition;
   final DeeperTransition deeperTransition;
-  final NavPillMotion navPill;
 
   /// Every change happens at once, for the system setting that turns
   /// animations off.
@@ -169,7 +157,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     Curve? flightCurve,
     TabTransition? tabTransition,
     DeeperTransition? deeperTransition,
-    NavPillMotion? navPill,
   }) => AppMotion(
     short: short ?? this.short,
     medium: medium ?? this.medium,
@@ -183,7 +170,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     flightCurve: flightCurve ?? this.flightCurve,
     tabTransition: tabTransition ?? this.tabTransition,
     deeperTransition: deeperTransition ?? this.deeperTransition,
-    navPill: navPill ?? this.navPill,
   );
 
   @override
@@ -204,8 +190,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
       other.popCurve == popCurve &&
       other.flightCurve == flightCurve &&
       other.tabTransition == tabTransition &&
-      other.deeperTransition == deeperTransition &&
-      other.navPill == navPill;
+      other.deeperTransition == deeperTransition;
 
   @override
   int get hashCode => Object.hash(
@@ -221,6 +206,5 @@ class AppMotion extends ThemeExtension<AppMotion> {
     flightCurve,
     tabTransition,
     deeperTransition,
-    navPill,
   );
 }

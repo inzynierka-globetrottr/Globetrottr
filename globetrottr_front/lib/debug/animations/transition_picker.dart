@@ -28,12 +28,6 @@ class TransitionPicker extends ConsumerWidget {
           onSelected: (value) => notifier.choose(press: value),
         ),
         _Choices(
-          title: 'Navigation pill',
-          values: NavPillMotion.values,
-          selected: chosen.navPill,
-          onSelected: (value) => notifier.choose(navPill: value),
-        ),
-        _Choices(
           title: 'Tab transition',
           values: TabTransition.values,
           selected: chosen.tab,
