@@ -6,8 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/exceptions/silent_image_errors.dart';
 import 'package:globetrottr_front/core/localization/locale_provider.dart';
 import 'package:globetrottr_front/core/router/app_router.dart';
-import 'package:globetrottr_front/core/theme/app_motion_provider.dart';
-import 'package:globetrottr_front/core/theme/app_palette.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/debug/widgets/build_stamp.dart';
 import 'package:globetrottr_front/l10n/app_localizations.dart';
@@ -40,10 +38,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      theme: AppTheme.from(
-        AppPalette.light,
-        motion: ref.watch(appMotionProvider),
-      ),
+      theme: AppTheme.light,
       routerConfig: router,
       locale: locale,
       localizationsDelegates: const [

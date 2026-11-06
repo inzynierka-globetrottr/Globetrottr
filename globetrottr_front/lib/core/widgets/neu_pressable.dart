@@ -85,44 +85,32 @@ class _NeuPressableState extends State<NeuPressable> {
       opacity: enabled ? 1 : _disabledOpacity,
       child: Center(child: widget.child),
     );
+    // It sinks in and rises back at once, as a tap is shorter than any
+    // animation.
+    final shadows = _pressed ? widget.pressedShadows : widget.shadows;
     // A new fill, such as start turning into stop, blends in.
     final surface = TweenAnimationBuilder<Color?>(
       tween: ColorTween(end: widget.color ?? context.palette.background),
       duration: motion.short,
       curve: motion.curve,
       child: content,
-      builder: (context, color, content) => TweenAnimationBuilder<double>(
-        tween: Tween(end: _pressed ? 1 : 0),
-        // It sinks in at once, as a tap is shorter than any animation; only
-        // rising back can take time, as the motion says.
-        duration: _pressed ? Duration.zero : motion.pressRise,
-        curve: motion.curve,
-        child: content,
-        builder: (context, depth, content) {
-          final shadows = lerpShadows(
-            widget.shadows,
-            widget.pressedShadows,
-            depth,
-          );
-          return widget.borderRadius == null
-              ? NeuSurface.circle(
-                  shadows: shadows,
-                  color: color,
-                  size: widget.width,
-                  padding: widget.padding,
-                  child: content,
-                )
-              : NeuSurface(
-                  shadows: shadows,
-                  borderRadius: widget.borderRadius,
-                  color: color,
-                  width: widget.width,
-                  height: widget.height,
-                  padding: widget.padding,
-                  child: content,
-                );
-        },
-      ),
+      builder: (context, color, content) => widget.borderRadius == null
+          ? NeuSurface.circle(
+              shadows: shadows,
+              color: color,
+              size: widget.width,
+              padding: widget.padding,
+              child: content,
+            )
+          : NeuSurface(
+              shadows: shadows,
+              borderRadius: widget.borderRadius,
+              color: color,
+              width: widget.width,
+              height: widget.height,
+              padding: widget.padding,
+              child: content,
+            ),
     );
 
     return Semantics(

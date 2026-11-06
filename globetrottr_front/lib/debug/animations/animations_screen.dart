@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:globetrottr_front/debug/animations/form_demos.dart';
 import 'package:globetrottr_front/debug/animations/screen_demos.dart';
-import 'package:globetrottr_front/debug/animations/motion_picker.dart';
 import 'package:globetrottr_front/debug/animations/value_demos.dart';
 
 /// Every animation of the app on real components, with controls that change
@@ -40,7 +39,6 @@ class _AnimationsScreenState extends State<AnimationsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
           children: [
-            const MotionPicker(),
             SwitchListTile(
               title: const Text('Slow motion x5'),
               subtitle: const Text('Every animation in the app, until closed'),

@@ -11,7 +11,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     required this.long,
     required this.flight,
     required this.landing,
-    required this.pressRise,
     required this.pressHold,
     required this.curve,
     required this.popCurve,
@@ -26,7 +25,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     long: Duration(milliseconds: 220),
     flight: Duration(milliseconds: 450),
     landing: Duration(milliseconds: 1200),
-    pressRise: Duration.zero,
     pressHold: Duration(milliseconds: 100),
     curve: Curves.ease,
     popCurve: Curves.easeOutBack,
@@ -48,9 +46,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
   /// The map camera coming down from the overview to the player once the
   /// first position is known.
   final Duration landing;
-
-  /// A released button rising back; it sinks in at once.
-  final Duration pressRise;
 
   /// The shortest time a pressed button stays sunk in. A quick tap in a
   /// scrolling list is reported as pressed and released in one frame, which
@@ -83,7 +78,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     long: Duration.zero,
     flight: Duration.zero,
     landing: Duration.zero,
-    pressRise: Duration.zero,
   );
 
   @override
@@ -93,7 +87,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     Duration? long,
     Duration? flight,
     Duration? landing,
-    Duration? pressRise,
     Duration? pressHold,
     Curve? curve,
     Curve? popCurve,
@@ -104,7 +97,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     long: long ?? this.long,
     flight: flight ?? this.flight,
     landing: landing ?? this.landing,
-    pressRise: pressRise ?? this.pressRise,
     pressHold: pressHold ?? this.pressHold,
     curve: curve ?? this.curve,
     popCurve: popCurve ?? this.popCurve,
@@ -123,7 +115,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
       other.long == long &&
       other.flight == flight &&
       other.landing == landing &&
-      other.pressRise == pressRise &&
       other.pressHold == pressHold &&
       other.curve == curve &&
       other.popCurve == popCurve &&
@@ -136,7 +127,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     long,
     flight,
     landing,
-    pressRise,
     pressHold,
     curve,
     popCurve,

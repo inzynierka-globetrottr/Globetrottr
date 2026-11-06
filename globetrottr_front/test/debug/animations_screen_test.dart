@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/core/theme/app_motion_provider.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/debug/animations/animations_screen.dart';
 import 'package:globetrottr_front/debug/animations/form_demos.dart';
@@ -36,23 +35,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('52%'), findsOneWidget);
-  });
-
-  testWidgets('a chosen variant becomes the motion of the app', (
-    tester,
-  ) async {
-    await show(tester);
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(AnimationsScreen)),
-    );
-
-    await tester.tap(find.text(MotionPace.mockup.name));
-    await tester.tap(find.text(PressFeel.none.name));
-    await tester.pump();
-
-    final motion = container.read(appMotionProvider);
-    expect(motion.short, const Duration(milliseconds: 200));
-    expect(motion.pressHold, Duration.zero);
   });
 
   testWidgets('clearing the field error demo empties the field too', (

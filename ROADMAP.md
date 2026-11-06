@@ -126,9 +126,9 @@ Subtle motion across the app, in the language of the mock-up: short transitions 
 
 **Decisions:**
 - Durations and curves are theme tokens on one scale (three steps plus the map camera flight), with one ease curve; no widget keeps its own value (owner-approved).
-- The scale is being made quicker than the mock-up's CSS transitions, which felt sluggish in review (In progress). The dev screen "Animations" switches between both scales and how a button rises back, so they are chosen on a phone; the unchosen variants are then removed. For now a button is raised again at once (owner's choice, may change).
+- The scale is quicker than the mock-up's CSS transitions, which felt sluggish in review (owner's decision).
 - The system setting that turns animations off makes every token instant rather than shorter, as Android and iOS do (owner's decision).
-- A pressed button only moves its shadows. It sinks in at once; rising back follows the chosen variant (see the scale above). It stays sunk for a short minimum, because in a scrolling list a quick tap arrives as press and release in one frame. Why: a tap is shorter than the animation, so an animated press was barely visible or not at all (owner's feedback). No scaling and no haptics (owner's decisions).
+- A pressed button only moves its shadows. It sinks in and rises back at once (owner's decision). It stays sunk for a short minimum, because in a scrolling list a quick tap arrives as press and release in one frame. Why: a tap is shorter than the animation, so an animated press was barely visible or not at all (owner's feedback). No scaling and no haptics (owner's decisions).
 - Numbers, rings and bars move to a new value only when it changes while shown; the first value and one after an unknown appear at once, so entering a tab is not slowed down.
 - Form messages and field errors unfold and fade in when they appear and disappear at once.
 - No looping animation on the map screen. Why: the map draws only 15-30 frames per second to save battery, and a loop would force full frame rate (see Fog of war).

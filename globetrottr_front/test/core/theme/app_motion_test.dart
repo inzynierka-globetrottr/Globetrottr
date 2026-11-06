@@ -38,8 +38,7 @@ void main() {
     expect(motion.curve, Curves.ease);
   });
 
-  test('a button is raised again at once after its shortest hold', () {
-    expect(AppMotion.standard.pressRise, Duration.zero);
+  test('a pressed button is held for a shortest time', () {
     expect(AppMotion.standard.pressHold, isNot(Duration.zero));
   });
 
@@ -51,7 +50,6 @@ void main() {
     expect(reduced.long, Duration.zero);
     expect(reduced.flight, Duration.zero);
     expect(reduced.landing, Duration.zero);
-    expect(reduced.pressRise, Duration.zero);
   });
 
   test('reduced motion still shows a press, as it is not a movement', () {
