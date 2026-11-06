@@ -111,7 +111,6 @@ The app moves from the current dark neumorphic look to a light neumorphic style 
 - Cached tiles are never revalidated; they expire after 180 days, so the map can be that stale. Expiry also runs offline, so it must outlast any trip. Rejected: an own cache with background refresh (the package cache always answers first and would have to be worked around).
 - Size limit 250 MB by default (owner's decision). Above it the package drops the oldest tiles first; true least-recently-used would need an own cache, since Android mostly does not record file reads. The dev panel keeps a limit selector to try other values, next to the cache size, tiles, area covered, a refresh and a clear button.
 - The cache is not user data: logout keeps it.
-- Map moves that would leave the camera at a NaN or infinite position are rejected, because the map package's pinch zoom can produce one and the tile layer then crashes. Zoom limits alone would not stop a NaN.
 
 **Planned / Ideas:**
 - **Attribution (Planned, required before the app is given to anyone outside the team):** the map must credit OpenFreeMap, OpenMapTiles and OpenStreetMap contributors (ODbL), for example with a collapsible attribution button that fits the mock-up.
