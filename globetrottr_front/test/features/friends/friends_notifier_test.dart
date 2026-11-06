@@ -32,6 +32,16 @@ class _NoAvatars extends Fake implements ProfileService {
   Future<String?> getAvatarUrl(String username) async => null;
 }
 
+class _SlowAvatars extends Fake implements ProfileService {
+  final reply = Completer<void>();
+
+  @override
+  Future<String?> getAvatarUrl(String username) async {
+    await reply.future;
+    return 'https://avatars/$username';
+  }
+}
+
 void main() {
   late _SlowFriendsService service;
   late ProviderContainer container;
@@ -82,5 +92,66 @@ void main() {
     await notifier.deleteRelationship('ola');
 
     expect(service.calls, ['accept ola', 'delete ola']);
+  });
+
+  group('while the avatar of a new row is still loading', () {
+    late _SlowAvatars avatars;
+
+    setUp(() {
+      avatars = _SlowAvatars();
+      container = ProviderContainer(
+        overrides: [
+          friendsServiceProvider.overrideWithValue(service),
+          profileServiceProvider.overrideWithValue(avatars),
+        ],
+      );
+      addTearDown(container.dispose);
+      service.reply.complete();
+    });
+
+    List<String> sent() => [
+      for (final invite in container.read(friendsProvider).sentInvites)
+        invite.username,
+    ];
+
+    test('a just-sent invite can be undone', () async {
+      final notifier = container.read(friendsProvider.notifier);
+
+      await notifier.sendInvite('ola');
+      expect(sent(), ['ola']);
+      await notifier.deleteRelationship('ola');
+
+      expect(service.calls, ['send ola', 'delete ola']);
+      expect(sent(), isEmpty);
+      avatars.reply.complete();
+      await pumpEventQueue();
+      expect(sent(), isEmpty);
+    });
+
+    test('a just-accepted friend can be removed', () async {
+      final notifier = container.read(friendsProvider.notifier);
+
+      await notifier.acceptInvite('ola');
+      await notifier.deleteRelationship('ola');
+
+      expect(service.calls, ['accept ola', 'delete ola']);
+      expect(container.read(friendsProvider).friends, isEmpty);
+      avatars.reply.complete();
+      await pumpEventQueue();
+      expect(container.read(friendsProvider).friends, isEmpty);
+    });
+
+    test('the avatar is filled in once it arrives', () async {
+      final notifier = container.read(friendsProvider.notifier);
+
+      await notifier.sendInvite('ola');
+      avatars.reply.complete();
+      await pumpEventQueue();
+
+      expect(
+        container.read(friendsProvider).sentInvites.single.avatarUrl,
+        'https://avatars/ola',
+      );
+    });
   });
 }

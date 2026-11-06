@@ -23,6 +23,7 @@ class QuestListItem extends StatelessWidget {
     required this.expanded,
     required this.onToggle,
     this.onStart,
+    this.starting = false,
     this.swaps = false,
   });
 
@@ -32,6 +33,10 @@ class QuestListItem extends StatelessWidget {
 
   /// Null for a completed quest.
   final VoidCallback? onStart;
+
+  /// A start, of this or another quest, is on the way, so the button is
+  /// disabled.
+  final bool starting;
 
   /// Starting it replaces the active quest.
   final bool swaps;
@@ -97,7 +102,7 @@ class QuestListItem extends StatelessWidget {
                             semanticLabel: swaps
                                 ? l10n.questsSwap(quest.title)
                                 : l10n.questsStart(quest.title),
-                            onPressed: onStart,
+                            onPressed: starting ? null : onStart,
                             child: const AppIcon(AppIcons.footsteps),
                           ),
                         ),

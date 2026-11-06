@@ -48,6 +48,7 @@ class QuestsNotifier extends Notifier<QuestsState> {
       _flight.run(#start, () => _startQuest(questId));
 
   Future<void> _startQuest(int questId) async {
+    state = state.copyWith(isStarting: true);
     try {
       await _service.startQuest(questId);
       await loadQuests();
@@ -56,6 +57,8 @@ class QuestsNotifier extends Notifier<QuestsState> {
     } catch (e) {
       debugPrint('Unexpected error starting quest: $e');
       throw const UnknownException();
+    } finally {
+      if (ref.mounted) state = state.copyWith(isStarting: false);
     }
   }
 }

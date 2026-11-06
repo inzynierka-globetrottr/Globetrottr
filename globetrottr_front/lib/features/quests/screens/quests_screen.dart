@@ -50,6 +50,7 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen>
   );
 
   Future<void> _start(Quest quest) async {
+    if (ref.read(questsProvider).isStarting) return;
     final active = ref.read(activeQuestProvider);
     if (active != null &&
         !await confirmQuestSwap(context, active: active, next: quest)) {
@@ -96,6 +97,7 @@ class _QuestsScreenState extends ConsumerState<QuestsScreen>
                 expanded: _openQuestId == quest.id,
                 onToggle: () => _toggle(quest),
                 onStart: () => _start(quest),
+                starting: state.isStarting,
                 swaps: active != null,
               ),
           ],

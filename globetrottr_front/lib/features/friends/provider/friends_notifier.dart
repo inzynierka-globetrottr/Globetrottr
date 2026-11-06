@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/async/single_flight.dart';
@@ -56,6 +58,17 @@ class FriendsNotifier extends Notifier<FriendsState> {
     state = state.copyWith(
       friends: _withAvatars(state.friends, avatars),
       receivedInvites: _withAvatars(state.receivedInvites, avatars),
+      sentInvites: _withAvatars(state.sentInvites, avatars),
+    );
+  }
+
+  /// Not awaited by the action that added the row, so it runs outside the
+  /// per-person lock: the row can be undone while its avatar is loading.
+  Future<void> _attachAvatar(String username) async {
+    final avatars = await _fetchAvatars([username]);
+    if (!ref.mounted) return;
+    state = state.copyWith(
+      friends: _withAvatars(state.friends, avatars),
       sentInvites: _withAvatars(state.sentInvites, avatars),
     );
   }
@@ -119,10 +132,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
       state = state.copyWith(
         sentInvites: [...state.sentInvites, newInvite],
       );
-      final avatars = await _fetchAvatars([username]);
-      state = state.copyWith(
-        sentInvites: _withAvatars(state.sentInvites, avatars),
-      );
+      unawaited(_attachAvatar(username));
     } on AppException {
       rethrow;
     } catch (e) {
@@ -156,10 +166,7 @@ class FriendsNotifier extends Notifier<FriendsState> {
         friends: [...state.friends, friend],
       );
 
-      if (friend.avatarUrl == null) {
-        final avatars = await _fetchAvatars([username]);
-        state = state.copyWith(friends: _withAvatars(state.friends, avatars));
-      }
+      if (friend.avatarUrl == null) unawaited(_attachAvatar(username));
     } on AppException {
       rethrow;
     } catch (e) {

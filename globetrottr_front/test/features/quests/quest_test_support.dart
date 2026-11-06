@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/exceptions/app_exception.dart';
@@ -29,6 +31,9 @@ class FakeQuestService extends Fake implements QuestService {
   final started = <int>[];
   AppException? failWith;
 
+  /// When set, a start waits for it, as a slow backend would.
+  Completer<void>? startReply;
+
   @override
   Future<List<Quest>> fetchUserQuests() async {
     final error = failWith;
@@ -37,7 +42,10 @@ class FakeQuestService extends Fake implements QuestService {
   }
 
   @override
-  Future<void> startQuest(int questId) async => started.add(questId);
+  Future<void> startQuest(int questId) async {
+    started.add(questId);
+    await startReply?.future;
+  }
 }
 
 Quest testQuest(

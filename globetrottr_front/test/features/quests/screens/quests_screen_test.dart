@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -251,6 +253,38 @@ void main() {
       await tester.tap(find.text('Swap'));
       await tester.pumpAndSettle();
       expect(service.started, [1]);
+    });
+
+    testWidgets('another quest cannot be started while one is on the way', (
+      tester,
+    ) async {
+      await pump(tester, [
+        testQuest(4, isStarted: true, waypoints: testWaypoints([false])),
+        ..._places,
+      ]);
+      service.startReply = Completer<void>();
+
+      await tester.tap(find.text('Wawel Hill'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.bySemanticsLabel('Swap the active quest for: Wawel Hill'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Swap'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Cloth Hall'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.bySemanticsLabel('Swap the active quest for: Cloth Hall'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QuestSwapDialog), findsNothing);
+      expect(service.started, [1]);
+
+      service.startReply!.complete();
+      await tester.pumpAndSettle();
     });
 
     testWidgets('lists completed quests in the history by month', (
