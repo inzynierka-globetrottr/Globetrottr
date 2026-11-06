@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:globetrottr_front/core/theme/app_palette.dart';
+import 'package:globetrottr_front/core/theme/app_shadows.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:globetrottr_front/core/widgets/neu_surface.dart';
@@ -90,6 +91,32 @@ void main() {
     );
     expect(colorOf('Friends'), AppPalette.light.onAccent);
     expect(colorOf('Map'), AppPalette.light.textMuted);
+  });
+
+  testWidgets('the bar takes the map shadow at once', (tester) async {
+    Widget navbar({required bool overMap}) => MaterialApp(
+      theme: AppTheme.light,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        bottomNavigationBar: NeuBottomNavbar(
+          activeItem: NavbarItem.map,
+          overMap: overMap,
+          onSelect: (_) {},
+        ),
+      ),
+    );
+    final shadows = AppShadows.fromPalette(AppPalette.light);
+    List<NeoShadow> barShadows() =>
+        tester.widget<NeuSurface>(find.byType(NeuSurface).first).shadows;
+    await tester.pumpWidget(navbar(overMap: false));
+    await tester.pumpAndSettle();
+    expect(barShadows(), shadows.raised(NeoDepth.xl));
+
+    await tester.pumpWidget(navbar(overMap: true));
+    await tester.pump();
+
+    expect(barShadows(), shadows.mapNav);
   });
 
   testWidgets('keeps a gap above the system gesture bar', (tester) async {

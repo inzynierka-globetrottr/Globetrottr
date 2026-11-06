@@ -31,9 +31,9 @@ enum NavbarItem {
   };
 }
 
-/// The floating bottom navigation. The accent pill and the label colours
-/// are on the active tab at once; over the map the bar casts a darker
-/// shadow.
+/// The floating bottom navigation. Over the map the bar casts a darker
+/// shadow. Nothing in it is animated: the pill, the label colours and the
+/// shadow change at once with the tab.
 class NeuBottomNavbar extends StatelessWidget {
   const NeuBottomNavbar({
     super.key,
@@ -62,7 +62,6 @@ class NeuBottomNavbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shadows = context.shadows;
-    final motion = context.motion;
     final systemBar = MediaQuery.paddingOf(context).bottom;
     final select = onSelect ?? (item) => context.go(item.route);
     return Padding(
@@ -72,21 +71,11 @@ class NeuBottomNavbar extends StatelessWidget {
         _sideMargin,
         math.max(minBottomMargin, systemBar + gapAboveSystemBar),
       ),
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(end: overMap ? 1 : 0),
-        duration: motion.short,
-        curve: motion.curve,
-        builder: (context, mapShade, child) => NeuSurface(
-          shadows: lerpShadows(
-            shadows.raised(NeoDepth.xl),
-            shadows.mapNav,
-            mapShade,
-          ),
-          borderRadius: BorderRadius.circular(28),
-          height: _height,
-          padding: const EdgeInsets.all(8),
-          child: child,
-        ),
+      child: NeuSurface(
+        shadows: overMap ? shadows.mapNav : shadows.raised(NeoDepth.xl),
+        borderRadius: BorderRadius.circular(28),
+        height: _height,
+        padding: const EdgeInsets.all(8),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final count = NavbarItem.values.length;
