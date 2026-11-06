@@ -1,4 +1,3 @@
-import 'package:globetrottr_front/core/router/app_pages.dart';
 import 'package:globetrottr_front/features/auth/screens/login_screen.dart';
 import 'package:globetrottr_front/features/auth/screens/register_screen.dart';
 import 'package:globetrottr_front/features/auth/screens/reset_password_code_screen.dart';
@@ -30,33 +29,26 @@ final startRoute = GoRoute(
 
 final authRoute = GoRoute(
   path: AuthRoutes.login,
-  pageBuilder: (context, state) =>
-      fadePage(context, state, const LoginScreen()),
+  builder: (context, state) => const LoginScreen(),
   routes: [
     GoRoute(
       path: 'register',
-      pageBuilder: (context, state) =>
-          deeperPage(context, state, const RegisterScreen()),
+      builder: (context, state) => const RegisterScreen(),
       routes: [
         GoRoute(
           path: 'verify',
-          pageBuilder: (context, state) =>
-              deeperPage(context, state, const VerifyEmailScreen()),
+          builder: (context, state) => const VerifyEmailScreen(),
         ),
       ],
     ),
     GoRoute(
       path: 'reset',
-      pageBuilder: (context, state) =>
-          deeperPage(context, state, const ResetPasswordScreen()),
+      builder: (context, state) => const ResetPasswordScreen(),
       routes: [
         GoRoute(
           path: 'code',
-          pageBuilder: (context, state) => deeperPage(
-            context,
-            state,
-            ResetPasswordCodeScreen(email: state.extra as String? ?? ''),
-          ),
+          builder: (context, state) =>
+              ResetPasswordCodeScreen(email: state.extra as String? ?? ''),
         ),
       ],
     ),

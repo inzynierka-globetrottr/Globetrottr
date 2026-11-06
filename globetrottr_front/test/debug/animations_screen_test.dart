@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_motion_provider.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
 import 'package:globetrottr_front/debug/animations/animations_screen.dart';
@@ -39,7 +38,7 @@ void main() {
     expect(find.text('52%'), findsOneWidget);
   });
 
-  testWidgets('a chosen transition becomes the motion of the app', (
+  testWidgets('a chosen variant becomes the motion of the app', (
     tester,
   ) async {
     await show(tester);
@@ -47,15 +46,11 @@ void main() {
       tester.element(find.byType(AnimationsScreen)),
     );
 
-    await tester.tap(find.text(TabTransition.fadeThrough.name));
-    await tester.tap(find.text(DeeperTransition.rise.name));
     await tester.tap(find.text(MotionPace.mockup.name));
     await tester.tap(find.text(PressFeel.none.name));
     await tester.pump();
 
     final motion = container.read(appMotionProvider);
-    expect(motion.tabTransition, TabTransition.fadeThrough);
-    expect(motion.deeperTransition, DeeperTransition.rise);
     expect(motion.short, const Duration(milliseconds: 200));
     expect(motion.pressHold, Duration.zero);
   });

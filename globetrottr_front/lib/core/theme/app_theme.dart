@@ -59,7 +59,7 @@ class AppTheme {
         AppShadows.fromPalette(palette),
         motion,
       ],
-      pageTransitionsTheme: motion.deeperTransition.pageTransitions,
+      pageTransitionsTheme: motion.pageTransitions,
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:globetrottr_front/core/router/app_pages.dart';
 import 'package:globetrottr_front/core/router/app_tabs.dart';
 import 'package:globetrottr_front/core/router/tab_visibility.dart';
 import 'package:globetrottr_front/core/theme/app_theme.dart';
@@ -39,8 +38,7 @@ void main() {
               GoRoute(
                 path: 'history',
                 parentNavigatorKey: root,
-                pageBuilder: (context, state) =>
-                    deeperPage(context, state, const Text('history')),
+                builder: (_, _) => const Text('history'),
               ),
             ],
           ),

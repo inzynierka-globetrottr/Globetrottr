@@ -1,67 +1,5 @@
-import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
-
-/// How a newly chosen tab replaces the old one.
-enum TabTransition {
-  /// The old tab fades out, then the new one fades in while growing a little.
-  fadeThrough,
-
-  /// No animation.
-  instant,
-
-  /// The old tab is gone at once and the new one fades in.
-  fadeIn,
-}
-
-/// How a deeper screen comes in over the one it leaves, built from the
-/// page transitions Flutter has.
-enum DeeperTransition {
-  /// The new screen is there at once, and so is the old one when going back.
-  instant,
-
-  /// The whole screen slides in from the right edge, the old one moves a
-  /// little to the left, as on iOS.
-  slide,
-
-  /// The new screen grows a little from the middle while the old one
-  /// recedes, as on Android 10 and later.
-  zoom,
-
-  /// The new screen rises a little from the bottom while fading in.
-  rise,
-
-  /// Whatever the platform does by default.
-  platform;
-
-  PageTransitionsTheme get pageTransitions => switch (this) {
-    instant => _everywhere(const _InstantPageTransitionsBuilder()),
-    slide => _everywhere(const CupertinoPageTransitionsBuilder()),
-    zoom => _everywhere(const ZoomPageTransitionsBuilder()),
-    rise => _everywhere(const FadeUpwardsPageTransitionsBuilder()),
-    platform => const PageTransitionsTheme(),
-  };
-
-  static PageTransitionsTheme _everywhere(PageTransitionsBuilder builder) =>
-      PageTransitionsTheme(
-        builders: {for (final p in TargetPlatform.values) p: builder},
-      );
-}
-
-class _InstantPageTransitionsBuilder extends PageTransitionsBuilder {
-  const _InstantPageTransitionsBuilder();
-
-  @override
-  Duration get transitionDuration => Duration.zero;
-
-  @override
-  Widget buildTransitions<T>(
-    PageRoute<T> route,
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) => child;
-}
+import 'package:globetrottr_front/core/theme/fade_in_page_transitions.dart';
 
 /// How the design moves. Every animated element picks a step of the scale
 /// instead of its own value.
@@ -78,8 +16,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     required this.curve,
     required this.popCurve,
     required this.flightCurve,
-    required this.tabTransition,
-    required this.deeperTransition,
   });
 
   /// The scale is quicker than the mock-up's CSS transitions, as those felt
@@ -95,8 +31,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     curve: Curves.ease,
     popCurve: Curves.easeOutBack,
     flightCurve: Curves.easeInOut,
-    tabTransition: TabTransition.fadeIn,
-    deeperTransition: DeeperTransition.instant,
   );
 
   /// A press, a fade, a change of colour or shadow.
@@ -129,8 +63,17 @@ class AppMotion extends ThemeExtension<AppMotion> {
   /// of a met password rule.
   final Curve popCurve;
   final Curve flightCurve;
-  final TabTransition tabTransition;
-  final DeeperTransition deeperTransition;
+
+  /// A screen, a tab or a deeper one, fades in in the short step.
+  PageTransitionsTheme get pageTransitions {
+    final builder = FadeInPageTransitionsBuilder(
+      duration: short,
+      curve: curve,
+    );
+    return PageTransitionsTheme(
+      builders: {for (final p in TargetPlatform.values) p: builder},
+    );
+  }
 
   /// Every change happens at once, for the system setting that turns
   /// animations off.
@@ -155,8 +98,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     Curve? curve,
     Curve? popCurve,
     Curve? flightCurve,
-    TabTransition? tabTransition,
-    DeeperTransition? deeperTransition,
   }) => AppMotion(
     short: short ?? this.short,
     medium: medium ?? this.medium,
@@ -168,8 +109,6 @@ class AppMotion extends ThemeExtension<AppMotion> {
     curve: curve ?? this.curve,
     popCurve: popCurve ?? this.popCurve,
     flightCurve: flightCurve ?? this.flightCurve,
-    tabTransition: tabTransition ?? this.tabTransition,
-    deeperTransition: deeperTransition ?? this.deeperTransition,
   );
 
   @override
@@ -188,9 +127,7 @@ class AppMotion extends ThemeExtension<AppMotion> {
       other.pressHold == pressHold &&
       other.curve == curve &&
       other.popCurve == popCurve &&
-      other.flightCurve == flightCurve &&
-      other.tabTransition == tabTransition &&
-      other.deeperTransition == deeperTransition;
+      other.flightCurve == flightCurve;
 
   @override
   int get hashCode => Object.hash(
@@ -204,7 +141,5 @@ class AppMotion extends ThemeExtension<AppMotion> {
     curve,
     popCurve,
     flightCurve,
-    tabTransition,
-    deeperTransition,
   );
 }

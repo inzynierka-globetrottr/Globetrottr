@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:globetrottr_front/core/router/app_pages.dart';
 import 'package:globetrottr_front/core/router/tab_switcher.dart';
 import 'package:globetrottr_front/core/widgets/neu_bottom_navbar.dart';
 import 'package:go_router/go_router.dart';
@@ -12,8 +11,7 @@ StatefulShellRoute appTabs(List<StatefulShellBranch> branches) {
     'One branch per navigation item',
   );
   return StatefulShellRoute(
-    pageBuilder: (context, state, shell) =>
-        fadePage(context, state, AppShell(shell: shell)),
+    builder: (context, state, shell) => AppShell(shell: shell),
     navigatorContainerBuilder: (context, shell, tabs) =>
         TabSwitcher(current: shell.currentIndex, tabs: tabs),
     branches: branches,

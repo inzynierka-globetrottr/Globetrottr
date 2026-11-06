@@ -43,42 +43,6 @@ void main() {
     expect(AppMotion.standard.pressHold, isNot(Duration.zero));
   });
 
-  test('a tab fades in and a deeper screen comes in at once', () {
-    expect(AppMotion.standard.tabTransition, TabTransition.fadeIn);
-    expect(AppMotion.standard.deeperTransition, DeeperTransition.instant);
-  });
-
-  testWidgets('an instant deeper screen is shown without a transition', (
-    tester,
-  ) async {
-    final builder = DeeperTransition.instant.pageTransitions.builders.values
-        .toSet()
-        .single;
-    expect(builder.transitionDuration, Duration.zero);
-
-    const page = SizedBox(key: ValueKey('page'));
-    final route = MaterialPageRoute<void>(builder: (_) => page);
-    late BuildContext context;
-    await tester.pumpWidget(
-      Builder(
-        builder: (c) {
-          context = c;
-          return const SizedBox();
-        },
-      ),
-    );
-    expect(
-      builder.buildTransitions(
-        route,
-        context,
-        kAlwaysDismissedAnimation,
-        kAlwaysDismissedAnimation,
-        page,
-      ),
-      same(page),
-    );
-  });
-
   test('reduced motion makes every change instant', () {
     final reduced = AppMotion.standard.reduced;
 

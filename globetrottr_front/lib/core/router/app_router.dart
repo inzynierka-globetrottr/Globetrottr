@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:globetrottr_front/core/config/dev_config.dart';
-import 'package:globetrottr_front/core/router/app_pages.dart';
 import 'package:globetrottr_front/core/router/app_tabs.dart';
 import 'package:globetrottr_front/core/router/auth_redirect.dart';
 import 'package:globetrottr_front/core/router/auth_routes.dart';
@@ -36,8 +35,7 @@ GoRoute _deeper(String path, Widget Function(GoRouterState state) screen) =>
     GoRoute(
       path: path,
       parentNavigatorKey: _rootNavigator,
-      pageBuilder: (context, state) =>
-          deeperPage(context, state, screen(state)),
+      builder: (_, state) => screen(state),
     );
 
 StatefulShellBranch _tab(
@@ -94,8 +92,7 @@ final appRouter = Provider<GoRouter>((ref) {
       if (kDebugMode || DevConfig.isDevMode)
         GoRoute(
           path: '/dev',
-          pageBuilder: (context, state) =>
-              deeperPage(context, state, const DevOptionsScreen()),
+          builder: (context, state) => const DevOptionsScreen(),
           routes: [
             _deeper('animations', (_) => const AnimationsScreen()),
           ],

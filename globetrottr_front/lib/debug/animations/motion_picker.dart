@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:globetrottr_front/core/theme/app_motion.dart';
 import 'package:globetrottr_front/core/theme/app_motion_provider.dart';
 
 /// Switches the variants of the motion of the whole app, to compare them on
 /// a phone. Temporary, until one of each is chosen.
-class TransitionPicker extends ConsumerWidget {
-  const TransitionPicker({super.key});
+class MotionPicker extends ConsumerWidget {
+  const MotionPicker({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,18 +25,6 @@ class TransitionPicker extends ConsumerWidget {
           values: PressFeel.values,
           selected: chosen.press,
           onSelected: (value) => notifier.choose(press: value),
-        ),
-        _Choices(
-          title: 'Tab transition',
-          values: TabTransition.values,
-          selected: chosen.tab,
-          onSelected: (value) => notifier.choose(tab: value),
-        ),
-        _Choices(
-          title: 'Deeper screen transition',
-          values: DeeperTransition.values,
-          selected: chosen.deeper,
-          onSelected: (value) => notifier.choose(deeper: value),
         ),
       ],
     );
